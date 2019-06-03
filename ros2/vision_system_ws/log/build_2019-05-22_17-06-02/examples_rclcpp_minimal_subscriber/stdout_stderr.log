@@ -1,0 +1,9 @@
+make[2]: ***  Nessuna regola per generare l'obiettivo "CMakeFiles/mine.dir/depend".  Arresto.
+CMakeFiles/Makefile2:67: set di istruzioni per l'obiettivo "CMakeFiles/mine.dir/all" non riuscito
+make[1]: *** [CMakeFiles/mine.dir/all] Errore 2
+make[1]: *** Attesa per i processi non terminati....
+[ 25%] Built target subscriber_lambda
+[ 75%] Built target subscriber_not_composable
+[ 75%] Built target subscriber_member_function
+Makefile:138: set di istruzioni per l'obiettivo "all" non riuscito
+make: *** [all] Errore 2

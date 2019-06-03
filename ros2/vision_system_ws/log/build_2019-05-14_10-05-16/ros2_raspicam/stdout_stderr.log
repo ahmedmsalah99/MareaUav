@@ -1,0 +1,24 @@
+[35m[1mScanning dependencies of target raspicam_compressed_node[0m
+[ 50%] Built target raspicam_raw_node
+[ 75%] [32mBuilding CXX object CMakeFiles/raspicam_compressed_node.dir/src/raspicam_compressed.cpp.o[0m
+[01m[K/home/pi/vision_system_ws/src/ros2_raspicam/src/raspicam_compressed.cpp:79:9:[m[K [01;35m[Kwarning: [m[K"/*" within comment [[01;35m[K-Wcomment[m[K]
+         /*
+          
+[01m[K/home/pi/vision_system_ws/src/ros2_raspicam/src/raspicam_compressed.cpp:[m[K In function ‘[01m[Kint main(int, char**)[m[K’:
+[01m[K/home/pi/vision_system_ws/src/ros2_raspicam/src/raspicam_compressed.cpp:92:9:[m[K [01;31m[Kerror: [m[K‘[01m[Kloop_rate[m[K’ was not declared in this scope
+         [01;31m[Kloop_rate[m[K.sleep();
+         [01;31m[K^~~~~~~~~[m[K
+[01m[K/home/pi/vision_system_ws/src/ros2_raspicam/src/raspicam_compressed.cpp:[m[K At global scope:
+[01m[K/home/pi/vision_system_ws/src/ros2_raspicam/src/raspicam_compressed.cpp:108:2:[m[K [01;31m[Kerror: [m[Kexpected unqualified-id before ‘[01m[K/[m[K’ token
+ *[01;31m[K/[m[K
+  [01;31m[K^[m[K
+[01m[K/home/pi/vision_system_ws/src/ros2_raspicam/src/raspicam_compressed.cpp:108:2:[m[K [01;31m[Kerror: [m[Kexpected constructor, destructor, or type conversion before ‘[01m[K/[m[K’ token
+[01m[K/home/pi/vision_system_ws/src/ros2_raspicam/src/raspicam_compressed.cpp:114:1:[m[K [01;31m[Kerror: [m[Kexpected declaration before ‘[01m[K}[m[K’ token
+ [01;31m[K}[m[K
+ [01;31m[K^[m[K
+CMakeFiles/raspicam_compressed_node.dir/build.make:62: set di istruzioni per l'obiettivo "CMakeFiles/raspicam_compressed_node.dir/src/raspicam_compressed.cpp.o" non riuscito
+make[2]: *** [CMakeFiles/raspicam_compressed_node.dir/src/raspicam_compressed.cpp.o] Errore 1
+make[1]: *** [CMakeFiles/raspicam_compressed_node.dir/all] Errore 2
+CMakeFiles/Makefile2:67: set di istruzioni per l'obiettivo "CMakeFiles/raspicam_compressed_node.dir/all" non riuscito
+make: *** [all] Errore 2
+Makefile:138: set di istruzioni per l'obiettivo "all" non riuscito

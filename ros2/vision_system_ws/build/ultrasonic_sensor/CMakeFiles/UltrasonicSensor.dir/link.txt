@@ -1,0 +1,2 @@
+/usr/bin/ar qc libUltrasonicSensor.a  CMakeFiles/UltrasonicSensor.dir/source/UltrasonicSensor.cpp.o
+/usr/bin/ranlib libUltrasonicSensor.a

@@ -1,0 +1,17 @@
+[  8%] Built target ultrasonic_sensor__rosidl_generator_c
+[ 11%] Built target ultrasonic_sensor__cpp
+[ 17%] Built target UltrasonicSensor
+[ 25%] Built target ultrasonic_sensor__rosidl_typesupport_cpp
+[ 34%] Built target ultrasonic_sensor__rosidl_typesupport_introspection_c
+[ 42%] Built target ultrasonic_sensor__rosidl_typesupport_c
+[ 51%] Built target ultrasonic_sensor__rosidl_typesupport_fastrtps_cpp
+[ 60%] Built target ultrasonic_sensor__rosidl_typesupport_introspection_cpp
+[ 68%] Built target ultrasonic_sensor__rosidl_typesupport_fastrtps_c
+[ 68%] Built target ultrasonic_sensor
+[ 71%] Built target ultrasonic_sensor__py
+[ 77%] Built target ultrasonic_sensor_node_Mocap2mav
+Makefile:138: set di istruzioni per l'obiettivo "all" non riuscito
+make[1]: *** wait: Nessun processo figlio.  Arresto.
+make[1]: *** Attesa per i processi non terminati....
+make[1]: *** wait: Nessun processo figlio.  Arresto.
+make: *** [all] Errore 2

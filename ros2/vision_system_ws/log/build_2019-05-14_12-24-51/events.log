@@ -1,0 +1,24 @@
+[0.000000] (-) TimerEvent: {}
+[0.014530] (apriltag_msgs) JobQueued: {'identifier': 'apriltag_msgs', 'dependencies': OrderedDict()}
+[0.016528] (ros2_raspicam) JobQueued: {'identifier': 'ros2_raspicam', 'dependencies': OrderedDict()}
+[0.020525] (ultrasonic_sensor) JobQueued: {'identifier': 'ultrasonic_sensor', 'dependencies': OrderedDict()}
+[0.024363] (apriltag2_node) JobQueued: {'identifier': 'apriltag2_node', 'dependencies': OrderedDict([('apriltag_msgs', '/home/pi/vision_system_ws/install/apriltag_msgs')])}
+[0.031161] (apriltag_msgs) JobStarted: {'identifier': 'apriltag_msgs'}
+[0.100025] (-) TimerEvent: {}
+[0.210130] (-) TimerEvent: {}
+[0.315886] (-) TimerEvent: {}
+[0.422450] (-) TimerEvent: {}
+[0.528765] (-) TimerEvent: {}
+[0.558397] (ros2_raspicam) JobStarted: {'identifier': 'ros2_raspicam'}
+[0.630098] (-) TimerEvent: {}
+[0.735276] (-) TimerEvent: {}
+[0.842426] (-) TimerEvent: {}
+[0.914410] (ultrasonic_sensor) JobStarted: {'identifier': 'ultrasonic_sensor'}
+[0.941980] (-) TimerEvent: {}
+[1.044671] (-) TimerEvent: {}
+[1.129966] (ultrasonic_sensor) JobEnded: {'identifier': 'ultrasonic_sensor', 'rc': 0}
+[1.142824] (ros2_raspicam) JobEnded: {'identifier': 'ros2_raspicam', 'rc': 'SIGINT'}
+[1.146243] (-) TimerEvent: {}
+[1.148324] (apriltag_msgs) JobEnded: {'identifier': 'apriltag_msgs', 'rc': 'SIGINT'}
+[1.157412] (apriltag2_node) JobSkipped: {'identifier': 'apriltag2_node'}
+[1.158585] (-) EventReactorShutdown: {}

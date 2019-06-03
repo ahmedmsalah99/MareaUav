@@ -1,0 +1,3 @@
+-- Configuring incomplete, errors occurred!
+See also "/home/pi/vision_system_ws/build/fsm_raspicam/CMakeFiles/CMakeOutput.log".
+Makefile:656: set di istruzioni per l'obiettivo "cmake_check_build_system" non riuscito

@@ -1,0 +1,7 @@
+CMake Error at /home/pi/ros2_ws/install/ament_cmake_target_dependencies/share/ament_cmake_target_dependencies/cmake/ament_target_dependencies.cmake:33 (message):
+  ament_target_dependencies() the first argument must be a valid target name
+Call Stack (most recent call first):
+  CMakeLists.txt:38 (ament_target_dependencies)
+
+
+make: *** [cmake_check_build_system] Errore 1

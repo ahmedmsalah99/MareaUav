@@ -1,0 +1,25 @@
+-- Found ament_cmake: 0.6.0 (/home/pi/ros2_ws/install/ament_cmake/share/ament_cmake/cmake)
+-- Using PYTHON_EXECUTABLE: /usr/bin/python3
+-- Override CMake install command with custom implementation using symlinks instead of copying resources
+-- Found rclcpp: 0.6.3 (/home/pi/ros2_ws/install/rclcpp/share/rclcpp/cmake)
+-- Found rosidl_adapter: 0.6.3 (/home/pi/ros2_ws/install/rosidl_adapter/share/rosidl_adapter/cmake)
+-- Found rmw_implementation_cmake: 0.6.1 (/home/pi/ros2_ws/install/rmw_implementation_cmake/share/rmw_implementation_cmake/cmake)
+-- Found std_msgs: 0.6.1 (/home/pi/ros2_ws/install/std_msgs/share/std_msgs/cmake)
+-- Configuring done
+-- Generating done
+-- Build files have been written to: /home/pi/vision_system_ws/build/examples_rclcpp_minimal_subscriber
+[35m[1mScanning dependencies of target checks_rate[0m
+[ 25%] Built target subscriber_lambda
+[ 50%] Built target subscriber_member_function
+[ 75%] Built target subscriber_not_composable
+[ 87%] [32mBuilding CXX object CMakeFiles/checks_rate.dir/checks_rate.cpp.o[0m
+[01m[K/home/pi/vision_system_ws/src/minimal_subscriber_cpp/checks_rate.cpp:3:37:[m[K [01;31m[Kfatal error: [m[Ksensor_msgs/msg/image.hpp: File o directory non esistente
+ #include <sensor_msgs/msg/image.hpp>
+                                     [01;31m[K^[m[K
+compilation terminated.
+CMakeFiles/checks_rate.dir/build.make:62: set di istruzioni per l'obiettivo "CMakeFiles/checks_rate.dir/checks_rate.cpp.o" non riuscito
+make[2]: *** [CMakeFiles/checks_rate.dir/checks_rate.cpp.o] Errore 1
+CMakeFiles/Makefile2:360: set di istruzioni per l'obiettivo "CMakeFiles/checks_rate.dir/all" non riuscito
+make[1]: *** [CMakeFiles/checks_rate.dir/all] Errore 2
+Makefile:138: set di istruzioni per l'obiettivo "all" non riuscito
+make: *** [all] Errore 2

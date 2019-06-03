@@ -1,0 +1,3 @@
+make[2]: *** [CMakeFiles/camera_main_node.dir/src/CameraStates.cpp.o] Interruzione
+make[1]: *** [CMakeFiles/camera_main_node.dir/all] Interruzione
+make: *** [all] Interruzione

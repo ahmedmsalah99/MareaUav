@@ -1,0 +1,12 @@
+[35m[1mScanning dependencies of target camera_main_node[0m
+[ 20%] [32mBuilding CXX object CMakeFiles/camera_main_node.dir/src/CameraStates.cpp.o[0m
+[01m[K/home/pi/vision_system_ws/src/fsm_raspicam/src/CameraStates.cpp:[m[K In member function ‘[01m[Kvirtual void IdleState::setParameters()[m[K’:
+[01m[K/home/pi/vision_system_ws/src/fsm_raspicam/src/CameraStates.cpp:15:80:[m[K [01;31m[Kerror: [m[Kreturn-statement with a value, in function returning 'void' [[01;31m[K-fpermissive[m[K]
+     if ( !Camera.open()) {std::cerr<<"Error opening camera"<<std::endl;return -[01;31m[K1[m[K;}
+                                                                                [01;31m[K^[m[K
+CMakeFiles/camera_main_node.dir/build.make:134: set di istruzioni per l'obiettivo "CMakeFiles/camera_main_node.dir/src/CameraStates.cpp.o" non riuscito
+make[2]: *** [CMakeFiles/camera_main_node.dir/src/CameraStates.cpp.o] Errore 1
+make[1]: *** [CMakeFiles/camera_main_node.dir/all] Errore 2
+make: *** [all] Errore 2
+CMakeFiles/Makefile2:803: set di istruzioni per l'obiettivo "CMakeFiles/camera_main_node.dir/all" non riuscito
+Makefile:138: set di istruzioni per l'obiettivo "all" non riuscito

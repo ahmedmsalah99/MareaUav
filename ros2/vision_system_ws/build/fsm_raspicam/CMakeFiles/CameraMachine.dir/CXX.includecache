@@ -1,0 +1,20 @@
+#IncludeRegexLine: ^[ 	]*#[ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/home/pi/vision_system_ws/src/fsm_raspicam/include/FiniteStateMachine.h
+State.h
+/home/pi/vision_system_ws/src/fsm_raspicam/include/State.h
+
+/home/pi/vision_system_ws/src/fsm_raspicam/include/State.h
+FiniteStateMachine.h
+/home/pi/vision_system_ws/src/fsm_raspicam/include/FiniteStateMachine.h
+
+/home/pi/vision_system_ws/src/fsm_raspicam/src/FiniteStateMachine.cpp
+FiniteStateMachine.h
+/home/pi/vision_system_ws/src/fsm_raspicam/src/FiniteStateMachine.h
+

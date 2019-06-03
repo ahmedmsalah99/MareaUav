@@ -1,0 +1,5 @@
+[ 50%] Built target raspicam_compressed_node
+[ 75%] [32mBuilding CXX object CMakeFiles/raspicam_raw_node.dir/src/raspicam_raw.cpp.o[0m
+CMakeFiles/raspicam_raw_node.dir/build.make:62: set di istruzioni per l'obiettivo "CMakeFiles/raspicam_raw_node.dir/src/raspicam_raw.cpp.o" non riuscito
+CMakeFiles/Makefile2:168: set di istruzioni per l'obiettivo "CMakeFiles/raspicam_raw_node.dir/all" non riuscito
+Makefile:138: set di istruzioni per l'obiettivo "all" non riuscito

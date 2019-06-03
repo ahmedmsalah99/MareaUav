@@ -1,0 +1,19 @@
+Invoking command in '/home/pi/vision_system_ws/build/ros2_raspicam': /usr/bin/cmake --build /home/pi/vision_system_ws/build/ros2_raspicam -- -j4 -l4
+[ 20%] Built target service_node
+[ 40%] Built target checks_rate_node
+[35m[1mScanning dependencies of target client_node[0m
+[ 50%] [32mBuilding CXX object CMakeFiles/client_node.dir/src/client_camera_param.cpp.o[0m
+[01m[K/home/pi/vision_system_ws/src/ros2_raspicam/src/client_camera_param.cpp:[m[K In function ‘[01m[Kint main(int, char**)[m[K’:
+[01m[K/home/pi/vision_system_ws/src/ros2_raspicam/src/client_camera_param.cpp:17:8:[m[K [01;31m[Kerror: [m[Kexpected primary-expression before ‘[01m[K.[m[K’ token
+    std:[01;31m[K.[m[Kcout<<"client interrupted"<<std::endl;
+        [01;31m[K^[m[K
+[01m[K/home/pi/vision_system_ws/src/ros2_raspicam/src/client_camera_param.cpp:17:4:[m[K [01;35m[Kwarning: [m[Klabel ‘[01m[Kstd[m[K’ defined but not used [[01;35m[K-Wunused-label[m[K]
+    [01;35m[Kstd[m[K:.cout<<"client interrupted"<<std::endl;
+    [01;35m[K^~~[m[K
+CMakeFiles/client_node.dir/build.make:62: set di istruzioni per l'obiettivo "CMakeFiles/client_node.dir/src/client_camera_param.cpp.o" non riuscito
+make[2]: *** [CMakeFiles/client_node.dir/src/client_camera_param.cpp.o] Errore 1
+make[1]: *** [CMakeFiles/client_node.dir/all] Errore 2
+CMakeFiles/Makefile2:1111: set di istruzioni per l'obiettivo "CMakeFiles/client_node.dir/all" non riuscito
+Makefile:138: set di istruzioni per l'obiettivo "all" non riuscito
+make: *** [all] Errore 2
+Invoked command in '/home/pi/vision_system_ws/build/ros2_raspicam' returned '2': /usr/bin/cmake --build /home/pi/vision_system_ws/build/ros2_raspicam -- -j4 -l4

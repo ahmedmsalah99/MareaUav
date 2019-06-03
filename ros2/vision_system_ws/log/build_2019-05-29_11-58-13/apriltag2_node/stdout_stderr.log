@@ -1,0 +1,12 @@
+[35m[1mScanning dependencies of target AprilTag2Node[0m
+[ 25%] [32mBuilding CXX object CMakeFiles/AprilTag2Node.dir/src/AprilTag2Node2_0.cpp.o[0m
+[01m[K/home/pi/vision_system_ws/src/apriltag2_node/node/src/AprilTag2Node2_0.cpp:[m[K In member function ‘[01m[Kvoid AprilTag2Node::getPose(const matd_t&, geometry_msgs::msg::Transform&, int, bool)[m[K’:
+[01m[K/home/pi/vision_system_ws/src/apriltag2_node/node/src/AprilTag2Node2_0.cpp:190:43:[m[K [01;31m[Kerror: [m[Kbase operand of ‘[01m[K->[m[K’ has non-pointer type ‘[01m[KPlatform_tag[m[K’
+     const Eigen::Vector4d tt_center = TAGS[01;31m[K->[m[KTAG5_T_TAG1*tt4;
+                                           [01;31m[K^~[m[K
+CMakeFiles/AprilTag2Node.dir/build.make:62: set di istruzioni per l'obiettivo "CMakeFiles/AprilTag2Node.dir/src/AprilTag2Node2_0.cpp.o" non riuscito
+make[2]: *** [CMakeFiles/AprilTag2Node.dir/src/AprilTag2Node2_0.cpp.o] Errore 1
+CMakeFiles/Makefile2:200: set di istruzioni per l'obiettivo "CMakeFiles/AprilTag2Node.dir/all" non riuscito
+Makefile:138: set di istruzioni per l'obiettivo "all" non riuscito
+make[1]: *** [CMakeFiles/AprilTag2Node.dir/all] Errore 2
+make: *** [all] Errore 2

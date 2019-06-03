@@ -1,0 +1,391 @@
+[0.000000] (-) TimerEvent: {}
+[0.005662] (apriltag_msgs) JobQueued: {'dependencies': OrderedDict(), 'identifier': 'apriltag_msgs'}
+[0.007495] (ros2_raspicam) JobQueued: {'dependencies': OrderedDict(), 'identifier': 'ros2_raspicam'}
+[0.008422] (ultrasonic_sensor) JobQueued: {'dependencies': OrderedDict(), 'identifier': 'ultrasonic_sensor'}
+[0.015089] (apriltag2_node) JobQueued: {'dependencies': OrderedDict([('apriltag_msgs', '/home/pi/vision_system_ws/install/apriltag_msgs')]), 'identifier': 'apriltag2_node'}
+[0.016382] (apriltag_msgs) JobStarted: {'identifier': 'apriltag_msgs'}
+[0.102036] (ros2_raspicam) JobStarted: {'identifier': 'ros2_raspicam'}
+[0.114653] (-) TimerEvent: {}
+[0.132565] (ultrasonic_sensor) JobStarted: {'identifier': 'ultrasonic_sensor'}
+[0.206412] (apriltag_msgs) JobProgress: {'progress': 'cmake', 'identifier': 'apriltag_msgs'}
+[0.214984] (-) TimerEvent: {}
+[0.224769] (apriltag_msgs) JobProgress: {'progress': 'build', 'identifier': 'apriltag_msgs'}
+[0.226202] (apriltag_msgs) Command: {'shell': False, 'env': OrderedDict([('INFINALITY_FT_AUTOHINT_HORIZONTAL_STEM_DARKEN_STRENGTH', '10'), ('USER', 'pi'), ('LANGUAGE', 'it_IT.UTF-8'), ('TEXTDOMAIN', 'Linux-PAM'), ('XDG_SEAT', 'seat0'), ('INFINALITY_FT_FRINGE_FILTER_STRENGTH', '0'), ('SSH_AGENT_PID', '643'), ('XDG_SESSION_TYPE', 'x11'), ('SHLVL', '1'), ('HOME', '/home/pi'), ('OLDPWD', '/home/pi/vision_system_ws/src'), ('INFINALITY_FT_CONTRAST', '0'), ('DESKTOP_SESSION', 'LXDE-pi'), ('XDG_SEAT_PATH', '/org/freedesktop/DisplayManager/Seat0'), ('INFINALITY_FT_USE_VARIOUS_TWEAKS', 'true'), ('INFINALITY_FT_GAMMA_CORRECTION', '0 100'), ('INFINALITY_FT_WINDOWS_STYLE_SHARPENING_STRENGTH', '10'), ('DBUS_SESSION_BUS_ADDRESS', 'unix:path=/run/user/1000/bus'), ('INFINALITY_FT_STEM_ALIGNMENT_STRENGTH', '25'), ('QT_QPA_PLATFORMTHEME', 'qt5ct'), ('LOGNAME', 'pi'), ('_', '/usr/bin/colcon'), ('XDG_SESSION_ID', 'c1'), ('TERM', 'xterm'), ('M2M_INCLUDE', '/home/pi/mocap2mav/include'), ('SAL_USE_VCLPLUGIN', 'gtk'), ('INFINALITY_FT_AUTOHINT_VERTICAL_STEM_DARKEN_STRENGTH', '25'), ('PATH', '/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/local/games:/usr/games'), ('XDG_MENU_PREFIX', 'lxde-pi-'), ('XDG_RUNTIME_DIR', '/run/user/1000'), ('XDG_SESSION_PATH', '/org/freedesktop/DisplayManager/Session0'), ('DISPLAY', ':0'), ('INFINALITY_FT_GLOBAL_EMBOLDEN_X_VALUE', '0'), ('LANG', 'it_IT.UTF-8'), ('INFINALITY_FT_AUTOHINT_SNAP_STEM_HEIGHT', '100'), ('XDG_CURRENT_DESKTOP', 'LXDE'), ('INFINALITY_FT_GLOBAL_EMBOLDEN_Y_VALUE', '0'), ('LS_COLORS', 'rs=0:di=01;34:ln=01;36:mh=00:pi=40;33:so=01;35:do=01;35:bd=40;33;01:cd=40;33;01:or=40;31;01:mi=00:su=37;41:sg=30;43:ca=30;41:tw=30;42:ow=34;42:st=37;44:ex=01;32:*.tar=01;31:*.tgz=01;31:*.arc=01;31:*.arj=01;31:*.taz=01;31:*.lha=01;31:*.lz4=01;31:*.lzh=01;31:*.lzma=01;31:*.tlz=01;31:*.txz=01;31:*.tzo=01;31:*.t7z=01;31:*.zip=01;31:*.z=01;31:*.Z=01;31:*.dz=01;31:*.gz=01;31:*.lrz=01;31:*.lz=01;31:*.lzo=01;31:*.xz=01;31:*.zst=01;31:*.tzst=01;31:*.bz2=01;31:*.bz=01;31:*.tbz=01;31:*.tbz2=01;31:*.tz=01;31:*.deb=01;31:*.rpm=01;31:*.jar=01;31:*.war=01;31:*.ear=01;31:*.sar=01;31:*.rar=01;31:*.alz=01;31:*.ace=01;31:*.zoo=01;31:*.cpio=01;31:*.7z=01;31:*.rz=01;31:*.cab=01;31:*.jpg=01;35:*.jpeg=01;35:*.mjpg=01;35:*.mjpeg=01;35:*.gif=01;35:*.bmp=01;35:*.pbm=01;35:*.pgm=01;35:*.ppm=01;35:*.tga=01;35:*.xbm=01;35:*.xpm=01;35:*.tif=01;35:*.tiff=01;35:*.png=01;35:*.svg=01;35:*.svgz=01;35:*.mng=01;35:*.pcx=01;35:*.mov=01;35:*.mpg=01;35:*.mpeg=01;35:*.m2v=01;35:*.mkv=01;35:*.webm=01;35:*.ogm=01;35:*.mp4=01;35:*.m4v=01;35:*.mp4v=01;35:*.vob=01;35:*.qt=01;35:*.nuv=01;35:*.wmv=01;35:*.asf=01;35:*.rm=01;35:*.rmvb=01;35:*.flc=01;35:*.avi=01;35:*.fli=01;35:*.flv=01;35:*.gl=01;35:*.dl=01;35:*.xcf=01;35:*.xwd=01;35:*.yuv=01;35:*.cgm=01;35:*.emf=01;35:*.ogv=01;35:*.ogx=01;35:*.aac=00;36:*.au=00;36:*.flac=00;36:*.m4a=00;36:*.mid=00;36:*.midi=00;36:*.mka=00;36:*.mp3=00;36:*.mpc=00;36:*.ogg=00;36:*.ra=00;36:*.wav=00;36:*.oga=00;36:*.opus=00;36:*.spx=00;36:*.xspf=00;36:'), ('XDG_CONFIG_HOME', '/home/pi/.config'), ('INFINALITY_FT_CHROMEOS_STYLE_SHARPENING_STRENGTH', '0'), ('XDG_SESSION_DESKTOP', 'lightdm-xsession'), ('XAUTHORITY', '/home/pi/.Xauthority'), ('SSH_AUTH_SOCK', '/tmp/ssh-DCYc3IqsnMoA/agent.559'), ('XDG_GREETER_DATA_DIR', '/var/lib/lightdm/data/pi'), ('SHELL', '/bin/bash'), ('NO_AT_BRIDGE', '1'), ('GDMSESSION', 'lightdm-xsession'), ('INFINALITY_FT_BRIGHTNESS', '0'), ('_LXSESSION_PID', '559'), ('INFINALITY_FT_STEM_FITTING_STRENGTH', '25'), ('INFINALITY_FT_STEM_SNAPPING_SLIDING_SCALE', '40'), ('GPG_AGENT_INFO', '/run/user/1000/gnupg/S.gpg-agent:0:1'), ('XDG_VTNR', '7'), ('INFINALITY_FT_GRAYSCALE_FILTER_STRENGTH', '0'), ('INFINALITY_FT_USE_KNOWN_SETTINGS_ON_SELECTED_FONTS', 'true'), ('LC_ALL', 'it_IT.UTF-8'), ('INFINALITY_FT_AUTOHINT_INCREASE_GLYPH_HEIGHTS', 'true'), ('PWD', '/home/pi/vision_system_ws/build/apriltag_msgs'), ('XDG_DATA_DIRS', '/usr/local/share:/usr/share/raspi-ui-overrides:/usr/share:/usr/share/gdm:/var/lib/menu-xdg'), ('XDG_CONFIG_DIRS', '/etc/xdg'), ('PYTHONPATH', '/home/pi'), ('INFINALITY_FT_FILTER_PARAMS', '11 22 38 22 11'), ('INFINALITY_FT_BOLD_EMBOLDEN_X_VALUE', '0'), ('INFINALITY_FT_BOLD_EMBOLDEN_Y_VALUE', '0')]), 'cmd': ['/usr/bin/cmake', '--build', '/home/pi/vision_system_ws/build/apriltag_msgs', '--', '-j4', '-l4'], 'cwd': '/home/pi/vision_system_ws/build/apriltag_msgs'}
+[0.259220] (ros2_raspicam) JobProgress: {'progress': 'cmake', 'identifier': 'ros2_raspicam'}
+[0.265644] (ros2_raspicam) JobProgress: {'progress': 'build', 'identifier': 'ros2_raspicam'}
+[0.273836] (ros2_raspicam) Command: {'shell': False, 'env': OrderedDict([('INFINALITY_FT_AUTOHINT_HORIZONTAL_STEM_DARKEN_STRENGTH', '10'), ('USER', 'pi'), ('LANGUAGE', 'it_IT.UTF-8'), ('TEXTDOMAIN', 'Linux-PAM'), ('XDG_SEAT', 'seat0'), ('INFINALITY_FT_FRINGE_FILTER_STRENGTH', '0'), ('SSH_AGENT_PID', '643'), ('XDG_SESSION_TYPE', 'x11'), ('SHLVL', '1'), ('HOME', '/home/pi'), ('OLDPWD', '/home/pi/vision_system_ws/src'), ('INFINALITY_FT_CONTRAST', '0'), ('DESKTOP_SESSION', 'LXDE-pi'), ('XDG_SEAT_PATH', '/org/freedesktop/DisplayManager/Seat0'), ('INFINALITY_FT_USE_VARIOUS_TWEAKS', 'true'), ('INFINALITY_FT_GAMMA_CORRECTION', '0 100'), ('INFINALITY_FT_WINDOWS_STYLE_SHARPENING_STRENGTH', '10'), ('DBUS_SESSION_BUS_ADDRESS', 'unix:path=/run/user/1000/bus'), ('INFINALITY_FT_STEM_ALIGNMENT_STRENGTH', '25'), ('QT_QPA_PLATFORMTHEME', 'qt5ct'), ('LOGNAME', 'pi'), ('_', '/usr/bin/colcon'), ('XDG_SESSION_ID', 'c1'), ('TERM', 'xterm'), ('M2M_INCLUDE', '/home/pi/mocap2mav/include'), ('SAL_USE_VCLPLUGIN', 'gtk'), ('INFINALITY_FT_AUTOHINT_VERTICAL_STEM_DARKEN_STRENGTH', '25'), ('PATH', '/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/local/games:/usr/games'), ('XDG_MENU_PREFIX', 'lxde-pi-'), ('XDG_RUNTIME_DIR', '/run/user/1000'), ('XDG_SESSION_PATH', '/org/freedesktop/DisplayManager/Session0'), ('DISPLAY', ':0'), ('INFINALITY_FT_GLOBAL_EMBOLDEN_X_VALUE', '0'), ('LANG', 'it_IT.UTF-8'), ('INFINALITY_FT_AUTOHINT_SNAP_STEM_HEIGHT', '100'), ('XDG_CURRENT_DESKTOP', 'LXDE'), ('INFINALITY_FT_GLOBAL_EMBOLDEN_Y_VALUE', '0'), ('LS_COLORS', 'rs=0:di=01;34:ln=01;36:mh=00:pi=40;33:so=01;35:do=01;35:bd=40;33;01:cd=40;33;01:or=40;31;01:mi=00:su=37;41:sg=30;43:ca=30;41:tw=30;42:ow=34;42:st=37;44:ex=01;32:*.tar=01;31:*.tgz=01;31:*.arc=01;31:*.arj=01;31:*.taz=01;31:*.lha=01;31:*.lz4=01;31:*.lzh=01;31:*.lzma=01;31:*.tlz=01;31:*.txz=01;31:*.tzo=01;31:*.t7z=01;31:*.zip=01;31:*.z=01;31:*.Z=01;31:*.dz=01;31:*.gz=01;31:*.lrz=01;31:*.lz=01;31:*.lzo=01;31:*.xz=01;31:*.zst=01;31:*.tzst=01;31:*.bz2=01;31:*.bz=01;31:*.tbz=01;31:*.tbz2=01;31:*.tz=01;31:*.deb=01;31:*.rpm=01;31:*.jar=01;31:*.war=01;31:*.ear=01;31:*.sar=01;31:*.rar=01;31:*.alz=01;31:*.ace=01;31:*.zoo=01;31:*.cpio=01;31:*.7z=01;31:*.rz=01;31:*.cab=01;31:*.jpg=01;35:*.jpeg=01;35:*.mjpg=01;35:*.mjpeg=01;35:*.gif=01;35:*.bmp=01;35:*.pbm=01;35:*.pgm=01;35:*.ppm=01;35:*.tga=01;35:*.xbm=01;35:*.xpm=01;35:*.tif=01;35:*.tiff=01;35:*.png=01;35:*.svg=01;35:*.svgz=01;35:*.mng=01;35:*.pcx=01;35:*.mov=01;35:*.mpg=01;35:*.mpeg=01;35:*.m2v=01;35:*.mkv=01;35:*.webm=01;35:*.ogm=01;35:*.mp4=01;35:*.m4v=01;35:*.mp4v=01;35:*.vob=01;35:*.qt=01;35:*.nuv=01;35:*.wmv=01;35:*.asf=01;35:*.rm=01;35:*.rmvb=01;35:*.flc=01;35:*.avi=01;35:*.fli=01;35:*.flv=01;35:*.gl=01;35:*.dl=01;35:*.xcf=01;35:*.xwd=01;35:*.yuv=01;35:*.cgm=01;35:*.emf=01;35:*.ogv=01;35:*.ogx=01;35:*.aac=00;36:*.au=00;36:*.flac=00;36:*.m4a=00;36:*.mid=00;36:*.midi=00;36:*.mka=00;36:*.mp3=00;36:*.mpc=00;36:*.ogg=00;36:*.ra=00;36:*.wav=00;36:*.oga=00;36:*.opus=00;36:*.spx=00;36:*.xspf=00;36:'), ('XDG_CONFIG_HOME', '/home/pi/.config'), ('INFINALITY_FT_CHROMEOS_STYLE_SHARPENING_STRENGTH', '0'), ('XDG_SESSION_DESKTOP', 'lightdm-xsession'), ('XAUTHORITY', '/home/pi/.Xauthority'), ('SSH_AUTH_SOCK', '/tmp/ssh-DCYc3IqsnMoA/agent.559'), ('XDG_GREETER_DATA_DIR', '/var/lib/lightdm/data/pi'), ('SHELL', '/bin/bash'), ('NO_AT_BRIDGE', '1'), ('GDMSESSION', 'lightdm-xsession'), ('INFINALITY_FT_BRIGHTNESS', '0'), ('_LXSESSION_PID', '559'), ('INFINALITY_FT_STEM_FITTING_STRENGTH', '25'), ('INFINALITY_FT_STEM_SNAPPING_SLIDING_SCALE', '40'), ('GPG_AGENT_INFO', '/run/user/1000/gnupg/S.gpg-agent:0:1'), ('XDG_VTNR', '7'), ('INFINALITY_FT_GRAYSCALE_FILTER_STRENGTH', '0'), ('INFINALITY_FT_USE_KNOWN_SETTINGS_ON_SELECTED_FONTS', 'true'), ('LC_ALL', 'it_IT.UTF-8'), ('INFINALITY_FT_AUTOHINT_INCREASE_GLYPH_HEIGHTS', 'true'), ('PWD', '/home/pi/vision_system_ws/build/ros2_raspicam'), ('XDG_DATA_DIRS', '/usr/local/share:/usr/share/raspi-ui-overrides:/usr/share:/usr/share/gdm:/var/lib/menu-xdg'), ('XDG_CONFIG_DIRS', '/etc/xdg'), ('PYTHONPATH', '/home/pi'), ('INFINALITY_FT_FILTER_PARAMS', '11 22 38 22 11'), ('INFINALITY_FT_BOLD_EMBOLDEN_X_VALUE', '0'), ('INFINALITY_FT_BOLD_EMBOLDEN_Y_VALUE', '0')]), 'cmd': ['/usr/bin/cmake', '--build', '/home/pi/vision_system_ws/build/ros2_raspicam', '--', '-j4', '-l4'], 'cwd': '/home/pi/vision_system_ws/build/ros2_raspicam'}
+[0.294219] (ultrasonic_sensor) JobProgress: {'progress': 'cmake', 'identifier': 'ultrasonic_sensor'}
+[0.301866] (ultrasonic_sensor) JobProgress: {'progress': 'build', 'identifier': 'ultrasonic_sensor'}
+[0.310835] (ultrasonic_sensor) Command: {'shell': False, 'env': OrderedDict([('INFINALITY_FT_AUTOHINT_HORIZONTAL_STEM_DARKEN_STRENGTH', '10'), ('USER', 'pi'), ('LANGUAGE', 'it_IT.UTF-8'), ('TEXTDOMAIN', 'Linux-PAM'), ('XDG_SEAT', 'seat0'), ('INFINALITY_FT_FRINGE_FILTER_STRENGTH', '0'), ('SSH_AGENT_PID', '643'), ('XDG_SESSION_TYPE', 'x11'), ('SHLVL', '1'), ('HOME', '/home/pi'), ('OLDPWD', '/home/pi/vision_system_ws/src'), ('INFINALITY_FT_CONTRAST', '0'), ('DESKTOP_SESSION', 'LXDE-pi'), ('XDG_SEAT_PATH', '/org/freedesktop/DisplayManager/Seat0'), ('INFINALITY_FT_USE_VARIOUS_TWEAKS', 'true'), ('INFINALITY_FT_GAMMA_CORRECTION', '0 100'), ('INFINALITY_FT_WINDOWS_STYLE_SHARPENING_STRENGTH', '10'), ('DBUS_SESSION_BUS_ADDRESS', 'unix:path=/run/user/1000/bus'), ('INFINALITY_FT_STEM_ALIGNMENT_STRENGTH', '25'), ('QT_QPA_PLATFORMTHEME', 'qt5ct'), ('LOGNAME', 'pi'), ('_', '/usr/bin/colcon'), ('XDG_SESSION_ID', 'c1'), ('TERM', 'xterm'), ('M2M_INCLUDE', '/home/pi/mocap2mav/include'), ('SAL_USE_VCLPLUGIN', 'gtk'), ('INFINALITY_FT_AUTOHINT_VERTICAL_STEM_DARKEN_STRENGTH', '25'), ('PATH', '/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/local/games:/usr/games'), ('XDG_MENU_PREFIX', 'lxde-pi-'), ('XDG_RUNTIME_DIR', '/run/user/1000'), ('XDG_SESSION_PATH', '/org/freedesktop/DisplayManager/Session0'), ('DISPLAY', ':0'), ('INFINALITY_FT_GLOBAL_EMBOLDEN_X_VALUE', '0'), ('LANG', 'it_IT.UTF-8'), ('INFINALITY_FT_AUTOHINT_SNAP_STEM_HEIGHT', '100'), ('XDG_CURRENT_DESKTOP', 'LXDE'), ('INFINALITY_FT_GLOBAL_EMBOLDEN_Y_VALUE', '0'), ('LS_COLORS', 'rs=0:di=01;34:ln=01;36:mh=00:pi=40;33:so=01;35:do=01;35:bd=40;33;01:cd=40;33;01:or=40;31;01:mi=00:su=37;41:sg=30;43:ca=30;41:tw=30;42:ow=34;42:st=37;44:ex=01;32:*.tar=01;31:*.tgz=01;31:*.arc=01;31:*.arj=01;31:*.taz=01;31:*.lha=01;31:*.lz4=01;31:*.lzh=01;31:*.lzma=01;31:*.tlz=01;31:*.txz=01;31:*.tzo=01;31:*.t7z=01;31:*.zip=01;31:*.z=01;31:*.Z=01;31:*.dz=01;31:*.gz=01;31:*.lrz=01;31:*.lz=01;31:*.lzo=01;31:*.xz=01;31:*.zst=01;31:*.tzst=01;31:*.bz2=01;31:*.bz=01;31:*.tbz=01;31:*.tbz2=01;31:*.tz=01;31:*.deb=01;31:*.rpm=01;31:*.jar=01;31:*.war=01;31:*.ear=01;31:*.sar=01;31:*.rar=01;31:*.alz=01;31:*.ace=01;31:*.zoo=01;31:*.cpio=01;31:*.7z=01;31:*.rz=01;31:*.cab=01;31:*.jpg=01;35:*.jpeg=01;35:*.mjpg=01;35:*.mjpeg=01;35:*.gif=01;35:*.bmp=01;35:*.pbm=01;35:*.pgm=01;35:*.ppm=01;35:*.tga=01;35:*.xbm=01;35:*.xpm=01;35:*.tif=01;35:*.tiff=01;35:*.png=01;35:*.svg=01;35:*.svgz=01;35:*.mng=01;35:*.pcx=01;35:*.mov=01;35:*.mpg=01;35:*.mpeg=01;35:*.m2v=01;35:*.mkv=01;35:*.webm=01;35:*.ogm=01;35:*.mp4=01;35:*.m4v=01;35:*.mp4v=01;35:*.vob=01;35:*.qt=01;35:*.nuv=01;35:*.wmv=01;35:*.asf=01;35:*.rm=01;35:*.rmvb=01;35:*.flc=01;35:*.avi=01;35:*.fli=01;35:*.flv=01;35:*.gl=01;35:*.dl=01;35:*.xcf=01;35:*.xwd=01;35:*.yuv=01;35:*.cgm=01;35:*.emf=01;35:*.ogv=01;35:*.ogx=01;35:*.aac=00;36:*.au=00;36:*.flac=00;36:*.m4a=00;36:*.mid=00;36:*.midi=00;36:*.mka=00;36:*.mp3=00;36:*.mpc=00;36:*.ogg=00;36:*.ra=00;36:*.wav=00;36:*.oga=00;36:*.opus=00;36:*.spx=00;36:*.xspf=00;36:'), ('XDG_CONFIG_HOME', '/home/pi/.config'), ('INFINALITY_FT_CHROMEOS_STYLE_SHARPENING_STRENGTH', '0'), ('XDG_SESSION_DESKTOP', 'lightdm-xsession'), ('XAUTHORITY', '/home/pi/.Xauthority'), ('SSH_AUTH_SOCK', '/tmp/ssh-DCYc3IqsnMoA/agent.559'), ('XDG_GREETER_DATA_DIR', '/var/lib/lightdm/data/pi'), ('SHELL', '/bin/bash'), ('NO_AT_BRIDGE', '1'), ('GDMSESSION', 'lightdm-xsession'), ('INFINALITY_FT_BRIGHTNESS', '0'), ('_LXSESSION_PID', '559'), ('INFINALITY_FT_STEM_FITTING_STRENGTH', '25'), ('INFINALITY_FT_STEM_SNAPPING_SLIDING_SCALE', '40'), ('GPG_AGENT_INFO', '/run/user/1000/gnupg/S.gpg-agent:0:1'), ('XDG_VTNR', '7'), ('INFINALITY_FT_GRAYSCALE_FILTER_STRENGTH', '0'), ('INFINALITY_FT_USE_KNOWN_SETTINGS_ON_SELECTED_FONTS', 'true'), ('LC_ALL', 'it_IT.UTF-8'), ('INFINALITY_FT_AUTOHINT_INCREASE_GLYPH_HEIGHTS', 'true'), ('PWD', '/home/pi/vision_system_ws/build/ultrasonic_sensor'), ('XDG_DATA_DIRS', '/usr/local/share:/usr/share/raspi-ui-overrides:/usr/share:/usr/share/gdm:/var/lib/menu-xdg'), ('XDG_CONFIG_DIRS', '/etc/xdg'), ('PYTHONPATH', '/home/pi'), ('INFINALITY_FT_FILTER_PARAMS', '11 22 38 22 11'), ('INFINALITY_FT_BOLD_EMBOLDEN_X_VALUE', '0'), ('INFINALITY_FT_BOLD_EMBOLDEN_Y_VALUE', '0')]), 'cmd': ['/usr/bin/cmake', '--build', '/home/pi/vision_system_ws/build/ultrasonic_sensor', '--', '-j4', '-l4'], 'cwd': '/home/pi/vision_system_ws/build/ultrasonic_sensor'}
+[0.328573] (-) TimerEvent: {}
+[0.430914] (-) TimerEvent: {}
+[0.532500] (-) TimerEvent: {}
+[0.634785] (-) TimerEvent: {}
+[0.698492] (ultrasonic_sensor) StdoutLine: {'line': b'[  8%] Built target ultrasonic_sensor__rosidl_generator_c\n'}
+[0.710037] (apriltag_msgs) StdoutLine: {'line': b'[  2%] Built target apriltag_msgs__cpp\n'}
+[0.735125] (-) TimerEvent: {}
+[0.778567] (ros2_raspicam) StdoutLine: {'line': b'[ 20%] Built target service_node\n'}
+[0.918148] (-) TimerEvent: {}
+[0.926102] (apriltag_msgs) StdoutLine: {'line': b'[ 12%] Built target apriltag_msgs__rosidl_generator_c\n'}
+[0.928426] (ultrasonic_sensor) StdoutLine: {'line': b'[ 14%] Built target UltrasonicSensor\n'}
+[0.956759] (ros2_raspicam) StdoutLine: {'line': b'[ 40%] Built target checks_rate_node\n'}
+[1.018828] (-) TimerEvent: {}
+[1.044838] (ros2_raspicam) StdoutLine: {'line': b'\x1b[35m\x1b[1mScanning dependencies of target client_node\x1b[0m\n'}
+[1.052561] (apriltag_msgs) StdoutLine: {'line': b'[ 23%] Built target apriltag_msgs__rosidl_typesupport_cpp\n'}
+[1.059243] (ultrasonic_sensor) StdoutLine: {'line': b'[ 22%] Built target ultrasonic_sensor__rosidl_typesupport_introspection_c\n'}
+[1.119017] (-) TimerEvent: {}
+[1.179368] (apriltag_msgs) StdoutLine: {'line': b'[ 34%] Built target apriltag_msgs__rosidl_typesupport_introspection_c\n'}
+[1.181642] (ultrasonic_sensor) StdoutLine: {'line': b'[ 31%] Built target ultrasonic_sensor__rosidl_typesupport_c\n'}
+[1.219715] (-) TimerEvent: {}
+[1.255865] (ros2_raspicam) StdoutLine: {'line': b'[ 50%] \x1b[32mBuilding CXX object CMakeFiles/client_node.dir/src/client_camera_param.cpp.o\x1b[0m\n'}
+[1.289064] (ultrasonic_sensor) StdoutLine: {'line': b'[ 34%] Built target ultrasonic_sensor__cpp\n'}
+[1.319924] (-) TimerEvent: {}
+[1.328113] (apriltag_msgs) StdoutLine: {'line': b'[ 44%] Built target apriltag_msgs__rosidl_typesupport_c\n'}
+[1.403809] (ultrasonic_sensor) StdoutLine: {'line': b'[ 42%] Built target ultrasonic_sensor__rosidl_typesupport_cpp\n'}
+[1.420393] (-) TimerEvent: {}
+[1.484717] (apriltag_msgs) StdoutLine: {'line': b'[ 55%] Built target apriltag_msgs__rosidl_typesupport_fastrtps_cpp\n'}
+[1.520654] (-) TimerEvent: {}
+[1.526776] (ultrasonic_sensor) StdoutLine: {'line': b'[ 51%] Built target ultrasonic_sensor__rosidl_typesupport_introspection_cpp\n'}
+[1.618577] (apriltag_msgs) StdoutLine: {'line': b'[ 65%] Built target apriltag_msgs__rosidl_typesupport_introspection_cpp\n'}
+[1.620767] (-) TimerEvent: {}
+[1.667425] (ultrasonic_sensor) StdoutLine: {'line': b'[ 60%] Built target ultrasonic_sensor__rosidl_typesupport_fastrtps_cpp\n'}
+[1.721329] (-) TimerEvent: {}
+[1.781167] (apriltag_msgs) StdoutLine: {'line': b'[ 76%] Built target apriltag_msgs__rosidl_typesupport_fastrtps_c\n'}
+[1.804365] (ultrasonic_sensor) StdoutLine: {'line': b'[ 68%] Built target ultrasonic_sensor__rosidl_typesupport_fastrtps_c\n'}
+[1.821565] (-) TimerEvent: {}
+[1.899724] (apriltag_msgs) StdoutLine: {'line': b'[ 76%] Built target apriltag_msgs\n'}
+[1.915582] (ultrasonic_sensor) StdoutLine: {'line': b'[ 68%] Built target ultrasonic_sensor\n'}
+[1.922256] (-) TimerEvent: {}
+[2.024835] (-) TimerEvent: {}
+[2.027702] (apriltag_msgs) StdoutLine: {'line': b'[ 78%] Built target apriltag_msgs__py\n'}
+[2.099215] (ultrasonic_sensor) StdoutLine: {'line': b'[ 74%] Built target ultrasonic_sensor_node_Mocap2mav\n'}
+[2.125085] (-) TimerEvent: {}
+[2.201452] (apriltag_msgs) StdoutLine: {'line': b'[ 87%] Built target apriltag_msgs__python\n'}
+[2.225722] (ultrasonic_sensor) StdoutLine: {'line': b'[ 77%] Built target ultrasonic_sensor__py\n'}
+[2.227922] (-) TimerEvent: {}
+[2.330525] (-) TimerEvent: {}
+[2.364841] (apriltag_msgs) StdoutLine: {'line': b'[ 91%] Built target apriltag_msgs__rosidl_typesupport_c__pyext\n'}
+[2.373284] (ultrasonic_sensor) StdoutLine: {'line': b'[ 82%] Built target ultrasonic_sensor__python\n'}
+[2.430888] (-) TimerEvent: {}
+[2.517849] (apriltag_msgs) StdoutLine: {'line': b'[ 95%] Built target apriltag_msgs__rosidl_typesupport_fastrtps_c__pyext\n'}
+[2.531182] (-) TimerEvent: {}
+[2.537854] (ultrasonic_sensor) StdoutLine: {'line': b'[ 88%] Built target ultrasonic_sensor__rosidl_typesupport_fastrtps_c__pyext\n'}
+[2.631630] (-) TimerEvent: {}
+[2.677478] (apriltag_msgs) StdoutLine: {'line': b'[100%] Built target apriltag_msgs__rosidl_typesupport_introspection_c__pyext\n'}
+[2.687754] (ultrasonic_sensor) StdoutLine: {'line': b'[ 94%] Built target ultrasonic_sensor__rosidl_typesupport_c__pyext\n'}
+[2.731822] (-) TimerEvent: {}
+[2.752264] (apriltag_msgs) CommandEnded: {'returncode': 0}
+[2.832319] (-) TimerEvent: {}
+[2.847863] (ultrasonic_sensor) StdoutLine: {'line': b'[100%] Built target ultrasonic_sensor__rosidl_typesupport_introspection_c__pyext\n'}
+[2.926440] (ultrasonic_sensor) CommandEnded: {'returncode': 0}
+[2.943721] (-) TimerEvent: {}
+[3.057661] (-) TimerEvent: {}
+[3.161597] (-) TimerEvent: {}
+[3.265086] (-) TimerEvent: {}
+[3.368968] (-) TimerEvent: {}
+[3.426216] (ultrasonic_sensor) JobProgress: {'progress': 'install', 'identifier': 'ultrasonic_sensor'}
+[3.440047] (ultrasonic_sensor) Command: {'shell': False, 'env': OrderedDict([('INFINALITY_FT_AUTOHINT_HORIZONTAL_STEM_DARKEN_STRENGTH', '10'), ('USER', 'pi'), ('LANGUAGE', 'it_IT.UTF-8'), ('TEXTDOMAIN', 'Linux-PAM'), ('XDG_SEAT', 'seat0'), ('INFINALITY_FT_FRINGE_FILTER_STRENGTH', '0'), ('SSH_AGENT_PID', '643'), ('XDG_SESSION_TYPE', 'x11'), ('SHLVL', '1'), ('HOME', '/home/pi'), ('OLDPWD', '/home/pi/vision_system_ws/src'), ('INFINALITY_FT_CONTRAST', '0'), ('DESKTOP_SESSION', 'LXDE-pi'), ('XDG_SEAT_PATH', '/org/freedesktop/DisplayManager/Seat0'), ('INFINALITY_FT_USE_VARIOUS_TWEAKS', 'true'), ('INFINALITY_FT_GAMMA_CORRECTION', '0 100'), ('INFINALITY_FT_WINDOWS_STYLE_SHARPENING_STRENGTH', '10'), ('DBUS_SESSION_BUS_ADDRESS', 'unix:path=/run/user/1000/bus'), ('INFINALITY_FT_STEM_ALIGNMENT_STRENGTH', '25'), ('QT_QPA_PLATFORMTHEME', 'qt5ct'), ('LOGNAME', 'pi'), ('_', '/usr/bin/colcon'), ('XDG_SESSION_ID', 'c1'), ('TERM', 'xterm'), ('M2M_INCLUDE', '/home/pi/mocap2mav/include'), ('SAL_USE_VCLPLUGIN', 'gtk'), ('INFINALITY_FT_AUTOHINT_VERTICAL_STEM_DARKEN_STRENGTH', '25'), ('PATH', '/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/local/games:/usr/games'), ('XDG_MENU_PREFIX', 'lxde-pi-'), ('XDG_RUNTIME_DIR', '/run/user/1000'), ('XDG_SESSION_PATH', '/org/freedesktop/DisplayManager/Session0'), ('DISPLAY', ':0'), ('INFINALITY_FT_GLOBAL_EMBOLDEN_X_VALUE', '0'), ('LANG', 'it_IT.UTF-8'), ('INFINALITY_FT_AUTOHINT_SNAP_STEM_HEIGHT', '100'), ('XDG_CURRENT_DESKTOP', 'LXDE'), ('INFINALITY_FT_GLOBAL_EMBOLDEN_Y_VALUE', '0'), ('LS_COLORS', 'rs=0:di=01;34:ln=01;36:mh=00:pi=40;33:so=01;35:do=01;35:bd=40;33;01:cd=40;33;01:or=40;31;01:mi=00:su=37;41:sg=30;43:ca=30;41:tw=30;42:ow=34;42:st=37;44:ex=01;32:*.tar=01;31:*.tgz=01;31:*.arc=01;31:*.arj=01;31:*.taz=01;31:*.lha=01;31:*.lz4=01;31:*.lzh=01;31:*.lzma=01;31:*.tlz=01;31:*.txz=01;31:*.tzo=01;31:*.t7z=01;31:*.zip=01;31:*.z=01;31:*.Z=01;31:*.dz=01;31:*.gz=01;31:*.lrz=01;31:*.lz=01;31:*.lzo=01;31:*.xz=01;31:*.zst=01;31:*.tzst=01;31:*.bz2=01;31:*.bz=01;31:*.tbz=01;31:*.tbz2=01;31:*.tz=01;31:*.deb=01;31:*.rpm=01;31:*.jar=01;31:*.war=01;31:*.ear=01;31:*.sar=01;31:*.rar=01;31:*.alz=01;31:*.ace=01;31:*.zoo=01;31:*.cpio=01;31:*.7z=01;31:*.rz=01;31:*.cab=01;31:*.jpg=01;35:*.jpeg=01;35:*.mjpg=01;35:*.mjpeg=01;35:*.gif=01;35:*.bmp=01;35:*.pbm=01;35:*.pgm=01;35:*.ppm=01;35:*.tga=01;35:*.xbm=01;35:*.xpm=01;35:*.tif=01;35:*.tiff=01;35:*.png=01;35:*.svg=01;35:*.svgz=01;35:*.mng=01;35:*.pcx=01;35:*.mov=01;35:*.mpg=01;35:*.mpeg=01;35:*.m2v=01;35:*.mkv=01;35:*.webm=01;35:*.ogm=01;35:*.mp4=01;35:*.m4v=01;35:*.mp4v=01;35:*.vob=01;35:*.qt=01;35:*.nuv=01;35:*.wmv=01;35:*.asf=01;35:*.rm=01;35:*.rmvb=01;35:*.flc=01;35:*.avi=01;35:*.fli=01;35:*.flv=01;35:*.gl=01;35:*.dl=01;35:*.xcf=01;35:*.xwd=01;35:*.yuv=01;35:*.cgm=01;35:*.emf=01;35:*.ogv=01;35:*.ogx=01;35:*.aac=00;36:*.au=00;36:*.flac=00;36:*.m4a=00;36:*.mid=00;36:*.midi=00;36:*.mka=00;36:*.mp3=00;36:*.mpc=00;36:*.ogg=00;36:*.ra=00;36:*.wav=00;36:*.oga=00;36:*.opus=00;36:*.spx=00;36:*.xspf=00;36:'), ('XDG_CONFIG_HOME', '/home/pi/.config'), ('INFINALITY_FT_CHROMEOS_STYLE_SHARPENING_STRENGTH', '0'), ('XDG_SESSION_DESKTOP', 'lightdm-xsession'), ('XAUTHORITY', '/home/pi/.Xauthority'), ('SSH_AUTH_SOCK', '/tmp/ssh-DCYc3IqsnMoA/agent.559'), ('XDG_GREETER_DATA_DIR', '/var/lib/lightdm/data/pi'), ('SHELL', '/bin/bash'), ('NO_AT_BRIDGE', '1'), ('GDMSESSION', 'lightdm-xsession'), ('INFINALITY_FT_BRIGHTNESS', '0'), ('_LXSESSION_PID', '559'), ('INFINALITY_FT_STEM_FITTING_STRENGTH', '25'), ('INFINALITY_FT_STEM_SNAPPING_SLIDING_SCALE', '40'), ('GPG_AGENT_INFO', '/run/user/1000/gnupg/S.gpg-agent:0:1'), ('XDG_VTNR', '7'), ('INFINALITY_FT_GRAYSCALE_FILTER_STRENGTH', '0'), ('INFINALITY_FT_USE_KNOWN_SETTINGS_ON_SELECTED_FONTS', 'true'), ('LC_ALL', 'it_IT.UTF-8'), ('INFINALITY_FT_AUTOHINT_INCREASE_GLYPH_HEIGHTS', 'true'), ('PWD', '/home/pi/vision_system_ws/build/ultrasonic_sensor'), ('XDG_DATA_DIRS', '/usr/local/share:/usr/share/raspi-ui-overrides:/usr/share:/usr/share/gdm:/var/lib/menu-xdg'), ('XDG_CONFIG_DIRS', '/etc/xdg'), ('PYTHONPATH', '/home/pi'), ('INFINALITY_FT_FILTER_PARAMS', '11 22 38 22 11'), ('INFINALITY_FT_BOLD_EMBOLDEN_X_VALUE', '0'), ('INFINALITY_FT_BOLD_EMBOLDEN_Y_VALUE', '0')]), 'cmd': ['/usr/bin/cmake', '--build', '/home/pi/vision_system_ws/build/ultrasonic_sensor', '--target', 'install'], 'cwd': '/home/pi/vision_system_ws/build/ultrasonic_sensor'}
+[3.472108] (apriltag_msgs) JobProgress: {'progress': 'install', 'identifier': 'apriltag_msgs'}
+[3.483528] (-) TimerEvent: {}
+[3.485633] (apriltag_msgs) Command: {'shell': False, 'env': OrderedDict([('INFINALITY_FT_AUTOHINT_HORIZONTAL_STEM_DARKEN_STRENGTH', '10'), ('USER', 'pi'), ('LANGUAGE', 'it_IT.UTF-8'), ('TEXTDOMAIN', 'Linux-PAM'), ('XDG_SEAT', 'seat0'), ('INFINALITY_FT_FRINGE_FILTER_STRENGTH', '0'), ('SSH_AGENT_PID', '643'), ('XDG_SESSION_TYPE', 'x11'), ('SHLVL', '1'), ('HOME', '/home/pi'), ('OLDPWD', '/home/pi/vision_system_ws/src'), ('INFINALITY_FT_CONTRAST', '0'), ('DESKTOP_SESSION', 'LXDE-pi'), ('XDG_SEAT_PATH', '/org/freedesktop/DisplayManager/Seat0'), ('INFINALITY_FT_USE_VARIOUS_TWEAKS', 'true'), ('INFINALITY_FT_GAMMA_CORRECTION', '0 100'), ('INFINALITY_FT_WINDOWS_STYLE_SHARPENING_STRENGTH', '10'), ('DBUS_SESSION_BUS_ADDRESS', 'unix:path=/run/user/1000/bus'), ('INFINALITY_FT_STEM_ALIGNMENT_STRENGTH', '25'), ('QT_QPA_PLATFORMTHEME', 'qt5ct'), ('LOGNAME', 'pi'), ('_', '/usr/bin/colcon'), ('XDG_SESSION_ID', 'c1'), ('TERM', 'xterm'), ('M2M_INCLUDE', '/home/pi/mocap2mav/include'), ('SAL_USE_VCLPLUGIN', 'gtk'), ('INFINALITY_FT_AUTOHINT_VERTICAL_STEM_DARKEN_STRENGTH', '25'), ('PATH', '/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/local/games:/usr/games'), ('XDG_MENU_PREFIX', 'lxde-pi-'), ('XDG_RUNTIME_DIR', '/run/user/1000'), ('XDG_SESSION_PATH', '/org/freedesktop/DisplayManager/Session0'), ('DISPLAY', ':0'), ('INFINALITY_FT_GLOBAL_EMBOLDEN_X_VALUE', '0'), ('LANG', 'it_IT.UTF-8'), ('INFINALITY_FT_AUTOHINT_SNAP_STEM_HEIGHT', '100'), ('XDG_CURRENT_DESKTOP', 'LXDE'), ('INFINALITY_FT_GLOBAL_EMBOLDEN_Y_VALUE', '0'), ('LS_COLORS', 'rs=0:di=01;34:ln=01;36:mh=00:pi=40;33:so=01;35:do=01;35:bd=40;33;01:cd=40;33;01:or=40;31;01:mi=00:su=37;41:sg=30;43:ca=30;41:tw=30;42:ow=34;42:st=37;44:ex=01;32:*.tar=01;31:*.tgz=01;31:*.arc=01;31:*.arj=01;31:*.taz=01;31:*.lha=01;31:*.lz4=01;31:*.lzh=01;31:*.lzma=01;31:*.tlz=01;31:*.txz=01;31:*.tzo=01;31:*.t7z=01;31:*.zip=01;31:*.z=01;31:*.Z=01;31:*.dz=01;31:*.gz=01;31:*.lrz=01;31:*.lz=01;31:*.lzo=01;31:*.xz=01;31:*.zst=01;31:*.tzst=01;31:*.bz2=01;31:*.bz=01;31:*.tbz=01;31:*.tbz2=01;31:*.tz=01;31:*.deb=01;31:*.rpm=01;31:*.jar=01;31:*.war=01;31:*.ear=01;31:*.sar=01;31:*.rar=01;31:*.alz=01;31:*.ace=01;31:*.zoo=01;31:*.cpio=01;31:*.7z=01;31:*.rz=01;31:*.cab=01;31:*.jpg=01;35:*.jpeg=01;35:*.mjpg=01;35:*.mjpeg=01;35:*.gif=01;35:*.bmp=01;35:*.pbm=01;35:*.pgm=01;35:*.ppm=01;35:*.tga=01;35:*.xbm=01;35:*.xpm=01;35:*.tif=01;35:*.tiff=01;35:*.png=01;35:*.svg=01;35:*.svgz=01;35:*.mng=01;35:*.pcx=01;35:*.mov=01;35:*.mpg=01;35:*.mpeg=01;35:*.m2v=01;35:*.mkv=01;35:*.webm=01;35:*.ogm=01;35:*.mp4=01;35:*.m4v=01;35:*.mp4v=01;35:*.vob=01;35:*.qt=01;35:*.nuv=01;35:*.wmv=01;35:*.asf=01;35:*.rm=01;35:*.rmvb=01;35:*.flc=01;35:*.avi=01;35:*.fli=01;35:*.flv=01;35:*.gl=01;35:*.dl=01;35:*.xcf=01;35:*.xwd=01;35:*.yuv=01;35:*.cgm=01;35:*.emf=01;35:*.ogv=01;35:*.ogx=01;35:*.aac=00;36:*.au=00;36:*.flac=00;36:*.m4a=00;36:*.mid=00;36:*.midi=00;36:*.mka=00;36:*.mp3=00;36:*.mpc=00;36:*.ogg=00;36:*.ra=00;36:*.wav=00;36:*.oga=00;36:*.opus=00;36:*.spx=00;36:*.xspf=00;36:'), ('XDG_CONFIG_HOME', '/home/pi/.config'), ('INFINALITY_FT_CHROMEOS_STYLE_SHARPENING_STRENGTH', '0'), ('XDG_SESSION_DESKTOP', 'lightdm-xsession'), ('XAUTHORITY', '/home/pi/.Xauthority'), ('SSH_AUTH_SOCK', '/tmp/ssh-DCYc3IqsnMoA/agent.559'), ('XDG_GREETER_DATA_DIR', '/var/lib/lightdm/data/pi'), ('SHELL', '/bin/bash'), ('NO_AT_BRIDGE', '1'), ('GDMSESSION', 'lightdm-xsession'), ('INFINALITY_FT_BRIGHTNESS', '0'), ('_LXSESSION_PID', '559'), ('INFINALITY_FT_STEM_FITTING_STRENGTH', '25'), ('INFINALITY_FT_STEM_SNAPPING_SLIDING_SCALE', '40'), ('GPG_AGENT_INFO', '/run/user/1000/gnupg/S.gpg-agent:0:1'), ('XDG_VTNR', '7'), ('INFINALITY_FT_GRAYSCALE_FILTER_STRENGTH', '0'), ('INFINALITY_FT_USE_KNOWN_SETTINGS_ON_SELECTED_FONTS', 'true'), ('LC_ALL', 'it_IT.UTF-8'), ('INFINALITY_FT_AUTOHINT_INCREASE_GLYPH_HEIGHTS', 'true'), ('PWD', '/home/pi/vision_system_ws/build/apriltag_msgs'), ('XDG_DATA_DIRS', '/usr/local/share:/usr/share/raspi-ui-overrides:/usr/share:/usr/share/gdm:/var/lib/menu-xdg'), ('XDG_CONFIG_DIRS', '/etc/xdg'), ('PYTHONPATH', '/home/pi'), ('INFINALITY_FT_FILTER_PARAMS', '11 22 38 22 11'), ('INFINALITY_FT_BOLD_EMBOLDEN_X_VALUE', '0'), ('INFINALITY_FT_BOLD_EMBOLDEN_Y_VALUE', '0')]), 'cmd': ['/usr/bin/cmake', '--build', '/home/pi/vision_system_ws/build/apriltag_msgs', '--target', 'install'], 'cwd': '/home/pi/vision_system_ws/build/apriltag_msgs'}
+[3.583385] (-) TimerEvent: {}
+[3.685351] (-) TimerEvent: {}
+[3.787543] (-) TimerEvent: {}
+[3.791628] (ultrasonic_sensor) StdoutLine: {'line': b'[  8%] Built target ultrasonic_sensor__rosidl_generator_c\n'}
+[3.827386] (apriltag_msgs) StdoutLine: {'line': b'[  2%] Built target apriltag_msgs__cpp\n'}
+[3.887890] (-) TimerEvent: {}
+[3.921241] (ultrasonic_sensor) StdoutLine: {'line': b'[ 17%] Built target ultrasonic_sensor__rosidl_typesupport_c\n'}
+[3.986694] (apriltag_msgs) StdoutLine: {'line': b'[ 12%] Built target apriltag_msgs__rosidl_typesupport_introspection_cpp\n'}
+[3.990016] (-) TimerEvent: {}
+[4.039939] (ultrasonic_sensor) StdoutLine: {'line': b'[ 20%] Built target ultrasonic_sensor__cpp\n'}
+[4.090295] (-) TimerEvent: {}
+[4.138721] (apriltag_msgs) StdoutLine: {'line': b'[ 23%] Built target apriltag_msgs__rosidl_generator_c\n'}
+[4.189541] (ultrasonic_sensor) StdoutLine: {'line': b'[ 28%] Built target ultrasonic_sensor__rosidl_typesupport_cpp\n'}
+[4.192245] (-) TimerEvent: {}
+[4.288589] (apriltag_msgs) StdoutLine: {'line': b'[ 34%] Built target apriltag_msgs__rosidl_typesupport_introspection_c\n'}
+[4.292655] (-) TimerEvent: {}
+[4.336803] (ultrasonic_sensor) StdoutLine: {'line': b'[ 37%] Built target ultrasonic_sensor__rosidl_typesupport_fastrtps_cpp\n'}
+[4.392943] (-) TimerEvent: {}
+[4.463078] (apriltag_msgs) StdoutLine: {'line': b'[ 44%] Built target apriltag_msgs__rosidl_typesupport_fastrtps_cpp\n'}
+[4.488890] (ultrasonic_sensor) StdoutLine: {'line': b'[ 45%] Built target ultrasonic_sensor__rosidl_typesupport_fastrtps_c\n'}
+[4.493481] (-) TimerEvent: {}
+[4.596562] (-) TimerEvent: {}
+[4.617847] (ultrasonic_sensor) StdoutLine: {'line': b'[ 54%] Built target ultrasonic_sensor__rosidl_typesupport_introspection_c\n'}
+[4.634414] (apriltag_msgs) StdoutLine: {'line': b'[ 55%] Built target apriltag_msgs__rosidl_typesupport_fastrtps_c\n'}
+[4.697111] (-) TimerEvent: {}
+[4.737016] (ultrasonic_sensor) StdoutLine: {'line': b'[ 60%] Built target UltrasonicSensor\n'}
+[4.783306] (apriltag_msgs) StdoutLine: {'line': b'[ 65%] Built target apriltag_msgs__rosidl_typesupport_c\n'}
+[4.797343] (-) TimerEvent: {}
+[4.862950] (ultrasonic_sensor) StdoutLine: {'line': b'[ 68%] Built target ultrasonic_sensor__rosidl_typesupport_introspection_cpp\n'}
+[4.897681] (-) TimerEvent: {}
+[4.933811] (apriltag_msgs) StdoutLine: {'line': b'[ 76%] Built target apriltag_msgs__rosidl_typesupport_cpp\n'}
+[4.977953] (ultrasonic_sensor) StdoutLine: {'line': b'[ 68%] Built target ultrasonic_sensor\n'}
+[4.998064] (-) TimerEvent: {}
+[5.065342] (apriltag_msgs) StdoutLine: {'line': b'[ 76%] Built target apriltag_msgs\n'}
+[5.098324] (-) TimerEvent: {}
+[5.161870] (ultrasonic_sensor) StdoutLine: {'line': b'[ 74%] Built target ultrasonic_sensor_node_Mocap2mav\n'}
+[5.198716] (-) TimerEvent: {}
+[5.201450] (apriltag_msgs) StdoutLine: {'line': b'[ 78%] Built target apriltag_msgs__py\n'}
+[5.279655] (ultrasonic_sensor) StdoutLine: {'line': b'[ 77%] Built target ultrasonic_sensor__py\n'}
+[5.299037] (-) TimerEvent: {}
+[5.371834] (apriltag_msgs) StdoutLine: {'line': b'[ 87%] Built target apriltag_msgs__python\n'}
+[5.399359] (-) TimerEvent: {}
+[5.421950] (ultrasonic_sensor) StdoutLine: {'line': b'[ 82%] Built target ultrasonic_sensor__python\n'}
+[5.499907] (-) TimerEvent: {}
+[5.522515] (apriltag_msgs) StdoutLine: {'line': b'[ 91%] Built target apriltag_msgs__rosidl_typesupport_c__pyext\n'}
+[5.581640] (ultrasonic_sensor) StdoutLine: {'line': b'[ 88%] Built target ultrasonic_sensor__rosidl_typesupport_fastrtps_c__pyext\n'}
+[5.600241] (-) TimerEvent: {}
+[5.678393] (apriltag_msgs) StdoutLine: {'line': b'[ 95%] Built target apriltag_msgs__rosidl_typesupport_introspection_c__pyext\n'}
+[5.700566] (-) TimerEvent: {}
+[5.732584] (ultrasonic_sensor) StdoutLine: {'line': b'[ 94%] Built target ultrasonic_sensor__rosidl_typesupport_introspection_c__pyext\n'}
+[5.801046] (-) TimerEvent: {}
+[5.844401] (apriltag_msgs) StdoutLine: {'line': b'[100%] Built target apriltag_msgs__rosidl_typesupport_fastrtps_c__pyext\n'}
+[5.877172] (ultrasonic_sensor) StdoutLine: {'line': b'[100%] Built target ultrasonic_sensor__rosidl_typesupport_c__pyext\n'}
+[5.901376] (-) TimerEvent: {}
+[5.961030] (apriltag_msgs) StdoutLine: {'line': b'\x1b[36mInstall the project...\x1b[0m\n'}
+[5.988654] (ultrasonic_sensor) StdoutLine: {'line': b'\x1b[36mInstall the project...\x1b[0m\n'}
+[6.001722] (-) TimerEvent: {}
+[6.011553] (apriltag_msgs) StdoutLine: {'line': b'-- Install configuration: ""\n'}
+[6.037746] (ultrasonic_sensor) StdoutLine: {'line': b'-- Install configuration: ""\n'}
+[6.086166] (apriltag_msgs) StdoutLine: {'line': b'-- Execute custom install script\n'}
+[6.088494] (ultrasonic_sensor) StdoutLine: {'line': b'-- Execute custom install script\n'}
+[6.091143] (apriltag_msgs) StdoutLine: {'line': b'-- Up-to-date symlink: /home/pi/vision_system_ws/install/apriltag_msgs/share/ament_index/resource_index/rosidl_interfaces/apriltag_msgs\n'}
+[6.100568] (apriltag_msgs) StdoutLine: {'line': b'-- Up-to-date symlink: /home/pi/vision_system_ws/install/apriltag_msgs/lib/libapriltag_msgs__rosidl_typesupport_c.so\n'}
+[6.103514] (-) TimerEvent: {}
+[6.105632] (apriltag_msgs) StdoutLine: {'line': b'-- Up-to-date symlink: /home/pi/vision_system_ws/install/apriltag_msgs/share/apriltag_msgs/environment/library_path.sh\n'}
+[6.108268] (ultrasonic_sensor) StdoutLine: {'line': b'-- Up-to-date symlink: /home/pi/vision_system_ws/install/ultrasonic_sensor/share/ament_index/resource_index/rosidl_interfaces/ultrasonic_sensor\n'}
+[6.111413] (ultrasonic_sensor) StdoutLine: {'line': b'-- Up-to-date symlink: /home/pi/vision_system_ws/install/ultrasonic_sensor/lib/libultrasonic_sensor__rosidl_typesupport_cpp.so\n'}
+[6.114379] (apriltag_msgs) StdoutLine: {'line': b'-- Up-to-date symlink: /home/pi/vision_system_ws/install/apriltag_msgs/lib/libapriltag_msgs__rosidl_typesupport_cpp.so\n'}
+[6.118237] (apriltag_msgs) StdoutLine: {'line': b'-- Up-to-date symlink: /home/pi/vision_system_ws/install/apriltag_msgs/include/apriltag_msgs/msg/point__rosidl_typesupport_introspection_c.h\n'}
+[6.121821] (apriltag_msgs) StdoutLine: {'line': b'-- Up-to-date symlink: /home/pi/vision_system_ws/install/apriltag_msgs/include/apriltag_msgs/msg/april_tag_detection__rosidl_typesupport_introspection_c.h\n'}
+[6.125250] (apriltag_msgs) StdoutLine: {'line': b'-- Up-to-date symlink: /home/pi/vision_system_ws/install/apriltag_msgs/include/apriltag_msgs/msg/april_tag_detection_array__rosidl_typesupport_introspection_c.h\n'}
+[6.128926] (apriltag_msgs) StdoutLine: {'line': b'-- Up-to-date symlink: /home/pi/vision_system_ws/install/apriltag_msgs/include/apriltag_msgs/msg/rosidl_typesupport_introspection_c__visibility_control.h\n'}
+[6.134208] (apriltag_msgs) StdoutLine: {'line': b'-- Up-to-date symlink: /home/pi/vision_system_ws/install/apriltag_msgs/lib/libapriltag_msgs__rosidl_typesupport_introspection_c.so\n'}
+[6.137597] (ultrasonic_sensor) StdoutLine: {'line': b'-- Up-to-date symlink: /home/pi/vision_system_ws/install/ultrasonic_sensor/share/ultrasonic_sensor/environment/library_path.sh\n'}
+[6.141273] (apriltag_msgs) StdoutLine: {'line': b'-- Up-to-date symlink: /home/pi/vision_system_ws/install/apriltag_msgs/include/apriltag_msgs/msg/point.h\n'}
+[6.143975] (ultrasonic_sensor) StdoutLine: {'line': b'-- Up-to-date symlink: /home/pi/vision_system_ws/install/ultrasonic_sensor/lib/libultrasonic_sensor__rosidl_typesupport_c.so\n'}
+[6.147051] (apriltag_msgs) StdoutLine: {'line': b'-- Up-to-date symlink: /home/pi/vision_system_ws/install/apriltag_msgs/include/apriltag_msgs/msg/point__functions.h\n'}
+[6.149027] (ultrasonic_sensor) StdoutLine: {'line': b'-- Up-to-date symlink: /home/pi/vision_system_ws/install/ultrasonic_sensor/include/ultrasonic_sensor/msg/ultrasonic_msg__rosidl_typesupport_introspection_cpp.hpp\n'}
+[6.152092] (apriltag_msgs) StdoutLine: {'line': b'-- Up-to-date symlink: /home/pi/vision_system_ws/install/apriltag_msgs/include/apriltag_msgs/msg/point__struct.h\n'}
+[6.155414] (apriltag_msgs) StdoutLine: {'line': b'-- Up-to-date symlink: /home/pi/vision_system_ws/install/apriltag_msgs/include/apriltag_msgs/msg/point__type_support.h\n'}
+[6.158662] (ultrasonic_sensor) StdoutLine: {'line': b'-- Up-to-date symlink: /home/pi/vision_system_ws/install/ultrasonic_sensor/lib/libultrasonic_sensor__rosidl_typesupport_introspection_cpp.so\n'}
+[6.162181] (apriltag_msgs) StdoutLine: {'line': b'-- Up-to-date symlink: /home/pi/vision_system_ws/install/apriltag_msgs/include/apriltag_msgs/msg/april_tag_detection.h\n'}
+[6.164792] (ultrasonic_sensor) StdoutLine: {'line': b'-- Up-to-date symlink: /home/pi/vision_system_ws/install/ultrasonic_sensor/include/ultrasonic_sensor/msg/ultrasonic_msg.h\n'}
+[6.167267] (apriltag_msgs) StdoutLine: {'line': b'-- Up-to-date symlink: /home/pi/vision_system_ws/install/apriltag_msgs/include/apriltag_msgs/msg/april_tag_detection__functions.h\n'}
+[6.170763] (ultrasonic_sensor) StdoutLine: {'line': b'-- Up-to-date symlink: /home/pi/vision_system_ws/install/ultrasonic_sensor/include/ultrasonic_sensor/msg/ultrasonic_msg__functions.h\n'}
+[6.174640] (ultrasonic_sensor) StdoutLine: {'line': b'-- Up-to-date symlink: /home/pi/vision_system_ws/install/ultrasonic_sensor/include/ultrasonic_sensor/msg/ultrasonic_msg__struct.h\n'}
+[6.177696] (apriltag_msgs) StdoutLine: {'line': b'-- Up-to-date symlink: /home/pi/vision_system_ws/install/apriltag_msgs/include/apriltag_msgs/msg/april_tag_detection__struct.h\n'}
+[6.180845] (ultrasonic_sensor) StdoutLine: {'line': b'-- Up-to-date symlink: /home/pi/vision_system_ws/install/ultrasonic_sensor/include/ultrasonic_sensor/msg/ultrasonic_msg__type_support.h\n'}
+[6.184222] (apriltag_msgs) StdoutLine: {'line': b'-- Up-to-date symlink: /home/pi/vision_system_ws/install/apriltag_msgs/include/apriltag_msgs/msg/april_tag_detection__type_support.h\n'}
+[6.187943] (ultrasonic_sensor) StdoutLine: {'line': b'-- Up-to-date symlink: /home/pi/vision_system_ws/install/ultrasonic_sensor/include/ultrasonic_sensor/msg/rosidl_generator_c__visibility_control.h\n'}
+[6.191141] (apriltag_msgs) StdoutLine: {'line': b'-- Up-to-date symlink: /home/pi/vision_system_ws/install/apriltag_msgs/include/apriltag_msgs/msg/april_tag_detection_array.h\n'}
+[6.194340] (ultrasonic_sensor) StdoutLine: {'line': b'-- Up-to-date symlink: /home/pi/vision_system_ws/install/ultrasonic_sensor/lib/libultrasonic_sensor__rosidl_generator_c.so\n'}
+[6.197404] (apriltag_msgs) StdoutLine: {'line': b'-- Up-to-date symlink: /home/pi/vision_system_ws/install/apriltag_msgs/include/apriltag_msgs/msg/april_tag_detection_array__functions.h\n'}
+[6.200105] (ultrasonic_sensor) StdoutLine: {'line': b'-- Up-to-date symlink: /home/pi/vision_system_ws/install/ultrasonic_sensor/include/ultrasonic_sensor/msg/ultrasonic_msg.hpp\n'}
+[6.203029] (apriltag_msgs) StdoutLine: {'line': b'-- Up-to-date symlink: /home/pi/vision_system_ws/install/apriltag_msgs/include/apriltag_msgs/msg/april_tag_detection_array__struct.h\n'}
+[6.205807] (-) TimerEvent: {}
+[6.207827] (ultrasonic_sensor) StdoutLine: {'line': b'-- Up-to-date symlink: /home/pi/vision_system_ws/install/ultrasonic_sensor/include/ultrasonic_sensor/msg/ultrasonic_msg__struct.hpp\n'}
+[6.211323] (ultrasonic_sensor) StdoutLine: {'line': b'-- Up-to-date symlink: /home/pi/vision_system_ws/install/ultrasonic_sensor/include/ultrasonic_sensor/msg/ultrasonic_msg__traits.hpp\n'}
+[6.214760] (apriltag_msgs) StdoutLine: {'line': b'-- Up-to-date symlink: /home/pi/vision_system_ws/install/apriltag_msgs/include/apriltag_msgs/msg/april_tag_detection_array__type_support.h\n'}
+[6.216993] (apriltag_msgs) StdoutLine: {'line': b'-- Up-to-date symlink: /home/pi/vision_system_ws/install/apriltag_msgs/include/apriltag_msgs/msg/rosidl_generator_c__visibility_control.h\n'}
+[6.221532] (ultrasonic_sensor) StdoutLine: {'line': b'-- Up-to-date symlink: /home/pi/vision_system_ws/install/ultrasonic_sensor/include/ultrasonic_sensor/msg/ultrasonic_msg__rosidl_typesupport_introspection_c.h\n'}
+[6.224715] (ultrasonic_sensor) StdoutLine: {'line': b'-- Up-to-date symlink: /home/pi/vision_system_ws/install/ultrasonic_sensor/include/ultrasonic_sensor/msg/rosidl_typesupport_introspection_c__visibility_control.h\n'}
+[6.227853] (apriltag_msgs) StdoutLine: {'line': b'-- Up-to-date symlink: /home/pi/vision_system_ws/install/apriltag_msgs/lib/libapriltag_msgs__rosidl_generator_c.so\n'}
+[6.230980] (ultrasonic_sensor) StdoutLine: {'line': b'-- Up-to-date symlink: /home/pi/vision_system_ws/install/ultrasonic_sensor/lib/libultrasonic_sensor__rosidl_typesupport_introspection_c.so\n'}
+[6.237068] (ultrasonic_sensor) StdoutLine: {'line': b'-- Up-to-date symlink: /home/pi/vision_system_ws/install/ultrasonic_sensor/include/ultrasonic_sensor/msg/rosidl_typesupport_fastrtps_c__visibility_control.h\n'}
+[6.239952] (apriltag_msgs) StdoutLine: {'line': b'-- Up-to-date symlink: /home/pi/vision_system_ws/install/apriltag_msgs/include/apriltag_msgs/msg/april_tag_detection__rosidl_typesupport_fastrtps_c.h\n'}
+[6.242831] (apriltag_msgs) StdoutLine: {'line': b'-- Up-to-date symlink: /home/pi/vision_system_ws/install/apriltag_msgs/include/apriltag_msgs/msg/april_tag_detection_array__rosidl_typesupport_fastrtps_c.h\n'}
+[6.245997] (ultrasonic_sensor) StdoutLine: {'line': b'-- Up-to-date symlink: /home/pi/vision_system_ws/install/ultrasonic_sensor/include/ultrasonic_sensor/msg/ultrasonic_msg__rosidl_typesupport_fastrtps_c.h\n'}
+[6.248479] (apriltag_msgs) StdoutLine: {'line': b'-- Up-to-date symlink: /home/pi/vision_system_ws/install/apriltag_msgs/include/apriltag_msgs/msg/point__rosidl_typesupport_fastrtps_c.h\n'}
+[6.250961] (ultrasonic_sensor) StdoutLine: {'line': b'-- Up-to-date symlink: /home/pi/vision_system_ws/install/ultrasonic_sensor/lib/libultrasonic_sensor__rosidl_typesupport_fastrtps_c.so\n'}
+[6.253367] (apriltag_msgs) StdoutLine: {'line': b'-- Up-to-date symlink: /home/pi/vision_system_ws/install/apriltag_msgs/include/apriltag_msgs/msg/rosidl_typesupport_fastrtps_c__visibility_control.h\n'}
+[6.255847] (apriltag_msgs) StdoutLine: {'line': b'-- Up-to-date symlink: /home/pi/vision_system_ws/install/apriltag_msgs/lib/libapriltag_msgs__rosidl_typesupport_fastrtps_c.so\n'}
+[6.258055] (ultrasonic_sensor) StdoutLine: {'line': b'-- Up-to-date symlink: /home/pi/vision_system_ws/install/ultrasonic_sensor/include/ultrasonic_sensor/msg/rosidl_typesupport_fastrtps_cpp__visibility_control.h\n'}
+[6.261348] (ultrasonic_sensor) StdoutLine: {'line': b'-- Up-to-date symlink: /home/pi/vision_system_ws/install/ultrasonic_sensor/include/ultrasonic_sensor/msg/ultrasonic_msg__rosidl_typesupport_fastrtps_cpp.hpp\n'}
+[6.263879] (ultrasonic_sensor) StdoutLine: {'line': b'-- Up-to-date symlink: /home/pi/vision_system_ws/install/ultrasonic_sensor/lib/libultrasonic_sensor__rosidl_typesupport_fastrtps_cpp.so\n'}
+[6.266162] (apriltag_msgs) StdoutLine: {'line': b'-- Up-to-date symlink: /home/pi/vision_system_ws/install/apriltag_msgs/include/apriltag_msgs/msg/april_tag_detection__rosidl_typesupport_fastrtps_cpp.hpp\n'}
+[6.268922] (ultrasonic_sensor) StdoutLine: {'line': b'-- Up-to-date symlink: /home/pi/vision_system_ws/install/ultrasonic_sensor/share/ultrasonic_sensor/environment/pythonpath.sh\n'}
+[6.272746] (apriltag_msgs) StdoutLine: {'line': b'-- Up-to-date symlink: /home/pi/vision_system_ws/install/apriltag_msgs/include/apriltag_msgs/msg/april_tag_detection_array__rosidl_typesupport_fastrtps_cpp.hpp\n'}
+[6.275373] (ultrasonic_sensor) StdoutLine: {'line': b'-- Up-to-date symlink: /home/pi/vision_system_ws/install/ultrasonic_sensor/lib/python3.5/site-packages/ultrasonic_sensor/__init__.py\n'}
+[6.277907] (apriltag_msgs) StdoutLine: {'line': b'-- Up-to-date symlink: /home/pi/vision_system_ws/install/apriltag_msgs/include/apriltag_msgs/msg/point__rosidl_typesupport_fastrtps_cpp.hpp\n'}
+[6.281089] (ultrasonic_sensor) StdoutLine: {'line': b'-- Symlinking: /home/pi/vision_system_ws/install/ultrasonic_sensor/lib/python3.5/site-packages/ultrasonic_sensor/msg/__init__.py\n'}
+[6.284306] (apriltag_msgs) StdoutLine: {'line': b'-- Up-to-date symlink: /home/pi/vision_system_ws/install/apriltag_msgs/include/apriltag_msgs/msg/rosidl_typesupport_fastrtps_cpp__visibility_control.h\n'}
+[6.287710] (apriltag_msgs) StdoutLine: {'line': b'-- Up-to-date symlink: /home/pi/vision_system_ws/install/apriltag_msgs/lib/libapriltag_msgs__rosidl_typesupport_fastrtps_cpp.so\n'}
+[6.290888] (apriltag_msgs) StdoutLine: {'line': b'-- Up-to-date symlink: /home/pi/vision_system_ws/install/apriltag_msgs/include/apriltag_msgs/msg/point.hpp\n'}
+[6.293478] (apriltag_msgs) StdoutLine: {'line': b'-- Up-to-date symlink: /home/pi/vision_system_ws/install/apriltag_msgs/include/apriltag_msgs/msg/point__struct.hpp\n'}
+[6.297236] (apriltag_msgs) StdoutLine: {'line': b'-- Up-to-date symlink: /home/pi/vision_system_ws/install/apriltag_msgs/include/apriltag_msgs/msg/point__traits.hpp\n'}
+[6.300392] (apriltag_msgs) StdoutLine: {'line': b'-- Up-to-date symlink: /home/pi/vision_system_ws/install/apriltag_msgs/include/apriltag_msgs/msg/april_tag_detection.hpp\n'}
+[6.303573] (apriltag_msgs) StdoutLine: {'line': b'-- Up-to-date symlink: /home/pi/vision_system_ws/install/apriltag_msgs/include/apriltag_msgs/msg/april_tag_detection__struct.hpp\n'}
+[6.306240] (apriltag_msgs) StdoutLine: {'line': b'-- Up-to-date symlink: /home/pi/vision_system_ws/install/apriltag_msgs/include/apriltag_msgs/msg/april_tag_detection__traits.hpp\n'}
+[6.309344] (-) TimerEvent: {}
+[6.312023] (apriltag_msgs) StdoutLine: {'line': b'-- Up-to-date symlink: /home/pi/vision_system_ws/install/apriltag_msgs/include/apriltag_msgs/msg/april_tag_detection_array.hpp\n'}
+[6.314502] (apriltag_msgs) StdoutLine: {'line': b'-- Up-to-date symlink: /home/pi/vision_system_ws/install/apriltag_msgs/include/apriltag_msgs/msg/april_tag_detection_array__struct.hpp\n'}
+[6.316887] (apriltag_msgs) StdoutLine: {'line': b'-- Up-to-date symlink: /home/pi/vision_system_ws/install/apriltag_msgs/include/apriltag_msgs/msg/april_tag_detection_array__traits.hpp\n'}
+[6.319056] (apriltag_msgs) StdoutLine: {'line': b'-- Up-to-date symlink: /home/pi/vision_system_ws/install/apriltag_msgs/include/apriltag_msgs/msg/point__rosidl_typesupport_introspection_cpp.hpp\n'}
+[6.323586] (apriltag_msgs) StdoutLine: {'line': b'-- Up-to-date symlink: /home/pi/vision_system_ws/install/apriltag_msgs/include/apriltag_msgs/msg/april_tag_detection__rosidl_typesupport_introspection_cpp.hpp\n'}
+[6.326621] (apriltag_msgs) StdoutLine: {'line': b'-- Up-to-date symlink: /home/pi/vision_system_ws/install/apriltag_msgs/include/apriltag_msgs/msg/april_tag_detection_array__rosidl_typesupport_introspection_cpp.hpp\n'}
+[6.329790] (apriltag_msgs) StdoutLine: {'line': b'-- Up-to-date symlink: /home/pi/vision_system_ws/install/apriltag_msgs/lib/libapriltag_msgs__rosidl_typesupport_introspection_cpp.so\n'}
+[6.332658] (apriltag_msgs) StdoutLine: {'line': b'-- Up-to-date symlink: /home/pi/vision_system_ws/install/apriltag_msgs/share/apriltag_msgs/environment/pythonpath.sh\n'}
+[6.335852] (apriltag_msgs) StdoutLine: {'line': b'-- Up-to-date symlink: /home/pi/vision_system_ws/install/apriltag_msgs/lib/python3.5/site-packages/apriltag_msgs/__init__.py\n'}
+[6.341182] (apriltag_msgs) StdoutLine: {'line': b'-- Symlinking: /home/pi/vision_system_ws/install/apriltag_msgs/lib/python3.5/site-packages/apriltag_msgs/msg/__init__.py\n'}
+[6.344835] (ultrasonic_sensor) StdoutLine: {'line': b'-- Up-to-date symlink: /home/pi/vision_system_ws/install/ultrasonic_sensor/lib/python3.5/site-packages/ultrasonic_sensor/msg/_ultrasonic_msg.py\n'}
+[6.347986] (ultrasonic_sensor) StdoutLine: {'line': b'-- Symlinking: /home/pi/vision_system_ws/install/ultrasonic_sensor/lib/python3.5/site-packages/ultrasonic_sensor/msg/__init__.py\n'}
+[6.351998] (apriltag_msgs) StdoutLine: {'line': b'-- Up-to-date symlink: /home/pi/vision_system_ws/install/apriltag_msgs/lib/python3.5/site-packages/apriltag_msgs/msg/_point.py\n'}
+[6.355614] (apriltag_msgs) StdoutLine: {'line': b'-- Up-to-date symlink: /home/pi/vision_system_ws/install/apriltag_msgs/lib/python3.5/site-packages/apriltag_msgs/msg/_april_tag_detection.py\n'}
+[6.358617] (apriltag_msgs) StdoutLine: {'line': b'-- Up-to-date symlink: /home/pi/vision_system_ws/install/apriltag_msgs/lib/python3.5/site-packages/apriltag_msgs/msg/_april_tag_detection_array.py\n'}
+[6.362121] (apriltag_msgs) StdoutLine: {'line': b'-- Symlinking: /home/pi/vision_system_ws/install/apriltag_msgs/lib/python3.5/site-packages/apriltag_msgs/msg/__init__.py\n'}
+[6.364673] (ultrasonic_sensor) StdoutLine: {'line': b'-- Up-to-date symlink: /home/pi/vision_system_ws/install/ultrasonic_sensor/lib/python3.5/site-packages/ultrasonic_sensor/ultrasonic_sensor_s__rosidl_typesupport_c.cpython-35m-arm-linux-gnueabihf.so\n'}
+[6.368268] (ultrasonic_sensor) StdoutLine: {'line': b'-- Up-to-date symlink: /home/pi/vision_system_ws/install/ultrasonic_sensor/lib/python3.5/site-packages/ultrasonic_sensor/ultrasonic_sensor_s__rosidl_typesupport_fastrtps_c.cpython-35m-arm-linux-gnueabihf.so\n'}
+[6.377077] (ultrasonic_sensor) StdoutLine: {'line': b'-- Up-to-date symlink: /home/pi/vision_system_ws/install/ultrasonic_sensor/lib/python3.5/site-packages/ultrasonic_sensor/ultrasonic_sensor_s__rosidl_typesupport_introspection_c.cpython-35m-arm-linux-gnueabihf.so\n'}
+[6.380035] (ultrasonic_sensor) StdoutLine: {'line': b'-- Up-to-date symlink: /home/pi/vision_system_ws/install/ultrasonic_sensor/lib/libultrasonic_sensor__python.so\n'}
+[6.383241] (ultrasonic_sensor) StdoutLine: {'line': b'-- Up-to-date symlink: /home/pi/vision_system_ws/install/ultrasonic_sensor/share/ultrasonic_sensor/msg/UltrasonicMsg.idl\n'}
+[6.386039] (ultrasonic_sensor) StdoutLine: {'line': b'-- Up-to-date symlink: /home/pi/vision_system_ws/install/ultrasonic_sensor/share/ultrasonic_sensor/msg/UltrasonicMsg.msg\n'}
+[6.388739] (ultrasonic_sensor) StdoutLine: {'line': b'-- Up-to-date symlink: /home/pi/vision_system_ws/install/ultrasonic_sensor/share/ament_index/resource_index/package_run_dependencies/ultrasonic_sensor\n'}
+[6.392040] (ultrasonic_sensor) StdoutLine: {'line': b'-- Up-to-date symlink: /home/pi/vision_system_ws/install/ultrasonic_sensor/share/ament_index/resource_index/parent_prefix_path/ultrasonic_sensor\n'}
+[6.394760] (ultrasonic_sensor) StdoutLine: {'line': b'-- Up-to-date symlink: /home/pi/vision_system_ws/install/ultrasonic_sensor/share/ultrasonic_sensor/environment/ament_prefix_path.sh\n'}
+[6.397569] (ultrasonic_sensor) StdoutLine: {'line': b'-- Up-to-date symlink: /home/pi/vision_system_ws/install/ultrasonic_sensor/share/ultrasonic_sensor/environment/path.sh\n'}
+[6.400445] (ultrasonic_sensor) StdoutLine: {'line': b'-- Up-to-date symlink: /home/pi/vision_system_ws/install/ultrasonic_sensor/share/ultrasonic_sensor/local_setup.bash\n'}
+[6.403389] (ultrasonic_sensor) StdoutLine: {'line': b'-- Up-to-date symlink: /home/pi/vision_system_ws/install/ultrasonic_sensor/share/ultrasonic_sensor/local_setup.sh\n'}
+[6.407186] (ultrasonic_sensor) StdoutLine: {'line': b'-- Up-to-date symlink: /home/pi/vision_system_ws/install/ultrasonic_sensor/share/ultrasonic_sensor/local_setup.zsh\n'}
+[6.410060] (-) TimerEvent: {}
+[6.412717] (ultrasonic_sensor) StdoutLine: {'line': b'-- Up-to-date symlink: /home/pi/vision_system_ws/install/ultrasonic_sensor/share/ament_index/resource_index/packages/ultrasonic_sensor\n'}
+[6.415105] (ultrasonic_sensor) StdoutLine: {'line': b'-- Up-to-date symlink: /home/pi/vision_system_ws/install/ultrasonic_sensor/share/ultrasonic_sensor/cmake/rosidl_cmake-extras.cmake\n'}
+[6.417908] (ultrasonic_sensor) StdoutLine: {'line': b'-- Up-to-date symlink: /home/pi/vision_system_ws/install/ultrasonic_sensor/share/ultrasonic_sensor/cmake/ament_cmake_export_dependencies-extras.cmake\n'}
+[6.421685] (ultrasonic_sensor) StdoutLine: {'line': b'-- Up-to-date symlink: /home/pi/vision_system_ws/install/ultrasonic_sensor/share/ultrasonic_sensor/cmake/ament_cmake_export_libraries-extras.cmake\n'}
+[6.425388] (ultrasonic_sensor) StdoutLine: {'line': b'-- Up-to-date symlink: /home/pi/vision_system_ws/install/ultrasonic_sensor/share/ultrasonic_sensor/cmake/ament_cmake_export_include_directories-extras.cmake\n'}
+[6.428415] (ultrasonic_sensor) StdoutLine: {'line': b'-- Up-to-date symlink: /home/pi/vision_system_ws/install/ultrasonic_sensor/share/ultrasonic_sensor/cmake/ultrasonic_sensorConfig.cmake\n'}
+[6.431036] (ultrasonic_sensor) StdoutLine: {'line': b'-- Up-to-date symlink: /home/pi/vision_system_ws/install/ultrasonic_sensor/share/ultrasonic_sensor/cmake/ultrasonic_sensorConfig-version.cmake\n'}
+[6.434620] (ultrasonic_sensor) StdoutLine: {'line': b'-- Up-to-date symlink: /home/pi/vision_system_ws/install/ultrasonic_sensor/share/ultrasonic_sensor/package.xml\n'}
+[6.437437] (apriltag_msgs) StdoutLine: {'line': b'-- Up-to-date symlink: /home/pi/vision_system_ws/install/apriltag_msgs/lib/python3.5/site-packages/apriltag_msgs/apriltag_msgs_s__rosidl_typesupport_c.cpython-35m-arm-linux-gnueabihf.so\n'}
+[6.442751] (apriltag_msgs) StdoutLine: {'line': b'-- Up-to-date symlink: /home/pi/vision_system_ws/install/apriltag_msgs/lib/python3.5/site-packages/apriltag_msgs/apriltag_msgs_s__rosidl_typesupport_fastrtps_c.cpython-35m-arm-linux-gnueabihf.so\n'}
+[6.445565] (apriltag_msgs) StdoutLine: {'line': b'-- Up-to-date symlink: /home/pi/vision_system_ws/install/apriltag_msgs/lib/python3.5/site-packages/apriltag_msgs/apriltag_msgs_s__rosidl_typesupport_introspection_c.cpython-35m-arm-linux-gnueabihf.so\n'}
+[6.448158] (apriltag_msgs) StdoutLine: {'line': b'-- Up-to-date symlink: /home/pi/vision_system_ws/install/apriltag_msgs/lib/libapriltag_msgs__python.so\n'}
+[6.450716] (apriltag_msgs) StdoutLine: {'line': b'-- Up-to-date symlink: /home/pi/vision_system_ws/install/apriltag_msgs/share/apriltag_msgs/msg/Point.idl\n'}
+[6.453196] (apriltag_msgs) StdoutLine: {'line': b'-- Up-to-date symlink: /home/pi/vision_system_ws/install/apriltag_msgs/share/apriltag_msgs/msg/AprilTagDetection.idl\n'}
+[6.456456] (apriltag_msgs) StdoutLine: {'line': b'-- Up-to-date symlink: /home/pi/vision_system_ws/install/apriltag_msgs/share/apriltag_msgs/msg/AprilTagDetectionArray.idl\n'}
+[6.459261] (apriltag_msgs) StdoutLine: {'line': b'-- Up-to-date symlink: /home/pi/vision_system_ws/install/apriltag_msgs/share/apriltag_msgs/msg/Point.msg\n'}
+[6.461925] (apriltag_msgs) StdoutLine: {'line': b'-- Up-to-date symlink: /home/pi/vision_system_ws/install/apriltag_msgs/share/apriltag_msgs/msg/AprilTagDetection.msg\n'}
+[6.464352] (apriltag_msgs) StdoutLine: {'line': b'-- Up-to-date symlink: /home/pi/vision_system_ws/install/apriltag_msgs/share/apriltag_msgs/msg/AprilTagDetectionArray.msg\n'}
+[6.466528] (apriltag_msgs) StdoutLine: {'line': b'-- Up-to-date symlink: /home/pi/vision_system_ws/install/apriltag_msgs/share/ament_index/resource_index/package_run_dependencies/apriltag_msgs\n'}
+[6.468763] (apriltag_msgs) StdoutLine: {'line': b'-- Up-to-date symlink: /home/pi/vision_system_ws/install/apriltag_msgs/share/ament_index/resource_index/parent_prefix_path/apriltag_msgs\n'}
+[6.471744] (apriltag_msgs) StdoutLine: {'line': b'-- Up-to-date symlink: /home/pi/vision_system_ws/install/apriltag_msgs/share/apriltag_msgs/environment/ament_prefix_path.sh\n'}
+[6.474890] (apriltag_msgs) StdoutLine: {'line': b'-- Up-to-date symlink: /home/pi/vision_system_ws/install/apriltag_msgs/share/apriltag_msgs/environment/path.sh\n'}
+[6.477347] (apriltag_msgs) StdoutLine: {'line': b'-- Up-to-date symlink: /home/pi/vision_system_ws/install/apriltag_msgs/share/apriltag_msgs/local_setup.bash\n'}
+[6.480082] (apriltag_msgs) StdoutLine: {'line': b'-- Up-to-date symlink: /home/pi/vision_system_ws/install/apriltag_msgs/share/apriltag_msgs/local_setup.sh\n'}
+[6.482868] (apriltag_msgs) StdoutLine: {'line': b'-- Up-to-date symlink: /home/pi/vision_system_ws/install/apriltag_msgs/share/apriltag_msgs/local_setup.zsh\n'}
+[6.485494] (apriltag_msgs) StdoutLine: {'line': b'-- Up-to-date symlink: /home/pi/vision_system_ws/install/apriltag_msgs/share/ament_index/resource_index/packages/apriltag_msgs\n'}
+[6.488270] (apriltag_msgs) StdoutLine: {'line': b'-- Up-to-date symlink: /home/pi/vision_system_ws/install/apriltag_msgs/share/apriltag_msgs/cmake/rosidl_cmake-extras.cmake\n'}
+[6.491104] (apriltag_msgs) StdoutLine: {'line': b'-- Up-to-date symlink: /home/pi/vision_system_ws/install/apriltag_msgs/share/apriltag_msgs/cmake/ament_cmake_export_dependencies-extras.cmake\n'}
+[6.493374] (apriltag_msgs) StdoutLine: {'line': b'-- Up-to-date symlink: /home/pi/vision_system_ws/install/apriltag_msgs/share/apriltag_msgs/cmake/ament_cmake_export_libraries-extras.cmake\n'}
+[6.495619] (apriltag_msgs) StdoutLine: {'line': b'-- Up-to-date symlink: /home/pi/vision_system_ws/install/apriltag_msgs/share/apriltag_msgs/cmake/ament_cmake_export_include_directories-extras.cmake\n'}
+[6.497926] (apriltag_msgs) StdoutLine: {'line': b'-- Up-to-date symlink: /home/pi/vision_system_ws/install/apriltag_msgs/share/apriltag_msgs/cmake/apriltag_msgsConfig.cmake\n'}
+[6.500395] (apriltag_msgs) StdoutLine: {'line': b'-- Up-to-date symlink: /home/pi/vision_system_ws/install/apriltag_msgs/share/apriltag_msgs/cmake/apriltag_msgsConfig-version.cmake\n'}
+[6.503359] (apriltag_msgs) StdoutLine: {'line': b'-- Up-to-date symlink: /home/pi/vision_system_ws/install/apriltag_msgs/share/apriltag_msgs/package.xml\n'}
+[6.510103] (-) TimerEvent: {}
+[6.612798] (-) TimerEvent: {}
+[6.714788] (-) TimerEvent: {}
+[6.816852] (-) TimerEvent: {}
+[6.919007] (-) TimerEvent: {}
+[7.021362] (-) TimerEvent: {}
+[7.124583] (-) TimerEvent: {}
+[7.226874] (-) TimerEvent: {}
+[7.328891] (-) TimerEvent: {}
+[7.431535] (-) TimerEvent: {}
+[7.444228] (ultrasonic_sensor) CommandEnded: {'returncode': 0}
+[7.538378] (-) TimerEvent: {}
+[7.596519] (ultrasonic_sensor) JobEnded: {'rc': 0, 'identifier': 'ultrasonic_sensor'}
+[7.611088] (apriltag_msgs) CommandEnded: {'returncode': 0}
+[7.662012] (-) TimerEvent: {}
+[7.722428] (apriltag_msgs) JobEnded: {'rc': 0, 'identifier': 'apriltag_msgs'}
+[7.747593] (apriltag2_node) JobStarted: {'identifier': 'apriltag2_node'}
+[7.754357] (-) TimerEvent: {}
+[7.819356] (apriltag2_node) JobProgress: {'progress': 'cmake', 'identifier': 'apriltag2_node'}
+[7.826166] (apriltag2_node) JobProgress: {'progress': 'build', 'identifier': 'apriltag2_node'}
+[7.835321] (apriltag2_node) Command: {'shell': False, 'env': OrderedDict([('INFINALITY_FT_AUTOHINT_HORIZONTAL_STEM_DARKEN_STRENGTH', '10'), ('USER', 'pi'), ('LANGUAGE', 'it_IT.UTF-8'), ('TEXTDOMAIN', 'Linux-PAM'), ('XDG_SEAT', 'seat0'), ('INFINALITY_FT_FRINGE_FILTER_STRENGTH', '0'), ('SSH_AGENT_PID', '643'), ('XDG_SESSION_TYPE', 'x11'), ('SHLVL', '1'), ('LD_LIBRARY_PATH', '/home/pi/vision_system_ws/install/apriltag_msgs/lib'), ('HOME', '/home/pi'), ('OLDPWD', '/home/pi/vision_system_ws/src'), ('INFINALITY_FT_CONTRAST', '0'), ('DESKTOP_SESSION', 'LXDE-pi'), ('XDG_SEAT_PATH', '/org/freedesktop/DisplayManager/Seat0'), ('INFINALITY_FT_USE_VARIOUS_TWEAKS', 'true'), ('INFINALITY_FT_GAMMA_CORRECTION', '0 100'), ('INFINALITY_FT_WINDOWS_STYLE_SHARPENING_STRENGTH', '10'), ('DBUS_SESSION_BUS_ADDRESS', 'unix:path=/run/user/1000/bus'), ('INFINALITY_FT_STEM_ALIGNMENT_STRENGTH', '25'), ('QT_QPA_PLATFORMTHEME', 'qt5ct'), ('LOGNAME', 'pi'), ('_', '/usr/bin/colcon'), ('XDG_SESSION_ID', 'c1'), ('TERM', 'xterm'), ('M2M_INCLUDE', '/home/pi/mocap2mav/include'), ('SAL_USE_VCLPLUGIN', 'gtk'), ('INFINALITY_FT_AUTOHINT_VERTICAL_STEM_DARKEN_STRENGTH', '25'), ('PATH', '/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/local/games:/usr/games'), ('XDG_MENU_PREFIX', 'lxde-pi-'), ('XDG_RUNTIME_DIR', '/run/user/1000'), ('XDG_SESSION_PATH', '/org/freedesktop/DisplayManager/Session0'), ('DISPLAY', ':0'), ('INFINALITY_FT_GLOBAL_EMBOLDEN_X_VALUE', '0'), ('LANG', 'it_IT.UTF-8'), ('INFINALITY_FT_AUTOHINT_SNAP_STEM_HEIGHT', '100'), ('XDG_CURRENT_DESKTOP', 'LXDE'), ('INFINALITY_FT_GLOBAL_EMBOLDEN_Y_VALUE', '0'), ('LS_COLORS', 'rs=0:di=01;34:ln=01;36:mh=00:pi=40;33:so=01;35:do=01;35:bd=40;33;01:cd=40;33;01:or=40;31;01:mi=00:su=37;41:sg=30;43:ca=30;41:tw=30;42:ow=34;42:st=37;44:ex=01;32:*.tar=01;31:*.tgz=01;31:*.arc=01;31:*.arj=01;31:*.taz=01;31:*.lha=01;31:*.lz4=01;31:*.lzh=01;31:*.lzma=01;31:*.tlz=01;31:*.txz=01;31:*.tzo=01;31:*.t7z=01;31:*.zip=01;31:*.z=01;31:*.Z=01;31:*.dz=01;31:*.gz=01;31:*.lrz=01;31:*.lz=01;31:*.lzo=01;31:*.xz=01;31:*.zst=01;31:*.tzst=01;31:*.bz2=01;31:*.bz=01;31:*.tbz=01;31:*.tbz2=01;31:*.tz=01;31:*.deb=01;31:*.rpm=01;31:*.jar=01;31:*.war=01;31:*.ear=01;31:*.sar=01;31:*.rar=01;31:*.alz=01;31:*.ace=01;31:*.zoo=01;31:*.cpio=01;31:*.7z=01;31:*.rz=01;31:*.cab=01;31:*.jpg=01;35:*.jpeg=01;35:*.mjpg=01;35:*.mjpeg=01;35:*.gif=01;35:*.bmp=01;35:*.pbm=01;35:*.pgm=01;35:*.ppm=01;35:*.tga=01;35:*.xbm=01;35:*.xpm=01;35:*.tif=01;35:*.tiff=01;35:*.png=01;35:*.svg=01;35:*.svgz=01;35:*.mng=01;35:*.pcx=01;35:*.mov=01;35:*.mpg=01;35:*.mpeg=01;35:*.m2v=01;35:*.mkv=01;35:*.webm=01;35:*.ogm=01;35:*.mp4=01;35:*.m4v=01;35:*.mp4v=01;35:*.vob=01;35:*.qt=01;35:*.nuv=01;35:*.wmv=01;35:*.asf=01;35:*.rm=01;35:*.rmvb=01;35:*.flc=01;35:*.avi=01;35:*.fli=01;35:*.flv=01;35:*.gl=01;35:*.dl=01;35:*.xcf=01;35:*.xwd=01;35:*.yuv=01;35:*.cgm=01;35:*.emf=01;35:*.ogv=01;35:*.ogx=01;35:*.aac=00;36:*.au=00;36:*.flac=00;36:*.m4a=00;36:*.mid=00;36:*.midi=00;36:*.mka=00;36:*.mp3=00;36:*.mpc=00;36:*.ogg=00;36:*.ra=00;36:*.wav=00;36:*.oga=00;36:*.opus=00;36:*.spx=00;36:*.xspf=00;36:'), ('XDG_CONFIG_HOME', '/home/pi/.config'), ('INFINALITY_FT_CHROMEOS_STYLE_SHARPENING_STRENGTH', '0'), ('XDG_SESSION_DESKTOP', 'lightdm-xsession'), ('XAUTHORITY', '/home/pi/.Xauthority'), ('SSH_AUTH_SOCK', '/tmp/ssh-DCYc3IqsnMoA/agent.559'), ('XDG_GREETER_DATA_DIR', '/var/lib/lightdm/data/pi'), ('AMENT_PREFIX_PATH', '/home/pi/vision_system_ws/install/apriltag_msgs'), ('SHELL', '/bin/bash'), ('NO_AT_BRIDGE', '1'), ('GDMSESSION', 'lightdm-xsession'), ('INFINALITY_FT_BRIGHTNESS', '0'), ('_LXSESSION_PID', '559'), ('INFINALITY_FT_STEM_FITTING_STRENGTH', '25'), ('INFINALITY_FT_STEM_SNAPPING_SLIDING_SCALE', '40'), ('GPG_AGENT_INFO', '/run/user/1000/gnupg/S.gpg-agent:0:1'), ('XDG_VTNR', '7'), ('INFINALITY_FT_GRAYSCALE_FILTER_STRENGTH', '0'), ('INFINALITY_FT_USE_KNOWN_SETTINGS_ON_SELECTED_FONTS', 'true'), ('LC_ALL', 'it_IT.UTF-8'), ('INFINALITY_FT_AUTOHINT_INCREASE_GLYPH_HEIGHTS', 'true'), ('PWD', '/home/pi/vision_system_ws/build/apriltag2_node'), ('XDG_DATA_DIRS', '/usr/local/share:/usr/share/raspi-ui-overrides:/usr/share:/usr/share/gdm:/var/lib/menu-xdg'), ('XDG_CONFIG_DIRS', '/etc/xdg'), ('PYTHONPATH', '/home/pi/vision_system_ws/install/apriltag_msgs/lib/python3.5/site-packages:/home/pi'), ('INFINALITY_FT_FILTER_PARAMS', '11 22 38 22 11'), ('INFINALITY_FT_BOLD_EMBOLDEN_X_VALUE', '0'), ('INFINALITY_FT_BOLD_EMBOLDEN_Y_VALUE', '0'), ('CMAKE_PREFIX_PATH', '/home/pi/vision_system_ws/install/apriltag_msgs')]), 'cmd': ['/usr/bin/cmake', '--build', '/home/pi/vision_system_ws/build/apriltag2_node', '--', '-j4', '-l4'], 'cwd': '/home/pi/vision_system_ws/build/apriltag2_node'}
+[7.854055] (-) TimerEvent: {}
+[7.956099] (-) TimerEvent: {}
+[8.058095] (-) TimerEvent: {}
+[8.160353] (-) TimerEvent: {}
+[8.220077] (apriltag2_node) StdoutLine: {'line': b'[ 50%] Built target AprilTag2Node\n'}
+[8.260644] (-) TimerEvent: {}
+[8.362513] (-) TimerEvent: {}
+[8.434595] (apriltag2_node) StdoutLine: {'line': b'[100%] Built target apriltag2_node\n'}
+[8.462889] (-) TimerEvent: {}
+[8.494552] (apriltag2_node) CommandEnded: {'returncode': 0}
+[8.563460] (-) TimerEvent: {}
+[8.665490] (-) TimerEvent: {}
+[8.767087] (-) TimerEvent: {}
+[8.825154] (apriltag2_node) JobProgress: {'progress': 'install', 'identifier': 'apriltag2_node'}
+[8.835220] (apriltag2_node) Command: {'shell': False, 'env': OrderedDict([('INFINALITY_FT_AUTOHINT_HORIZONTAL_STEM_DARKEN_STRENGTH', '10'), ('USER', 'pi'), ('LANGUAGE', 'it_IT.UTF-8'), ('TEXTDOMAIN', 'Linux-PAM'), ('XDG_SEAT', 'seat0'), ('INFINALITY_FT_FRINGE_FILTER_STRENGTH', '0'), ('SSH_AGENT_PID', '643'), ('XDG_SESSION_TYPE', 'x11'), ('SHLVL', '1'), ('LD_LIBRARY_PATH', '/home/pi/vision_system_ws/install/apriltag_msgs/lib'), ('HOME', '/home/pi'), ('OLDPWD', '/home/pi/vision_system_ws/src'), ('INFINALITY_FT_CONTRAST', '0'), ('DESKTOP_SESSION', 'LXDE-pi'), ('XDG_SEAT_PATH', '/org/freedesktop/DisplayManager/Seat0'), ('INFINALITY_FT_USE_VARIOUS_TWEAKS', 'true'), ('INFINALITY_FT_GAMMA_CORRECTION', '0 100'), ('INFINALITY_FT_WINDOWS_STYLE_SHARPENING_STRENGTH', '10'), ('DBUS_SESSION_BUS_ADDRESS', 'unix:path=/run/user/1000/bus'), ('INFINALITY_FT_STEM_ALIGNMENT_STRENGTH', '25'), ('QT_QPA_PLATFORMTHEME', 'qt5ct'), ('LOGNAME', 'pi'), ('_', '/usr/bin/colcon'), ('XDG_SESSION_ID', 'c1'), ('TERM', 'xterm'), ('M2M_INCLUDE', '/home/pi/mocap2mav/include'), ('SAL_USE_VCLPLUGIN', 'gtk'), ('INFINALITY_FT_AUTOHINT_VERTICAL_STEM_DARKEN_STRENGTH', '25'), ('PATH', '/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/local/games:/usr/games'), ('XDG_MENU_PREFIX', 'lxde-pi-'), ('XDG_RUNTIME_DIR', '/run/user/1000'), ('XDG_SESSION_PATH', '/org/freedesktop/DisplayManager/Session0'), ('DISPLAY', ':0'), ('INFINALITY_FT_GLOBAL_EMBOLDEN_X_VALUE', '0'), ('LANG', 'it_IT.UTF-8'), ('INFINALITY_FT_AUTOHINT_SNAP_STEM_HEIGHT', '100'), ('XDG_CURRENT_DESKTOP', 'LXDE'), ('INFINALITY_FT_GLOBAL_EMBOLDEN_Y_VALUE', '0'), ('LS_COLORS', 'rs=0:di=01;34:ln=01;36:mh=00:pi=40;33:so=01;35:do=01;35:bd=40;33;01:cd=40;33;01:or=40;31;01:mi=00:su=37;41:sg=30;43:ca=30;41:tw=30;42:ow=34;42:st=37;44:ex=01;32:*.tar=01;31:*.tgz=01;31:*.arc=01;31:*.arj=01;31:*.taz=01;31:*.lha=01;31:*.lz4=01;31:*.lzh=01;31:*.lzma=01;31:*.tlz=01;31:*.txz=01;31:*.tzo=01;31:*.t7z=01;31:*.zip=01;31:*.z=01;31:*.Z=01;31:*.dz=01;31:*.gz=01;31:*.lrz=01;31:*.lz=01;31:*.lzo=01;31:*.xz=01;31:*.zst=01;31:*.tzst=01;31:*.bz2=01;31:*.bz=01;31:*.tbz=01;31:*.tbz2=01;31:*.tz=01;31:*.deb=01;31:*.rpm=01;31:*.jar=01;31:*.war=01;31:*.ear=01;31:*.sar=01;31:*.rar=01;31:*.alz=01;31:*.ace=01;31:*.zoo=01;31:*.cpio=01;31:*.7z=01;31:*.rz=01;31:*.cab=01;31:*.jpg=01;35:*.jpeg=01;35:*.mjpg=01;35:*.mjpeg=01;35:*.gif=01;35:*.bmp=01;35:*.pbm=01;35:*.pgm=01;35:*.ppm=01;35:*.tga=01;35:*.xbm=01;35:*.xpm=01;35:*.tif=01;35:*.tiff=01;35:*.png=01;35:*.svg=01;35:*.svgz=01;35:*.mng=01;35:*.pcx=01;35:*.mov=01;35:*.mpg=01;35:*.mpeg=01;35:*.m2v=01;35:*.mkv=01;35:*.webm=01;35:*.ogm=01;35:*.mp4=01;35:*.m4v=01;35:*.mp4v=01;35:*.vob=01;35:*.qt=01;35:*.nuv=01;35:*.wmv=01;35:*.asf=01;35:*.rm=01;35:*.rmvb=01;35:*.flc=01;35:*.avi=01;35:*.fli=01;35:*.flv=01;35:*.gl=01;35:*.dl=01;35:*.xcf=01;35:*.xwd=01;35:*.yuv=01;35:*.cgm=01;35:*.emf=01;35:*.ogv=01;35:*.ogx=01;35:*.aac=00;36:*.au=00;36:*.flac=00;36:*.m4a=00;36:*.mid=00;36:*.midi=00;36:*.mka=00;36:*.mp3=00;36:*.mpc=00;36:*.ogg=00;36:*.ra=00;36:*.wav=00;36:*.oga=00;36:*.opus=00;36:*.spx=00;36:*.xspf=00;36:'), ('XDG_CONFIG_HOME', '/home/pi/.config'), ('INFINALITY_FT_CHROMEOS_STYLE_SHARPENING_STRENGTH', '0'), ('XDG_SESSION_DESKTOP', 'lightdm-xsession'), ('XAUTHORITY', '/home/pi/.Xauthority'), ('SSH_AUTH_SOCK', '/tmp/ssh-DCYc3IqsnMoA/agent.559'), ('XDG_GREETER_DATA_DIR', '/var/lib/lightdm/data/pi'), ('AMENT_PREFIX_PATH', '/home/pi/vision_system_ws/install/apriltag_msgs'), ('SHELL', '/bin/bash'), ('NO_AT_BRIDGE', '1'), ('GDMSESSION', 'lightdm-xsession'), ('INFINALITY_FT_BRIGHTNESS', '0'), ('_LXSESSION_PID', '559'), ('INFINALITY_FT_STEM_FITTING_STRENGTH', '25'), ('INFINALITY_FT_STEM_SNAPPING_SLIDING_SCALE', '40'), ('GPG_AGENT_INFO', '/run/user/1000/gnupg/S.gpg-agent:0:1'), ('XDG_VTNR', '7'), ('INFINALITY_FT_GRAYSCALE_FILTER_STRENGTH', '0'), ('INFINALITY_FT_USE_KNOWN_SETTINGS_ON_SELECTED_FONTS', 'true'), ('LC_ALL', 'it_IT.UTF-8'), ('INFINALITY_FT_AUTOHINT_INCREASE_GLYPH_HEIGHTS', 'true'), ('PWD', '/home/pi/vision_system_ws/build/apriltag2_node'), ('XDG_DATA_DIRS', '/usr/local/share:/usr/share/raspi-ui-overrides:/usr/share:/usr/share/gdm:/var/lib/menu-xdg'), ('XDG_CONFIG_DIRS', '/etc/xdg'), ('PYTHONPATH', '/home/pi/vision_system_ws/install/apriltag_msgs/lib/python3.5/site-packages:/home/pi'), ('INFINALITY_FT_FILTER_PARAMS', '11 22 38 22 11'), ('INFINALITY_FT_BOLD_EMBOLDEN_X_VALUE', '0'), ('INFINALITY_FT_BOLD_EMBOLDEN_Y_VALUE', '0'), ('CMAKE_PREFIX_PATH', '/home/pi/vision_system_ws/install/apriltag_msgs')]), 'cmd': ['/usr/bin/cmake', '--build', '/home/pi/vision_system_ws/build/apriltag2_node', '--target', 'install'], 'cwd': '/home/pi/vision_system_ws/build/apriltag2_node'}
+[8.867541] (-) TimerEvent: {}
+[8.969745] (-) TimerEvent: {}
+[9.071549] (-) TimerEvent: {}
+[9.173256] (-) TimerEvent: {}
+[9.274920] (-) TimerEvent: {}
+[9.376765] (-) TimerEvent: {}
+[9.406192] (ros2_raspicam) StderrLine: {'line': b'\x1b[01m\x1b[K/home/pi/vision_system_ws/src/ros2_raspicam/src/client_camera_param.cpp:\x1b[m\x1b[K In function \xe2\x80\x98\x1b[01m\x1b[Kint main(int, char**)\x1b[m\x1b[K\xe2\x80\x99:\n'}
+[9.408154] (ros2_raspicam) StderrLine: {'line': b'\x1b[01m\x1b[K/home/pi/vision_system_ws/src/ros2_raspicam/src/client_camera_param.cpp:17:8:\x1b[m\x1b[K \x1b[01;31m\x1b[Kerror: \x1b[m\x1b[Kexpected primary-expression before \xe2\x80\x98\x1b[01m\x1b[K.\x1b[m\x1b[K\xe2\x80\x99 token\n'}
+[9.409827] (ros2_raspicam) StderrLine: {'line': b'    std:\x1b[01;31m\x1b[K.\x1b[m\x1b[Kcout<<"client interrupted"<<std::endl;\n'}
+[9.411610] (ros2_raspicam) StderrLine: {'line': b'        \x1b[01;31m\x1b[K^\x1b[m\x1b[K\n'}
+[9.428778] (ros2_raspicam) StderrLine: {'line': b'\x1b[01m\x1b[K/home/pi/vision_system_ws/src/ros2_raspicam/src/client_camera_param.cpp:17:4:\x1b[m\x1b[K \x1b[01;35m\x1b[Kwarning: \x1b[m\x1b[Klabel \xe2\x80\x98\x1b[01m\x1b[Kstd\x1b[m\x1b[K\xe2\x80\x99 defined but not used [\x1b[01;35m\x1b[K-Wunused-label\x1b[m\x1b[K]\n'}
+[9.430787] (ros2_raspicam) StderrLine: {'line': b'    \x1b[01;35m\x1b[Kstd\x1b[m\x1b[K:.cout<<"client interrupted"<<std::endl;\n'}
+[9.432408] (ros2_raspicam) StderrLine: {'line': b'    \x1b[01;35m\x1b[K^~~\x1b[m\x1b[K\n'}
+[9.477089] (-) TimerEvent: {}
+[9.579002] (-) TimerEvent: {}
+[9.680758] (-) TimerEvent: {}
+[9.782176] (-) TimerEvent: {}
+[9.883752] (-) TimerEvent: {}
+[9.985530] (-) TimerEvent: {}
+[10.087103] (-) TimerEvent: {}
+[10.188668] (-) TimerEvent: {}
+[10.290353] (-) TimerEvent: {}
+[10.392280] (-) TimerEvent: {}
+[10.495063] (-) TimerEvent: {}
+[10.597742] (-) TimerEvent: {}
+[10.700726] (-) TimerEvent: {}
+[10.803451] (-) TimerEvent: {}
+[10.905346] (-) TimerEvent: {}
+[11.061257] (-) TimerEvent: {}
+[11.162824] (-) TimerEvent: {}
+[11.264319] (-) TimerEvent: {}
+[11.365724] (-) TimerEvent: {}
+[11.467264] (-) TimerEvent: {}
+[11.569187] (-) TimerEvent: {}
+[11.672073] (-) TimerEvent: {}
+[11.774817] (-) TimerEvent: {}
+[11.877550] (-) TimerEvent: {}
+[11.980593] (-) TimerEvent: {}
+[12.083256] (-) TimerEvent: {}
+[12.185782] (-) TimerEvent: {}
+[12.287924] (-) TimerEvent: {}
+[12.390254] (-) TimerEvent: {}
+[12.492059] (-) TimerEvent: {}
+[12.593855] (-) TimerEvent: {}
+[12.695812] (-) TimerEvent: {}
+[12.797804] (-) TimerEvent: {}
+[12.899952] (-) TimerEvent: {}
+[13.003136] (-) TimerEvent: {}
+[13.106633] (-) TimerEvent: {}
+[13.210294] (-) TimerEvent: {}
+[13.313822] (-) TimerEvent: {}
+[13.415468] (-) TimerEvent: {}
+[13.517328] (-) TimerEvent: {}
+[13.619641] (-) TimerEvent: {}
+[13.721723] (-) TimerEvent: {}
+[13.823705] (-) TimerEvent: {}
+[13.926032] (-) TimerEvent: {}
+[14.030046] (-) TimerEvent: {}
+[14.132344] (-) TimerEvent: {}
+[14.234385] (-) TimerEvent: {}
+[14.336216] (-) TimerEvent: {}
+[14.395004] (ros2_raspicam) StdoutLine: {'line': b'CMakeFiles/client_node.dir/build.make:62: set di istruzioni per l\'obiettivo "CMakeFiles/client_node.dir/src/client_camera_param.cpp.o" non riuscito\n'}
+[14.408220] (ros2_raspicam) StderrLine: {'line': b'make[2]: *** [CMakeFiles/client_node.dir/src/client_camera_param.cpp.o] Errore 1\n'}
+[14.414514] (ros2_raspicam) StderrLine: {'line': b'make[1]: *** [CMakeFiles/client_node.dir/all] Errore 2\n'}
+[14.415709] (ros2_raspicam) StdoutLine: {'line': b'CMakeFiles/Makefile2:1111: set di istruzioni per l\'obiettivo "CMakeFiles/client_node.dir/all" non riuscito\n'}
+[14.416938] (ros2_raspicam) StdoutLine: {'line': b'Makefile:138: set di istruzioni per l\'obiettivo "all" non riuscito\n'}
+[14.418236] (ros2_raspicam) StderrLine: {'line': b'make: *** [all] Errore 2\n'}
+[14.419542] (ros2_raspicam) CommandEnded: {'returncode': 2}
+[14.424859] (ros2_raspicam) JobEnded: {'rc': 2, 'identifier': 'ros2_raspicam'}
+[14.427907] (apriltag2_node) JobEnded: {'rc': 'SIGINT', 'identifier': 'apriltag2_node'}
+[14.445733] (-) TimerEvent: {}
+[14.447875] (-) EventReactorShutdown: {}

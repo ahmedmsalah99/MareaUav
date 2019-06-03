@@ -1,0 +1,4 @@
+[ 25%] Built target subscriber_lambda
+[ 50%] Built target mine_node
+[ 75%] Built target subscriber_not_composable
+[100%] Built target subscriber_member_function

@@ -1,0 +1,7 @@
+[01m[K/home/pi/vision_system_ws/src/fsm_raspicam/src/CameraStates.cpp:[m[K In member function ‘[01m[Kvirtual void LandingState::setParameters()[m[K’:
+[01m[K/home/pi/vision_system_ws/src/fsm_raspicam/src/CameraStates.cpp:79:26:[m[K [01;31m[Kerror: [m[K‘[01m[KCamera[m[K’ was not declared in this scope
+         outFile<<"P6\n"<<[01;31m[KCamera[m[K.getWidth() <<" "<<Camera.getHeight() <<" 255\n";
+                          [01;31m[K^~~~~~[m[K
+make[2]: *** [CMakeFiles/camera_main_node.dir/src/CameraStates.cpp.o] Errore 1
+make[1]: *** [CMakeFiles/camera_main_node.dir/all] Errore 2
+make: *** [all] Errore 2

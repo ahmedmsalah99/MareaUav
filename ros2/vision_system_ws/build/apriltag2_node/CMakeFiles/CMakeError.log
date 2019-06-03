@@ -1,0 +1,55 @@
+Determining if the pthread_create exist failed with the following output:
+Change Dir: /home/pi/vision_system_ws/build/apriltag2_node/CMakeFiles/CMakeTmp
+
+Run Build Command:"/usr/bin/make" "cmTC_ce7b7/fast"
+/usr/bin/make -f CMakeFiles/cmTC_ce7b7.dir/build.make CMakeFiles/cmTC_ce7b7.dir/build
+make[1]: ingresso nella directory "/home/pi/vision_system_ws/build/apriltag2_node/CMakeFiles/CMakeTmp"
+Building C object CMakeFiles/cmTC_ce7b7.dir/CheckSymbolExists.c.o
+/usr/bin/cc     -o CMakeFiles/cmTC_ce7b7.dir/CheckSymbolExists.c.o   -c /home/pi/vision_system_ws/build/apriltag2_node/CMakeFiles/CMakeTmp/CheckSymbolExists.c
+Linking C executable cmTC_ce7b7
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_ce7b7.dir/link.txt --verbose=1
+/usr/bin/cc       CMakeFiles/cmTC_ce7b7.dir/CheckSymbolExists.c.o  -o cmTC_ce7b7 
+CMakeFiles/cmTC_ce7b7.dir/CheckSymbolExists.c.o: nella funzione "main":
+CheckSymbolExists.c:(.text+0x38): riferimento non definito a "pthread_create"
+collect2: error: ld returned 1 exit status
+CMakeFiles/cmTC_ce7b7.dir/build.make:97: set di istruzioni per l'obiettivo "cmTC_ce7b7" non riuscito
+make[1]: *** [cmTC_ce7b7] Errore 1
+make[1]: uscita dalla directory "/home/pi/vision_system_ws/build/apriltag2_node/CMakeFiles/CMakeTmp"
+Makefile:126: set di istruzioni per l'obiettivo "cmTC_ce7b7/fast" non riuscito
+make: *** [cmTC_ce7b7/fast] Errore 2
+
+File /home/pi/vision_system_ws/build/apriltag2_node/CMakeFiles/CMakeTmp/CheckSymbolExists.c:
+/* */
+#include <pthread.h>
+
+int main(int argc, char** argv)
+{
+  (void)argv;
+#ifndef pthread_create
+  return ((int*)(&pthread_create))[argc];
+#else
+  (void)argc;
+  return 0;
+#endif
+}
+
+Determining if the function pthread_create exists in the pthreads failed with the following output:
+Change Dir: /home/pi/vision_system_ws/build/apriltag2_node/CMakeFiles/CMakeTmp
+
+Run Build Command:"/usr/bin/make" "cmTC_8b1d2/fast"
+/usr/bin/make -f CMakeFiles/cmTC_8b1d2.dir/build.make CMakeFiles/cmTC_8b1d2.dir/build
+make[1]: ingresso nella directory "/home/pi/vision_system_ws/build/apriltag2_node/CMakeFiles/CMakeTmp"
+Building C object CMakeFiles/cmTC_8b1d2.dir/CheckFunctionExists.c.o
+/usr/bin/cc    -DCHECK_FUNCTION_EXISTS=pthread_create   -o CMakeFiles/cmTC_8b1d2.dir/CheckFunctionExists.c.o   -c /usr/share/cmake-3.7/Modules/CheckFunctionExists.c
+Linking C executable cmTC_8b1d2
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_8b1d2.dir/link.txt --verbose=1
+/usr/bin/cc   -DCHECK_FUNCTION_EXISTS=pthread_create    CMakeFiles/cmTC_8b1d2.dir/CheckFunctionExists.c.o  -o cmTC_8b1d2 -lpthreads 
+/usr/bin/ld: impossibile trovare -lpthreads
+collect2: error: ld returned 1 exit status
+CMakeFiles/cmTC_8b1d2.dir/build.make:97: set di istruzioni per l'obiettivo "cmTC_8b1d2" non riuscito
+make[1]: *** [cmTC_8b1d2] Errore 1
+make[1]: uscita dalla directory "/home/pi/vision_system_ws/build/apriltag2_node/CMakeFiles/CMakeTmp"
+Makefile:126: set di istruzioni per l'obiettivo "cmTC_8b1d2/fast" non riuscito
+make: *** [cmTC_8b1d2/fast] Errore 2
+
+

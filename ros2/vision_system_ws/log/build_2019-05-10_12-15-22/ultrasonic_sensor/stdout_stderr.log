@@ -1,0 +1,9 @@
+[  2%] Built target ultrasonic_sensor__cpp
+[ 11%] Built target ultrasonic_sensor__rosidl_generator_c
+[ 17%] Built target UltrasonicSensor
+[ 25%] Built target ultrasonic_sensor__rosidl_typesupport_fastrtps_cpp
+[ 45%] Built target ultrasonic_sensor__rosidl_typesupport_c
+[ 45%] Built target ultrasonic_sensor__rosidl_typesupport_cpp
+[ 51%] Built target ultrasonic_sensor__rosidl_typesupport_introspection_cpp
+[ 60%] Built target ultrasonic_sensor__rosidl_typesupport_introspection_c
+[ 68%] Built target ultrasonic_sensor__rosidl_typesupport_fastrtps_c

@@ -1,0 +1,24 @@
+[01m[K/home/pi/vision_system_ws/src/fsm_raspicam/src/CameraStates.cpp:[m[K In member function ‘[01m[Kvirtual void LandingState::setParameters()[m[K’:
+[01m[K/home/pi/vision_system_ws/src/fsm_raspicam/src/CameraStates.cpp:59:14:[m[K [01;35m[Kwarning: [m[Kunused variable ‘[01m[Ksave[m[K’ [[01;35m[K-Wunused-variable[m[K]
+  static bool [01;35m[Ksave[m[K = true;
+              [01;35m[K^~~~[m[K
+[01m[K/home/pi/vision_system_ws/src/fsm_raspicam/src/CameraStates.cpp:[m[K At global scope:
+[01m[K/home/pi/vision_system_ws/src/fsm_raspicam/src/CameraStates.cpp:59:14:[m[K [01;35m[Kwarning: [m[K‘[01m[Ksave[m[K’ defined but not used [[01;35m[K-Wunused-variable[m[K]
+/usr/bin/ld: /home/pi/ros2_ws/install/rosgraph_msgs/lib/librosgraph_msgs__rosidl_generator_c.so: invalid string offset 1111 >= 1099 for section `.strtab'
+/usr/bin/ld: /home/pi/ros2_ws/install/rosgraph_msgs/lib/librosgraph_msgs__rosidl_generator_c.so: invalid string offset 1130 >= 1099 for section `.strtab'
+/usr/bin/ld: /home/pi/ros2_ws/install/rosgraph_msgs/lib/librosgraph_msgs__rosidl_generator_c.so: invalid string offset 1122 >= 1099 for section `.strtab'
+/usr/bin/ld: /home/pi/ros2_ws/install/rosgraph_msgs/lib/librosgraph_msgs__rosidl_generator_c.so: invalid string offset 1110 >= 1099 for section `.strtab'
+/usr/bin/ld: /home/pi/ros2_ws/install/rosgraph_msgs/lib/librosgraph_msgs__rosidl_typesupport_fastrtps_c.so: invalid string offset 1536 >= 1507 for section `.strtab'
+/usr/bin/ld: /home/pi/ros2_ws/install/rosgraph_msgs/lib/librosgraph_msgs__rosidl_typesupport_fastrtps_c.so: invalid string offset 1570 >= 1507 for section `.strtab'
+/usr/bin/ld: /home/pi/ros2_ws/install/rosgraph_msgs/lib/librosgraph_msgs__rosidl_typesupport_fastrtps_c.so: invalid string offset 1589 >= 1507 for section `.strtab'
+/usr/bin/ld: /home/pi/ros2_ws/install/rosgraph_msgs/lib/librosgraph_msgs__rosidl_typesupport_fastrtps_c.so: invalid string offset 1569 >= 1507 for section `.strtab'
+/usr/bin/ld: /home/pi/ros2_ws/install/rosgraph_msgs/lib/librosgraph_msgs__rosidl_typesupport_fastrtps_c.so: invalid string offset 1543 >= 1507 for section `.strtab'
+/usr/bin/ld: /home/pi/ros2_ws/install/rosgraph_msgs/lib/librosgraph_msgs__rosidl_typesupport_fastrtps_c.so: invalid string offset 1581 >= 1507 for section `.strtab'
+/usr/bin/ld: /home/pi/ros2_ws/install/rosgraph_msgs/lib/librosgraph_msgs__rosidl_typesupport_fastrtps_c.so: invalid string offset 1555 >= 1507 for section `.strtab'
+/usr/bin/ld: /home/pi/ros2_ws/install/rcl_yaml_param_parser/lib/librcl_yaml_param_parser.so: invalid string offset 1580 >= 1389 for section `.strtab'
+/usr/bin/ld: /home/pi/ros2_ws/install/rcl_yaml_param_parser/lib/librcl_yaml_param_parser.so: invalid string offset 1546 >= 1389 for section `.strtab'
+/usr/bin/ld: /home/pi/ros2_ws/install/rcl_yaml_param_parser/lib/librcl_yaml_param_parser.so: invalid string offset 1599 >= 1389 for section `.strtab'
+/usr/bin/ld: /home/pi/ros2_ws/install/rcl_yaml_param_parser/lib/librcl_yaml_param_parser.so: invalid string offset 1579 >= 1389 for section `.strtab'
+/usr/bin/ld: /home/pi/ros2_ws/install/rcl_yaml_param_parser/lib/librcl_yaml_param_parser.so: invalid string offset 1553 >= 1389 for section `.strtab'
+/usr/bin/ld: /home/pi/ros2_ws/install/rcl_yaml_param_parser/lib/librcl_yaml_param_parser.so: invalid string offset 1565 >= 1389 for section `.strtab'
+/usr/bin/ld: /home/pi/ros2_ws/install/rcl_yaml_param_parser/lib/librcl_yaml_param_parser.so: invalid string offset 1591 >= 1389 for section `.strtab'

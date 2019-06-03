@@ -1,0 +1,7 @@
+[01m[K/home/pi/vision_system_ws/src/apriltag2_node/node/src/AprilTag2Node2_0.cpp:[m[K In member function ‘[01m[Kvoid AprilTag2Node::publish_data_center(const AprilTagDetectionArray&, const TFMessage&)[m[K’:
+[01m[K/home/pi/vision_system_ws/src/apriltag2_node/node/src/AprilTag2Node2_0.cpp:168:28:[m[K [01;31m[Kerror: [m[K‘[01m[KnumDetection[m[K’ was not declared in this scope
+     Eigen::MatrixXd areaID([01;31m[KnumDetection[m[K,2);
+                            [01;31m[K^~~~~~~~~~~~[m[K
+make[2]: *** [CMakeFiles/AprilTag2Node.dir/src/AprilTag2Node2_0.cpp.o] Errore 1
+make[1]: *** [CMakeFiles/AprilTag2Node.dir/all] Errore 2
+make: *** [all] Errore 2

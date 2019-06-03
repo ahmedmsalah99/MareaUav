@@ -1,0 +1,12 @@
+[35m[1mScanning dependencies of target camera_main_node[0m
+[ 20%] [32mBuilding CXX object CMakeFiles/camera_main_node.dir/src/camera_main.cpp.o[0m
+[01m[K/home/pi/vision_system_ws/src/fsm_raspicam/src/camera_main.cpp:[m[K In function ‘[01m[Kint main(int, char**)[m[K’:
+[01m[K/home/pi/vision_system_ws/src/fsm_raspicam/src/camera_main.cpp:26:66:[m[K [01;31m[Kerror: [m[Kunable to find string literal operator ‘[01m[Koperator""chatterCallback[m[K’ with ‘[01m[Kconst char [8][m[K’, ‘[01m[Kunsigned int[m[K’ arguments
+     auto sub = node->create_subscription<std_msgs::msg::Float32>([01;31m[K"chatter"chatterCallback[m[K,1);
+                                                                  [01;31m[K^~~~~~~~~~~~~~~~~~~~~~~~[m[K
+CMakeFiles/camera_main_node.dir/build.make:62: set di istruzioni per l'obiettivo "CMakeFiles/camera_main_node.dir/src/camera_main.cpp.o" non riuscito
+make[2]: *** [CMakeFiles/camera_main_node.dir/src/camera_main.cpp.o] Errore 1
+CMakeFiles/Makefile2:803: set di istruzioni per l'obiettivo "CMakeFiles/camera_main_node.dir/all" non riuscito
+make[1]: *** [CMakeFiles/camera_main_node.dir/all] Errore 2
+make: *** [all] Errore 2
+Makefile:138: set di istruzioni per l'obiettivo "all" non riuscito

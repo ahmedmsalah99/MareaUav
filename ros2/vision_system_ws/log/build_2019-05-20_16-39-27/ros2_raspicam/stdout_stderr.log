@@ -1,0 +1,3 @@
+[ 33%] Built target raspicam_raw_node
+[ 66%] Built target checks_rate_node
+[100%] Built target raspicam_compressed_node

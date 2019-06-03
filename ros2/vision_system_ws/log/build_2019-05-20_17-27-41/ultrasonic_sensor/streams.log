@@ -1,0 +1,9 @@
+Invoking command in '/home/pi/vision_system_ws/build/ultrasonic_sensor': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/pi/ros2_ws/install/ament_uncrustify:/home/pi/ros2_ws/install/test_launch_ros:/home/pi/ros2_ws/install/sros2:/home/pi/ros2_ws/install/ros2lifecycle:/home/pi/ros2_ws/install/ros2service:/home/pi/ros2_ws/install/ros2topic:/home/pi/ros2_ws/install/ros2srv:/home/pi/ros2_ws/install/ros2run:/home/pi/ros2_ws/install/ros2launch:/home/pi/ros2_ws/install/ros2pkg:/home/pi/ros2_ws/install/ros2param:/home/pi/ros2_ws/install/ros2node:/home/pi/ros2_ws/install/ros2multicast:/home/pi/ros2_ws/install/ros2msg:/home/pi/ros2_ws/install/ros2cli:/home/pi/ros2_ws/install/launch_ros:/home/pi/ros2_ws/install/launch_testing:/home/pi/ros2_ws/install/launch:/home/pi/ros2_ws/install/osrf_pycommon:/home/pi/ros2_ws/install/ament_xmllint:/home/pi/ros2_ws/install/ament_pyflakes:/home/pi/ros2_ws/install/ament_pep8:/home/pi/ros2_ws/install/ament_pep257:/home/pi/ros2_ws/install/ament_pclint:/home/pi/ros2_ws/install/ament_package:/home/pi/ros2_ws/install/ament_lint_cmake:/home/pi/ros2_ws/install/ament_index_python:/home/pi/ros2_ws/install/ament_flake8:/home/pi/ros2_ws/install/ament_cpplint:/home/pi/ros2_ws/install/ament_cppcheck:/home/pi/ros2_ws/install/ament_copyright:/home/pi/ros2_ws/install/ament_clang_format /usr/bin/cmake --build /home/pi/vision_system_ws/build/ultrasonic_sensor -- -j4 -l4
+[  8%] Built target ultrasonic_sensor__rosidl_generator_c
+[ 11%] Built target ultrasonic_sensor__cpp
+[ 17%] Built target UltrasonicSensor
+[ 25%] Built target ultrasonic_sensor__rosidl_typesupport_c
+[ 34%] Built target ultrasonic_sensor__rosidl_typesupport_introspection_c
+[ 42%] Built target ultrasonic_sensor__rosidl_typesupport_cpp
+[ 51%] Built target ultrasonic_sensor__rosidl_typesupport_fastrtps_cpp
+[ 60%] Built target ultrasonic_sensor__rosidl_typesupport_introspection_cpp

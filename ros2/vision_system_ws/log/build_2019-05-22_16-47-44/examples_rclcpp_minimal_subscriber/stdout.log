@@ -1,0 +1,8 @@
+[35m[1mScanning dependencies of target checks_rate[0m
+[ 25%] Built target subscriber_not_composable
+[ 37%] [32mBuilding CXX object CMakeFiles/checks_rate.dir/checks_rate.cpp.o[0m
+[ 62%] Built target subscriber_lambda
+[ 87%] Built target subscriber_member_function
+CMakeFiles/checks_rate.dir/build.make:62: set di istruzioni per l'obiettivo "CMakeFiles/checks_rate.dir/checks_rate.cpp.o" non riuscito
+CMakeFiles/Makefile2:360: set di istruzioni per l'obiettivo "CMakeFiles/checks_rate.dir/all" non riuscito
+Makefile:138: set di istruzioni per l'obiettivo "all" non riuscito

@@ -1,0 +1,45 @@
+[01m[K/home/pi/vision_system_ws/src/apriltag2_node/node/src/AprilTag2Node.cpp:[m[K In constructor ‘[01m[KAprilTag2Node::AprilTag2Node()[m[K’:
+[01m[K/home/pi/vision_system_ws/src/apriltag2_node/node/src/AprilTag2Node.cpp:43:39:[m[K [01;31m[Kerror: [m[Kambiguous overload for ‘[01m[Koperator[][m[K’ (operand types are ‘[01m[Kstd::map<int, std::__cxx11::basic_string<char> >[m[K’ and ‘[01m[Kconst char [5][m[K’)
+         std::cout<<"ID:"<<tracked_tags[01;31m[K[[m[K"cioa"]<<std::endl;
+                                       [01;31m[K^[m[K
+In file included from [01m[K/usr/include/c++/6/map:61:0[m[K,
+                 from [01m[K/home/pi/ros2_ws/install/rclcpp/include/rclcpp/client.hpp:19[m[K,
+                 from [01m[K/home/pi/ros2_ws/install/rclcpp/include/rclcpp/callback_group.hpp:23[m[K,
+                 from [01m[K/home/pi/ros2_ws/install/rclcpp/include/rclcpp/any_executable.hpp:20[m[K,
+                 from [01m[K/home/pi/ros2_ws/install/rclcpp/include/rclcpp/memory_strategy.hpp:24[m[K,
+                 from [01m[K/home/pi/ros2_ws/install/rclcpp/include/rclcpp/memory_strategies.hpp:18[m[K,
+                 from [01m[K/home/pi/ros2_ws/install/rclcpp/include/rclcpp/executor.hpp:32[m[K,
+                 from [01m[K/home/pi/ros2_ws/install/rclcpp/include/rclcpp/executors/multi_threaded_executor.hpp:24[m[K,
+                 from [01m[K/home/pi/ros2_ws/install/rclcpp/include/rclcpp/executors.hpp:21[m[K,
+                 from [01m[K/home/pi/ros2_ws/install/rclcpp/include/rclcpp/rclcpp.hpp:144[m[K,
+                 from [01m[K/home/pi/vision_system_ws/src/apriltag2_node/node/include/AprilTag2Node.hpp:4[m[K,
+                 from [01m[K/home/pi/vision_system_ws/src/apriltag2_node/node/src/AprilTag2Node.cpp:1[m[K:
+[01m[K/usr/include/c++/6/bits/stl_map.h:474:7:[m[K [01;36m[Knote: [m[Kcandidate: std::map<_Key, _Tp, _Compare, _Alloc>::mapped_type& std::map<_Key, _Tp, _Compare, _Alloc>::operator[](const key_type&) [with _Key = int; _Tp = std::__cxx11::basic_string<char>; _Compare = std::less<int>; _Alloc = std::allocator<std::pair<const int, std::__cxx11::basic_string<char> > >; std::map<_Key, _Tp, _Compare, _Alloc>::mapped_type = std::__cxx11::basic_string<char>; std::map<_Key, _Tp, _Compare, _Alloc>::key_type = int] <near match>
+       [01;36m[Koperator[m[K[](const key_type& __k)
+       [01;36m[K^~~~~~~~[m[K
+[01m[K/usr/include/c++/6/bits/stl_map.h:474:7:[m[K [01;36m[Knote: [m[K  conversion of argument 1 would be ill-formed:
+[01m[K/home/pi/vision_system_ws/src/apriltag2_node/node/src/AprilTag2Node.cpp:43:46:[m[K [01;31m[Kerror: [m[Kinvalid conversion from ‘[01m[Kconst char*[m[K’ to ‘[01m[Kstd::map<int, std::__cxx11::basic_string<char> >::key_type {aka int}[m[K’ [[01;31m[K-fpermissive[m[K]
+         std::cout<<"ID:"<<tracked_tags["cioa"[01;31m[K][m[K<<std::endl;
+                                              [01;31m[K^[m[K
+In file included from [01m[K/usr/include/c++/6/map:61:0[m[K,
+                 from [01m[K/home/pi/ros2_ws/install/rclcpp/include/rclcpp/client.hpp:19[m[K,
+                 from [01m[K/home/pi/ros2_ws/install/rclcpp/include/rclcpp/callback_group.hpp:23[m[K,
+                 from [01m[K/home/pi/ros2_ws/install/rclcpp/include/rclcpp/any_executable.hpp:20[m[K,
+                 from [01m[K/home/pi/ros2_ws/install/rclcpp/include/rclcpp/memory_strategy.hpp:24[m[K,
+                 from [01m[K/home/pi/ros2_ws/install/rclcpp/include/rclcpp/memory_strategies.hpp:18[m[K,
+                 from [01m[K/home/pi/ros2_ws/install/rclcpp/include/rclcpp/executor.hpp:32[m[K,
+                 from [01m[K/home/pi/ros2_ws/install/rclcpp/include/rclcpp/executors/multi_threaded_executor.hpp:24[m[K,
+                 from [01m[K/home/pi/ros2_ws/install/rclcpp/include/rclcpp/executors.hpp:21[m[K,
+                 from [01m[K/home/pi/ros2_ws/install/rclcpp/include/rclcpp/rclcpp.hpp:144[m[K,
+                 from [01m[K/home/pi/vision_system_ws/src/apriltag2_node/node/include/AprilTag2Node.hpp:4[m[K,
+                 from [01m[K/home/pi/vision_system_ws/src/apriltag2_node/node/src/AprilTag2Node.cpp:1[m[K:
+[01m[K/usr/include/c++/6/bits/stl_map.h:494:7:[m[K [01;36m[Knote: [m[Kcandidate: std::map<_Key, _Tp, _Compare, _Alloc>::mapped_type& std::map<_Key, _Tp, _Compare, _Alloc>::operator[](std::map<_Key, _Tp, _Compare, _Alloc>::key_type&&) [with _Key = int; _Tp = std::__cxx11::basic_string<char>; _Compare = std::less<int>; _Alloc = std::allocator<std::pair<const int, std::__cxx11::basic_string<char> > >; std::map<_Key, _Tp, _Compare, _Alloc>::mapped_type = std::__cxx11::basic_string<char>; std::map<_Key, _Tp, _Compare, _Alloc>::key_type = int] <near match>
+       [01;36m[Koperator[m[K[](key_type&& __k)
+       [01;36m[K^~~~~~~~[m[K
+[01m[K/usr/include/c++/6/bits/stl_map.h:494:7:[m[K [01;36m[Knote: [m[K  conversion of argument 1 would be ill-formed:
+[01m[K/home/pi/vision_system_ws/src/apriltag2_node/node/src/AprilTag2Node.cpp:43:46:[m[K [01;31m[Kerror: [m[Kinvalid conversion from ‘[01m[Kconst char*[m[K’ to ‘[01m[Kstd::map<int, std::__cxx11::basic_string<char> >::key_type {aka int}[m[K’ [[01;31m[K-fpermissive[m[K]
+         std::cout<<"ID:"<<tracked_tags["cioa"[01;31m[K][m[K<<std::endl;
+                                              [01;31m[K^[m[K
+make[2]: *** [CMakeFiles/AprilTag2Node.dir/src/AprilTag2Node.cpp.o] Errore 1
+make[1]: *** [CMakeFiles/AprilTag2Node.dir/all] Errore 2
+make: *** [all] Errore 2

@@ -1,0 +1,18 @@
+[35m[1mScanning dependencies of target AprilTag2Node[0m
+[ 25%] [32mBuilding CXX object CMakeFiles/AprilTag2Node.dir/src/AprilTag2Node2_0.cpp.o[0m
+In file included from [01m[K/home/pi/vision_system_ws/src/apriltag2_node/node/include/AprilTag2Node.hpp:17:0[m[K,
+                 from [01m[K/home/pi/vision_system_ws/src/apriltag2_node/node/src/AprilTag2Node2_0.cpp:1[m[K:
+[01m[K/home/pi/vision_system_ws/src/apriltag2_node/node/include/LandingPlatform.h:[m[K In function ‘[01m[Kvoid SetMatrix(Platform_tag*)[m[K’:
+[01m[K/home/pi/vision_system_ws/src/apriltag2_node/node/include/LandingPlatform.h:82:7:[m[K [01;31m[Kerror: [m[K‘[01m[Kstruct Platform_tag[m[K’ has no member named ‘[01m[KTA6_T_TAG5[m[K’; did you mean ‘[01m[KTAG6_T_TAG5[m[K’?
+ TAGS->[01;31m[KTA6_T_TAG5[m[K << 1,0,0,0.163,
+       [01;31m[K^~~~~~~~~~[m[K
+[01m[K/home/pi/vision_system_ws/src/apriltag2_node/node/src/AprilTag2Node2_0.cpp:[m[K In member function ‘[01m[Kvoid AprilTag2Node::getPose(const matd_t&, geometry_msgs::msg::Transform&, int, bool)[m[K’:
+[01m[K/home/pi/vision_system_ws/src/apriltag2_node/node/src/AprilTag2Node2_0.cpp:205:24:[m[K [01;31m[Kerror: [m[Kexpected initializer before ‘[01m[K<<[m[K’ token
+ Eigen::Matrix4d trial  [01;31m[K<<[m[K R(0,0),R(0,1),R(0,2),tt[0],
+                        [01;31m[K^~[m[K
+CMakeFiles/AprilTag2Node.dir/build.make:62: set di istruzioni per l'obiettivo "CMakeFiles/AprilTag2Node.dir/src/AprilTag2Node2_0.cpp.o" non riuscito
+make[2]: *** [CMakeFiles/AprilTag2Node.dir/src/AprilTag2Node2_0.cpp.o] Errore 1
+CMakeFiles/Makefile2:200: set di istruzioni per l'obiettivo "CMakeFiles/AprilTag2Node.dir/all" non riuscito
+Makefile:138: set di istruzioni per l'obiettivo "all" non riuscito
+make[1]: *** [CMakeFiles/AprilTag2Node.dir/all] Errore 2
+make: *** [all] Errore 2

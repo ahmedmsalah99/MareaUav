@@ -1,0 +1,4 @@
+make[1]: *** wait: Nessun processo figlio.  Arresto.
+make[1]: *** Attesa per i processi non terminati....
+make[1]: *** wait: Nessun processo figlio.  Arresto.
+make: *** [all] Errore 2

@@ -1,0 +1,1 @@
+ament_cmake_symlink_install_targets("TARGET_FILES" "/home/pi/vision_system_ws/build/apriltag_msgs/libapriltag_msgs__rosidl_typesupport_introspection_cpp.so" "TARGETS" "apriltag_msgs__rosidl_typesupport_introspection_cpp" "ARCHIVE_DESTINATION" "lib" "LIBRARY_DESTINATION" "lib" "RUNTIME_DESTINATION" "bin")

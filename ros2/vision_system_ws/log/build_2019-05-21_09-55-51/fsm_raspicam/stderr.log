@@ -1,0 +1,35 @@
+[01m[K/home/pi/vision_system_ws/src/fsm_raspicam/src/CameraStates.cpp:4:23:[m[K [01;31m[Kerror: [m[Kdefinition of implicitly-declared ‘[01m[KIdleState::~IdleState()[m[K’
+ IdleState::~IdleState([01;31m[K)[m[K {}
+                       [01;31m[K^[m[K
+[01m[K/home/pi/vision_system_ws/src/fsm_raspicam/src/CameraStates.cpp:[m[K In member function ‘[01m[Kvirtual void IdleState::setParameters()[m[K’:
+[01m[K/home/pi/vision_system_ws/src/fsm_raspicam/src/CameraStates.cpp:8:2:[m[K [01;31m[Kerror: [m[K‘[01m[Kcout[m[K’ is not a member of ‘[01m[Kstd[m[K’
+  [01;31m[Kstd[m[K::cout<<"hey"<<std::endl;
+  [01;31m[K^~~[m[K
+[01m[K/home/pi/vision_system_ws/src/fsm_raspicam/src/CameraStates.cpp:8:20:[m[K [01;31m[Kerror: [m[K‘[01m[Kendl[m[K’ is not a member of ‘[01m[Kstd[m[K’
+  std::cout<<"hey"<<[01;31m[Kstd[m[K::endl;
+                    [01;31m[K^~~[m[K
+[01m[K/home/pi/vision_system_ws/src/fsm_raspicam/src/CameraStates.cpp:[m[K At global scope:
+[01m[K/home/pi/vision_system_ws/src/fsm_raspicam/src/CameraStates.cpp:11:25:[m[K [01;31m[Kerror: [m[Kdefinition of implicitly-declared ‘[01m[KStartState::~StartState()[m[K’
+ StartState::~StartState([01;31m[K)[m[K {}
+                         [01;31m[K^[m[K
+[01m[K/home/pi/vision_system_ws/src/fsm_raspicam/src/CameraStates.cpp:[m[K In member function ‘[01m[Kvirtual void StartState::setParameters()[m[K’:
+[01m[K/home/pi/vision_system_ws/src/fsm_raspicam/src/CameraStates.cpp:15:2:[m[K [01;31m[Kerror: [m[K‘[01m[Kcout[m[K’ is not a member of ‘[01m[Kstd[m[K’
+  [01;31m[Kstd[m[K::cout<<"hey"<<std::endl;
+  [01;31m[K^~~[m[K
+[01m[K/home/pi/vision_system_ws/src/fsm_raspicam/src/CameraStates.cpp:15:20:[m[K [01;31m[Kerror: [m[K‘[01m[Kendl[m[K’ is not a member of ‘[01m[Kstd[m[K’
+  std::cout<<"hey"<<[01;31m[Kstd[m[K::endl;
+                    [01;31m[K^~~[m[K
+[01m[K/home/pi/vision_system_ws/src/fsm_raspicam/src/CameraStates.cpp:[m[K At global scope:
+[01m[K/home/pi/vision_system_ws/src/fsm_raspicam/src/CameraStates.cpp:18:23:[m[K [01;31m[Kerror: [m[Kdefinition of implicitly-declared ‘[01m[KStopState::~StopState()[m[K’
+ StopState::~StopState([01;31m[K)[m[K {}
+                       [01;31m[K^[m[K
+[01m[K/home/pi/vision_system_ws/src/fsm_raspicam/src/CameraStates.cpp:[m[K In member function ‘[01m[Kvirtual void StopState::setParameters()[m[K’:
+[01m[K/home/pi/vision_system_ws/src/fsm_raspicam/src/CameraStates.cpp:22:2:[m[K [01;31m[Kerror: [m[K‘[01m[Kcout[m[K’ is not a member of ‘[01m[Kstd[m[K’
+  [01;31m[Kstd[m[K::cout<<"hey"<<std::endl;
+  [01;31m[K^~~[m[K
+[01m[K/home/pi/vision_system_ws/src/fsm_raspicam/src/CameraStates.cpp:22:20:[m[K [01;31m[Kerror: [m[K‘[01m[Kendl[m[K’ is not a member of ‘[01m[Kstd[m[K’
+  std::cout<<"hey"<<[01;31m[Kstd[m[K::endl;
+                    [01;31m[K^~~[m[K
+make[2]: *** [CMakeFiles/camera_main_node.dir/src/CameraStates.cpp.o] Errore 1
+make[1]: *** [CMakeFiles/camera_main_node.dir/all] Errore 2
+make: *** [all] Errore 2

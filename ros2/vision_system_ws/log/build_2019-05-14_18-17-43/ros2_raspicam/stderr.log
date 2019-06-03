@@ -1,0 +1,7 @@
+[01m[K/home/pi/vision_system_ws/src/ros2_raspicam/src/checks_rate.cpp:[m[K In function ‘[01m[Kint main(int, char**)[m[K’:
+[01m[K/home/pi/vision_system_ws/src/ros2_raspicam/src/checks_rate.cpp:46:16:[m[K [01;31m[Kerror: [m[K‘[01m[Ktimer_end[m[K’ was not declared in this scope
+  gettimeofday(&[01;31m[Ktimer_end[m[K,NULL);
+                [01;31m[K^~~~~~~~~[m[K
+make[2]: *** [CMakeFiles/checks_rate_node.dir/src/checks_rate.cpp.o] Errore 1
+make[1]: *** [CMakeFiles/checks_rate_node.dir/all] Errore 2
+make: *** [all] Errore 2

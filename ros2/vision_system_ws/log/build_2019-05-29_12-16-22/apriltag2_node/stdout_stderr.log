@@ -1,0 +1,337 @@
+[35m[1mScanning dependencies of target AprilTag2Node[0m
+[ 25%] [32mBuilding CXX object CMakeFiles/AprilTag2Node.dir/src/AprilTag2Node2_0.cpp.o[0m
+[01m[K/home/pi/vision_system_ws/src/apriltag2_node/node/src/AprilTag2Node2_0.cpp:[m[K In member function ‘[01m[Kvoid AprilTag2Node::getPose(const matd_t&, geometry_msgs::msg::Transform&, int, bool)[m[K’:
+[01m[K/home/pi/vision_system_ws/src/apriltag2_node/node/src/AprilTag2Node2_0.cpp:193:38:[m[K [01;31m[Kerror: [m[Kno match for ‘[01m[Koperator=[m[K’ (operand types are ‘[01m[Kconst Vector4d {aka const Eigen::Matrix<double, 4, 1>}[m[K’ and ‘[01m[Kconst Eigen::Product<Eigen::Matrix<double, 4, 4>, Eigen::Matrix<double, 4, 1>, 0>[m[K’)
+         tt_center = TAGS.TAG5_T_TAG1*[01;31m[Ktt4[m[K;
+                                      [01;31m[K^~~[m[K
+In file included from [01m[K/usr/include/eigen3/Eigen/Core:432:0[m[K,
+                 from [01m[K/home/pi/vision_system_ws/src/apriltag2_node/node/include/LandingPlatform.h:4[m[K,
+                 from [01m[K/home/pi/vision_system_ws/src/apriltag2_node/node/include/AprilTag2Node.hpp:14[m[K,
+                 from [01m[K/home/pi/vision_system_ws/src/apriltag2_node/node/src/AprilTag2Node2_0.cpp:1[m[K:
+[01m[K/usr/include/eigen3/Eigen/src/Core/Matrix.h:206:33:[m[K [01;36m[Knote: [m[Kcandidate: Eigen::Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols>& Eigen::Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols>::operator=(const Eigen::Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols>&) [with _Scalar = double; int _Rows = 4; int _Cols = 1; int _Options = 0; int _MaxRows = 4; int _MaxCols = 1] <near match>
+     EIGEN_STRONG_INLINE Matrix& [01;36m[Koperator[m[K=(const Matrix& other)
+                                 [01;36m[K^~~~~~~~[m[K
+[01m[K/usr/include/eigen3/Eigen/src/Core/Matrix.h:206:33:[m[K [01;36m[Knote: [m[K  passing ‘[01m[Kconst Vector4d* {aka const Eigen::Matrix<double, 4, 1>*}[m[K’ as ‘[01m[Kthis[m[K’ argument discards qualifiers
+[01m[K/usr/include/eigen3/Eigen/src/Core/Matrix.h:223:33:[m[K [01;36m[Knote: [m[Kcandidate: Eigen::Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols>& Eigen::Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols>::operator=(const Eigen::DenseBase<OtherDerived>&) [with OtherDerived = Eigen::Product<Eigen::Matrix<double, 4, 4>, Eigen::Matrix<double, 4, 1>, 0>; _Scalar = double; int _Rows = 4; int _Cols = 1; int _Options = 0; int _MaxRows = 4; int _MaxCols = 1] <near match>
+     EIGEN_STRONG_INLINE Matrix& [01;36m[Koperator[m[K=(const DenseBase<OtherDerived>& other)
+                                 [01;36m[K^~~~~~~~[m[K
+[01m[K/usr/include/eigen3/Eigen/src/Core/Matrix.h:223:33:[m[K [01;36m[Knote: [m[K  passing ‘[01m[Kconst Vector4d* {aka const Eigen::Matrix<double, 4, 1>*}[m[K’ as ‘[01m[Kthis[m[K’ argument discards qualifiers
+[01m[K/usr/include/eigen3/Eigen/src/Core/Matrix.h:236:33:[m[K [01;36m[Knote: [m[Kcandidate: Eigen::Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols>& Eigen::Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols>::operator=(const Eigen::EigenBase<OtherDerived>&) [with OtherDerived = Eigen::Product<Eigen::Matrix<double, 4, 4>, Eigen::Matrix<double, 4, 1>, 0>; _Scalar = double; int _Rows = 4; int _Cols = 1; int _Options = 0; int _MaxRows = 4; int _MaxCols = 1] <near match>
+     EIGEN_STRONG_INLINE Matrix& [01;36m[Koperator[m[K=(const EigenBase<OtherDerived> &other)
+                                 [01;36m[K^~~~~~~~[m[K
+[01m[K/usr/include/eigen3/Eigen/src/Core/Matrix.h:236:33:[m[K [01;36m[Knote: [m[K  passing ‘[01m[Kconst Vector4d* {aka const Eigen::Matrix<double, 4, 1>*}[m[K’ as ‘[01m[Kthis[m[K’ argument discards qualifiers
+[01m[K/usr/include/eigen3/Eigen/src/Core/Matrix.h:243:33:[m[K [01;36m[Knote: [m[Kcandidate: template<class OtherDerived> Eigen::Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols>& Eigen::Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols>::operator=(const Eigen::ReturnByValue<OtherDerived>&) [with OtherDerived = OtherDerived; _Scalar = double; int _Rows = 4; int _Cols = 1; int _Options = 0; int _MaxRows = 4; int _MaxCols = 1]
+     EIGEN_STRONG_INLINE Matrix& [01;36m[Koperator[m[K=(const ReturnByValue<OtherDerived>& func)
+                                 [01;36m[K^~~~~~~~[m[K
+[01m[K/usr/include/eigen3/Eigen/src/Core/Matrix.h:243:33:[m[K [01;36m[Knote: [m[K  template argument deduction/substitution failed:
+[01m[K/home/pi/vision_system_ws/src/apriltag2_node/node/src/AprilTag2Node2_0.cpp:193:38:[m[K [01;36m[Knote: [m[K  ‘[01m[Kconst Eigen::Product<Eigen::Matrix<double, 4, 4>, Eigen::Matrix<double, 4, 1>, 0>[m[K’ is not derived from ‘[01m[Kconst Eigen::ReturnByValue<Derived>[m[K’
+         tt_center = TAGS.TAG5_T_TAG1*[01;36m[Ktt4[m[K;
+                                      [01;36m[K^~~[m[K
+In file included from [01m[K/usr/include/eigen3/Eigen/Core:432:0[m[K,
+                 from [01m[K/home/pi/vision_system_ws/src/apriltag2_node/node/include/LandingPlatform.h:4[m[K,
+                 from [01m[K/home/pi/vision_system_ws/src/apriltag2_node/node/include/AprilTag2Node.hpp:14[m[K,
+                 from [01m[K/home/pi/vision_system_ws/src/apriltag2_node/node/src/AprilTag2Node2_0.cpp:1[m[K:
+[01m[K/usr/include/eigen3/Eigen/src/Core/Matrix.h:281:13:[m[K [01;36m[Knote: [m[Kcandidate: Eigen::Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols>& Eigen::Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols>::operator=(Eigen::Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols>&&) [with _Scalar = double; int _Rows = 4; int _Cols = 1; int _Options = 0; int _MaxRows = 4; int _MaxCols = 1] <near match>
+     Matrix& [01;36m[Koperator[m[K=(Matrix&& other) EIGEN_NOEXCEPT_IF(std::is_nothrow_move_assignable<Scalar>::value)
+             [01;36m[K^~~~~~~~[m[K
+[01m[K/usr/include/eigen3/Eigen/src/Core/Matrix.h:281:13:[m[K [01;36m[Knote: [m[K  passing ‘[01m[Kconst Vector4d* {aka const Eigen::Matrix<double, 4, 1>*}[m[K’ as ‘[01m[Kthis[m[K’ argument discards qualifiers
+[01m[K/usr/include/eigen3/Eigen/src/Core/Matrix.h:392:13:[m[K [01;36m[Knote: [m[Kcandidate: template<class OtherDerived> Eigen::Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols>& Eigen::Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols>::operator=(const Eigen::RotationBase<OtherDerived, ColsAtCompileTime>&) [with OtherDerived = OtherDerived; _Scalar = double; int _Rows = 4; int _Cols = 1; int _Options = 0; int _MaxRows = 4; int _MaxCols = 1]
+     Matrix& [01;36m[Koperator[m[K=(const RotationBase<OtherDerived,ColsAtCompileTime>& r);
+             [01;36m[K^~~~~~~~[m[K
+[01m[K/usr/include/eigen3/Eigen/src/Core/Matrix.h:392:13:[m[K [01;36m[Knote: [m[K  template argument deduction/substitution failed:
+[01m[K/home/pi/vision_system_ws/src/apriltag2_node/node/src/AprilTag2Node2_0.cpp:193:38:[m[K [01;36m[Knote: [m[K  ‘[01m[Kconst Eigen::Product<Eigen::Matrix<double, 4, 4>, Eigen::Matrix<double, 4, 1>, 0>[m[K’ is not derived from ‘[01m[Kconst Eigen::RotationBase<OtherDerived, 1>[m[K’
+         tt_center = TAGS.TAG5_T_TAG1*[01;36m[Ktt4[m[K;
+                                      [01;36m[K^~~[m[K
+[01m[K/home/pi/vision_system_ws/src/apriltag2_node/node/src/AprilTag2Node2_0.cpp:196:38:[m[K [01;31m[Kerror: [m[Kno match for ‘[01m[Koperator=[m[K’ (operand types are ‘[01m[Kconst Vector4d {aka const Eigen::Matrix<double, 4, 1>}[m[K’ and ‘[01m[Kconst Eigen::Product<Eigen::Matrix<double, 4, 4>, Eigen::Matrix<double, 4, 1>, 0>[m[K’)
+         tt_center = TAGS.TAG5_T_TAG2*[01;31m[Ktt4[m[K;
+                                      [01;31m[K^~~[m[K
+In file included from [01m[K/usr/include/eigen3/Eigen/Core:432:0[m[K,
+                 from [01m[K/home/pi/vision_system_ws/src/apriltag2_node/node/include/LandingPlatform.h:4[m[K,
+                 from [01m[K/home/pi/vision_system_ws/src/apriltag2_node/node/include/AprilTag2Node.hpp:14[m[K,
+                 from [01m[K/home/pi/vision_system_ws/src/apriltag2_node/node/src/AprilTag2Node2_0.cpp:1[m[K:
+[01m[K/usr/include/eigen3/Eigen/src/Core/Matrix.h:206:33:[m[K [01;36m[Knote: [m[Kcandidate: Eigen::Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols>& Eigen::Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols>::operator=(const Eigen::Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols>&) [with _Scalar = double; int _Rows = 4; int _Cols = 1; int _Options = 0; int _MaxRows = 4; int _MaxCols = 1] <near match>
+     EIGEN_STRONG_INLINE Matrix& [01;36m[Koperator[m[K=(const Matrix& other)
+                                 [01;36m[K^~~~~~~~[m[K
+[01m[K/usr/include/eigen3/Eigen/src/Core/Matrix.h:206:33:[m[K [01;36m[Knote: [m[K  passing ‘[01m[Kconst Vector4d* {aka const Eigen::Matrix<double, 4, 1>*}[m[K’ as ‘[01m[Kthis[m[K’ argument discards qualifiers
+[01m[K/usr/include/eigen3/Eigen/src/Core/Matrix.h:223:33:[m[K [01;36m[Knote: [m[Kcandidate: Eigen::Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols>& Eigen::Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols>::operator=(const Eigen::DenseBase<OtherDerived>&) [with OtherDerived = Eigen::Product<Eigen::Matrix<double, 4, 4>, Eigen::Matrix<double, 4, 1>, 0>; _Scalar = double; int _Rows = 4; int _Cols = 1; int _Options = 0; int _MaxRows = 4; int _MaxCols = 1] <near match>
+     EIGEN_STRONG_INLINE Matrix& [01;36m[Koperator[m[K=(const DenseBase<OtherDerived>& other)
+                                 [01;36m[K^~~~~~~~[m[K
+[01m[K/usr/include/eigen3/Eigen/src/Core/Matrix.h:223:33:[m[K [01;36m[Knote: [m[K  passing ‘[01m[Kconst Vector4d* {aka const Eigen::Matrix<double, 4, 1>*}[m[K’ as ‘[01m[Kthis[m[K’ argument discards qualifiers
+[01m[K/usr/include/eigen3/Eigen/src/Core/Matrix.h:236:33:[m[K [01;36m[Knote: [m[Kcandidate: Eigen::Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols>& Eigen::Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols>::operator=(const Eigen::EigenBase<OtherDerived>&) [with OtherDerived = Eigen::Product<Eigen::Matrix<double, 4, 4>, Eigen::Matrix<double, 4, 1>, 0>; _Scalar = double; int _Rows = 4; int _Cols = 1; int _Options = 0; int _MaxRows = 4; int _MaxCols = 1] <near match>
+     EIGEN_STRONG_INLINE Matrix& [01;36m[Koperator[m[K=(const EigenBase<OtherDerived> &other)
+                                 [01;36m[K^~~~~~~~[m[K
+[01m[K/usr/include/eigen3/Eigen/src/Core/Matrix.h:236:33:[m[K [01;36m[Knote: [m[K  passing ‘[01m[Kconst Vector4d* {aka const Eigen::Matrix<double, 4, 1>*}[m[K’ as ‘[01m[Kthis[m[K’ argument discards qualifiers
+[01m[K/usr/include/eigen3/Eigen/src/Core/Matrix.h:243:33:[m[K [01;36m[Knote: [m[Kcandidate: template<class OtherDerived> Eigen::Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols>& Eigen::Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols>::operator=(const Eigen::ReturnByValue<OtherDerived>&) [with OtherDerived = OtherDerived; _Scalar = double; int _Rows = 4; int _Cols = 1; int _Options = 0; int _MaxRows = 4; int _MaxCols = 1]
+     EIGEN_STRONG_INLINE Matrix& [01;36m[Koperator[m[K=(const ReturnByValue<OtherDerived>& func)
+                                 [01;36m[K^~~~~~~~[m[K
+[01m[K/usr/include/eigen3/Eigen/src/Core/Matrix.h:243:33:[m[K [01;36m[Knote: [m[K  template argument deduction/substitution failed:
+[01m[K/home/pi/vision_system_ws/src/apriltag2_node/node/src/AprilTag2Node2_0.cpp:196:38:[m[K [01;36m[Knote: [m[K  ‘[01m[Kconst Eigen::Product<Eigen::Matrix<double, 4, 4>, Eigen::Matrix<double, 4, 1>, 0>[m[K’ is not derived from ‘[01m[Kconst Eigen::ReturnByValue<Derived>[m[K’
+         tt_center = TAGS.TAG5_T_TAG2*[01;36m[Ktt4[m[K;
+                                      [01;36m[K^~~[m[K
+In file included from [01m[K/usr/include/eigen3/Eigen/Core:432:0[m[K,
+                 from [01m[K/home/pi/vision_system_ws/src/apriltag2_node/node/include/LandingPlatform.h:4[m[K,
+                 from [01m[K/home/pi/vision_system_ws/src/apriltag2_node/node/include/AprilTag2Node.hpp:14[m[K,
+                 from [01m[K/home/pi/vision_system_ws/src/apriltag2_node/node/src/AprilTag2Node2_0.cpp:1[m[K:
+[01m[K/usr/include/eigen3/Eigen/src/Core/Matrix.h:281:13:[m[K [01;36m[Knote: [m[Kcandidate: Eigen::Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols>& Eigen::Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols>::operator=(Eigen::Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols>&&) [with _Scalar = double; int _Rows = 4; int _Cols = 1; int _Options = 0; int _MaxRows = 4; int _MaxCols = 1] <near match>
+     Matrix& [01;36m[Koperator[m[K=(Matrix&& other) EIGEN_NOEXCEPT_IF(std::is_nothrow_move_assignable<Scalar>::value)
+             [01;36m[K^~~~~~~~[m[K
+[01m[K/usr/include/eigen3/Eigen/src/Core/Matrix.h:281:13:[m[K [01;36m[Knote: [m[K  passing ‘[01m[Kconst Vector4d* {aka const Eigen::Matrix<double, 4, 1>*}[m[K’ as ‘[01m[Kthis[m[K’ argument discards qualifiers
+[01m[K/usr/include/eigen3/Eigen/src/Core/Matrix.h:392:13:[m[K [01;36m[Knote: [m[Kcandidate: template<class OtherDerived> Eigen::Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols>& Eigen::Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols>::operator=(const Eigen::RotationBase<OtherDerived, ColsAtCompileTime>&) [with OtherDerived = OtherDerived; _Scalar = double; int _Rows = 4; int _Cols = 1; int _Options = 0; int _MaxRows = 4; int _MaxCols = 1]
+     Matrix& [01;36m[Koperator[m[K=(const RotationBase<OtherDerived,ColsAtCompileTime>& r);
+             [01;36m[K^~~~~~~~[m[K
+[01m[K/usr/include/eigen3/Eigen/src/Core/Matrix.h:392:13:[m[K [01;36m[Knote: [m[K  template argument deduction/substitution failed:
+[01m[K/home/pi/vision_system_ws/src/apriltag2_node/node/src/AprilTag2Node2_0.cpp:196:38:[m[K [01;36m[Knote: [m[K  ‘[01m[Kconst Eigen::Product<Eigen::Matrix<double, 4, 4>, Eigen::Matrix<double, 4, 1>, 0>[m[K’ is not derived from ‘[01m[Kconst Eigen::RotationBase<OtherDerived, 1>[m[K’
+         tt_center = TAGS.TAG5_T_TAG2*[01;36m[Ktt4[m[K;
+                                      [01;36m[K^~~[m[K
+[01m[K/home/pi/vision_system_ws/src/apriltag2_node/node/src/AprilTag2Node2_0.cpp:199:38:[m[K [01;31m[Kerror: [m[Kno match for ‘[01m[Koperator=[m[K’ (operand types are ‘[01m[Kconst Vector4d {aka const Eigen::Matrix<double, 4, 1>}[m[K’ and ‘[01m[Kconst Eigen::Product<Eigen::Matrix<double, 4, 4>, Eigen::Matrix<double, 4, 1>, 0>[m[K’)
+         tt_center = TAGS.TAG5_T_TAG3*[01;31m[Ktt4[m[K;
+                                      [01;31m[K^~~[m[K
+In file included from [01m[K/usr/include/eigen3/Eigen/Core:432:0[m[K,
+                 from [01m[K/home/pi/vision_system_ws/src/apriltag2_node/node/include/LandingPlatform.h:4[m[K,
+                 from [01m[K/home/pi/vision_system_ws/src/apriltag2_node/node/include/AprilTag2Node.hpp:14[m[K,
+                 from [01m[K/home/pi/vision_system_ws/src/apriltag2_node/node/src/AprilTag2Node2_0.cpp:1[m[K:
+[01m[K/usr/include/eigen3/Eigen/src/Core/Matrix.h:206:33:[m[K [01;36m[Knote: [m[Kcandidate: Eigen::Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols>& Eigen::Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols>::operator=(const Eigen::Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols>&) [with _Scalar = double; int _Rows = 4; int _Cols = 1; int _Options = 0; int _MaxRows = 4; int _MaxCols = 1] <near match>
+     EIGEN_STRONG_INLINE Matrix& [01;36m[Koperator[m[K=(const Matrix& other)
+                                 [01;36m[K^~~~~~~~[m[K
+[01m[K/usr/include/eigen3/Eigen/src/Core/Matrix.h:206:33:[m[K [01;36m[Knote: [m[K  passing ‘[01m[Kconst Vector4d* {aka const Eigen::Matrix<double, 4, 1>*}[m[K’ as ‘[01m[Kthis[m[K’ argument discards qualifiers
+[01m[K/usr/include/eigen3/Eigen/src/Core/Matrix.h:223:33:[m[K [01;36m[Knote: [m[Kcandidate: Eigen::Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols>& Eigen::Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols>::operator=(const Eigen::DenseBase<OtherDerived>&) [with OtherDerived = Eigen::Product<Eigen::Matrix<double, 4, 4>, Eigen::Matrix<double, 4, 1>, 0>; _Scalar = double; int _Rows = 4; int _Cols = 1; int _Options = 0; int _MaxRows = 4; int _MaxCols = 1] <near match>
+     EIGEN_STRONG_INLINE Matrix& [01;36m[Koperator[m[K=(const DenseBase<OtherDerived>& other)
+                                 [01;36m[K^~~~~~~~[m[K
+[01m[K/usr/include/eigen3/Eigen/src/Core/Matrix.h:223:33:[m[K [01;36m[Knote: [m[K  passing ‘[01m[Kconst Vector4d* {aka const Eigen::Matrix<double, 4, 1>*}[m[K’ as ‘[01m[Kthis[m[K’ argument discards qualifiers
+[01m[K/usr/include/eigen3/Eigen/src/Core/Matrix.h:236:33:[m[K [01;36m[Knote: [m[Kcandidate: Eigen::Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols>& Eigen::Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols>::operator=(const Eigen::EigenBase<OtherDerived>&) [with OtherDerived = Eigen::Product<Eigen::Matrix<double, 4, 4>, Eigen::Matrix<double, 4, 1>, 0>; _Scalar = double; int _Rows = 4; int _Cols = 1; int _Options = 0; int _MaxRows = 4; int _MaxCols = 1] <near match>
+     EIGEN_STRONG_INLINE Matrix& [01;36m[Koperator[m[K=(const EigenBase<OtherDerived> &other)
+                                 [01;36m[K^~~~~~~~[m[K
+[01m[K/usr/include/eigen3/Eigen/src/Core/Matrix.h:236:33:[m[K [01;36m[Knote: [m[K  passing ‘[01m[Kconst Vector4d* {aka const Eigen::Matrix<double, 4, 1>*}[m[K’ as ‘[01m[Kthis[m[K’ argument discards qualifiers
+[01m[K/usr/include/eigen3/Eigen/src/Core/Matrix.h:243:33:[m[K [01;36m[Knote: [m[Kcandidate: template<class OtherDerived> Eigen::Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols>& Eigen::Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols>::operator=(const Eigen::ReturnByValue<OtherDerived>&) [with OtherDerived = OtherDerived; _Scalar = double; int _Rows = 4; int _Cols = 1; int _Options = 0; int _MaxRows = 4; int _MaxCols = 1]
+     EIGEN_STRONG_INLINE Matrix& [01;36m[Koperator[m[K=(const ReturnByValue<OtherDerived>& func)
+                                 [01;36m[K^~~~~~~~[m[K
+[01m[K/usr/include/eigen3/Eigen/src/Core/Matrix.h:243:33:[m[K [01;36m[Knote: [m[K  template argument deduction/substitution failed:
+[01m[K/home/pi/vision_system_ws/src/apriltag2_node/node/src/AprilTag2Node2_0.cpp:199:38:[m[K [01;36m[Knote: [m[K  ‘[01m[Kconst Eigen::Product<Eigen::Matrix<double, 4, 4>, Eigen::Matrix<double, 4, 1>, 0>[m[K’ is not derived from ‘[01m[Kconst Eigen::ReturnByValue<Derived>[m[K’
+         tt_center = TAGS.TAG5_T_TAG3*[01;36m[Ktt4[m[K;
+                                      [01;36m[K^~~[m[K
+In file included from [01m[K/usr/include/eigen3/Eigen/Core:432:0[m[K,
+                 from [01m[K/home/pi/vision_system_ws/src/apriltag2_node/node/include/LandingPlatform.h:4[m[K,
+                 from [01m[K/home/pi/vision_system_ws/src/apriltag2_node/node/include/AprilTag2Node.hpp:14[m[K,
+                 from [01m[K/home/pi/vision_system_ws/src/apriltag2_node/node/src/AprilTag2Node2_0.cpp:1[m[K:
+[01m[K/usr/include/eigen3/Eigen/src/Core/Matrix.h:281:13:[m[K [01;36m[Knote: [m[Kcandidate: Eigen::Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols>& Eigen::Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols>::operator=(Eigen::Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols>&&) [with _Scalar = double; int _Rows = 4; int _Cols = 1; int _Options = 0; int _MaxRows = 4; int _MaxCols = 1] <near match>
+     Matrix& [01;36m[Koperator[m[K=(Matrix&& other) EIGEN_NOEXCEPT_IF(std::is_nothrow_move_assignable<Scalar>::value)
+             [01;36m[K^~~~~~~~[m[K
+[01m[K/usr/include/eigen3/Eigen/src/Core/Matrix.h:281:13:[m[K [01;36m[Knote: [m[K  passing ‘[01m[Kconst Vector4d* {aka const Eigen::Matrix<double, 4, 1>*}[m[K’ as ‘[01m[Kthis[m[K’ argument discards qualifiers
+[01m[K/usr/include/eigen3/Eigen/src/Core/Matrix.h:392:13:[m[K [01;36m[Knote: [m[Kcandidate: template<class OtherDerived> Eigen::Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols>& Eigen::Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols>::operator=(const Eigen::RotationBase<OtherDerived, ColsAtCompileTime>&) [with OtherDerived = OtherDerived; _Scalar = double; int _Rows = 4; int _Cols = 1; int _Options = 0; int _MaxRows = 4; int _MaxCols = 1]
+     Matrix& [01;36m[Koperator[m[K=(const RotationBase<OtherDerived,ColsAtCompileTime>& r);
+             [01;36m[K^~~~~~~~[m[K
+[01m[K/usr/include/eigen3/Eigen/src/Core/Matrix.h:392:13:[m[K [01;36m[Knote: [m[K  template argument deduction/substitution failed:
+[01m[K/home/pi/vision_system_ws/src/apriltag2_node/node/src/AprilTag2Node2_0.cpp:199:38:[m[K [01;36m[Knote: [m[K  ‘[01m[Kconst Eigen::Product<Eigen::Matrix<double, 4, 4>, Eigen::Matrix<double, 4, 1>, 0>[m[K’ is not derived from ‘[01m[Kconst Eigen::RotationBase<OtherDerived, 1>[m[K’
+         tt_center = TAGS.TAG5_T_TAG3*[01;36m[Ktt4[m[K;
+                                      [01;36m[K^~~[m[K
+[01m[K/home/pi/vision_system_ws/src/apriltag2_node/node/src/AprilTag2Node2_0.cpp:202:38:[m[K [01;31m[Kerror: [m[Kno match for ‘[01m[Koperator=[m[K’ (operand types are ‘[01m[Kconst Vector4d {aka const Eigen::Matrix<double, 4, 1>}[m[K’ and ‘[01m[Kconst Eigen::Product<Eigen::Matrix<double, 4, 4>, Eigen::Matrix<double, 4, 1>, 0>[m[K’)
+         tt_center = TAGS.TAG5_T_TAG4*[01;31m[Ktt4[m[K;
+                                      [01;31m[K^~~[m[K
+In file included from [01m[K/usr/include/eigen3/Eigen/Core:432:0[m[K,
+                 from [01m[K/home/pi/vision_system_ws/src/apriltag2_node/node/include/LandingPlatform.h:4[m[K,
+                 from [01m[K/home/pi/vision_system_ws/src/apriltag2_node/node/include/AprilTag2Node.hpp:14[m[K,
+                 from [01m[K/home/pi/vision_system_ws/src/apriltag2_node/node/src/AprilTag2Node2_0.cpp:1[m[K:
+[01m[K/usr/include/eigen3/Eigen/src/Core/Matrix.h:206:33:[m[K [01;36m[Knote: [m[Kcandidate: Eigen::Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols>& Eigen::Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols>::operator=(const Eigen::Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols>&) [with _Scalar = double; int _Rows = 4; int _Cols = 1; int _Options = 0; int _MaxRows = 4; int _MaxCols = 1] <near match>
+     EIGEN_STRONG_INLINE Matrix& [01;36m[Koperator[m[K=(const Matrix& other)
+                                 [01;36m[K^~~~~~~~[m[K
+[01m[K/usr/include/eigen3/Eigen/src/Core/Matrix.h:206:33:[m[K [01;36m[Knote: [m[K  passing ‘[01m[Kconst Vector4d* {aka const Eigen::Matrix<double, 4, 1>*}[m[K’ as ‘[01m[Kthis[m[K’ argument discards qualifiers
+[01m[K/usr/include/eigen3/Eigen/src/Core/Matrix.h:223:33:[m[K [01;36m[Knote: [m[Kcandidate: Eigen::Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols>& Eigen::Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols>::operator=(const Eigen::DenseBase<OtherDerived>&) [with OtherDerived = Eigen::Product<Eigen::Matrix<double, 4, 4>, Eigen::Matrix<double, 4, 1>, 0>; _Scalar = double; int _Rows = 4; int _Cols = 1; int _Options = 0; int _MaxRows = 4; int _MaxCols = 1] <near match>
+     EIGEN_STRONG_INLINE Matrix& [01;36m[Koperator[m[K=(const DenseBase<OtherDerived>& other)
+                                 [01;36m[K^~~~~~~~[m[K
+[01m[K/usr/include/eigen3/Eigen/src/Core/Matrix.h:223:33:[m[K [01;36m[Knote: [m[K  passing ‘[01m[Kconst Vector4d* {aka const Eigen::Matrix<double, 4, 1>*}[m[K’ as ‘[01m[Kthis[m[K’ argument discards qualifiers
+[01m[K/usr/include/eigen3/Eigen/src/Core/Matrix.h:236:33:[m[K [01;36m[Knote: [m[Kcandidate: Eigen::Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols>& Eigen::Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols>::operator=(const Eigen::EigenBase<OtherDerived>&) [with OtherDerived = Eigen::Product<Eigen::Matrix<double, 4, 4>, Eigen::Matrix<double, 4, 1>, 0>; _Scalar = double; int _Rows = 4; int _Cols = 1; int _Options = 0; int _MaxRows = 4; int _MaxCols = 1] <near match>
+     EIGEN_STRONG_INLINE Matrix& [01;36m[Koperator[m[K=(const EigenBase<OtherDerived> &other)
+                                 [01;36m[K^~~~~~~~[m[K
+[01m[K/usr/include/eigen3/Eigen/src/Core/Matrix.h:236:33:[m[K [01;36m[Knote: [m[K  passing ‘[01m[Kconst Vector4d* {aka const Eigen::Matrix<double, 4, 1>*}[m[K’ as ‘[01m[Kthis[m[K’ argument discards qualifiers
+[01m[K/usr/include/eigen3/Eigen/src/Core/Matrix.h:243:33:[m[K [01;36m[Knote: [m[Kcandidate: template<class OtherDerived> Eigen::Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols>& Eigen::Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols>::operator=(const Eigen::ReturnByValue<OtherDerived>&) [with OtherDerived = OtherDerived; _Scalar = double; int _Rows = 4; int _Cols = 1; int _Options = 0; int _MaxRows = 4; int _MaxCols = 1]
+     EIGEN_STRONG_INLINE Matrix& [01;36m[Koperator[m[K=(const ReturnByValue<OtherDerived>& func)
+                                 [01;36m[K^~~~~~~~[m[K
+[01m[K/usr/include/eigen3/Eigen/src/Core/Matrix.h:243:33:[m[K [01;36m[Knote: [m[K  template argument deduction/substitution failed:
+[01m[K/home/pi/vision_system_ws/src/apriltag2_node/node/src/AprilTag2Node2_0.cpp:202:38:[m[K [01;36m[Knote: [m[K  ‘[01m[Kconst Eigen::Product<Eigen::Matrix<double, 4, 4>, Eigen::Matrix<double, 4, 1>, 0>[m[K’ is not derived from ‘[01m[Kconst Eigen::ReturnByValue<Derived>[m[K’
+         tt_center = TAGS.TAG5_T_TAG4*[01;36m[Ktt4[m[K;
+                                      [01;36m[K^~~[m[K
+In file included from [01m[K/usr/include/eigen3/Eigen/Core:432:0[m[K,
+                 from [01m[K/home/pi/vision_system_ws/src/apriltag2_node/node/include/LandingPlatform.h:4[m[K,
+                 from [01m[K/home/pi/vision_system_ws/src/apriltag2_node/node/include/AprilTag2Node.hpp:14[m[K,
+                 from [01m[K/home/pi/vision_system_ws/src/apriltag2_node/node/src/AprilTag2Node2_0.cpp:1[m[K:
+[01m[K/usr/include/eigen3/Eigen/src/Core/Matrix.h:281:13:[m[K [01;36m[Knote: [m[Kcandidate: Eigen::Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols>& Eigen::Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols>::operator=(Eigen::Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols>&&) [with _Scalar = double; int _Rows = 4; int _Cols = 1; int _Options = 0; int _MaxRows = 4; int _MaxCols = 1] <near match>
+     Matrix& [01;36m[Koperator[m[K=(Matrix&& other) EIGEN_NOEXCEPT_IF(std::is_nothrow_move_assignable<Scalar>::value)
+             [01;36m[K^~~~~~~~[m[K
+[01m[K/usr/include/eigen3/Eigen/src/Core/Matrix.h:281:13:[m[K [01;36m[Knote: [m[K  passing ‘[01m[Kconst Vector4d* {aka const Eigen::Matrix<double, 4, 1>*}[m[K’ as ‘[01m[Kthis[m[K’ argument discards qualifiers
+[01m[K/usr/include/eigen3/Eigen/src/Core/Matrix.h:392:13:[m[K [01;36m[Knote: [m[Kcandidate: template<class OtherDerived> Eigen::Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols>& Eigen::Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols>::operator=(const Eigen::RotationBase<OtherDerived, ColsAtCompileTime>&) [with OtherDerived = OtherDerived; _Scalar = double; int _Rows = 4; int _Cols = 1; int _Options = 0; int _MaxRows = 4; int _MaxCols = 1]
+     Matrix& [01;36m[Koperator[m[K=(const RotationBase<OtherDerived,ColsAtCompileTime>& r);
+             [01;36m[K^~~~~~~~[m[K
+[01m[K/usr/include/eigen3/Eigen/src/Core/Matrix.h:392:13:[m[K [01;36m[Knote: [m[K  template argument deduction/substitution failed:
+[01m[K/home/pi/vision_system_ws/src/apriltag2_node/node/src/AprilTag2Node2_0.cpp:202:38:[m[K [01;36m[Knote: [m[K  ‘[01m[Kconst Eigen::Product<Eigen::Matrix<double, 4, 4>, Eigen::Matrix<double, 4, 1>, 0>[m[K’ is not derived from ‘[01m[Kconst Eigen::RotationBase<OtherDerived, 1>[m[K’
+         tt_center = TAGS.TAG5_T_TAG4*[01;36m[Ktt4[m[K;
+                                      [01;36m[K^~~[m[K
+[01m[K/home/pi/vision_system_ws/src/apriltag2_node/node/src/AprilTag2Node2_0.cpp:205:38:[m[K [01;31m[Kerror: [m[Kno match for ‘[01m[Koperator=[m[K’ (operand types are ‘[01m[Kconst Vector4d {aka const Eigen::Matrix<double, 4, 1>}[m[K’ and ‘[01m[Kconst Eigen::Product<Eigen::Matrix<double, 4, 4>, Eigen::Matrix<double, 4, 1>, 0>[m[K’)
+         tt_center = TAGS.TAG5_T_TAG6*[01;31m[Ktt4[m[K;
+                                      [01;31m[K^~~[m[K
+In file included from [01m[K/usr/include/eigen3/Eigen/Core:432:0[m[K,
+                 from [01m[K/home/pi/vision_system_ws/src/apriltag2_node/node/include/LandingPlatform.h:4[m[K,
+                 from [01m[K/home/pi/vision_system_ws/src/apriltag2_node/node/include/AprilTag2Node.hpp:14[m[K,
+                 from [01m[K/home/pi/vision_system_ws/src/apriltag2_node/node/src/AprilTag2Node2_0.cpp:1[m[K:
+[01m[K/usr/include/eigen3/Eigen/src/Core/Matrix.h:206:33:[m[K [01;36m[Knote: [m[Kcandidate: Eigen::Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols>& Eigen::Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols>::operator=(const Eigen::Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols>&) [with _Scalar = double; int _Rows = 4; int _Cols = 1; int _Options = 0; int _MaxRows = 4; int _MaxCols = 1] <near match>
+     EIGEN_STRONG_INLINE Matrix& [01;36m[Koperator[m[K=(const Matrix& other)
+                                 [01;36m[K^~~~~~~~[m[K
+[01m[K/usr/include/eigen3/Eigen/src/Core/Matrix.h:206:33:[m[K [01;36m[Knote: [m[K  passing ‘[01m[Kconst Vector4d* {aka const Eigen::Matrix<double, 4, 1>*}[m[K’ as ‘[01m[Kthis[m[K’ argument discards qualifiers
+[01m[K/usr/include/eigen3/Eigen/src/Core/Matrix.h:223:33:[m[K [01;36m[Knote: [m[Kcandidate: Eigen::Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols>& Eigen::Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols>::operator=(const Eigen::DenseBase<OtherDerived>&) [with OtherDerived = Eigen::Product<Eigen::Matrix<double, 4, 4>, Eigen::Matrix<double, 4, 1>, 0>; _Scalar = double; int _Rows = 4; int _Cols = 1; int _Options = 0; int _MaxRows = 4; int _MaxCols = 1] <near match>
+     EIGEN_STRONG_INLINE Matrix& [01;36m[Koperator[m[K=(const DenseBase<OtherDerived>& other)
+                                 [01;36m[K^~~~~~~~[m[K
+[01m[K/usr/include/eigen3/Eigen/src/Core/Matrix.h:223:33:[m[K [01;36m[Knote: [m[K  passing ‘[01m[Kconst Vector4d* {aka const Eigen::Matrix<double, 4, 1>*}[m[K’ as ‘[01m[Kthis[m[K’ argument discards qualifiers
+[01m[K/usr/include/eigen3/Eigen/src/Core/Matrix.h:236:33:[m[K [01;36m[Knote: [m[Kcandidate: Eigen::Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols>& Eigen::Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols>::operator=(const Eigen::EigenBase<OtherDerived>&) [with OtherDerived = Eigen::Product<Eigen::Matrix<double, 4, 4>, Eigen::Matrix<double, 4, 1>, 0>; _Scalar = double; int _Rows = 4; int _Cols = 1; int _Options = 0; int _MaxRows = 4; int _MaxCols = 1] <near match>
+     EIGEN_STRONG_INLINE Matrix& [01;36m[Koperator[m[K=(const EigenBase<OtherDerived> &other)
+                                 [01;36m[K^~~~~~~~[m[K
+[01m[K/usr/include/eigen3/Eigen/src/Core/Matrix.h:236:33:[m[K [01;36m[Knote: [m[K  passing ‘[01m[Kconst Vector4d* {aka const Eigen::Matrix<double, 4, 1>*}[m[K’ as ‘[01m[Kthis[m[K’ argument discards qualifiers
+[01m[K/usr/include/eigen3/Eigen/src/Core/Matrix.h:243:33:[m[K [01;36m[Knote: [m[Kcandidate: template<class OtherDerived> Eigen::Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols>& Eigen::Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols>::operator=(const Eigen::ReturnByValue<OtherDerived>&) [with OtherDerived = OtherDerived; _Scalar = double; int _Rows = 4; int _Cols = 1; int _Options = 0; int _MaxRows = 4; int _MaxCols = 1]
+     EIGEN_STRONG_INLINE Matrix& [01;36m[Koperator[m[K=(const ReturnByValue<OtherDerived>& func)
+                                 [01;36m[K^~~~~~~~[m[K
+[01m[K/usr/include/eigen3/Eigen/src/Core/Matrix.h:243:33:[m[K [01;36m[Knote: [m[K  template argument deduction/substitution failed:
+[01m[K/home/pi/vision_system_ws/src/apriltag2_node/node/src/AprilTag2Node2_0.cpp:205:38:[m[K [01;36m[Knote: [m[K  ‘[01m[Kconst Eigen::Product<Eigen::Matrix<double, 4, 4>, Eigen::Matrix<double, 4, 1>, 0>[m[K’ is not derived from ‘[01m[Kconst Eigen::ReturnByValue<Derived>[m[K’
+         tt_center = TAGS.TAG5_T_TAG6*[01;36m[Ktt4[m[K;
+                                      [01;36m[K^~~[m[K
+In file included from [01m[K/usr/include/eigen3/Eigen/Core:432:0[m[K,
+                 from [01m[K/home/pi/vision_system_ws/src/apriltag2_node/node/include/LandingPlatform.h:4[m[K,
+                 from [01m[K/home/pi/vision_system_ws/src/apriltag2_node/node/include/AprilTag2Node.hpp:14[m[K,
+                 from [01m[K/home/pi/vision_system_ws/src/apriltag2_node/node/src/AprilTag2Node2_0.cpp:1[m[K:
+[01m[K/usr/include/eigen3/Eigen/src/Core/Matrix.h:281:13:[m[K [01;36m[Knote: [m[Kcandidate: Eigen::Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols>& Eigen::Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols>::operator=(Eigen::Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols>&&) [with _Scalar = double; int _Rows = 4; int _Cols = 1; int _Options = 0; int _MaxRows = 4; int _MaxCols = 1] <near match>
+     Matrix& [01;36m[Koperator[m[K=(Matrix&& other) EIGEN_NOEXCEPT_IF(std::is_nothrow_move_assignable<Scalar>::value)
+             [01;36m[K^~~~~~~~[m[K
+[01m[K/usr/include/eigen3/Eigen/src/Core/Matrix.h:281:13:[m[K [01;36m[Knote: [m[K  passing ‘[01m[Kconst Vector4d* {aka const Eigen::Matrix<double, 4, 1>*}[m[K’ as ‘[01m[Kthis[m[K’ argument discards qualifiers
+[01m[K/usr/include/eigen3/Eigen/src/Core/Matrix.h:392:13:[m[K [01;36m[Knote: [m[Kcandidate: template<class OtherDerived> Eigen::Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols>& Eigen::Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols>::operator=(const Eigen::RotationBase<OtherDerived, ColsAtCompileTime>&) [with OtherDerived = OtherDerived; _Scalar = double; int _Rows = 4; int _Cols = 1; int _Options = 0; int _MaxRows = 4; int _MaxCols = 1]
+     Matrix& [01;36m[Koperator[m[K=(const RotationBase<OtherDerived,ColsAtCompileTime>& r);
+             [01;36m[K^~~~~~~~[m[K
+[01m[K/usr/include/eigen3/Eigen/src/Core/Matrix.h:392:13:[m[K [01;36m[Knote: [m[K  template argument deduction/substitution failed:
+[01m[K/home/pi/vision_system_ws/src/apriltag2_node/node/src/AprilTag2Node2_0.cpp:205:38:[m[K [01;36m[Knote: [m[K  ‘[01m[Kconst Eigen::Product<Eigen::Matrix<double, 4, 4>, Eigen::Matrix<double, 4, 1>, 0>[m[K’ is not derived from ‘[01m[Kconst Eigen::RotationBase<OtherDerived, 1>[m[K’
+         tt_center = TAGS.TAG5_T_TAG6*[01;36m[Ktt4[m[K;
+                                      [01;36m[K^~~[m[K
+[01m[K/home/pi/vision_system_ws/src/apriltag2_node/node/src/AprilTag2Node2_0.cpp:208:38:[m[K [01;31m[Kerror: [m[Kno match for ‘[01m[Koperator=[m[K’ (operand types are ‘[01m[Kconst Vector4d {aka const Eigen::Matrix<double, 4, 1>}[m[K’ and ‘[01m[Kconst Eigen::Product<Eigen::Matrix<double, 4, 4>, Eigen::Matrix<double, 4, 1>, 0>[m[K’)
+         tt_center = TAGS.TAG5_T_TAG7*[01;31m[Ktt4[m[K;
+                                      [01;31m[K^~~[m[K
+In file included from [01m[K/usr/include/eigen3/Eigen/Core:432:0[m[K,
+                 from [01m[K/home/pi/vision_system_ws/src/apriltag2_node/node/include/LandingPlatform.h:4[m[K,
+                 from [01m[K/home/pi/vision_system_ws/src/apriltag2_node/node/include/AprilTag2Node.hpp:14[m[K,
+                 from [01m[K/home/pi/vision_system_ws/src/apriltag2_node/node/src/AprilTag2Node2_0.cpp:1[m[K:
+[01m[K/usr/include/eigen3/Eigen/src/Core/Matrix.h:206:33:[m[K [01;36m[Knote: [m[Kcandidate: Eigen::Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols>& Eigen::Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols>::operator=(const Eigen::Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols>&) [with _Scalar = double; int _Rows = 4; int _Cols = 1; int _Options = 0; int _MaxRows = 4; int _MaxCols = 1] <near match>
+     EIGEN_STRONG_INLINE Matrix& [01;36m[Koperator[m[K=(const Matrix& other)
+                                 [01;36m[K^~~~~~~~[m[K
+[01m[K/usr/include/eigen3/Eigen/src/Core/Matrix.h:206:33:[m[K [01;36m[Knote: [m[K  passing ‘[01m[Kconst Vector4d* {aka const Eigen::Matrix<double, 4, 1>*}[m[K’ as ‘[01m[Kthis[m[K’ argument discards qualifiers
+[01m[K/usr/include/eigen3/Eigen/src/Core/Matrix.h:223:33:[m[K [01;36m[Knote: [m[Kcandidate: Eigen::Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols>& Eigen::Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols>::operator=(const Eigen::DenseBase<OtherDerived>&) [with OtherDerived = Eigen::Product<Eigen::Matrix<double, 4, 4>, Eigen::Matrix<double, 4, 1>, 0>; _Scalar = double; int _Rows = 4; int _Cols = 1; int _Options = 0; int _MaxRows = 4; int _MaxCols = 1] <near match>
+     EIGEN_STRONG_INLINE Matrix& [01;36m[Koperator[m[K=(const DenseBase<OtherDerived>& other)
+                                 [01;36m[K^~~~~~~~[m[K
+[01m[K/usr/include/eigen3/Eigen/src/Core/Matrix.h:223:33:[m[K [01;36m[Knote: [m[K  passing ‘[01m[Kconst Vector4d* {aka const Eigen::Matrix<double, 4, 1>*}[m[K’ as ‘[01m[Kthis[m[K’ argument discards qualifiers
+[01m[K/usr/include/eigen3/Eigen/src/Core/Matrix.h:236:33:[m[K [01;36m[Knote: [m[Kcandidate: Eigen::Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols>& Eigen::Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols>::operator=(const Eigen::EigenBase<OtherDerived>&) [with OtherDerived = Eigen::Product<Eigen::Matrix<double, 4, 4>, Eigen::Matrix<double, 4, 1>, 0>; _Scalar = double; int _Rows = 4; int _Cols = 1; int _Options = 0; int _MaxRows = 4; int _MaxCols = 1] <near match>
+     EIGEN_STRONG_INLINE Matrix& [01;36m[Koperator[m[K=(const EigenBase<OtherDerived> &other)
+                                 [01;36m[K^~~~~~~~[m[K
+[01m[K/usr/include/eigen3/Eigen/src/Core/Matrix.h:236:33:[m[K [01;36m[Knote: [m[K  passing ‘[01m[Kconst Vector4d* {aka const Eigen::Matrix<double, 4, 1>*}[m[K’ as ‘[01m[Kthis[m[K’ argument discards qualifiers
+[01m[K/usr/include/eigen3/Eigen/src/Core/Matrix.h:243:33:[m[K [01;36m[Knote: [m[Kcandidate: template<class OtherDerived> Eigen::Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols>& Eigen::Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols>::operator=(const Eigen::ReturnByValue<OtherDerived>&) [with OtherDerived = OtherDerived; _Scalar = double; int _Rows = 4; int _Cols = 1; int _Options = 0; int _MaxRows = 4; int _MaxCols = 1]
+     EIGEN_STRONG_INLINE Matrix& [01;36m[Koperator[m[K=(const ReturnByValue<OtherDerived>& func)
+                                 [01;36m[K^~~~~~~~[m[K
+[01m[K/usr/include/eigen3/Eigen/src/Core/Matrix.h:243:33:[m[K [01;36m[Knote: [m[K  template argument deduction/substitution failed:
+[01m[K/home/pi/vision_system_ws/src/apriltag2_node/node/src/AprilTag2Node2_0.cpp:208:38:[m[K [01;36m[Knote: [m[K  ‘[01m[Kconst Eigen::Product<Eigen::Matrix<double, 4, 4>, Eigen::Matrix<double, 4, 1>, 0>[m[K’ is not derived from ‘[01m[Kconst Eigen::ReturnByValue<Derived>[m[K’
+         tt_center = TAGS.TAG5_T_TAG7*[01;36m[Ktt4[m[K;
+                                      [01;36m[K^~~[m[K
+In file included from [01m[K/usr/include/eigen3/Eigen/Core:432:0[m[K,
+                 from [01m[K/home/pi/vision_system_ws/src/apriltag2_node/node/include/LandingPlatform.h:4[m[K,
+                 from [01m[K/home/pi/vision_system_ws/src/apriltag2_node/node/include/AprilTag2Node.hpp:14[m[K,
+                 from [01m[K/home/pi/vision_system_ws/src/apriltag2_node/node/src/AprilTag2Node2_0.cpp:1[m[K:
+[01m[K/usr/include/eigen3/Eigen/src/Core/Matrix.h:281:13:[m[K [01;36m[Knote: [m[Kcandidate: Eigen::Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols>& Eigen::Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols>::operator=(Eigen::Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols>&&) [with _Scalar = double; int _Rows = 4; int _Cols = 1; int _Options = 0; int _MaxRows = 4; int _MaxCols = 1] <near match>
+     Matrix& [01;36m[Koperator[m[K=(Matrix&& other) EIGEN_NOEXCEPT_IF(std::is_nothrow_move_assignable<Scalar>::value)
+             [01;36m[K^~~~~~~~[m[K
+[01m[K/usr/include/eigen3/Eigen/src/Core/Matrix.h:281:13:[m[K [01;36m[Knote: [m[K  passing ‘[01m[Kconst Vector4d* {aka const Eigen::Matrix<double, 4, 1>*}[m[K’ as ‘[01m[Kthis[m[K’ argument discards qualifiers
+[01m[K/usr/include/eigen3/Eigen/src/Core/Matrix.h:392:13:[m[K [01;36m[Knote: [m[Kcandidate: template<class OtherDerived> Eigen::Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols>& Eigen::Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols>::operator=(const Eigen::RotationBase<OtherDerived, ColsAtCompileTime>&) [with OtherDerived = OtherDerived; _Scalar = double; int _Rows = 4; int _Cols = 1; int _Options = 0; int _MaxRows = 4; int _MaxCols = 1]
+     Matrix& [01;36m[Koperator[m[K=(const RotationBase<OtherDerived,ColsAtCompileTime>& r);
+             [01;36m[K^~~~~~~~[m[K
+[01m[K/usr/include/eigen3/Eigen/src/Core/Matrix.h:392:13:[m[K [01;36m[Knote: [m[K  template argument deduction/substitution failed:
+[01m[K/home/pi/vision_system_ws/src/apriltag2_node/node/src/AprilTag2Node2_0.cpp:208:38:[m[K [01;36m[Knote: [m[K  ‘[01m[Kconst Eigen::Product<Eigen::Matrix<double, 4, 4>, Eigen::Matrix<double, 4, 1>, 0>[m[K’ is not derived from ‘[01m[Kconst Eigen::RotationBase<OtherDerived, 1>[m[K’
+         tt_center = TAGS.TAG5_T_TAG7*[01;36m[Ktt4[m[K;
+                                      [01;36m[K^~~[m[K
+[01m[K/home/pi/vision_system_ws/src/apriltag2_node/node/src/AprilTag2Node2_0.cpp:211:38:[m[K [01;31m[Kerror: [m[Kno match for ‘[01m[Koperator=[m[K’ (operand types are ‘[01m[Kconst Vector4d {aka const Eigen::Matrix<double, 4, 1>}[m[K’ and ‘[01m[Kconst Eigen::Product<Eigen::Matrix<double, 4, 4>, Eigen::Matrix<double, 4, 1>, 0>[m[K’)
+         tt_center = TAGS.TAG5_T_TAG8*[01;31m[Ktt4[m[K;
+                                      [01;31m[K^~~[m[K
+In file included from [01m[K/usr/include/eigen3/Eigen/Core:432:0[m[K,
+                 from [01m[K/home/pi/vision_system_ws/src/apriltag2_node/node/include/LandingPlatform.h:4[m[K,
+                 from [01m[K/home/pi/vision_system_ws/src/apriltag2_node/node/include/AprilTag2Node.hpp:14[m[K,
+                 from [01m[K/home/pi/vision_system_ws/src/apriltag2_node/node/src/AprilTag2Node2_0.cpp:1[m[K:
+[01m[K/usr/include/eigen3/Eigen/src/Core/Matrix.h:206:33:[m[K [01;36m[Knote: [m[Kcandidate: Eigen::Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols>& Eigen::Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols>::operator=(const Eigen::Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols>&) [with _Scalar = double; int _Rows = 4; int _Cols = 1; int _Options = 0; int _MaxRows = 4; int _MaxCols = 1] <near match>
+     EIGEN_STRONG_INLINE Matrix& [01;36m[Koperator[m[K=(const Matrix& other)
+                                 [01;36m[K^~~~~~~~[m[K
+[01m[K/usr/include/eigen3/Eigen/src/Core/Matrix.h:206:33:[m[K [01;36m[Knote: [m[K  passing ‘[01m[Kconst Vector4d* {aka const Eigen::Matrix<double, 4, 1>*}[m[K’ as ‘[01m[Kthis[m[K’ argument discards qualifiers
+[01m[K/usr/include/eigen3/Eigen/src/Core/Matrix.h:223:33:[m[K [01;36m[Knote: [m[Kcandidate: Eigen::Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols>& Eigen::Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols>::operator=(const Eigen::DenseBase<OtherDerived>&) [with OtherDerived = Eigen::Product<Eigen::Matrix<double, 4, 4>, Eigen::Matrix<double, 4, 1>, 0>; _Scalar = double; int _Rows = 4; int _Cols = 1; int _Options = 0; int _MaxRows = 4; int _MaxCols = 1] <near match>
+     EIGEN_STRONG_INLINE Matrix& [01;36m[Koperator[m[K=(const DenseBase<OtherDerived>& other)
+                                 [01;36m[K^~~~~~~~[m[K
+[01m[K/usr/include/eigen3/Eigen/src/Core/Matrix.h:223:33:[m[K [01;36m[Knote: [m[K  passing ‘[01m[Kconst Vector4d* {aka const Eigen::Matrix<double, 4, 1>*}[m[K’ as ‘[01m[Kthis[m[K’ argument discards qualifiers
+[01m[K/usr/include/eigen3/Eigen/src/Core/Matrix.h:236:33:[m[K [01;36m[Knote: [m[Kcandidate: Eigen::Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols>& Eigen::Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols>::operator=(const Eigen::EigenBase<OtherDerived>&) [with OtherDerived = Eigen::Product<Eigen::Matrix<double, 4, 4>, Eigen::Matrix<double, 4, 1>, 0>; _Scalar = double; int _Rows = 4; int _Cols = 1; int _Options = 0; int _MaxRows = 4; int _MaxCols = 1] <near match>
+     EIGEN_STRONG_INLINE Matrix& [01;36m[Koperator[m[K=(const EigenBase<OtherDerived> &other)
+                                 [01;36m[K^~~~~~~~[m[K
+[01m[K/usr/include/eigen3/Eigen/src/Core/Matrix.h:236:33:[m[K [01;36m[Knote: [m[K  passing ‘[01m[Kconst Vector4d* {aka const Eigen::Matrix<double, 4, 1>*}[m[K’ as ‘[01m[Kthis[m[K’ argument discards qualifiers
+[01m[K/usr/include/eigen3/Eigen/src/Core/Matrix.h:243:33:[m[K [01;36m[Knote: [m[Kcandidate: template<class OtherDerived> Eigen::Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols>& Eigen::Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols>::operator=(const Eigen::ReturnByValue<OtherDerived>&) [with OtherDerived = OtherDerived; _Scalar = double; int _Rows = 4; int _Cols = 1; int _Options = 0; int _MaxRows = 4; int _MaxCols = 1]
+     EIGEN_STRONG_INLINE Matrix& [01;36m[Koperator[m[K=(const ReturnByValue<OtherDerived>& func)
+                                 [01;36m[K^~~~~~~~[m[K
+[01m[K/usr/include/eigen3/Eigen/src/Core/Matrix.h:243:33:[m[K [01;36m[Knote: [m[K  template argument deduction/substitution failed:
+[01m[K/home/pi/vision_system_ws/src/apriltag2_node/node/src/AprilTag2Node2_0.cpp:211:38:[m[K [01;36m[Knote: [m[K  ‘[01m[Kconst Eigen::Product<Eigen::Matrix<double, 4, 4>, Eigen::Matrix<double, 4, 1>, 0>[m[K’ is not derived from ‘[01m[Kconst Eigen::ReturnByValue<Derived>[m[K’
+         tt_center = TAGS.TAG5_T_TAG8*[01;36m[Ktt4[m[K;
+                                      [01;36m[K^~~[m[K
+In file included from [01m[K/usr/include/eigen3/Eigen/Core:432:0[m[K,
+                 from [01m[K/home/pi/vision_system_ws/src/apriltag2_node/node/include/LandingPlatform.h:4[m[K,
+                 from [01m[K/home/pi/vision_system_ws/src/apriltag2_node/node/include/AprilTag2Node.hpp:14[m[K,
+                 from [01m[K/home/pi/vision_system_ws/src/apriltag2_node/node/src/AprilTag2Node2_0.cpp:1[m[K:
+[01m[K/usr/include/eigen3/Eigen/src/Core/Matrix.h:281:13:[m[K [01;36m[Knote: [m[Kcandidate: Eigen::Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols>& Eigen::Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols>::operator=(Eigen::Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols>&&) [with _Scalar = double; int _Rows = 4; int _Cols = 1; int _Options = 0; int _MaxRows = 4; int _MaxCols = 1] <near match>
+     Matrix& [01;36m[Koperator[m[K=(Matrix&& other) EIGEN_NOEXCEPT_IF(std::is_nothrow_move_assignable<Scalar>::value)
+             [01;36m[K^~~~~~~~[m[K
+[01m[K/usr/include/eigen3/Eigen/src/Core/Matrix.h:281:13:[m[K [01;36m[Knote: [m[K  passing ‘[01m[Kconst Vector4d* {aka const Eigen::Matrix<double, 4, 1>*}[m[K’ as ‘[01m[Kthis[m[K’ argument discards qualifiers
+[01m[K/usr/include/eigen3/Eigen/src/Core/Matrix.h:392:13:[m[K [01;36m[Knote: [m[Kcandidate: template<class OtherDerived> Eigen::Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols>& Eigen::Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols>::operator=(const Eigen::RotationBase<OtherDerived, ColsAtCompileTime>&) [with OtherDerived = OtherDerived; _Scalar = double; int _Rows = 4; int _Cols = 1; int _Options = 0; int _MaxRows = 4; int _MaxCols = 1]
+     Matrix& [01;36m[Koperator[m[K=(const RotationBase<OtherDerived,ColsAtCompileTime>& r);
+             [01;36m[K^~~~~~~~[m[K
+[01m[K/usr/include/eigen3/Eigen/src/Core/Matrix.h:392:13:[m[K [01;36m[Knote: [m[K  template argument deduction/substitution failed:
+[01m[K/home/pi/vision_system_ws/src/apriltag2_node/node/src/AprilTag2Node2_0.cpp:211:38:[m[K [01;36m[Knote: [m[K  ‘[01m[Kconst Eigen::Product<Eigen::Matrix<double, 4, 4>, Eigen::Matrix<double, 4, 1>, 0>[m[K’ is not derived from ‘[01m[Kconst Eigen::RotationBase<OtherDerived, 1>[m[K’
+         tt_center = TAGS.TAG5_T_TAG8*[01;36m[Ktt4[m[K;
+                                      [01;36m[K^~~[m[K
+[01m[K/home/pi/vision_system_ws/src/apriltag2_node/node/src/AprilTag2Node2_0.cpp:214:38:[m[K [01;31m[Kerror: [m[Kno match for ‘[01m[Koperator=[m[K’ (operand types are ‘[01m[Kconst Vector4d {aka const Eigen::Matrix<double, 4, 1>}[m[K’ and ‘[01m[Kconst Eigen::Product<Eigen::Matrix<double, 4, 4>, Eigen::Matrix<double, 4, 1>, 0>[m[K’)
+         tt_center = TAGS.TAG5_T_TAG9*[01;31m[Ktt4[m[K;
+                                      [01;31m[K^~~[m[K
+In file included from [01m[K/usr/include/eigen3/Eigen/Core:432:0[m[K,
+                 from [01m[K/home/pi/vision_system_ws/src/apriltag2_node/node/include/LandingPlatform.h:4[m[K,
+                 from [01m[K/home/pi/vision_system_ws/src/apriltag2_node/node/include/AprilTag2Node.hpp:14[m[K,
+                 from [01m[K/home/pi/vision_system_ws/src/apriltag2_node/node/src/AprilTag2Node2_0.cpp:1[m[K:
+[01m[K/usr/include/eigen3/Eigen/src/Core/Matrix.h:206:33:[m[K [01;36m[Knote: [m[Kcandidate: Eigen::Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols>& Eigen::Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols>::operator=(const Eigen::Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols>&) [with _Scalar = double; int _Rows = 4; int _Cols = 1; int _Options = 0; int _MaxRows = 4; int _MaxCols = 1] <near match>
+     EIGEN_STRONG_INLINE Matrix& [01;36m[Koperator[m[K=(const Matrix& other)
+                                 [01;36m[K^~~~~~~~[m[K
+[01m[K/usr/include/eigen3/Eigen/src/Core/Matrix.h:206:33:[m[K [01;36m[Knote: [m[K  passing ‘[01m[Kconst Vector4d* {aka const Eigen::Matrix<double, 4, 1>*}[m[K’ as ‘[01m[Kthis[m[K’ argument discards qualifiers
+[01m[K/usr/include/eigen3/Eigen/src/Core/Matrix.h:223:33:[m[K [01;36m[Knote: [m[Kcandidate: Eigen::Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols>& Eigen::Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols>::operator=(const Eigen::DenseBase<OtherDerived>&) [with OtherDerived = Eigen::Product<Eigen::Matrix<double, 4, 4>, Eigen::Matrix<double, 4, 1>, 0>; _Scalar = double; int _Rows = 4; int _Cols = 1; int _Options = 0; int _MaxRows = 4; int _MaxCols = 1] <near match>
+     EIGEN_STRONG_INLINE Matrix& [01;36m[Koperator[m[K=(const DenseBase<OtherDerived>& other)
+                                 [01;36m[K^~~~~~~~[m[K
+[01m[K/usr/include/eigen3/Eigen/src/Core/Matrix.h:223:33:[m[K [01;36m[Knote: [m[K  passing ‘[01m[Kconst Vector4d* {aka const Eigen::Matrix<double, 4, 1>*}[m[K’ as ‘[01m[Kthis[m[K’ argument discards qualifiers
+[01m[K/usr/include/eigen3/Eigen/src/Core/Matrix.h:236:33:[m[K [01;36m[Knote: [m[Kcandidate: Eigen::Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols>& Eigen::Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols>::operator=(const Eigen::EigenBase<OtherDerived>&) [with OtherDerived = Eigen::Product<Eigen::Matrix<double, 4, 4>, Eigen::Matrix<double, 4, 1>, 0>; _Scalar = double; int _Rows = 4; int _Cols = 1; int _Options = 0; int _MaxRows = 4; int _MaxCols = 1] <near match>
+     EIGEN_STRONG_INLINE Matrix& [01;36m[Koperator[m[K=(const EigenBase<OtherDerived> &other)
+                                 [01;36m[K^~~~~~~~[m[K
+[01m[K/usr/include/eigen3/Eigen/src/Core/Matrix.h:236:33:[m[K [01;36m[Knote: [m[K  passing ‘[01m[Kconst Vector4d* {aka const Eigen::Matrix<double, 4, 1>*}[m[K’ as ‘[01m[Kthis[m[K’ argument discards qualifiers
+[01m[K/usr/include/eigen3/Eigen/src/Core/Matrix.h:243:33:[m[K [01;36m[Knote: [m[Kcandidate: template<class OtherDerived> Eigen::Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols>& Eigen::Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols>::operator=(const Eigen::ReturnByValue<OtherDerived>&) [with OtherDerived = OtherDerived; _Scalar = double; int _Rows = 4; int _Cols = 1; int _Options = 0; int _MaxRows = 4; int _MaxCols = 1]
+     EIGEN_STRONG_INLINE Matrix& [01;36m[Koperator[m[K=(const ReturnByValue<OtherDerived>& func)
+                                 [01;36m[K^~~~~~~~[m[K
+[01m[K/usr/include/eigen3/Eigen/src/Core/Matrix.h:243:33:[m[K [01;36m[Knote: [m[K  template argument deduction/substitution failed:
+[01m[K/home/pi/vision_system_ws/src/apriltag2_node/node/src/AprilTag2Node2_0.cpp:214:38:[m[K [01;36m[Knote: [m[K  ‘[01m[Kconst Eigen::Product<Eigen::Matrix<double, 4, 4>, Eigen::Matrix<double, 4, 1>, 0>[m[K’ is not derived from ‘[01m[Kconst Eigen::ReturnByValue<Derived>[m[K’
+         tt_center = TAGS.TAG5_T_TAG9*[01;36m[Ktt4[m[K;
+                                      [01;36m[K^~~[m[K
+In file included from [01m[K/usr/include/eigen3/Eigen/Core:432:0[m[K,
+                 from [01m[K/home/pi/vision_system_ws/src/apriltag2_node/node/include/LandingPlatform.h:4[m[K,
+                 from [01m[K/home/pi/vision_system_ws/src/apriltag2_node/node/include/AprilTag2Node.hpp:14[m[K,
+                 from [01m[K/home/pi/vision_system_ws/src/apriltag2_node/node/src/AprilTag2Node2_0.cpp:1[m[K:
+[01m[K/usr/include/eigen3/Eigen/src/Core/Matrix.h:281:13:[m[K [01;36m[Knote: [m[Kcandidate: Eigen::Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols>& Eigen::Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols>::operator=(Eigen::Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols>&&) [with _Scalar = double; int _Rows = 4; int _Cols = 1; int _Options = 0; int _MaxRows = 4; int _MaxCols = 1] <near match>
+     Matrix& [01;36m[Koperator[m[K=(Matrix&& other) EIGEN_NOEXCEPT_IF(std::is_nothrow_move_assignable<Scalar>::value)
+             [01;36m[K^~~~~~~~[m[K
+[01m[K/usr/include/eigen3/Eigen/src/Core/Matrix.h:281:13:[m[K [01;36m[Knote: [m[K  passing ‘[01m[Kconst Vector4d* {aka const Eigen::Matrix<double, 4, 1>*}[m[K’ as ‘[01m[Kthis[m[K’ argument discards qualifiers
+[01m[K/usr/include/eigen3/Eigen/src/Core/Matrix.h:392:13:[m[K [01;36m[Knote: [m[Kcandidate: template<class OtherDerived> Eigen::Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols>& Eigen::Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols>::operator=(const Eigen::RotationBase<OtherDerived, ColsAtCompileTime>&) [with OtherDerived = OtherDerived; _Scalar = double; int _Rows = 4; int _Cols = 1; int _Options = 0; int _MaxRows = 4; int _MaxCols = 1]
+     Matrix& [01;36m[Koperator[m[K=(const RotationBase<OtherDerived,ColsAtCompileTime>& r);
+             [01;36m[K^~~~~~~~[m[K
+[01m[K/usr/include/eigen3/Eigen/src/Core/Matrix.h:392:13:[m[K [01;36m[Knote: [m[K  template argument deduction/substitution failed:
+[01m[K/home/pi/vision_system_ws/src/apriltag2_node/node/src/AprilTag2Node2_0.cpp:214:38:[m[K [01;36m[Knote: [m[K  ‘[01m[Kconst Eigen::Product<Eigen::Matrix<double, 4, 4>, Eigen::Matrix<double, 4, 1>, 0>[m[K’ is not derived from ‘[01m[Kconst Eigen::RotationBase<OtherDerived, 1>[m[K’
+         tt_center = TAGS.TAG5_T_TAG9*[01;36m[Ktt4[m[K;
+                                      [01;36m[K^~~[m[K
+make[2]: *** [CMakeFiles/AprilTag2Node.dir/src/AprilTag2Node2_0.cpp.o] Errore 1
+make[1]: *** [CMakeFiles/AprilTag2Node.dir/all] Errore 2
+make: *** [all] Errore 2
+CMakeFiles/AprilTag2Node.dir/build.make:62: set di istruzioni per l'obiettivo "CMakeFiles/AprilTag2Node.dir/src/AprilTag2Node2_0.cpp.o" non riuscito
+CMakeFiles/Makefile2:200: set di istruzioni per l'obiettivo "CMakeFiles/AprilTag2Node.dir/all" non riuscito
+Makefile:138: set di istruzioni per l'obiettivo "all" non riuscito

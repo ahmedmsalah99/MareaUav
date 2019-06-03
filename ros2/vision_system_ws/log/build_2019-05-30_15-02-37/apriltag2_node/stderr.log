@@ -1,0 +1,13 @@
+[01m[K/home/pi/vision_system_ws/src/apriltag2_node/node/src/AprilTag2Node2_0.cpp:[m[K In member function ‘[01m[Kvoid AprilTag2Node::publish_data_center(const AprilTagDetectionArray&, int, const TFMessage&)[m[K’:
+[01m[K/home/pi/vision_system_ws/src/apriltag2_node/node/src/AprilTag2Node2_0.cpp:185:53:[m[K [01;31m[Kerror: [m[Kno match for ‘[01m[Koperator[][m[K’ (operand types are ‘[01m[Kconst TFMessage {aka const tf2_msgs::msg::TFMessage_<std::allocator<void> >}[m[K’ and ‘[01m[KEigen::DenseCoeffsBase<Eigen::Matrix<double, -1, -1>, 1>::Scalar {aka double}[m[K’)
+         relative_pose.transform.translation.x += t_f[01;31m[K[[m[KAreaID(i,0)].transform.translation.x*AreaID(i,1);
+                                                     [01;31m[K^[m[K
+[01m[K/home/pi/vision_system_ws/src/apriltag2_node/node/src/AprilTag2Node2_0.cpp:186:53:[m[K [01;31m[Kerror: [m[Kno match for ‘[01m[Koperator[][m[K’ (operand types are ‘[01m[Kconst TFMessage {aka const tf2_msgs::msg::TFMessage_<std::allocator<void> >}[m[K’ and ‘[01m[KEigen::DenseCoeffsBase<Eigen::Matrix<double, -1, -1>, 1>::Scalar {aka double}[m[K’)
+         relative_pose.transform.translation.y += t_f[01;31m[K[[m[KAreaID(i,0)].transform.translation.y*AreaID(i,1);
+                                                     [01;31m[K^[m[K
+[01m[K/home/pi/vision_system_ws/src/apriltag2_node/node/src/AprilTag2Node2_0.cpp:187:53:[m[K [01;31m[Kerror: [m[Kno match for ‘[01m[Koperator[][m[K’ (operand types are ‘[01m[Kconst TFMessage {aka const tf2_msgs::msg::TFMessage_<std::allocator<void> >}[m[K’ and ‘[01m[KEigen::DenseCoeffsBase<Eigen::Matrix<double, -1, -1>, 1>::Scalar {aka double}[m[K’)
+         relative_pose.transform.translation.z += t_f[01;31m[K[[m[KAreaID(i,0)].transform.translation.z*AreaID(i,1);
+                                                     [01;31m[K^[m[K
+make[2]: *** [CMakeFiles/AprilTag2Node.dir/src/AprilTag2Node2_0.cpp.o] Errore 1
+make[1]: *** [CMakeFiles/AprilTag2Node.dir/all] Errore 2
+make: *** [all] Errore 2

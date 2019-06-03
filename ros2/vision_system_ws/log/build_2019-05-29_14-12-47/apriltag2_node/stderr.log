@@ -1,0 +1,8 @@
+In file included from [01m[K/home/pi/vision_system_ws/src/apriltag2_node/node/include/AprilTag2Node.hpp:14:0[m[K,
+                 from [01m[K/home/pi/vision_system_ws/src/apriltag2_node/node/src/AprilTag2Node2_0.cpp:1[m[K:
+[01m[K/home/pi/vision_system_ws/src/apriltag2_node/node/include/LandingPlatform.h:29:1:[m[K [01;31m[Kerror: [m[K‘[01m[Kvector[m[K’ does not name a type
+ [01;31m[Kvector[m[K<Eigen::Matrix4d> matrices_vector;
+ [01;31m[K^~~~~~[m[K
+make[2]: *** [CMakeFiles/AprilTag2Node.dir/src/AprilTag2Node2_0.cpp.o] Errore 1
+make[1]: *** [CMakeFiles/AprilTag2Node.dir/all] Errore 2
+make: *** [all] Errore 2

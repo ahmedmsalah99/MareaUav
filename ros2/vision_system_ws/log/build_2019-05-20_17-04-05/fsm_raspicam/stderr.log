@@ -1,0 +1,7 @@
+[01m[K/home/pi/vision_system_ws/src/fsm_raspicam/src/FiniteStateMachine.cpp:1:64:[m[K [01;31m[Kfatal error: [m[K/home/pi/vision_system_ws/src/fsm_raspicam/include.h: File o directory non esistente
+ #include "/home/pi/vision_system_ws/src/fsm_raspicam/include.h"
+                                                                [01;31m[K^[m[K
+compilation terminated.
+make[2]: *** [CMakeFiles/CameraMachine.dir/src/FiniteStateMachine.cpp.o] Errore 1
+make[1]: *** [CMakeFiles/CameraMachine.dir/all] Errore 2
+make: *** [all] Errore 2

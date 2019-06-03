@@ -1,0 +1,1 @@
+ament_cmake_symlink_install_targets("TARGET_FILES" "/home/pi/vision_system_ws/build/ultrasonic_sensor/rosidl_generator_py/ultrasonic_sensor/ultrasonic_sensor_s__rosidl_typesupport_c.cpython-35m-arm-linux-gnueabihf.so" "TARGETS" "ultrasonic_sensor__rosidl_typesupport_c__pyext" "DESTINATION" "lib/python3.5/site-packages/ultrasonic_sensor")

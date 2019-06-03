@@ -1,0 +1,9 @@
+[35m[1mScanning dependencies of target raspicam_compressed_node[0m
+[35m[1mScanning dependencies of target raspicam_raw_node[0m
+[ 25%] [32mBuilding CXX object CMakeFiles/raspicam_compressed_node.dir/src/raspicam_compressed.cpp.o[0m
+[ 50%] [32mBuilding CXX object CMakeFiles/raspicam_raw_node.dir/src/raspicam_raw.cpp.o[0m
+CMakeFiles/raspicam_raw_node.dir/build.make:62: set di istruzioni per l'obiettivo "CMakeFiles/raspicam_raw_node.dir/src/raspicam_raw.cpp.o" non riuscito
+CMakeFiles/Makefile2:168: set di istruzioni per l'obiettivo "CMakeFiles/raspicam_raw_node.dir/all" non riuscito
+[ 75%] [32m[1mLinking CXX executable raspicam_compressed_node[0m
+[ 75%] Built target raspicam_compressed_node
+Makefile:138: set di istruzioni per l'obiettivo "all" non riuscito

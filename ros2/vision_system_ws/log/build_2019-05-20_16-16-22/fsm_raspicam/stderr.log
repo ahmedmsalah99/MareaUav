@@ -1,0 +1,8 @@
+CMake Error at CMakeLists.txt:33 (add_executable):
+  add_executable cannot create target "camera_main_node" because another
+  target with the same name already exists.  The existing target is an
+  executable created in source directory
+  "/home/pi/vision_system_ws/src/fsm_raspicam".  See documentation for policy
+  CMP0002 for more details.
+
+

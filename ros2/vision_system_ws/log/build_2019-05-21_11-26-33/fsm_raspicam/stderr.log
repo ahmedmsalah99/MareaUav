@@ -1,0 +1,14 @@
+[01m[K/home/pi/vision_system_ws/src/fsm_raspicam/src/camera_main.cpp:[m[K In function ‘[01m[Kint main(int, char**)[m[K’:
+[01m[K/home/pi/vision_system_ws/src/fsm_raspicam/src/camera_main.cpp:42:9:[m[K [01;35m[Kwarning: [m[Kunused variable ‘[01m[KactualState[m[K’ [[01;35m[K-Wunused-variable[m[K]
+     int [01;35m[KactualState[m[K;
+         [01;35m[K^~~~~~~~~~~[m[K
+[01m[K/home/pi/vision_system_ws/src/fsm_raspicam/src/camera_main.cpp:[m[K At global scope:
+[01m[K/home/pi/vision_system_ws/src/fsm_raspicam/src/camera_main.cpp:81:5:[m[K [01;31m[Kerror: [m[Kexpected unqualified-id before ‘[01m[Kreturn[m[K’
+     [01;31m[Kreturn[m[K 0;
+     [01;31m[K^~~~~~[m[K
+[01m[K/home/pi/vision_system_ws/src/fsm_raspicam/src/camera_main.cpp:83:1:[m[K [01;31m[Kerror: [m[Kexpected declaration before ‘[01m[K}[m[K’ token
+ [01;31m[K}[m[K
+ [01;31m[K^[m[K
+make[2]: *** [CMakeFiles/camera_main_node.dir/src/camera_main.cpp.o] Errore 1
+make[1]: *** [CMakeFiles/camera_main_node.dir/all] Errore 2
+make: *** [all] Errore 2

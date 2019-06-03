@@ -1,0 +1,56 @@
+Invoking command in '/home/pi/vision_system_ws/build/ultrasonic_sensor': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/pi/ros2_ws/install/ament_uncrustify:/home/pi/ros2_ws/install/test_launch_ros:/home/pi/ros2_ws/install/sros2:/home/pi/ros2_ws/install/ros2lifecycle:/home/pi/ros2_ws/install/ros2service:/home/pi/ros2_ws/install/ros2topic:/home/pi/ros2_ws/install/ros2srv:/home/pi/ros2_ws/install/ros2run:/home/pi/ros2_ws/install/ros2launch:/home/pi/ros2_ws/install/ros2pkg:/home/pi/ros2_ws/install/ros2param:/home/pi/ros2_ws/install/ros2node:/home/pi/ros2_ws/install/ros2multicast:/home/pi/ros2_ws/install/ros2msg:/home/pi/ros2_ws/install/ros2cli:/home/pi/ros2_ws/install/launch_ros:/home/pi/ros2_ws/install/launch_testing:/home/pi/ros2_ws/install/launch:/home/pi/ros2_ws/install/osrf_pycommon:/home/pi/ros2_ws/install/ament_xmllint:/home/pi/ros2_ws/install/ament_pyflakes:/home/pi/ros2_ws/install/ament_pep8:/home/pi/ros2_ws/install/ament_pep257:/home/pi/ros2_ws/install/ament_pclint:/home/pi/ros2_ws/install/ament_package:/home/pi/ros2_ws/install/ament_lint_cmake:/home/pi/ros2_ws/install/ament_index_python:/home/pi/ros2_ws/install/ament_flake8:/home/pi/ros2_ws/install/ament_cpplint:/home/pi/ros2_ws/install/ament_cppcheck:/home/pi/ros2_ws/install/ament_copyright:/home/pi/ros2_ws/install/ament_clang_format /usr/bin/cmake --build /home/pi/vision_system_ws/build/ultrasonic_sensor -- -j4 -l4
+[  5%] Built target UltrasonicSensor
+[ 14%] Built target ultrasonic_sensor__rosidl_generator_c
+[ 17%] Built target ultrasonic_sensor__cpp
+[ 25%] Built target ultrasonic_sensor__rosidl_typesupport_introspection_c
+[ 34%] Built target ultrasonic_sensor__rosidl_typesupport_cpp
+[ 42%] Built target ultrasonic_sensor__rosidl_typesupport_c
+[ 51%] Built target ultrasonic_sensor__rosidl_typesupport_fastrtps_cpp
+[ 60%] Built target ultrasonic_sensor__rosidl_typesupport_introspection_cpp
+[ 68%] Built target ultrasonic_sensor__rosidl_typesupport_fastrtps_c
+[ 68%] Built target ultrasonic_sensor
+[ 71%] Built target ultrasonic_sensor__py
+[ 77%] Built target ultrasonic_sensor_node_Mocap2mav
+[ 82%] Built target ultrasonic_sensor__python
+[ 88%] Built target ultrasonic_sensor__rosidl_typesupport_c__pyext
+[ 94%] Built target ultrasonic_sensor__rosidl_typesupport_introspection_c__pyext
+[100%] Built target ultrasonic_sensor__rosidl_typesupport_fastrtps_c__pyext
+Invoked command in '/home/pi/vision_system_ws/build/ultrasonic_sensor' returned '0': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/pi/ros2_ws/install/ament_uncrustify:/home/pi/ros2_ws/install/test_launch_ros:/home/pi/ros2_ws/install/sros2:/home/pi/ros2_ws/install/ros2lifecycle:/home/pi/ros2_ws/install/ros2service:/home/pi/ros2_ws/install/ros2topic:/home/pi/ros2_ws/install/ros2srv:/home/pi/ros2_ws/install/ros2run:/home/pi/ros2_ws/install/ros2launch:/home/pi/ros2_ws/install/ros2pkg:/home/pi/ros2_ws/install/ros2param:/home/pi/ros2_ws/install/ros2node:/home/pi/ros2_ws/install/ros2multicast:/home/pi/ros2_ws/install/ros2msg:/home/pi/ros2_ws/install/ros2cli:/home/pi/ros2_ws/install/launch_ros:/home/pi/ros2_ws/install/launch_testing:/home/pi/ros2_ws/install/launch:/home/pi/ros2_ws/install/osrf_pycommon:/home/pi/ros2_ws/install/ament_xmllint:/home/pi/ros2_ws/install/ament_pyflakes:/home/pi/ros2_ws/install/ament_pep8:/home/pi/ros2_ws/install/ament_pep257:/home/pi/ros2_ws/install/ament_pclint:/home/pi/ros2_ws/install/ament_package:/home/pi/ros2_ws/install/ament_lint_cmake:/home/pi/ros2_ws/install/ament_index_python:/home/pi/ros2_ws/install/ament_flake8:/home/pi/ros2_ws/install/ament_cpplint:/home/pi/ros2_ws/install/ament_cppcheck:/home/pi/ros2_ws/install/ament_copyright:/home/pi/ros2_ws/install/ament_clang_format /usr/bin/cmake --build /home/pi/vision_system_ws/build/ultrasonic_sensor -- -j4 -l4
+Invoking command in '/home/pi/vision_system_ws/build/ultrasonic_sensor': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/pi/ros2_ws/install/ament_uncrustify:/home/pi/ros2_ws/install/test_launch_ros:/home/pi/ros2_ws/install/sros2:/home/pi/ros2_ws/install/ros2lifecycle:/home/pi/ros2_ws/install/ros2service:/home/pi/ros2_ws/install/ros2topic:/home/pi/ros2_ws/install/ros2srv:/home/pi/ros2_ws/install/ros2run:/home/pi/ros2_ws/install/ros2launch:/home/pi/ros2_ws/install/ros2pkg:/home/pi/ros2_ws/install/ros2param:/home/pi/ros2_ws/install/ros2node:/home/pi/ros2_ws/install/ros2multicast:/home/pi/ros2_ws/install/ros2msg:/home/pi/ros2_ws/install/ros2cli:/home/pi/ros2_ws/install/launch_ros:/home/pi/ros2_ws/install/launch_testing:/home/pi/ros2_ws/install/launch:/home/pi/ros2_ws/install/osrf_pycommon:/home/pi/ros2_ws/install/ament_xmllint:/home/pi/ros2_ws/install/ament_pyflakes:/home/pi/ros2_ws/install/ament_pep8:/home/pi/ros2_ws/install/ament_pep257:/home/pi/ros2_ws/install/ament_pclint:/home/pi/ros2_ws/install/ament_package:/home/pi/ros2_ws/install/ament_lint_cmake:/home/pi/ros2_ws/install/ament_index_python:/home/pi/ros2_ws/install/ament_flake8:/home/pi/ros2_ws/install/ament_cpplint:/home/pi/ros2_ws/install/ament_cppcheck:/home/pi/ros2_ws/install/ament_copyright:/home/pi/ros2_ws/install/ament_clang_format /usr/bin/cmake --build /home/pi/vision_system_ws/build/ultrasonic_sensor --target install
+[  8%] Built target ultrasonic_sensor__rosidl_generator_c
+[ 17%] Built target ultrasonic_sensor__rosidl_typesupport_c
+[ 20%] Built target ultrasonic_sensor__cpp
+[ 28%] Built target ultrasonic_sensor__rosidl_typesupport_cpp
+[ 37%] Built target ultrasonic_sensor__rosidl_typesupport_fastrtps_cpp
+[ 45%] Built target ultrasonic_sensor__rosidl_typesupport_fastrtps_c
+[ 54%] Built target ultrasonic_sensor__rosidl_typesupport_introspection_c
+[ 60%] Built target UltrasonicSensor
+[ 68%] Built target ultrasonic_sensor__rosidl_typesupport_introspection_cpp
+[ 68%] Built target ultrasonic_sensor
+[ 74%] Built target ultrasonic_sensor_node_Mocap2mav
+[ 77%] Built target ultrasonic_sensor__py
+[ 82%] Built target ultrasonic_sensor__python
+[ 88%] Built target ultrasonic_sensor__rosidl_typesupport_fastrtps_c__pyext
+[ 94%] Built target ultrasonic_sensor__rosidl_typesupport_introspection_c__pyext
+[100%] Built target ultrasonic_sensor__rosidl_typesupport_c__pyext
+[36mInstall the project...[0m
+-- Install configuration: ""
+-- Execute custom install script
+-- Up-to-date symlink: /home/pi/vision_system_ws/install/ultrasonic_sensor/share/ament_index/resource_index/rosidl_interfaces/ultrasonic_sensor
+-- Up-to-date symlink: /home/pi/vision_system_ws/install/ultrasonic_sensor/lib/libultrasonic_sensor__rosidl_typesupport_cpp.so
+-- Up-to-date symlink: /home/pi/vision_system_ws/install/ultrasonic_sensor/share/ultrasonic_sensor/environment/library_path.sh
+-- Up-to-date symlink: /home/pi/vision_system_ws/install/ultrasonic_sensor/lib/libultrasonic_sensor__rosidl_typesupport_c.so
+-- Up-to-date symlink: /home/pi/vision_system_ws/install/ultrasonic_sensor/include/ultrasonic_sensor/msg/ultrasonic_msg__rosidl_typesupport_introspection_cpp.hpp
+-- Up-to-date symlink: /home/pi/vision_system_ws/install/ultrasonic_sensor/lib/libultrasonic_sensor__rosidl_typesupport_introspection_cpp.so
+-- Up-to-date symlink: /home/pi/vision_system_ws/install/ultrasonic_sensor/include/ultrasonic_sensor/msg/ultrasonic_msg.h
+-- Up-to-date symlink: /home/pi/vision_system_ws/install/ultrasonic_sensor/include/ultrasonic_sensor/msg/ultrasonic_msg__functions.h
+-- Up-to-date symlink: /home/pi/vision_system_ws/install/ultrasonic_sensor/include/ultrasonic_sensor/msg/ultrasonic_msg__struct.h
+-- Up-to-date symlink: /home/pi/vision_system_ws/install/ultrasonic_sensor/include/ultrasonic_sensor/msg/ultrasonic_msg__type_support.h
+-- Up-to-date symlink: /home/pi/vision_system_ws/install/ultrasonic_sensor/include/ultrasonic_sensor/msg/rosidl_generator_c__visibility_control.h
+-- Up-to-date symlink: /home/pi/vision_system_ws/install/ultrasonic_sensor/lib/libultrasonic_sensor__rosidl_generator_c.so
+-- Up-to-date symlink: /home/pi/vision_system_ws/install/ultrasonic_sensor/include/ultrasonic_sensor/msg/ultrasonic_msg.hpp
+-- Up-to-date symlink: /home/pi/vision_system_ws/install/ultrasonic_sensor/include/ultrasonic_sensor/msg/ultrasonic_msg__struct.hpp
+-- Up-to-date symlink: /home/pi/vision_system_ws/install/ultrasonic_sensor/include/ultrasonic_sensor/msg/ultrasonic_msg__traits.hpp
+-- Up-to-date symlink: /home/pi/vision_system_ws/install/ultrasonic_sensor/include/ultrasonic_sensor/msg/ultrasonic_msg__rosidl_typesupport_introspection_c.h
+-- Up-to-date symlink: /home/pi/vision_system_ws/install/ultrasonic_sensor/include/ultrasonic_sensor/msg/rosidl_typesupport_introspection_c__visibility_control.h
+-- Up-to-date symlink: /home/pi/vision_system_ws/install/ultrasonic_sensor/lib/libultrasonic_sensor__rosidl_typesupport_introspection_c.so

@@ -1,0 +1,23 @@
+[35m[1mScanning dependencies of target camera_main_node[0m
+[ 20%] [32mBuilding CXX object CMakeFiles/camera_main_node.dir/src/CameraStates.cpp.o[0m
+[ 40%] [32mBuilding CXX object CMakeFiles/camera_main_node.dir/src/FiniteStateMachine.cpp.o[0m
+[ 60%] [32mBuilding CXX object CMakeFiles/camera_main_node.dir/src/State.cpp.o[0m
+[ 80%] [32mBuilding CXX object CMakeFiles/camera_main_node.dir/src/camera_main.cpp.o[0m
+[01m[K/home/pi/vision_system_ws/src/fsm_raspicam/src/camera_main.cpp:[m[K In function ‘[01m[Kint main(int, char**)[m[K’:
+[01m[K/home/pi/vision_system_ws/src/fsm_raspicam/src/camera_main.cpp:44:9:[m[K [01;35m[Kwarning: [m[Kunused variable ‘[01m[KactualState[m[K’ [[01;35m[K-Wunused-variable[m[K]
+     int [01;35m[KactualState[m[K;
+         [01;35m[K^~~~~~~~~~~[m[K
+[01m[K/home/pi/vision_system_ws/src/fsm_raspicam/src/camera_main.cpp:[m[K At global scope:
+[01m[K/home/pi/vision_system_ws/src/fsm_raspicam/src/camera_main.cpp:83:5:[m[K [01;31m[Kerror: [m[Kexpected unqualified-id before ‘[01m[Kreturn[m[K’
+     [01;31m[Kreturn[m[K 0;
+     [01;31m[K^~~~~~[m[K
+[01m[K/home/pi/vision_system_ws/src/fsm_raspicam/src/camera_main.cpp:85:1:[m[K [01;31m[Kerror: [m[Kexpected declaration before ‘[01m[K}[m[K’ token
+ [01;31m[K}[m[K
+ [01;31m[K^[m[K
+make[2]: *** [CMakeFiles/camera_main_node.dir/src/camera_main.cpp.o] Errore 1
+make[2]: *** Attesa per i processi non terminati....
+CMakeFiles/camera_main_node.dir/build.make:62: set di istruzioni per l'obiettivo "CMakeFiles/camera_main_node.dir/src/camera_main.cpp.o" non riuscito
+CMakeFiles/Makefile2:803: set di istruzioni per l'obiettivo "CMakeFiles/camera_main_node.dir/all" non riuscito
+make[1]: *** [CMakeFiles/camera_main_node.dir/all] Errore 2
+Makefile:138: set di istruzioni per l'obiettivo "all" non riuscito
+make: *** [all] Errore 2

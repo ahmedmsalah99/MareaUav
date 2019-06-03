@@ -1,0 +1,15 @@
+[35m[1mScanning dependencies of target camera_main_node[0m
+[ 20%] [32mBuilding CXX object CMakeFiles/camera_main_node.dir/src/CameraStates.cpp.o[0m
+[01m[K/home/pi/vision_system_ws/src/fsm_raspicam/src/CameraStates.cpp:[m[K In member function ‘[01m[Kvirtual void LandingState::setParameters()[m[K’:
+[01m[K/home/pi/vision_system_ws/src/fsm_raspicam/src/CameraStates.cpp:49:43:[m[K [01;31m[Kerror: [m[K‘[01m[Ktimer[m[K’ was not declared in this scope
+         raw_image_msg->header.stamp.sec = [01;31m[Ktimer[m[K.tv_sec ;
+                                           [01;31m[K^~~~~[m[K
+[01m[K/home/pi/vision_system_ws/src/fsm_raspicam/src/CameraStates.cpp:61:24:[m[K [01;31m[Kerror: [m[Kvariable ‘[01m[Kstd::ofstream outFile[m[K’ has initializer but incomplete type
+  std::ofstream outFile [01;31m[K([m[K "photosss.ppm", std::ios::binary );
+                        [01;31m[K^[m[K
+CMakeFiles/camera_main_node.dir/build.make:134: set di istruzioni per l'obiettivo "CMakeFiles/camera_main_node.dir/src/CameraStates.cpp.o" non riuscito
+CMakeFiles/Makefile2:803: set di istruzioni per l'obiettivo "CMakeFiles/camera_main_node.dir/all" non riuscito
+make[2]: *** [CMakeFiles/camera_main_node.dir/src/CameraStates.cpp.o] Errore 1
+Makefile:138: set di istruzioni per l'obiettivo "all" non riuscito
+make[1]: *** [CMakeFiles/camera_main_node.dir/all] Errore 2
+make: *** [all] Errore 2

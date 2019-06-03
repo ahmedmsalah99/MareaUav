@@ -1,0 +1,28 @@
+[01m[K/home/pi/vision_system_ws/src/fsm_raspicam/src/camera_main.cpp:[m[K In function ‘[01m[Kint main(int, char**)[m[K’:
+[01m[K/home/pi/vision_system_ws/src/fsm_raspicam/src/camera_main.cpp:25:42:[m[K [01;31m[Kerror: [m[K‘[01m[KFloat32[m[K’ is not a member of ‘[01m[Kstd_msgs::msg[m[K’
+     auto sub = node->create_subscription<[01;31m[Kstd_msgs[m[K::msg::Float32>("chatter"chatterCallback,1);
+                                          [01;31m[K^~~~~~~~[m[K
+[01m[K/home/pi/vision_system_ws/src/fsm_raspicam/src/camera_main.cpp:25:42:[m[K [01;31m[Kerror: [m[K‘[01m[KFloat32[m[K’ is not a member of ‘[01m[Kstd_msgs::msg[m[K’
+[01m[K/home/pi/vision_system_ws/src/fsm_raspicam/src/camera_main.cpp:25:66:[m[K [01;31m[Kerror: [m[Kunable to find string literal operator ‘[01m[Koperator""chatterCallback[m[K’ with ‘[01m[Kconst char [8][m[K’, ‘[01m[Kunsigned int[m[K’ arguments
+     auto sub = node->create_subscription<std_msgs::msg::Float32>([01;31m[K"chatter"chatterCallback[m[K,1);
+                                                                  [01;31m[K^~~~~~~~~~~~~~~~~~~~~~~~[m[K
+[01m[K/home/pi/vision_system_ws/src/fsm_raspicam/src/camera_main.cpp:77:13:[m[K [01;31m[Kerror: [m[K‘[01m[KLands[m[K’ was not declared in this scope
+             [01;31m[KLands[m[K.setMode(SEARCH);
+             [01;31m[K^~~~~[m[K
+[01m[K/home/pi/vision_system_ws/src/fsm_raspicam/src/CameraStates.cpp:[m[K In member function ‘[01m[Kvirtual void LandingState::setParameters()[m[K’:
+[01m[K/home/pi/vision_system_ws/src/fsm_raspicam/src/CameraStates.cpp:62:14:[m[K [01;35m[Kwarning: [m[Kunused variable ‘[01m[Ksave[m[K’ [[01;35m[K-Wunused-variable[m[K]
+  static bool [01;35m[Ksave[m[K = true;
+              [01;35m[K^~~~[m[K
+[01m[K/home/pi/vision_system_ws/src/fsm_raspicam/src/CameraStates.cpp:[m[K In member function ‘[01m[Kvirtual void SearchState::setParameters()[m[K’:
+[01m[K/home/pi/vision_system_ws/src/fsm_raspicam/src/CameraStates.cpp:133:2:[m[K [01;31m[Kerror: [m[K‘[01m[Kelse[m[K’ without a previous ‘[01m[Kif[m[K’
+  [01;31m[Kelse[m[K if( PreFlightMode == 0 && FlightMode == 1 )
+  [01;31m[K^~~~[m[K
+make[2]: *** [CMakeFiles/camera_main_node.dir/src/camera_main.cpp.o] Errore 1
+make[2]: *** Attesa per i processi non terminati....
+[01m[K/home/pi/vision_system_ws/src/fsm_raspicam/src/CameraStates.cpp:[m[K At global scope:
+[01m[K/home/pi/vision_system_ws/src/fsm_raspicam/src/CameraStates.cpp:62:14:[m[K [01;35m[Kwarning: [m[K‘[01m[Ksave[m[K’ defined but not used [[01;35m[K-Wunused-variable[m[K]
+  static bool [01;35m[Ksave[m[K = true;
+              [01;35m[K^~~~[m[K
+make[2]: *** [CMakeFiles/camera_main_node.dir/src/CameraStates.cpp.o] Errore 1
+make[1]: *** [CMakeFiles/camera_main_node.dir/all] Errore 2
+make: *** [all] Errore 2

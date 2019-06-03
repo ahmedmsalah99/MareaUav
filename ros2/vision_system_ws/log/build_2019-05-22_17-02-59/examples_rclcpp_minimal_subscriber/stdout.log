@@ -1,0 +1,11 @@
+CMakeFiles/Makefile2:67: set di istruzioni per l'obiettivo "CMakeFiles/mine.dir/all" non riuscito
+[ 12%] [32mBuilding CXX object CMakeFiles/subscriber_not_composable.dir/not_composable.cpp.o[0m
+[ 25%] [32mBuilding CXX object CMakeFiles/subscriber_member_function.dir/member_function.cpp.o[0m
+[ 37%] [32mBuilding CXX object CMakeFiles/subscriber_lambda.dir/lambda.cpp.o[0m
+[ 50%] [32m[1mLinking CXX executable subscriber_lambda[0m
+[ 62%] [32m[1mLinking CXX executable subscriber_member_function[0m
+[ 75%] [32m[1mLinking CXX executable subscriber_not_composable[0m
+[ 75%] Built target subscriber_lambda
+[ 75%] Built target subscriber_not_composable
+[ 75%] Built target subscriber_member_function
+Makefile:138: set di istruzioni per l'obiettivo "all" non riuscito

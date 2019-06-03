@@ -1,0 +1,51 @@
+[01m[K/home/pi/vision_system_ws/src/ros2_raspicam/src/service_camera_param.cpp:6:73:[m[K [01;31m[Kerror: [m[Kexpected ‘[01m[K,[m[K’ or ‘[01m[K...[m[K’ before ‘[01m[Kconst[m[K’
+ void camera_info(const std::shared_ptr<rmw_request_id_t> request_header [01;31m[Kconst[m[K std::shared_ptr<sensor_msgs::srv::SetCameraInfo::Request> req, std::shared_ptr<sensor_msgs::srv::SetCameraInfo::Response> res)
+                                                                         [01;31m[K^~~~~[m[K
+[01m[K/home/pi/vision_system_ws/src/ros2_raspicam/src/service_camera_param.cpp:[m[K In function ‘[01m[Kvoid camera_info(std::shared_ptr<rmw_request_id_t>)[m[K’:
+[01m[K/home/pi/vision_system_ws/src/ros2_raspicam/src/service_camera_param.cpp:11:16:[m[K [01;31m[Kerror: [m[K‘[01m[Kreq[m[K’ was not declared in this scope
+ std::cout<<""<<[01;31m[Kreq[m[K->camera_info.height<<std::endl;
+                [01;31m[K^~~[m[K
+[01m[K/home/pi/vision_system_ws/src/ros2_raspicam/src/service_camera_param.cpp:13:1:[m[K [01;31m[Kerror: [m[K‘[01m[Kres[m[K’ was not declared in this scope
+ [01;31m[Kres[m[K->success = true;
+ [01;31m[K^~~[m[K
+In file included from [01m[K/home/pi/ros2_ws/install/rclcpp/include/rclcpp/node_impl.hpp:42:0[m[K,
+                 from [01m[K/home/pi/ros2_ws/install/rclcpp/include/rclcpp/node.hpp:524[m[K,
+                 from [01m[K/home/pi/ros2_ws/install/rclcpp/include/rclcpp/executors/single_threaded_executor.hpp:28[m[K,
+                 from [01m[K/home/pi/ros2_ws/install/rclcpp/include/rclcpp/executors.hpp:22[m[K,
+                 from [01m[K/home/pi/ros2_ws/install/rclcpp/include/rclcpp/rclcpp.hpp:144[m[K,
+                 from [01m[K/home/pi/vision_system_ws/src/ros2_raspicam/src/service_camera_param.cpp:2[m[K:
+/home/pi/ros2_ws/install/rclcpp/include/rclcpp/create_service.hpp: In instantiation of ‘[01m[Ktypename rclcpp::Service<ServiceT>::SharedPtr rclcpp::create_service(std::shared_ptr<rclcpp::node_interfaces::NodeBaseInterface>, std::shared_ptr<rclcpp::node_interfaces::NodeServicesInterface>, const string&, CallbackT&&, const rmw_qos_profile_t&, rclcpp::callback_group::CallbackGroup::SharedPtr) [with ServiceT = sensor_msgs::srv::SetCameraInfo; CallbackT = void (&)(std::shared_ptr<rmw_request_id_t>); typename rclcpp::Service<ServiceT>::SharedPtr = std::shared_ptr<rclcpp::Service<sensor_msgs::srv::SetCameraInfo> >; std::__cxx11::string = std::__cxx11::basic_string<char>; rmw_qos_profile_t = rmw_qos_profile_t; rclcpp::callback_group::CallbackGroup::SharedPtr = std::shared_ptr<rclcpp::callback_group::CallbackGroup>][m[K’:
+[01m[K/home/pi/ros2_ws/install/rclcpp/include/rclcpp/node_impl.hpp:201:53:[m[K   required from ‘[01m[Ktypename rclcpp::Service<ServiceT>::SharedPtr rclcpp::Node::create_service(const string&, CallbackT&&, const rmw_qos_profile_t&, rclcpp::callback_group::CallbackGroup::SharedPtr) [with ServiceT = sensor_msgs::srv::SetCameraInfo; CallbackT = void (&)(std::shared_ptr<rmw_request_id_t>); typename rclcpp::Service<ServiceT>::SharedPtr = std::shared_ptr<rclcpp::Service<sensor_msgs::srv::SetCameraInfo> >; std::__cxx11::string = std::__cxx11::basic_string<char>; rmw_qos_profile_t = rmw_qos_profile_t; rclcpp::callback_group::CallbackGroup::SharedPtr = std::shared_ptr<rclcpp::callback_group::CallbackGroup>][m[K’
+[01m[K/home/pi/vision_system_ws/src/ros2_raspicam/src/service_camera_param.cpp:25:86:[m[K   required from here
+[01m[K/home/pi/ros2_ws/install/rclcpp/include/rclcpp/create_service.hpp:43:3:[m[K [01;31m[Kerror: [m[Kno matching function for call to ‘[01m[Krclcpp::AnyServiceCallback<sensor_msgs::srv::SetCameraInfo>::set(void (&)(std::shared_ptr<rmw_request_id_t>))[m[K’
+   [01;31m[Kany_service_callback[m[K.set(std::forward<CallbackT>(callback));
+   [01;31m[K^~~~~~~~~~~~~~~~~~~~[m[K
+In file included from [01m[K/home/pi/ros2_ws/install/rclcpp/include/rclcpp/service.hpp:27:0[m[K,
+                 from [01m[K/home/pi/ros2_ws/install/rclcpp/include/rclcpp/callback_group.hpp:24[m[K,
+                 from [01m[K/home/pi/ros2_ws/install/rclcpp/include/rclcpp/any_executable.hpp:20[m[K,
+                 from [01m[K/home/pi/ros2_ws/install/rclcpp/include/rclcpp/memory_strategy.hpp:24[m[K,
+                 from [01m[K/home/pi/ros2_ws/install/rclcpp/include/rclcpp/memory_strategies.hpp:18[m[K,
+                 from [01m[K/home/pi/ros2_ws/install/rclcpp/include/rclcpp/executor.hpp:32[m[K,
+                 from [01m[K/home/pi/ros2_ws/install/rclcpp/include/rclcpp/executors/multi_threaded_executor.hpp:24[m[K,
+                 from [01m[K/home/pi/ros2_ws/install/rclcpp/include/rclcpp/executors.hpp:21[m[K,
+                 from [01m[K/home/pi/ros2_ws/install/rclcpp/include/rclcpp/rclcpp.hpp:144[m[K,
+                 from [01m[K/home/pi/vision_system_ws/src/ros2_raspicam/src/service_camera_param.cpp:2[m[K:
+[01m[K/home/pi/ros2_ws/install/rclcpp/include/rclcpp/any_service_callback.hpp:65:8:[m[K [01;36m[Knote: [m[Kcandidate: template<class CallbackT, typename std::enable_if<rclcpp::function_traits::same_arguments<CallbackT, std::function<void(std::shared_ptr<sensor_msgs::srv::SetCameraInfo_Request_<std::allocator<void> > >, std::shared_ptr<sensor_msgs::srv::SetCameraInfo_Response_<std::allocator<void> > >)> >::value, void>::type* <anonymous> > void rclcpp::AnyServiceCallback<ServiceT>::set(CallbackT) [with CallbackT = CallbackT; typename std::enable_if<rclcpp::function_traits::same_arguments<CallbackT, std::function<void(std::shared_ptr<typename ServiceT::Request>, std::shared_ptr<typename ServiceT::Response>)> >::value>::type* <anonymous> = <enumerator>; ServiceT = sensor_msgs::srv::SetCameraInfo]
+   void [01;36m[Kset[m[K(CallbackT callback)
+        [01;36m[K^~~[m[K
+[01m[K/home/pi/ros2_ws/install/rclcpp/include/rclcpp/any_service_callback.hpp:65:8:[m[K [01;36m[Knote: [m[K  template argument deduction/substitution failed:
+[01m[K/home/pi/ros2_ws/install/rclcpp/include/rclcpp/any_service_callback.hpp:63:17:[m[K [01;31m[Kerror: [m[Kno type named ‘[01m[Ktype[m[K’ in ‘[01m[Kstruct std::enable_if<false, void>[m[K’
+     >::type * = [01;31m[Knullptr[m[K
+                 [01;31m[K^~~~~~~[m[K
+[01m[K/home/pi/ros2_ws/install/rclcpp/include/rclcpp/any_service_callback.hpp:63:17:[m[K [01;36m[Knote: [m[Kinvalid template non-type parameter
+[01m[K/home/pi/ros2_ws/install/rclcpp/include/rclcpp/any_service_callback.hpp:79:8:[m[K [01;36m[Knote: [m[Kcandidate: template<class CallbackT, typename std::enable_if<rclcpp::function_traits::same_arguments<CallbackT, std::function<void(std::shared_ptr<rmw_request_id_t>, std::shared_ptr<sensor_msgs::srv::SetCameraInfo_Request_<std::allocator<void> > >, std::shared_ptr<sensor_msgs::srv::SetCameraInfo_Response_<std::allocator<void> > >)> >::value, void>::type* <anonymous> > void rclcpp::AnyServiceCallback<ServiceT>::set(CallbackT) [with CallbackT = CallbackT; typename std::enable_if<rclcpp::function_traits::same_arguments<CallbackT, std::function<void(std::shared_ptr<rmw_request_id_t>, std::shared_ptr<typename ServiceT::Request>, std::shared_ptr<typename ServiceT::Response>)> >::value>::type* <anonymous> = <enumerator>; ServiceT = sensor_msgs::srv::SetCameraInfo]
+   void [01;36m[Kset[m[K(CallbackT callback)
+        [01;36m[K^~~[m[K
+[01m[K/home/pi/ros2_ws/install/rclcpp/include/rclcpp/any_service_callback.hpp:79:8:[m[K [01;36m[Knote: [m[K  template argument deduction/substitution failed:
+[01m[K/home/pi/ros2_ws/install/rclcpp/include/rclcpp/any_service_callback.hpp:77:17:[m[K [01;31m[Kerror: [m[Kno type named ‘[01m[Ktype[m[K’ in ‘[01m[Kstruct std::enable_if<false, void>[m[K’
+     >::type * = [01;31m[Knullptr[m[K
+                 [01;31m[K^~~~~~~[m[K
+[01m[K/home/pi/ros2_ws/install/rclcpp/include/rclcpp/any_service_callback.hpp:77:17:[m[K [01;36m[Knote: [m[Kinvalid template non-type parameter
+make[2]: *** [CMakeFiles/service_node.dir/src/service_camera_param.cpp.o] Errore 1
+make[1]: *** [CMakeFiles/service_node.dir/all] Errore 2
+make: *** [all] Errore 2

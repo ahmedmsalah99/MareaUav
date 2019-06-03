@@ -1,0 +1,11 @@
+[01m[K/home/pi/vision_system_ws/src/fsm_raspicam/src/CameraStates.cpp:[m[K In member function ‘[01m[Kvirtual void IdleState::setParameters()[m[K’:
+[01m[K/home/pi/vision_system_ws/src/fsm_raspicam/src/CameraStates.cpp:14:80:[m[K [01;31m[Kerror: [m[Kreturn-statement with a value, in function returning 'void' [[01;31m[K-fpermissive[m[K]
+     if ( !Camera.open()) {std::cerr<<"Error opening camera"<<std::endl;return -[01;31m[K1[m[K;}
+                                                                                [01;31m[K^[m[K
+[01m[K/home/pi/vision_system_ws/src/fsm_raspicam/src/CameraStates.cpp:16:21:[m[K [01;31m[Kerror: [m[K‘[01m[Kusleep[m[K’ was not declared in this scope
+     usleep(3*1000000[01;31m[K)[m[K;     //wait a while until camera stabilizes
+                     [01;31m[K^[m[K
+make[2]: *** [CMakeFiles/camera_main_node.dir/src/CameraStates.cpp.o] Errore 1
+make[2]: *** Attesa per i processi non terminati....
+make[1]: *** [CMakeFiles/camera_main_node.dir/all] Errore 2
+make: *** [all] Errore 2

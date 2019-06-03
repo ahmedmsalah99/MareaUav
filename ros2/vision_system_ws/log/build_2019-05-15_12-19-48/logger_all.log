@@ -1,0 +1,280 @@
+[1.519s] DEBUG:colcon:Command line arguments: ['/usr/bin/colcon', 'build', '--symlink-install']
+[1.520s] DEBUG:colcon:Parsed command line arguments: Namespace(ament_cmake_args=None, base_paths='.', build_base='build', catkin_cmake_args=None, catkin_skip_building_tests=False, cmake_args=None, cmake_clean_cache=False, cmake_clean_first=False, cmake_force_configure=False, cmake_target=None, cmake_target_skip_unavailable=False, continue_on_error=False, event_handlers=None, executor='parallel', ignore_user_meta=False, install_base='install', log_base='log', log_level=None, main=<bound method BuildVerb.main of <colcon_core.verb.build.BuildVerb object at 0x75f95dd0>>, merge_install=False, metas='./colcon.meta', packages_above=None, packages_end=None, packages_ignore=None, packages_ignore_regex=None, packages_select=None, packages_select_build_failed=False, packages_select_by_dep=None, packages_select_regex=None, packages_select_test_failures=False, packages_skip=None, packages_skip_build_finished=False, packages_skip_by_dep=None, packages_skip_regex=None, packages_skip_test_passed=False, packages_skip_up_to=None, packages_start=None, packages_up_to=None, parallel_workers=4, paths=None, symlink_install=True, test_result_base=None, verb_extension=<colcon_core.verb.build.BuildVerb object at 0x75f95dd0>, verb_name='build', verb_parser=<colcon_defaults.argument_parser.defaults.DefaultArgumentsDecorator object at 0x75f04e30>)
+[1.965s] Level 1:colcon.colcon_core.package_discovery:discover_packages(colcon_meta) check parameters
+[1.967s] Level 1:colcon.colcon_core.package_discovery:discover_packages(recursive) check parameters
+[1.967s] Level 1:colcon.colcon_core.package_discovery:discover_packages(ignore) check parameters
+[1.967s] Level 1:colcon.colcon_core.package_discovery:discover_packages(path) check parameters
+[1.968s] Level 1:colcon.colcon_core.package_discovery:discover_packages(recursive) discover
+[1.970s] INFO:colcon.colcon_core.package_discovery:Crawling recursively for packages in '/home/pi/vision_system_ws'
+[1.972s] Level 1:colcon.colcon_core.package_identification:_identify(/home/pi/vision_system_ws) by extensions ['ignore', 'ignore_ament_install']
+[1.973s] Level 1:colcon.colcon_core.package_identification:_identify(/home/pi/vision_system_ws) by extension 'ignore'
+[1.974s] Level 1:colcon.colcon_core.package_identification:_identify(/home/pi/vision_system_ws) by extension 'ignore_ament_install'
+[1.974s] Level 1:colcon.colcon_core.package_identification:_identify(/home/pi/vision_system_ws) by extensions ['colcon_pkg']
+[1.975s] Level 1:colcon.colcon_core.package_identification:_identify(/home/pi/vision_system_ws) by extension 'colcon_pkg'
+[1.976s] Level 1:colcon.colcon_core.package_identification:_identify(/home/pi/vision_system_ws) by extensions ['colcon_meta']
+[1.976s] Level 1:colcon.colcon_core.package_identification:_identify(/home/pi/vision_system_ws) by extension 'colcon_meta'
+[1.977s] Level 1:colcon.colcon_core.package_identification:_identify(/home/pi/vision_system_ws) by extensions ['ros']
+[1.977s] Level 1:colcon.colcon_core.package_identification:_identify(/home/pi/vision_system_ws) by extension 'ros'
+[2.108s] Level 1:colcon.colcon_core.package_identification:_identify(/home/pi/vision_system_ws) by extensions ['cmake', 'python']
+[2.109s] Level 1:colcon.colcon_core.package_identification:_identify(/home/pi/vision_system_ws) by extension 'cmake'
+[2.110s] Level 1:colcon.colcon_core.package_identification:_identify(/home/pi/vision_system_ws) by extension 'python'
+[2.111s] Level 1:colcon.colcon_core.package_identification:_identify(/home/pi/vision_system_ws) by extensions ['python_setup_py']
+[2.112s] Level 1:colcon.colcon_core.package_identification:_identify(/home/pi/vision_system_ws) by extension 'python_setup_py'
+[2.113s] Level 1:colcon.colcon_core.package_identification:_identify(/home/pi/vision_system_ws/build) by extensions ['ignore', 'ignore_ament_install']
+[2.114s] Level 1:colcon.colcon_core.package_identification:_identify(/home/pi/vision_system_ws/build) by extension 'ignore'
+[2.115s] Level 1:colcon.colcon_core.package_identification:_identify(/home/pi/vision_system_ws/build) ignored
+[2.118s] Level 1:colcon.colcon_core.package_identification:_identify(/home/pi/vision_system_ws/install) by extensions ['ignore', 'ignore_ament_install']
+[2.120s] Level 1:colcon.colcon_core.package_identification:_identify(/home/pi/vision_system_ws/install) by extension 'ignore'
+[2.120s] Level 1:colcon.colcon_core.package_identification:_identify(/home/pi/vision_system_ws/install) ignored
+[2.122s] Level 1:colcon.colcon_core.package_identification:_identify(/home/pi/vision_system_ws/log) by extensions ['ignore', 'ignore_ament_install']
+[2.123s] Level 1:colcon.colcon_core.package_identification:_identify(/home/pi/vision_system_ws/log) by extension 'ignore'
+[2.124s] Level 1:colcon.colcon_core.package_identification:_identify(/home/pi/vision_system_ws/log) ignored
+[2.125s] Level 1:colcon.colcon_core.package_identification:_identify(/home/pi/vision_system_ws/src) by extensions ['ignore', 'ignore_ament_install']
+[2.126s] Level 1:colcon.colcon_core.package_identification:_identify(/home/pi/vision_system_ws/src) by extension 'ignore'
+[2.127s] Level 1:colcon.colcon_core.package_identification:_identify(/home/pi/vision_system_ws/src) by extension 'ignore_ament_install'
+[2.128s] Level 1:colcon.colcon_core.package_identification:_identify(/home/pi/vision_system_ws/src) by extensions ['colcon_pkg']
+[2.129s] Level 1:colcon.colcon_core.package_identification:_identify(/home/pi/vision_system_ws/src) by extension 'colcon_pkg'
+[2.129s] Level 1:colcon.colcon_core.package_identification:_identify(/home/pi/vision_system_ws/src) by extensions ['colcon_meta']
+[2.130s] Level 1:colcon.colcon_core.package_identification:_identify(/home/pi/vision_system_ws/src) by extension 'colcon_meta'
+[2.131s] Level 1:colcon.colcon_core.package_identification:_identify(/home/pi/vision_system_ws/src) by extensions ['ros']
+[2.131s] Level 1:colcon.colcon_core.package_identification:_identify(/home/pi/vision_system_ws/src) by extension 'ros'
+[2.132s] Level 1:colcon.colcon_core.package_identification:_identify(/home/pi/vision_system_ws/src) by extensions ['cmake', 'python']
+[2.133s] Level 1:colcon.colcon_core.package_identification:_identify(/home/pi/vision_system_ws/src) by extension 'cmake'
+[2.134s] Level 1:colcon.colcon_core.package_identification:_identify(/home/pi/vision_system_ws/src) by extension 'python'
+[2.135s] Level 1:colcon.colcon_core.package_identification:_identify(/home/pi/vision_system_ws/src) by extensions ['python_setup_py']
+[2.136s] Level 1:colcon.colcon_core.package_identification:_identify(/home/pi/vision_system_ws/src) by extension 'python_setup_py'
+[2.138s] Level 1:colcon.colcon_core.package_identification:_identify(/home/pi/vision_system_ws/src/apriltag2_node) by extensions ['ignore', 'ignore_ament_install']
+[2.139s] Level 1:colcon.colcon_core.package_identification:_identify(/home/pi/vision_system_ws/src/apriltag2_node) by extension 'ignore'
+[2.140s] Level 1:colcon.colcon_core.package_identification:_identify(/home/pi/vision_system_ws/src/apriltag2_node) by extension 'ignore_ament_install'
+[2.140s] Level 1:colcon.colcon_core.package_identification:_identify(/home/pi/vision_system_ws/src/apriltag2_node) by extensions ['colcon_pkg']
+[2.141s] Level 1:colcon.colcon_core.package_identification:_identify(/home/pi/vision_system_ws/src/apriltag2_node) by extension 'colcon_pkg'
+[2.142s] Level 1:colcon.colcon_core.package_identification:_identify(/home/pi/vision_system_ws/src/apriltag2_node) by extensions ['colcon_meta']
+[2.143s] Level 1:colcon.colcon_core.package_identification:_identify(/home/pi/vision_system_ws/src/apriltag2_node) by extension 'colcon_meta'
+[2.143s] Level 1:colcon.colcon_core.package_identification:_identify(/home/pi/vision_system_ws/src/apriltag2_node) by extensions ['ros']
+[2.144s] Level 1:colcon.colcon_core.package_identification:_identify(/home/pi/vision_system_ws/src/apriltag2_node) by extension 'ros'
+[2.145s] Level 1:colcon.colcon_core.package_identification:_identify(/home/pi/vision_system_ws/src/apriltag2_node) by extensions ['cmake', 'python']
+[2.146s] Level 1:colcon.colcon_core.package_identification:_identify(/home/pi/vision_system_ws/src/apriltag2_node) by extension 'cmake'
+[2.147s] Level 1:colcon.colcon_core.package_identification:_identify(/home/pi/vision_system_ws/src/apriltag2_node) by extension 'python'
+[2.147s] Level 1:colcon.colcon_core.package_identification:_identify(/home/pi/vision_system_ws/src/apriltag2_node) by extensions ['python_setup_py']
+[2.148s] Level 1:colcon.colcon_core.package_identification:_identify(/home/pi/vision_system_ws/src/apriltag2_node) by extension 'python_setup_py'
+[2.150s] Level 1:colcon.colcon_core.package_identification:_identify(/home/pi/vision_system_ws/src/apriltag2_node/apriltag_msgs) by extensions ['ignore', 'ignore_ament_install']
+[2.151s] Level 1:colcon.colcon_core.package_identification:_identify(/home/pi/vision_system_ws/src/apriltag2_node/apriltag_msgs) by extension 'ignore'
+[2.152s] Level 1:colcon.colcon_core.package_identification:_identify(/home/pi/vision_system_ws/src/apriltag2_node/apriltag_msgs) by extension 'ignore_ament_install'
+[2.152s] Level 1:colcon.colcon_core.package_identification:_identify(/home/pi/vision_system_ws/src/apriltag2_node/apriltag_msgs) by extensions ['colcon_pkg']
+[2.153s] Level 1:colcon.colcon_core.package_identification:_identify(/home/pi/vision_system_ws/src/apriltag2_node/apriltag_msgs) by extension 'colcon_pkg'
+[2.154s] Level 1:colcon.colcon_core.package_identification:_identify(/home/pi/vision_system_ws/src/apriltag2_node/apriltag_msgs) by extensions ['colcon_meta']
+[2.155s] Level 1:colcon.colcon_core.package_identification:_identify(/home/pi/vision_system_ws/src/apriltag2_node/apriltag_msgs) by extension 'colcon_meta'
+[2.155s] Level 1:colcon.colcon_core.package_identification:_identify(/home/pi/vision_system_ws/src/apriltag2_node/apriltag_msgs) by extensions ['ros']
+[2.156s] Level 1:colcon.colcon_core.package_identification:_identify(/home/pi/vision_system_ws/src/apriltag2_node/apriltag_msgs) by extension 'ros'
+[2.179s] DEBUG:colcon.colcon_core.package_identification:Package '/home/pi/vision_system_ws/src/apriltag2_node/apriltag_msgs' with type 'ros.ament_cmake' and name 'apriltag_msgs'
+[2.181s] Level 1:colcon.colcon_core.package_identification:_identify(/home/pi/vision_system_ws/src/apriltag2_node/node) by extensions ['ignore', 'ignore_ament_install']
+[2.182s] Level 1:colcon.colcon_core.package_identification:_identify(/home/pi/vision_system_ws/src/apriltag2_node/node) by extension 'ignore'
+[2.183s] Level 1:colcon.colcon_core.package_identification:_identify(/home/pi/vision_system_ws/src/apriltag2_node/node) by extension 'ignore_ament_install'
+[2.184s] Level 1:colcon.colcon_core.package_identification:_identify(/home/pi/vision_system_ws/src/apriltag2_node/node) by extensions ['colcon_pkg']
+[2.185s] Level 1:colcon.colcon_core.package_identification:_identify(/home/pi/vision_system_ws/src/apriltag2_node/node) by extension 'colcon_pkg'
+[2.185s] Level 1:colcon.colcon_core.package_identification:_identify(/home/pi/vision_system_ws/src/apriltag2_node/node) by extensions ['colcon_meta']
+[2.186s] Level 1:colcon.colcon_core.package_identification:_identify(/home/pi/vision_system_ws/src/apriltag2_node/node) by extension 'colcon_meta'
+[2.186s] Level 1:colcon.colcon_core.package_identification:_identify(/home/pi/vision_system_ws/src/apriltag2_node/node) by extensions ['ros']
+[2.187s] Level 1:colcon.colcon_core.package_identification:_identify(/home/pi/vision_system_ws/src/apriltag2_node/node) by extension 'ros'
+[2.198s] DEBUG:colcon.colcon_core.package_identification:Package '/home/pi/vision_system_ws/src/apriltag2_node/node' with type 'ros.ament_cmake' and name 'apriltag2_node'
+[2.200s] Level 1:colcon.colcon_core.package_identification:_identify(/home/pi/vision_system_ws/src/ros2_raspicam) by extensions ['ignore', 'ignore_ament_install']
+[2.201s] Level 1:colcon.colcon_core.package_identification:_identify(/home/pi/vision_system_ws/src/ros2_raspicam) by extension 'ignore'
+[2.202s] Level 1:colcon.colcon_core.package_identification:_identify(/home/pi/vision_system_ws/src/ros2_raspicam) by extension 'ignore_ament_install'
+[2.203s] Level 1:colcon.colcon_core.package_identification:_identify(/home/pi/vision_system_ws/src/ros2_raspicam) by extensions ['colcon_pkg']
+[2.204s] Level 1:colcon.colcon_core.package_identification:_identify(/home/pi/vision_system_ws/src/ros2_raspicam) by extension 'colcon_pkg'
+[2.204s] Level 1:colcon.colcon_core.package_identification:_identify(/home/pi/vision_system_ws/src/ros2_raspicam) by extensions ['colcon_meta']
+[2.205s] Level 1:colcon.colcon_core.package_identification:_identify(/home/pi/vision_system_ws/src/ros2_raspicam) by extension 'colcon_meta'
+[2.205s] Level 1:colcon.colcon_core.package_identification:_identify(/home/pi/vision_system_ws/src/ros2_raspicam) by extensions ['ros']
+[2.206s] Level 1:colcon.colcon_core.package_identification:_identify(/home/pi/vision_system_ws/src/ros2_raspicam) by extension 'ros'
+[2.213s] DEBUG:colcon.colcon_core.package_identification:Package '/home/pi/vision_system_ws/src/ros2_raspicam' with type 'ros.ament_cmake' and name 'ros2_raspicam'
+[2.214s] Level 1:colcon.colcon_core.package_identification:_identify(/home/pi/vision_system_ws/src/ultrasonic_sensor) by extensions ['ignore', 'ignore_ament_install']
+[2.216s] Level 1:colcon.colcon_core.package_identification:_identify(/home/pi/vision_system_ws/src/ultrasonic_sensor) by extension 'ignore'
+[2.217s] Level 1:colcon.colcon_core.package_identification:_identify(/home/pi/vision_system_ws/src/ultrasonic_sensor) by extension 'ignore_ament_install'
+[2.217s] Level 1:colcon.colcon_core.package_identification:_identify(/home/pi/vision_system_ws/src/ultrasonic_sensor) by extensions ['colcon_pkg']
+[2.218s] Level 1:colcon.colcon_core.package_identification:_identify(/home/pi/vision_system_ws/src/ultrasonic_sensor) by extension 'colcon_pkg'
+[2.219s] Level 1:colcon.colcon_core.package_identification:_identify(/home/pi/vision_system_ws/src/ultrasonic_sensor) by extensions ['colcon_meta']
+[2.220s] Level 1:colcon.colcon_core.package_identification:_identify(/home/pi/vision_system_ws/src/ultrasonic_sensor) by extension 'colcon_meta'
+[2.220s] Level 1:colcon.colcon_core.package_identification:_identify(/home/pi/vision_system_ws/src/ultrasonic_sensor) by extensions ['ros']
+[2.221s] Level 1:colcon.colcon_core.package_identification:_identify(/home/pi/vision_system_ws/src/ultrasonic_sensor) by extension 'ros'
+[2.230s] DEBUG:colcon.colcon_core.package_identification:Package '/home/pi/vision_system_ws/src/ultrasonic_sensor' with type 'ros.ament_cmake' and name 'ultrasonic_sensor'
+[2.230s] Level 1:colcon.colcon_core.package_discovery:discover_packages(recursive) using defaults
+[2.271s] Level 5:colcon.colcon_core.verb:set package 'apriltag_msgs' build argument 'cmake_args' from command line to 'None'
+[2.272s] Level 5:colcon.colcon_core.verb:set package 'apriltag_msgs' build argument 'cmake_target' from command line to 'None'
+[2.272s] Level 5:colcon.colcon_core.verb:set package 'apriltag_msgs' build argument 'cmake_target_skip_unavailable' from command line to 'False'
+[2.273s] Level 5:colcon.colcon_core.verb:set package 'apriltag_msgs' build argument 'cmake_clean_cache' from command line to 'False'
+[2.273s] Level 5:colcon.colcon_core.verb:set package 'apriltag_msgs' build argument 'cmake_clean_first' from command line to 'False'
+[2.273s] Level 5:colcon.colcon_core.verb:set package 'apriltag_msgs' build argument 'cmake_force_configure' from command line to 'False'
+[2.273s] Level 5:colcon.colcon_core.verb:set package 'apriltag_msgs' build argument 'ament_cmake_args' from command line to 'None'
+[2.274s] Level 5:colcon.colcon_core.verb:set package 'apriltag_msgs' build argument 'catkin_cmake_args' from command line to 'None'
+[2.274s] Level 5:colcon.colcon_core.verb:set package 'apriltag_msgs' build argument 'catkin_skip_building_tests' from command line to 'False'
+[2.274s] DEBUG:colcon.colcon_core.verb:Building package 'apriltag_msgs' with the following arguments: {'ament_cmake_args': None, 'build_base': '/home/pi/vision_system_ws/build/apriltag_msgs', 'catkin_cmake_args': None, 'catkin_skip_building_tests': False, 'cmake_args': None, 'cmake_clean_cache': False, 'cmake_clean_first': False, 'cmake_force_configure': False, 'cmake_target': None, 'cmake_target_skip_unavailable': False, 'install_base': '/home/pi/vision_system_ws/install/apriltag_msgs', 'merge_install': False, 'path': '/home/pi/vision_system_ws/src/apriltag2_node/apriltag_msgs', 'symlink_install': True, 'test_result_base': None}
+[2.297s] Level 5:colcon.colcon_core.verb:set package 'ros2_raspicam' build argument 'cmake_args' from command line to 'None'
+[2.298s] Level 5:colcon.colcon_core.verb:set package 'ros2_raspicam' build argument 'cmake_target' from command line to 'None'
+[2.298s] Level 5:colcon.colcon_core.verb:set package 'ros2_raspicam' build argument 'cmake_target_skip_unavailable' from command line to 'False'
+[2.299s] Level 5:colcon.colcon_core.verb:set package 'ros2_raspicam' build argument 'cmake_clean_cache' from command line to 'False'
+[2.299s] Level 5:colcon.colcon_core.verb:set package 'ros2_raspicam' build argument 'cmake_clean_first' from command line to 'False'
+[2.299s] Level 5:colcon.colcon_core.verb:set package 'ros2_raspicam' build argument 'cmake_force_configure' from command line to 'False'
+[2.300s] Level 5:colcon.colcon_core.verb:set package 'ros2_raspicam' build argument 'ament_cmake_args' from command line to 'None'
+[2.300s] Level 5:colcon.colcon_core.verb:set package 'ros2_raspicam' build argument 'catkin_cmake_args' from command line to 'None'
+[2.300s] Level 5:colcon.colcon_core.verb:set package 'ros2_raspicam' build argument 'catkin_skip_building_tests' from command line to 'False'
+[2.301s] DEBUG:colcon.colcon_core.verb:Building package 'ros2_raspicam' with the following arguments: {'ament_cmake_args': None, 'build_base': '/home/pi/vision_system_ws/build/ros2_raspicam', 'catkin_cmake_args': None, 'catkin_skip_building_tests': False, 'cmake_args': None, 'cmake_clean_cache': False, 'cmake_clean_first': False, 'cmake_force_configure': False, 'cmake_target': None, 'cmake_target_skip_unavailable': False, 'install_base': '/home/pi/vision_system_ws/install/ros2_raspicam', 'merge_install': False, 'path': '/home/pi/vision_system_ws/src/ros2_raspicam', 'symlink_install': True, 'test_result_base': None}
+[2.323s] Level 5:colcon.colcon_core.verb:set package 'ultrasonic_sensor' build argument 'cmake_args' from command line to 'None'
+[2.323s] Level 5:colcon.colcon_core.verb:set package 'ultrasonic_sensor' build argument 'cmake_target' from command line to 'None'
+[2.324s] Level 5:colcon.colcon_core.verb:set package 'ultrasonic_sensor' build argument 'cmake_target_skip_unavailable' from command line to 'False'
+[2.324s] Level 5:colcon.colcon_core.verb:set package 'ultrasonic_sensor' build argument 'cmake_clean_cache' from command line to 'False'
+[2.324s] Level 5:colcon.colcon_core.verb:set package 'ultrasonic_sensor' build argument 'cmake_clean_first' from command line to 'False'
+[2.324s] Level 5:colcon.colcon_core.verb:set package 'ultrasonic_sensor' build argument 'cmake_force_configure' from command line to 'False'
+[2.325s] Level 5:colcon.colcon_core.verb:set package 'ultrasonic_sensor' build argument 'ament_cmake_args' from command line to 'None'
+[2.325s] Level 5:colcon.colcon_core.verb:set package 'ultrasonic_sensor' build argument 'catkin_cmake_args' from command line to 'None'
+[2.325s] Level 5:colcon.colcon_core.verb:set package 'ultrasonic_sensor' build argument 'catkin_skip_building_tests' from command line to 'False'
+[2.326s] DEBUG:colcon.colcon_core.verb:Building package 'ultrasonic_sensor' with the following arguments: {'ament_cmake_args': None, 'build_base': '/home/pi/vision_system_ws/build/ultrasonic_sensor', 'catkin_cmake_args': None, 'catkin_skip_building_tests': False, 'cmake_args': None, 'cmake_clean_cache': False, 'cmake_clean_first': False, 'cmake_force_configure': False, 'cmake_target': None, 'cmake_target_skip_unavailable': False, 'install_base': '/home/pi/vision_system_ws/install/ultrasonic_sensor', 'merge_install': False, 'path': '/home/pi/vision_system_ws/src/ultrasonic_sensor', 'symlink_install': True, 'test_result_base': None}
+[2.348s] Level 5:colcon.colcon_core.verb:set package 'apriltag2_node' build argument 'cmake_args' from command line to 'None'
+[2.348s] Level 5:colcon.colcon_core.verb:set package 'apriltag2_node' build argument 'cmake_target' from command line to 'None'
+[2.349s] Level 5:colcon.colcon_core.verb:set package 'apriltag2_node' build argument 'cmake_target_skip_unavailable' from command line to 'False'
+[2.349s] Level 5:colcon.colcon_core.verb:set package 'apriltag2_node' build argument 'cmake_clean_cache' from command line to 'False'
+[2.350s] Level 5:colcon.colcon_core.verb:set package 'apriltag2_node' build argument 'cmake_clean_first' from command line to 'False'
+[2.350s] Level 5:colcon.colcon_core.verb:set package 'apriltag2_node' build argument 'cmake_force_configure' from command line to 'False'
+[2.350s] Level 5:colcon.colcon_core.verb:set package 'apriltag2_node' build argument 'ament_cmake_args' from command line to 'None'
+[2.351s] Level 5:colcon.colcon_core.verb:set package 'apriltag2_node' build argument 'catkin_cmake_args' from command line to 'None'
+[2.351s] Level 5:colcon.colcon_core.verb:set package 'apriltag2_node' build argument 'catkin_skip_building_tests' from command line to 'False'
+[2.351s] DEBUG:colcon.colcon_core.verb:Building package 'apriltag2_node' with the following arguments: {'ament_cmake_args': None, 'build_base': '/home/pi/vision_system_ws/build/apriltag2_node', 'catkin_cmake_args': None, 'catkin_skip_building_tests': False, 'cmake_args': None, 'cmake_clean_cache': False, 'cmake_clean_first': False, 'cmake_force_configure': False, 'cmake_target': None, 'cmake_target_skip_unavailable': False, 'install_base': '/home/pi/vision_system_ws/install/apriltag2_node', 'merge_install': False, 'path': '/home/pi/vision_system_ws/src/apriltag2_node/node', 'symlink_install': True, 'test_result_base': None}
+[2.365s] INFO:colcon.colcon_core.executor:Executing jobs using 'parallel' executor
+[2.381s] DEBUG:colcon.colcon_parallel_executor.executor.parallel:run_until_complete
+[2.384s] INFO:colcon.colcon_ros.task.ament_cmake.build:Building ROS package in '/home/pi/vision_system_ws/src/apriltag2_node/apriltag_msgs' with build type 'ament_cmake'
+[2.431s] INFO:colcon.colcon_core.plugin_system:Skipping extension 'colcon_core.shell.bat': Not used on non-Windows systems
+[2.433s] INFO:colcon.colcon_cmake.task.cmake.build:Building CMake package in '/home/pi/vision_system_ws/src/apriltag2_node/apriltag_msgs'
+[2.440s] INFO:colcon.colcon_core.shell:Skip shell extension 'powershell' for command environment: Not usable outside of PowerShell
+[2.478s] DEBUG:colcon.colcon_core.shell:Ignoring prefix path '/home/pi/vision_system_ws/install/ultrasonic_sensor'
+[2.479s] DEBUG:colcon.colcon_core.shell:Ignoring prefix path '/home/pi/vision_system_ws/install/ros2_raspicam'
+[2.480s] DEBUG:colcon.colcon_core.shell:Ignoring prefix path '/home/pi/vision_system_ws/install/apriltag2_node'
+[2.481s] DEBUG:colcon.colcon_core.shell:Ignoring prefix path '/home/pi/vision_system_ws/install/apriltag_msgs'
+[2.509s] INFO:colcon.colcon_ros.task.ament_cmake.build:Building ROS package in '/home/pi/vision_system_ws/src/ros2_raspicam' with build type 'ament_cmake'
+[2.517s] INFO:colcon.colcon_cmake.task.cmake.build:Building CMake package in '/home/pi/vision_system_ws/src/ros2_raspicam'
+[2.522s] INFO:colcon.colcon_core.shell:Skip shell extension 'powershell' for command environment: Not usable outside of PowerShell
+[2.540s] DEBUG:colcon.colcon_core.shell:Ignoring prefix path '/home/pi/vision_system_ws/install/ultrasonic_sensor'
+[2.540s] DEBUG:colcon.colcon_core.shell:Ignoring prefix path '/home/pi/vision_system_ws/install/ros2_raspicam'
+[2.541s] DEBUG:colcon.colcon_core.shell:Ignoring prefix path '/home/pi/vision_system_ws/install/apriltag2_node'
+[2.542s] DEBUG:colcon.colcon_core.shell:Ignoring prefix path '/home/pi/vision_system_ws/install/apriltag_msgs'
+[2.566s] INFO:colcon.colcon_ros.task.ament_cmake.build:Building ROS package in '/home/pi/vision_system_ws/src/ultrasonic_sensor' with build type 'ament_cmake'
+[2.577s] INFO:colcon.colcon_cmake.task.cmake.build:Building CMake package in '/home/pi/vision_system_ws/src/ultrasonic_sensor'
+[2.585s] INFO:colcon.colcon_core.shell:Skip shell extension 'powershell' for command environment: Not usable outside of PowerShell
+[2.605s] DEBUG:colcon.colcon_core.shell:Ignoring prefix path '/home/pi/vision_system_ws/install/ultrasonic_sensor'
+[2.606s] DEBUG:colcon.colcon_core.shell:Ignoring prefix path '/home/pi/vision_system_ws/install/ros2_raspicam'
+[2.607s] DEBUG:colcon.colcon_core.shell:Ignoring prefix path '/home/pi/vision_system_ws/install/apriltag2_node'
+[2.607s] DEBUG:colcon.colcon_core.shell:Ignoring prefix path '/home/pi/vision_system_ws/install/apriltag_msgs'
+[2.689s] DEBUG:colcon.colcon_core.event_handler.log_command:Invoking command in '/home/pi/vision_system_ws/build/ros2_raspicam': /usr/bin/cmake --build /home/pi/vision_system_ws/build/ros2_raspicam -- -j4 -l4
+[2.766s] DEBUG:colcon.colcon_core.event_handler.log_command:Invoking command in '/home/pi/vision_system_ws/build/apriltag_msgs': /usr/bin/cmake --build /home/pi/vision_system_ws/build/apriltag_msgs -- -j4 -l4
+[2.806s] DEBUG:colcon.colcon_core.event_handler.log_command:Invoking command in '/home/pi/vision_system_ws/build/ultrasonic_sensor': /usr/bin/cmake --build /home/pi/vision_system_ws/build/ultrasonic_sensor -- -j4 -l4
+[6.553s] DEBUG:colcon.colcon_core.event_handler.log_command:Invoked command in '/home/pi/vision_system_ws/build/apriltag_msgs' returned '0': /usr/bin/cmake --build /home/pi/vision_system_ws/build/apriltag_msgs -- -j4 -l4
+[6.632s] DEBUG:colcon.colcon_core.event_handler.log_command:Invoked command in '/home/pi/vision_system_ws/build/ultrasonic_sensor' returned '0': /usr/bin/cmake --build /home/pi/vision_system_ws/build/ultrasonic_sensor -- -j4 -l4
+[7.213s] DEBUG:colcon.colcon_core.event_handler.log_command:Invoking command in '/home/pi/vision_system_ws/build/ultrasonic_sensor': /usr/bin/cmake --build /home/pi/vision_system_ws/build/ultrasonic_sensor --target install
+[7.331s] DEBUG:colcon.colcon_core.event_handler.log_command:Invoking command in '/home/pi/vision_system_ws/build/apriltag_msgs': /usr/bin/cmake --build /home/pi/vision_system_ws/build/apriltag_msgs --target install
+[16.732s] Level 1:colcon.colcon_core.environment:create_environment_scripts_only(apriltag_msgs)
+[16.745s] DEBUG:colcon.colcon_core.event_handler.log_command:Invoked command in '/home/pi/vision_system_ws/build/apriltag_msgs' returned '0': /usr/bin/cmake --build /home/pi/vision_system_ws/build/apriltag_msgs --target install
+[16.796s] Level 1:colcon.colcon_core.environment:checking '/home/pi/vision_system_ws/install/apriltag_msgs' for CMake module files
+[16.804s] Level 1:colcon.colcon_core.environment:checking '/home/pi/vision_system_ws/install/apriltag_msgs' for CMake config files
+[16.809s] Level 1:colcon.colcon_core.shell:create_environment_hook('apriltag_msgs', 'cmake_prefix_path')
+[16.816s] INFO:colcon.colcon_core.shell:Creating environment hook '/home/pi/vision_system_ws/install/apriltag_msgs/share/apriltag_msgs/hook/cmake_prefix_path.ps1'
+[16.832s] INFO:colcon.colcon_core.shell:Creating environment hook '/home/pi/vision_system_ws/install/apriltag_msgs/share/apriltag_msgs/hook/cmake_prefix_path.sh'
+[16.846s] Level 1:colcon.colcon_core.environment:checking '/home/pi/vision_system_ws/install/apriltag_msgs/lib'
+[16.849s] Level 1:colcon.colcon_core.shell:create_environment_hook('apriltag_msgs', 'ld_library_path_lib')
+[16.856s] INFO:colcon.colcon_core.shell:Creating environment hook '/home/pi/vision_system_ws/install/apriltag_msgs/share/apriltag_msgs/hook/ld_library_path_lib.ps1'
+[16.864s] INFO:colcon.colcon_core.shell:Creating environment hook '/home/pi/vision_system_ws/install/apriltag_msgs/share/apriltag_msgs/hook/ld_library_path_lib.sh'
+[16.870s] Level 1:colcon.colcon_core.environment:checking '/home/pi/vision_system_ws/install/apriltag_msgs/bin'
+[16.872s] Level 1:colcon.colcon_core.environment:checking '/home/pi/vision_system_ws/install/apriltag_msgs/lib/pkgconfig/apriltag_msgs.pc'
+[16.873s] Level 1:colcon.colcon_core.environment:checking '/home/pi/vision_system_ws/install/apriltag_msgs/lib/python3.5/site-packages'
+[16.874s] Level 1:colcon.colcon_core.shell:create_environment_hook('apriltag_msgs', 'pythonpath')
+[16.881s] INFO:colcon.colcon_core.shell:Creating environment hook '/home/pi/vision_system_ws/install/apriltag_msgs/share/apriltag_msgs/hook/pythonpath.ps1'
+[16.886s] INFO:colcon.colcon_core.shell:Creating environment hook '/home/pi/vision_system_ws/install/apriltag_msgs/share/apriltag_msgs/hook/pythonpath.sh'
+[16.900s] INFO:colcon.colcon_core.shell:Creating package script '/home/pi/vision_system_ws/install/apriltag_msgs/share/apriltag_msgs/package.ps1'
+[16.914s] INFO:colcon.colcon_core.shell:Creating package script '/home/pi/vision_system_ws/install/apriltag_msgs/share/apriltag_msgs/package.sh'
+[16.930s] INFO:colcon.colcon_core.shell:Creating package script '/home/pi/vision_system_ws/install/apriltag_msgs/share/apriltag_msgs/package.bash'
+[16.947s] INFO:colcon.colcon_core.shell:Creating package script '/home/pi/vision_system_ws/install/apriltag_msgs/share/apriltag_msgs/package.zsh'
+[16.958s] Level 1:colcon.colcon_core.environment:create_file_with_runtime_dependencies(/home/pi/vision_system_ws/install/apriltag_msgs/share/colcon-core/packages/apriltag_msgs)
+[16.963s] INFO:colcon.colcon_ros.task.ament_cmake.build:Building ROS package in '/home/pi/vision_system_ws/src/apriltag2_node/node' with build type 'ament_cmake'
+[16.971s] INFO:colcon.colcon_cmake.task.cmake.build:Building CMake package in '/home/pi/vision_system_ws/src/apriltag2_node/node'
+[16.978s] INFO:colcon.colcon_core.shell:Skip shell extension 'powershell' for command environment: Not usable outside of PowerShell
+[17.026s] DEBUG:colcon.colcon_core.shell:Ignoring prefix path '/home/pi/vision_system_ws/install/ultrasonic_sensor'
+[17.028s] DEBUG:colcon.colcon_core.shell:Ignoring prefix path '/home/pi/vision_system_ws/install/ros2_raspicam'
+[17.029s] DEBUG:colcon.colcon_core.shell:Ignoring prefix path '/home/pi/vision_system_ws/install/apriltag2_node'
+[17.030s] DEBUG:colcon.colcon_core.shell:Ignoring prefix path '/home/pi/vision_system_ws/install/apriltag_msgs'
+[18.014s] Level 1:colcon.colcon_core.environment:create_environment_scripts_only(ultrasonic_sensor)
+[18.024s] Level 1:colcon.colcon_core.environment:checking '/home/pi/vision_system_ws/install/ultrasonic_sensor' for CMake module files
+[18.030s] DEBUG:colcon.colcon_core.event_handler.log_command:Invoked command in '/home/pi/vision_system_ws/build/ultrasonic_sensor' returned '0': /usr/bin/cmake --build /home/pi/vision_system_ws/build/ultrasonic_sensor --target install
+[18.034s] Level 1:colcon.colcon_core.environment:checking '/home/pi/vision_system_ws/install/ultrasonic_sensor' for CMake config files
+[18.041s] Level 1:colcon.colcon_core.shell:create_environment_hook('ultrasonic_sensor', 'cmake_prefix_path')
+[18.046s] INFO:colcon.colcon_core.shell:Creating environment hook '/home/pi/vision_system_ws/install/ultrasonic_sensor/share/ultrasonic_sensor/hook/cmake_prefix_path.ps1'
+[18.050s] INFO:colcon.colcon_core.shell:Creating environment hook '/home/pi/vision_system_ws/install/ultrasonic_sensor/share/ultrasonic_sensor/hook/cmake_prefix_path.sh'
+[18.057s] Level 1:colcon.colcon_core.environment:checking '/home/pi/vision_system_ws/install/ultrasonic_sensor/lib'
+[18.060s] Level 1:colcon.colcon_core.shell:create_environment_hook('ultrasonic_sensor', 'ld_library_path_lib')
+[18.065s] INFO:colcon.colcon_core.shell:Creating environment hook '/home/pi/vision_system_ws/install/ultrasonic_sensor/share/ultrasonic_sensor/hook/ld_library_path_lib.ps1'
+[18.069s] INFO:colcon.colcon_core.shell:Creating environment hook '/home/pi/vision_system_ws/install/ultrasonic_sensor/share/ultrasonic_sensor/hook/ld_library_path_lib.sh'
+[18.073s] Level 1:colcon.colcon_core.environment:checking '/home/pi/vision_system_ws/install/ultrasonic_sensor/bin'
+[18.073s] Level 1:colcon.colcon_core.environment:checking '/home/pi/vision_system_ws/install/ultrasonic_sensor/lib/pkgconfig/ultrasonic_sensor.pc'
+[18.074s] Level 1:colcon.colcon_core.environment:checking '/home/pi/vision_system_ws/install/ultrasonic_sensor/lib/python3.5/site-packages'
+[18.075s] Level 1:colcon.colcon_core.shell:create_environment_hook('ultrasonic_sensor', 'pythonpath')
+[18.080s] INFO:colcon.colcon_core.shell:Creating environment hook '/home/pi/vision_system_ws/install/ultrasonic_sensor/share/ultrasonic_sensor/hook/pythonpath.ps1'
+[18.084s] INFO:colcon.colcon_core.shell:Creating environment hook '/home/pi/vision_system_ws/install/ultrasonic_sensor/share/ultrasonic_sensor/hook/pythonpath.sh'
+[18.094s] INFO:colcon.colcon_core.shell:Creating package script '/home/pi/vision_system_ws/install/ultrasonic_sensor/share/ultrasonic_sensor/package.ps1'
+[18.099s] INFO:colcon.colcon_core.shell:Creating package script '/home/pi/vision_system_ws/install/ultrasonic_sensor/share/ultrasonic_sensor/package.sh'
+[18.104s] INFO:colcon.colcon_core.shell:Creating package script '/home/pi/vision_system_ws/install/ultrasonic_sensor/share/ultrasonic_sensor/package.bash'
+[18.109s] INFO:colcon.colcon_core.shell:Creating package script '/home/pi/vision_system_ws/install/ultrasonic_sensor/share/ultrasonic_sensor/package.zsh'
+[18.114s] Level 1:colcon.colcon_core.environment:create_file_with_runtime_dependencies(/home/pi/vision_system_ws/install/ultrasonic_sensor/share/colcon-core/packages/ultrasonic_sensor)
+[18.437s] DEBUG:colcon.colcon_core.event_handler.log_command:Invoking command in '/home/pi/vision_system_ws/build/apriltag2_node': CMAKE_PREFIX_PATH=/home/pi/vision_system_ws/install/apriltag_msgs:/home/pi/vision_system_ws/install/ultrasonic_sensor:/home/pi/vision_system_ws/install/ros2_raspicam:/home/pi/vision_system_ws/install/lcm_bridge:/home/pi/vision_system_ws/install/apriltag2_node LD_LIBRARY_PATH=/home/pi/vision_system_ws/install/apriltag_msgs/lib:/home/pi/vision_system_ws/install/ultrasonic_sensor/lib:/home/pi/vision_system_ws/install/apriltag2_node/lib PYTHONPATH=/home/pi/vision_system_ws/install/apriltag_msgs/lib/python3.5/site-packages:/home/pi/vision_system_ws/install/ultrasonic_sensor/lib/python3.5/site-packages:/home/pi /usr/bin/cmake --build /home/pi/vision_system_ws/build/apriltag2_node -- -j4 -l4
+[20.050s] DEBUG:colcon.colcon_core.event_handler.log_command:Invoked command in '/home/pi/vision_system_ws/build/apriltag2_node' returned '0': CMAKE_PREFIX_PATH=/home/pi/vision_system_ws/install/apriltag_msgs:/home/pi/vision_system_ws/install/ultrasonic_sensor:/home/pi/vision_system_ws/install/ros2_raspicam:/home/pi/vision_system_ws/install/lcm_bridge:/home/pi/vision_system_ws/install/apriltag2_node LD_LIBRARY_PATH=/home/pi/vision_system_ws/install/apriltag_msgs/lib:/home/pi/vision_system_ws/install/ultrasonic_sensor/lib:/home/pi/vision_system_ws/install/apriltag2_node/lib PYTHONPATH=/home/pi/vision_system_ws/install/apriltag_msgs/lib/python3.5/site-packages:/home/pi/vision_system_ws/install/ultrasonic_sensor/lib/python3.5/site-packages:/home/pi /usr/bin/cmake --build /home/pi/vision_system_ws/build/apriltag2_node -- -j4 -l4
+[20.330s] DEBUG:colcon.colcon_core.event_handler.log_command:Invoking command in '/home/pi/vision_system_ws/build/apriltag2_node': CMAKE_PREFIX_PATH=/home/pi/vision_system_ws/install/apriltag_msgs:/home/pi/vision_system_ws/install/ultrasonic_sensor:/home/pi/vision_system_ws/install/ros2_raspicam:/home/pi/vision_system_ws/install/lcm_bridge:/home/pi/vision_system_ws/install/apriltag2_node LD_LIBRARY_PATH=/home/pi/vision_system_ws/install/apriltag_msgs/lib:/home/pi/vision_system_ws/install/ultrasonic_sensor/lib:/home/pi/vision_system_ws/install/apriltag2_node/lib PYTHONPATH=/home/pi/vision_system_ws/install/apriltag_msgs/lib/python3.5/site-packages:/home/pi/vision_system_ws/install/ultrasonic_sensor/lib/python3.5/site-packages:/home/pi /usr/bin/cmake --build /home/pi/vision_system_ws/build/apriltag2_node --target install
+[21.166s] Level 1:colcon.colcon_core.environment:create_environment_scripts_only(apriltag2_node)
+[21.173s] Level 1:colcon.colcon_core.environment:checking '/home/pi/vision_system_ws/install/apriltag2_node' for CMake module files
+[21.182s] DEBUG:colcon.colcon_core.event_handler.log_command:Invoked command in '/home/pi/vision_system_ws/build/apriltag2_node' returned '0': CMAKE_PREFIX_PATH=/home/pi/vision_system_ws/install/apriltag_msgs:/home/pi/vision_system_ws/install/ultrasonic_sensor:/home/pi/vision_system_ws/install/ros2_raspicam:/home/pi/vision_system_ws/install/lcm_bridge:/home/pi/vision_system_ws/install/apriltag2_node LD_LIBRARY_PATH=/home/pi/vision_system_ws/install/apriltag_msgs/lib:/home/pi/vision_system_ws/install/ultrasonic_sensor/lib:/home/pi/vision_system_ws/install/apriltag2_node/lib PYTHONPATH=/home/pi/vision_system_ws/install/apriltag_msgs/lib/python3.5/site-packages:/home/pi/vision_system_ws/install/ultrasonic_sensor/lib/python3.5/site-packages:/home/pi /usr/bin/cmake --build /home/pi/vision_system_ws/build/apriltag2_node --target install
+[21.187s] Level 1:colcon.colcon_core.environment:checking '/home/pi/vision_system_ws/install/apriltag2_node' for CMake config files
+[21.197s] Level 1:colcon.colcon_core.shell:create_environment_hook('apriltag2_node', 'cmake_prefix_path')
+[21.203s] INFO:colcon.colcon_core.shell:Creating environment hook '/home/pi/vision_system_ws/install/apriltag2_node/share/apriltag2_node/hook/cmake_prefix_path.ps1'
+[21.206s] INFO:colcon.colcon_core.shell:Creating environment hook '/home/pi/vision_system_ws/install/apriltag2_node/share/apriltag2_node/hook/cmake_prefix_path.sh'
+[21.214s] Level 1:colcon.colcon_core.environment:checking '/home/pi/vision_system_ws/install/apriltag2_node/lib'
+[21.239s] Level 1:colcon.colcon_core.shell:create_environment_hook('apriltag2_node', 'ld_library_path_lib')
+[21.244s] INFO:colcon.colcon_core.shell:Creating environment hook '/home/pi/vision_system_ws/install/apriltag2_node/share/apriltag2_node/hook/ld_library_path_lib.ps1'
+[21.249s] INFO:colcon.colcon_core.shell:Creating environment hook '/home/pi/vision_system_ws/install/apriltag2_node/share/apriltag2_node/hook/ld_library_path_lib.sh'
+[21.253s] Level 1:colcon.colcon_core.environment:checking '/home/pi/vision_system_ws/install/apriltag2_node/bin'
+[21.254s] Level 1:colcon.colcon_core.environment:checking '/home/pi/vision_system_ws/install/apriltag2_node/lib/pkgconfig/apriltag2_node.pc'
+[21.255s] Level 1:colcon.colcon_core.environment:checking '/home/pi/vision_system_ws/install/apriltag2_node/lib/python3.5/site-packages'
+[21.261s] INFO:colcon.colcon_core.shell:Creating package script '/home/pi/vision_system_ws/install/apriltag2_node/share/apriltag2_node/package.ps1'
+[21.273s] INFO:colcon.colcon_core.shell:Creating package script '/home/pi/vision_system_ws/install/apriltag2_node/share/apriltag2_node/package.sh'
+[21.278s] INFO:colcon.colcon_core.shell:Creating package script '/home/pi/vision_system_ws/install/apriltag2_node/share/apriltag2_node/package.bash'
+[21.283s] INFO:colcon.colcon_core.shell:Creating package script '/home/pi/vision_system_ws/install/apriltag2_node/share/apriltag2_node/package.zsh'
+[21.287s] Level 1:colcon.colcon_core.environment:create_file_with_runtime_dependencies(/home/pi/vision_system_ws/install/apriltag2_node/share/colcon-core/packages/apriltag2_node)
+[26.747s] DEBUG:colcon.colcon_core.event_handler.log_command:Invoked command in '/home/pi/vision_system_ws/build/ros2_raspicam' returned '0': /usr/bin/cmake --build /home/pi/vision_system_ws/build/ros2_raspicam -- -j4 -l4
+[27.032s] DEBUG:colcon.colcon_core.event_handler.log_command:Invoking command in '/home/pi/vision_system_ws/build/ros2_raspicam': /usr/bin/cmake --build /home/pi/vision_system_ws/build/ros2_raspicam --target install
+[28.354s] Level 1:colcon.colcon_core.environment:create_environment_scripts_only(ros2_raspicam)
+[28.360s] Level 1:colcon.colcon_core.environment:checking '/home/pi/vision_system_ws/install/ros2_raspicam' for CMake module files
+[28.367s] DEBUG:colcon.colcon_core.event_handler.log_command:Invoked command in '/home/pi/vision_system_ws/build/ros2_raspicam' returned '0': /usr/bin/cmake --build /home/pi/vision_system_ws/build/ros2_raspicam --target install
+[28.371s] Level 1:colcon.colcon_core.environment:checking '/home/pi/vision_system_ws/install/ros2_raspicam' for CMake config files
+[28.379s] Level 1:colcon.colcon_core.shell:create_environment_hook('ros2_raspicam', 'cmake_prefix_path')
+[28.384s] INFO:colcon.colcon_core.shell:Creating environment hook '/home/pi/vision_system_ws/install/ros2_raspicam/share/ros2_raspicam/hook/cmake_prefix_path.ps1'
+[28.394s] INFO:colcon.colcon_core.shell:Creating environment hook '/home/pi/vision_system_ws/install/ros2_raspicam/share/ros2_raspicam/hook/cmake_prefix_path.sh'
+[28.401s] Level 1:colcon.colcon_core.environment:checking '/home/pi/vision_system_ws/install/ros2_raspicam/lib'
+[28.403s] Level 1:colcon.colcon_core.environment:checking '/home/pi/vision_system_ws/install/ros2_raspicam/bin'
+[28.403s] Level 1:colcon.colcon_core.environment:checking '/home/pi/vision_system_ws/install/ros2_raspicam/lib/pkgconfig/ros2_raspicam.pc'
+[28.404s] Level 1:colcon.colcon_core.environment:checking '/home/pi/vision_system_ws/install/ros2_raspicam/lib/python3.5/site-packages'
+[28.409s] INFO:colcon.colcon_core.shell:Creating package script '/home/pi/vision_system_ws/install/ros2_raspicam/share/ros2_raspicam/package.ps1'
+[28.413s] INFO:colcon.colcon_core.shell:Creating package script '/home/pi/vision_system_ws/install/ros2_raspicam/share/ros2_raspicam/package.sh'
+[28.417s] INFO:colcon.colcon_core.shell:Creating package script '/home/pi/vision_system_ws/install/ros2_raspicam/share/ros2_raspicam/package.bash'
+[28.421s] INFO:colcon.colcon_core.shell:Creating package script '/home/pi/vision_system_ws/install/ros2_raspicam/share/ros2_raspicam/package.zsh'
+[28.424s] Level 1:colcon.colcon_core.environment:create_file_with_runtime_dependencies(/home/pi/vision_system_ws/install/ros2_raspicam/share/colcon-core/packages/ros2_raspicam)
+[28.433s] DEBUG:colcon.colcon_parallel_executor.executor.parallel:closing loop
+[28.439s] DEBUG:colcon.colcon_parallel_executor.executor.parallel:loop closed
+[28.440s] DEBUG:colcon.colcon_parallel_executor.executor.parallel:run_until_complete finished with '0'
+[28.441s] DEBUG:colcon.colcon_core.event_reactor:joining thread
+[28.461s] INFO:colcon.colcon_core.plugin_system:Skipping extension 'colcon_notification.desktop_notification.win32': Not used on non-Windows systems
+[28.462s] INFO:colcon.colcon_core.plugin_system:Skipping extension 'colcon_notification.desktop_notification.notify_send': Could not find 'notify-send'
+[28.560s] INFO:colcon.colcon_core.plugin_system:Skipping extension 'colcon_notification.desktop_notification.terminal_notifier': Not used on non-Darwin systems
+[28.561s] INFO:colcon.colcon_notification.desktop_notification:Sending desktop notification using 'notify2'
+[29.004s] DEBUG:colcon.colcon_notification.desktop_notification.notify2:Failed to initialize notify2: org.freedesktop.DBus.Error.ServiceUnknown: The name org.freedesktop.Notifications was not provided by any .service files
+[29.005s] DEBUG:colcon.colcon_core.event_reactor:joined thread
+[29.051s] INFO:colcon.colcon_core.shell:Creating prefix script '/home/pi/vision_system_ws/install/local_setup.ps1'
+[29.092s] INFO:colcon.colcon_core.shell:Creating prefix chain script '/home/pi/vision_system_ws/install/setup.ps1'
+[29.120s] INFO:colcon.colcon_core.shell:Creating prefix script '/home/pi/vision_system_ws/install/local_setup.sh'
+[29.131s] INFO:colcon.colcon_core.shell:Creating prefix chain script '/home/pi/vision_system_ws/install/setup.sh'
+[29.152s] INFO:colcon.colcon_core.shell:Creating prefix script '/home/pi/vision_system_ws/install/local_setup.bash'
+[29.161s] INFO:colcon.colcon_core.shell:Creating prefix chain script '/home/pi/vision_system_ws/install/setup.bash'
+[29.182s] INFO:colcon.colcon_core.shell:Creating prefix script '/home/pi/vision_system_ws/install/local_setup.zsh'
+[29.191s] INFO:colcon.colcon_core.shell:Creating prefix chain script '/home/pi/vision_system_ws/install/setup.zsh'

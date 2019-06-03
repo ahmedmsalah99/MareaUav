@@ -1,0 +1,11 @@
+[01m[K/home/pi/vision_system_ws/src/fsm_raspicam/src/State.cpp:5:19:[m[K [01;31m[Kerror: [m[K‘[01m[Kstatic[m[K’ may not be used when defining (as opposed to declaring) a static data member [[01;31m[K-fpermissive[m[K]
+ static int State::[01;31m[KFlightMode[m[K = -1;
+                   [01;31m[K^~~~~~~~~~[m[K
+[01m[K/home/pi/vision_system_ws/src/fsm_raspicam/src/State.cpp:5:19:[m[K [01;31m[Kerror: [m[K‘[01m[Kint State::FlightMode[m[K’ is not a static data member of ‘[01m[Kclass State[m[K’
+[01m[K/home/pi/vision_system_ws/src/fsm_raspicam/src/State.cpp:6:19:[m[K [01;31m[Kerror: [m[K‘[01m[Kstatic[m[K’ may not be used when defining (as opposed to declaring) a static data member [[01;31m[K-fpermissive[m[K]
+ static int State::[01;31m[KPreFlightMode[m[K = -1;
+                   [01;31m[K^~~~~~~~~~~~~[m[K
+[01m[K/home/pi/vision_system_ws/src/fsm_raspicam/src/State.cpp:6:19:[m[K [01;31m[Kerror: [m[K‘[01m[Kint State::PreFlightMode[m[K’ is not a static data member of ‘[01m[Kclass State[m[K’
+make[2]: *** [CMakeFiles/camera_main_node.dir/src/State.cpp.o] Errore 1
+make[1]: *** [CMakeFiles/camera_main_node.dir/all] Errore 2
+make: *** [all] Errore 2

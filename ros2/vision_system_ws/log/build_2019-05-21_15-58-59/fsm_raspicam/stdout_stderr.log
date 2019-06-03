@@ -1,0 +1,49 @@
+[35m[1mScanning dependencies of target camera_main_node[0m
+[ 20%] [32mBuilding CXX object CMakeFiles/camera_main_node.dir/src/CameraStates.cpp.o[0m
+[01m[K/home/pi/vision_system_ws/src/fsm_raspicam/src/CameraStates.cpp:[m[K In member function ‘[01m[Kvirtual void SearchState::setParameters()[m[K’:
+[01m[K/home/pi/vision_system_ws/src/fsm_raspicam/src/CameraStates.cpp:133:52:[m[K [01;31m[Kerror: [m[Kno matching function for call to ‘[01m[Krclcpp::Publisher<sensor_msgs::msg::Image_<std::allocator<void> > >::publish(std::shared_ptr<sensor_msgs::msg::CompressedImage_<std::allocator<void> > >&)[m[K’
+  publisher_compressed->publish(compressed_image_msg[01;31m[K)[m[K;
+                                                    [01;31m[K^[m[K
+In file included from [01m[K/home/pi/ros2_ws/install/rclcpp/include/rclcpp/node_interfaces/node_topics_interface.hpp:26:0[m[K,
+                 from [01m[K/home/pi/ros2_ws/install/rclcpp/include/rclcpp/node.hpp:52[m[K,
+                 from [01m[K/home/pi/ros2_ws/install/rclcpp/include/rclcpp/executors/single_threaded_executor.hpp:28[m[K,
+                 from [01m[K/home/pi/ros2_ws/install/rclcpp/include/rclcpp/executors.hpp:22[m[K,
+                 from [01m[K/home/pi/ros2_ws/install/rclcpp/include/rclcpp/rclcpp.hpp:144[m[K,
+                 from [01m[K/home/pi/vision_system_ws/src/fsm_raspicam/include/State.h:6[m[K,
+                 from [01m[K/home/pi/vision_system_ws/src/fsm_raspicam/include/FiniteStateMachine.h:4[m[K,
+                 from [01m[K/home/pi/vision_system_ws/src/fsm_raspicam/include/CameraStates.h:4[m[K,
+                 from [01m[K/home/pi/vision_system_ws/src/fsm_raspicam/src/CameraStates.cpp:1[m[K:
+[01m[K/home/pi/ros2_ws/install/rclcpp/include/rclcpp/publisher.hpp:189:3:[m[K [01;36m[Knote: [m[Kcandidate: void rclcpp::Publisher<MessageT, Alloc>::publish(std::unique_ptr<MessageT, typename std::conditional<std::is_same<typename std::allocator_traits<typename std::allocator_traits<_Alloc>::rebind_traits<MessageT>::allocator_type>::rebind_alloc<MessageT>, typename std::allocator<void>::rebind<_Tp1>::other>::value, std::default_delete<_Tp>, rclcpp::allocator::AllocatorDeleter<typename std::allocator_traits<_Alloc>::rebind_traits<MessageT>::allocator_type> >::type>&) [with MessageT = sensor_msgs::msg::Image_<std::allocator<void> >; Alloc = std::allocator<void>; typename std::conditional<std::is_same<typename std::allocator_traits<typename std::allocator_traits<_Alloc>::rebind_traits<MessageT>::allocator_type>::rebind_alloc<MessageT>, typename std::allocator<void>::rebind<_Tp1>::other>::value, std::default_delete<_Tp>, rclcpp::allocator::AllocatorDeleter<typename std::allocator_traits<_Alloc>::rebind_traits<MessageT>::allocator_type> >::type = std::default_delete<sensor_msgs::msg::Image_<std::allocator<void> > >]
+   [01;36m[Kpublish[m[K(std::unique_ptr<MessageT, MessageDeleter> & msg)
+   [01;36m[K^~~~~~~[m[K
+[01m[K/home/pi/ros2_ws/install/rclcpp/include/rclcpp/publisher.hpp:189:3:[m[K [01;36m[Knote: [m[K  no known conversion for argument 1 from ‘[01m[Kstd::shared_ptr<sensor_msgs::msg::CompressedImage_<std::allocator<void> > >[m[K’ to ‘[01m[Kstd::unique_ptr<sensor_msgs::msg::Image_<std::allocator<void> >, std::default_delete<sensor_msgs::msg::Image_<std::allocator<void> > > >&[m[K’
+[01m[K/home/pi/ros2_ws/install/rclcpp/include/rclcpp/publisher.hpp:228:3:[m[K [01;36m[Knote: [m[Kcandidate: void rclcpp::Publisher<MessageT, Alloc>::publish(const std::shared_ptr<_Tp1>&) [with MessageT = sensor_msgs::msg::Image_<std::allocator<void> >; Alloc = std::allocator<void>]
+   [01;36m[Kpublish[m[K(const std::shared_ptr<MessageT> & msg)
+   [01;36m[K^~~~~~~[m[K
+[01m[K/home/pi/ros2_ws/install/rclcpp/include/rclcpp/publisher.hpp:228:3:[m[K [01;36m[Knote: [m[K  no known conversion for argument 1 from ‘[01m[Kstd::shared_ptr<sensor_msgs::msg::CompressedImage_<std::allocator<void> > >[m[K’ to ‘[01m[Kconst std::shared_ptr<sensor_msgs::msg::Image_<std::allocator<void> > >&[m[K’
+[01m[K/home/pi/ros2_ws/install/rclcpp/include/rclcpp/publisher.hpp:247:3:[m[K [01;36m[Knote: [m[Kcandidate: void rclcpp::Publisher<MessageT, Alloc>::publish(std::shared_ptr<const _Tp>) [with MessageT = sensor_msgs::msg::Image_<std::allocator<void> >; Alloc = std::allocator<void>]
+   [01;36m[Kpublish[m[K(std::shared_ptr<const MessageT> msg)
+   [01;36m[K^~~~~~~[m[K
+[01m[K/home/pi/ros2_ws/install/rclcpp/include/rclcpp/publisher.hpp:247:3:[m[K [01;36m[Knote: [m[K  no known conversion for argument 1 from ‘[01m[Kstd::shared_ptr<sensor_msgs::msg::CompressedImage_<std::allocator<void> > >[m[K’ to ‘[01m[Kstd::shared_ptr<const sensor_msgs::msg::Image_<std::allocator<void> > >[m[K’
+[01m[K/home/pi/ros2_ws/install/rclcpp/include/rclcpp/publisher.hpp:266:3:[m[K [01;36m[Knote: [m[Kcandidate: void rclcpp::Publisher<MessageT, Alloc>::publish(const MessageT&) [with MessageT = sensor_msgs::msg::Image_<std::allocator<void> >; Alloc = std::allocator<void>]
+   [01;36m[Kpublish[m[K(const MessageT & msg)
+   [01;36m[K^~~~~~~[m[K
+[01m[K/home/pi/ros2_ws/install/rclcpp/include/rclcpp/publisher.hpp:266:3:[m[K [01;36m[Knote: [m[K  no known conversion for argument 1 from ‘[01m[Kstd::shared_ptr<sensor_msgs::msg::CompressedImage_<std::allocator<void> > >[m[K’ to ‘[01m[Kconst sensor_msgs::msg::Image_<std::allocator<void> >&[m[K’
+[01m[K/home/pi/ros2_ws/install/rclcpp/include/rclcpp/publisher.hpp:281:3:[m[K [01;36m[Knote: [m[Kcandidate: void rclcpp::Publisher<MessageT, Alloc>::publish(const MessageT*) [with MessageT = sensor_msgs::msg::Image_<std::allocator<void> >; Alloc = std::allocator<void>]
+   [01;36m[Kpublish[m[K(const MessageT * msg)
+   [01;36m[K^~~~~~~[m[K
+[01m[K/home/pi/ros2_ws/install/rclcpp/include/rclcpp/publisher.hpp:281:3:[m[K [01;36m[Knote: [m[K  no known conversion for argument 1 from ‘[01m[Kstd::shared_ptr<sensor_msgs::msg::CompressedImage_<std::allocator<void> > >[m[K’ to ‘[01m[Kconst sensor_msgs::msg::Image_<std::allocator<void> >*[m[K’
+[01m[K/home/pi/ros2_ws/install/rclcpp/include/rclcpp/publisher.hpp:290:3:[m[K [01;36m[Knote: [m[Kcandidate: void rclcpp::Publisher<MessageT, Alloc>::publish(const rcl_serialized_message_t*) [with MessageT = sensor_msgs::msg::Image_<std::allocator<void> >; Alloc = std::allocator<void>; rcl_serialized_message_t = rcutils_uint8_array_t]
+   [01;36m[Kpublish[m[K(const rcl_serialized_message_t * serialized_msg)
+   [01;36m[K^~~~~~~[m[K
+[01m[K/home/pi/ros2_ws/install/rclcpp/include/rclcpp/publisher.hpp:290:3:[m[K [01;36m[Knote: [m[K  no known conversion for argument 1 from ‘[01m[Kstd::shared_ptr<sensor_msgs::msg::CompressedImage_<std::allocator<void> > >[m[K’ to ‘[01m[Kconst rcl_serialized_message_t* {aka const rcutils_uint8_array_t*}[m[K’
+[01m[K/home/pi/ros2_ws/install/rclcpp/include/rclcpp/publisher.hpp:303:3:[m[K [01;36m[Knote: [m[Kcandidate: void rclcpp::Publisher<MessageT, Alloc>::publish(std::shared_ptr<const rcutils_uint8_array_t>) [with MessageT = sensor_msgs::msg::Image_<std::allocator<void> >; Alloc = std::allocator<void>]
+   [01;36m[Kpublish[m[K(std::shared_ptr<const rcl_serialized_message_t> serialized_msg)
+   [01;36m[K^~~~~~~[m[K
+[01m[K/home/pi/ros2_ws/install/rclcpp/include/rclcpp/publisher.hpp:303:3:[m[K [01;36m[Knote: [m[K  no known conversion for argument 1 from ‘[01m[Kstd::shared_ptr<sensor_msgs::msg::CompressedImage_<std::allocator<void> > >[m[K’ to ‘[01m[Kstd::shared_ptr<const rcutils_uint8_array_t>[m[K’
+CMakeFiles/camera_main_node.dir/build.make:134: set di istruzioni per l'obiettivo "CMakeFiles/camera_main_node.dir/src/CameraStates.cpp.o" non riuscito
+make[2]: *** [CMakeFiles/camera_main_node.dir/src/CameraStates.cpp.o] Errore 1
+CMakeFiles/Makefile2:803: set di istruzioni per l'obiettivo "CMakeFiles/camera_main_node.dir/all" non riuscito
+make[1]: *** [CMakeFiles/camera_main_node.dir/all] Errore 2
+make: *** [all] Errore 2
+Makefile:138: set di istruzioni per l'obiettivo "all" non riuscito

@@ -1,0 +1,15 @@
+/home/pi/vision_system_ws/install/ros2_raspicam/lib/ros2_raspicam/raspicam_raw_node
+/home/pi/vision_system_ws/install/ros2_raspicam/lib/ros2_raspicam/raspicam_compressed_node
+/home/pi/vision_system_ws/install/ros2_raspicam/lib/ros2_raspicam/checks_rate_node
+/home/pi/vision_system_ws/install/ros2_raspicam/lib/ros2_raspicam/trial_node
+/home/pi/vision_system_ws/install/ros2_raspicam/share/ament_index/resource_index/package_run_dependencies/ros2_raspicam
+/home/pi/vision_system_ws/install/ros2_raspicam/share/ament_index/resource_index/parent_prefix_path/ros2_raspicam
+/home/pi/vision_system_ws/install/ros2_raspicam/share/ros2_raspicam/environment/ament_prefix_path.sh
+/home/pi/vision_system_ws/install/ros2_raspicam/share/ros2_raspicam/environment/path.sh
+/home/pi/vision_system_ws/install/ros2_raspicam/share/ros2_raspicam/local_setup.bash
+/home/pi/vision_system_ws/install/ros2_raspicam/share/ros2_raspicam/local_setup.sh
+/home/pi/vision_system_ws/install/ros2_raspicam/share/ros2_raspicam/local_setup.zsh
+/home/pi/vision_system_ws/install/ros2_raspicam/share/ament_index/resource_index/packages/ros2_raspicam
+/home/pi/vision_system_ws/install/ros2_raspicam/share/ros2_raspicam/cmake/ros2_raspicamConfig.cmake
+/home/pi/vision_system_ws/install/ros2_raspicam/share/ros2_raspicam/cmake/ros2_raspicamConfig-version.cmake
+/home/pi/vision_system_ws/install/ros2_raspicam/share/ros2_raspicam/package.xml

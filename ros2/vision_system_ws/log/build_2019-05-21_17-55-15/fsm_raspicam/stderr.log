@@ -1,0 +1,7 @@
+[01m[K/home/pi/vision_system_ws/src/fsm_raspicam/src/camera_main.cpp:4:39:[m[K [01;31m[Kfatal error: [m[Ksensor_msgs/msg/float32.hpp: File o directory non esistente
+ #include "sensor_msgs/msg/float32.hpp"
+                                       [01;31m[K^[m[K
+compilation terminated.
+make[2]: *** [CMakeFiles/camera_main_node.dir/src/camera_main.cpp.o] Errore 1
+make[1]: *** [CMakeFiles/camera_main_node.dir/all] Errore 2
+make: *** [all] Errore 2

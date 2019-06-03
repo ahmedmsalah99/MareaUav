@@ -1,0 +1,13 @@
+[ 50%] Built target CameraMachine
+[35m[1mScanning dependencies of target camera_main_node[0m
+[ 75%] [32mBuilding CXX object CMakeFiles/camera_main_node.dir/src/camera_main.cpp.o[0m
+[01m[K/home/pi/vision_system_ws/src/fsm_raspicam/src/camera_main.cpp:14:32:[m[K [01;31m[Kfatal error: [m[KFiniteStatemachine.h: File o directory non esistente
+ #include "FiniteStatemachine.h"
+                                [01;31m[K^[m[K
+compilation terminated.
+make[2]: *** [CMakeFiles/camera_main_node.dir/src/camera_main.cpp.o] Errore 1
+make[1]: *** [CMakeFiles/camera_main_node.dir/all] Errore 2
+make: *** [all] Errore 2
+CMakeFiles/camera_main_node.dir/build.make:62: set di istruzioni per l'obiettivo "CMakeFiles/camera_main_node.dir/src/camera_main.cpp.o" non riuscito
+CMakeFiles/Makefile2:840: set di istruzioni per l'obiettivo "CMakeFiles/camera_main_node.dir/all" non riuscito
+Makefile:138: set di istruzioni per l'obiettivo "all" non riuscito

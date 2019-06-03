@@ -1,0 +1,14 @@
+[35m[1mScanning dependencies of target checks_rate_node[0m
+[ 33%] Built target raspicam_compressed_node
+[ 66%] Built target raspicam_raw_node
+[ 83%] [32mBuilding CXX object CMakeFiles/checks_rate_node.dir/src/checks_rate.cpp.o[0m
+[01m[K/home/pi/vision_system_ws/src/ros2_raspicam/src/checks_rate.cpp:[m[K In function ‘[01m[Kint main(int, char**)[m[K’:
+[01m[K/home/pi/vision_system_ws/src/ros2_raspicam/src/checks_rate.cpp:46:16:[m[K [01;31m[Kerror: [m[K‘[01m[Ktimer_end[m[K’ was not declared in this scope
+  gettimeofday(&[01;31m[Ktimer_end[m[K,NULL);
+                [01;31m[K^~~~~~~~~[m[K
+CMakeFiles/checks_rate_node.dir/build.make:62: set di istruzioni per l'obiettivo "CMakeFiles/checks_rate_node.dir/src/checks_rate.cpp.o" non riuscito
+make[2]: *** [CMakeFiles/checks_rate_node.dir/src/checks_rate.cpp.o] Errore 1
+make[1]: *** [CMakeFiles/checks_rate_node.dir/all] Errore 2
+CMakeFiles/Makefile2:685: set di istruzioni per l'obiettivo "CMakeFiles/checks_rate_node.dir/all" non riuscito
+Makefile:138: set di istruzioni per l'obiettivo "all" non riuscito
+make: *** [all] Errore 2

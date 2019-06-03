@@ -1,0 +1,45 @@
+# The set of languages for which implicit dependencies are needed:
+set(CMAKE_DEPENDS_LANGUAGES
+  "C"
+  )
+# The set of files for implicit dependencies of each language:
+set(CMAKE_DEPENDS_CHECK_C
+  "/home/pi/vision_system_ws/build/ultrasonic_sensor/rosidl_generator_py/ultrasonic_sensor/msg/_ultrasonic_msg_s.c" "/home/pi/vision_system_ws/build/ultrasonic_sensor/CMakeFiles/ultrasonic_sensor__python.dir/rosidl_generator_py/ultrasonic_sensor/msg/_ultrasonic_msg_s.c.o"
+  )
+set(CMAKE_C_COMPILER_ID "GNU")
+
+# The include file search paths:
+set(CMAKE_C_TARGET_INCLUDE_PATH
+  "rosidl_generator_c"
+  "rosidl_generator_py"
+  "/usr/include/python3.5m"
+  "rosidl_typesupport_c"
+  "/home/pi/ros2_ws/install/rosidl_typesupport_interface/include"
+  "/home/pi/ros2_ws/install/rosidl_generator_c/include"
+  "/home/pi/ros2_ws/install/rosidl_typesupport_c/include"
+  "/home/pi/ros2_ws/install/builtin_interfaces/include"
+  "/home/pi/ros2_ws/install/rosidl_typesupport_cpp/include"
+  "/home/pi/ros2_ws/install/rosidl_generator_cpp/include"
+  "/home/pi/ros2_ws/install/rosidl_typesupport_introspection_c/include"
+  "/home/pi/ros2_ws/install/rosidl_typesupport_introspection_cpp/include"
+  "/home/pi/ros2_ws/install/rclcpp/include"
+  "/home/pi/ros2_ws/install/rcl/include"
+  "/home/pi/ros2_ws/install/rcl_interfaces/include"
+  "/home/pi/ros2_ws/install/rcutils/include"
+  "/home/pi/ros2_ws/install/rmw/include"
+  "/home/pi/ros2_ws/install/rosgraph_msgs/include"
+  "/home/pi/ros2_ws/install/rcl_yaml_param_parser/include"
+  "/home/pi/ros2_ws/install/std_msgs/include"
+  "/home/pi/ros2_ws/install/geometry_msgs/include"
+  "/home/pi/mocap2mav/include"
+  "/home/pi/vision_system_ws/src/ultrasonic_sensor/include"
+  )
+
+# Targets to which this target links.
+set(CMAKE_TARGET_LINKED_INFO_FILES
+  "/home/pi/vision_system_ws/build/ultrasonic_sensor/CMakeFiles/ultrasonic_sensor__rosidl_typesupport_c.dir/DependInfo.cmake"
+  "/home/pi/vision_system_ws/build/ultrasonic_sensor/CMakeFiles/ultrasonic_sensor__rosidl_generator_c.dir/DependInfo.cmake"
+  )
+
+# Fortran module output directory.
+set(CMAKE_Fortran_TARGET_MODULE_DIR "")

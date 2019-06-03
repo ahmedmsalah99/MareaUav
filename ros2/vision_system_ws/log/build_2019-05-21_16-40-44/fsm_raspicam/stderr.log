@@ -1,0 +1,22 @@
+[01m[K/home/pi/vision_system_ws/src/fsm_raspicam/src/State.cpp:22:6:[m[K [01;31m[Kerror: [m[Kprototype for ‘[01m[Kvoid State::setPrevMode()[m[K’ does not match any in class ‘[01m[KState[m[K’
+ void [01;31m[KState[m[K::setPrevMode(){
+      [01;31m[K^~~~~[m[K
+In file included from [01m[K/home/pi/vision_system_ws/src/fsm_raspicam/src/State.cpp:1:0[m[K:
+[01m[K/home/pi/vision_system_ws/src/fsm_raspicam/include/State.h:31:7:[m[K [01;31m[Kerror: [m[Kcandidate is: void State::setPrevMode(int)
+  void [01;31m[KsetPrevMode[m[K(int mode);
+       [01;31m[K^~~~~~~~~~~[m[K
+[01m[K/home/pi/vision_system_ws/src/fsm_raspicam/src/camera_main.cpp:[m[K In function ‘[01m[Kint main(int, char**)[m[K’:
+[01m[K/home/pi/vision_system_ws/src/fsm_raspicam/src/camera_main.cpp:56:35:[m[K [01;31m[Kerror: [m[Kno matching function for call to ‘[01m[KIdleState::setPrevMode()[m[K’
+                 IdleS.setPrevMode([01;31m[K)[m[K;
+                                   [01;31m[K^[m[K
+In file included from [01m[K/home/pi/vision_system_ws/src/fsm_raspicam/include/FiniteStateMachine.h:4:0[m[K,
+                 from [01m[K/home/pi/vision_system_ws/src/fsm_raspicam/src/camera_main.cpp:14[m[K:
+[01m[K/home/pi/vision_system_ws/src/fsm_raspicam/include/State.h:31:7:[m[K [01;36m[Knote: [m[Kcandidate: void State::setPrevMode(int)
+  void [01;36m[KsetPrevMode[m[K(int mode);
+       [01;36m[K^~~~~~~~~~~[m[K
+[01m[K/home/pi/vision_system_ws/src/fsm_raspicam/include/State.h:31:7:[m[K [01;36m[Knote: [m[K  candidate expects 1 argument, 0 provided
+make[2]: *** [CMakeFiles/camera_main_node.dir/src/camera_main.cpp.o] Errore 1
+make[2]: *** Attesa per i processi non terminati....
+make[2]: *** [CMakeFiles/camera_main_node.dir/src/State.cpp.o] Errore 1
+make[1]: *** [CMakeFiles/camera_main_node.dir/all] Errore 2
+make: *** [all] Errore 2

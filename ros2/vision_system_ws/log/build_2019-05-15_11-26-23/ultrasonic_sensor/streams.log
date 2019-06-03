@@ -1,0 +1,18 @@
+Invoking command in '/home/pi/vision_system_ws/build/ultrasonic_sensor': /usr/bin/cmake --build /home/pi/vision_system_ws/build/ultrasonic_sensor -- -j4 -l4
+[  8%] Built target ultrasonic_sensor__rosidl_generator_c
+[ 14%] Built target UltrasonicSensor
+[ 22%] Built target ultrasonic_sensor__rosidl_typesupport_introspection_c
+[ 31%] Built target ultrasonic_sensor__rosidl_typesupport_c
+[ 34%] Built target ultrasonic_sensor__cpp
+[ 42%] Built target ultrasonic_sensor__rosidl_typesupport_cpp
+[ 51%] Built target ultrasonic_sensor__rosidl_typesupport_introspection_cpp
+[ 60%] Built target ultrasonic_sensor__rosidl_typesupport_fastrtps_cpp
+[ 68%] Built target ultrasonic_sensor__rosidl_typesupport_fastrtps_c
+[ 68%] Built target ultrasonic_sensor
+[ 74%] Built target ultrasonic_sensor_node_Mocap2mav
+[ 77%] Built target ultrasonic_sensor__py
+[ 82%] Built target ultrasonic_sensor__python
+[ 88%] Built target ultrasonic_sensor__rosidl_typesupport_fastrtps_c__pyext
+[ 94%] Built target ultrasonic_sensor__rosidl_typesupport_c__pyext
+[100%] Built target ultrasonic_sensor__rosidl_typesupport_introspection_c__pyext
+Invoked command in '/home/pi/vision_system_ws/build/ultrasonic_sensor' returned '0': /usr/bin/cmake --build /home/pi/vision_system_ws/build/ultrasonic_sensor -- -j4 -l4

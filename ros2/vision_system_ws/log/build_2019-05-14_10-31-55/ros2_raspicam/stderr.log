@@ -1,0 +1,12 @@
+[01m[K/home/pi/vision_system_ws/src/ros2_raspicam/src/raspicam_compressed.cpp:[m[K In function ‘[01m[Kint main(int, char**)[m[K’:
+[01m[K/home/pi/vision_system_ws/src/ros2_raspicam/src/raspicam_compressed.cpp:35:85:[m[K [01;31m[Kerror: [m[Kno matching function for call to ‘[01m[Kraspicam::RaspiCam_Still::getImageBufferSize(raspicam::RASPICAM_FORMAT)[m[K’
+ 2_t imageSize = Camera2.getImageBufferSize ( raspicam::RASPICAM_FORMAT_RGB [01;31m[K)[m[K;
+                                                                            [01;31m[K^[m[K
+In file included from [01m[K/home/pi/vision_system_ws/src/ros2_raspicam/src/raspicam_compressed.cpp:15:0[m[K:
+[01m[K/usr/local/include/raspicam/raspicam_still.h:68:16:[m[K [01;36m[Knote: [m[Kcandidate: size_t raspicam::RaspiCam_Still::getImageBufferSize() const
+         size_t [01;36m[KgetImageBufferSize[m[K() const;
+                [01;36m[K^~~~~~~~~~~~~~~~~~[m[K
+[01m[K/usr/local/include/raspicam/raspicam_still.h:68:16:[m[K [01;36m[Knote: [m[K  candidate expects 0 arguments, 1 provided
+make[2]: *** [CMakeFiles/raspicam_compressed_node.dir/src/raspicam_compressed.cpp.o] Errore 1
+make[1]: *** [CMakeFiles/raspicam_compressed_node.dir/all] Errore 2
+make: *** [all] Errore 2

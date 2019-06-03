@@ -1,0 +1,32 @@
+Invoking command in '/home/pi/vision_system_ws/build/ros2_raspicam': /usr/bin/cmake --build /home/pi/vision_system_ws/build/ros2_raspicam -- -j4 -l4
+[ 20%] Built target service_node
+[ 40%] Built target checks_rate_node
+[35m[1mScanning dependencies of target client_node[0m
+[ 50%] [32mBuilding CXX object CMakeFiles/client_node.dir/src/client_camera_param.cpp.o[0m
+[01m[K/home/pi/vision_system_ws/src/ros2_raspicam/src/client_camera_param.cpp:7:11:[m[K [01;31m[Kerror: [m[K‘[01m[Krclcpp::client[m[K’ has not been declared
+   rclcpp::[01;31m[Kclient[m[K::Client<sensor_msgs::srv::SetCameraInfo>::SharedPtr client,
+           [01;31m[K^~~~~~[m[K
+[01m[K/home/pi/vision_system_ws/src/ros2_raspicam/src/client_camera_param.cpp:7:25:[m[K [01;31m[Kerror: [m[Kexpected ‘[01m[K,[m[K’ or ‘[01m[K...[m[K’ before ‘[01m[K<[m[K’ token
+   rclcpp::client::Client[01;31m[K<[m[Ksensor_msgs::srv::SetCameraInfo>::SharedPtr client,
+                         [01;31m[K^[m[K
+[01m[K/home/pi/vision_system_ws/src/ros2_raspicam/src/client_camera_param.cpp:[m[K In function ‘[01m[Ksensor_msgs::srv::SetCameraInfo_Response_<std::allocator<void> >::SharedPtr send_request(rclcpp::Node::SharedPtr, int)[m[K’:
+[01m[K/home/pi/vision_system_ws/src/ros2_raspicam/src/client_camera_param.cpp:10:17:[m[K [01;31m[Kerror: [m[K‘[01m[Kclient[m[K’ was not declared in this scope
+   auto result = [01;31m[Kclient[m[K->async_send_request(request);
+                 [01;31m[K^~~~~~[m[K
+[01m[K/home/pi/vision_system_ws/src/ros2_raspicam/src/client_camera_param.cpp:10:44:[m[K [01;31m[Kerror: [m[K‘[01m[Krequest[m[K’ was not declared in this scope
+   auto result = client->async_send_request([01;31m[Krequest[m[K);
+                                            [01;31m[K^~~~~~~[m[K
+[01m[K/home/pi/vision_system_ws/src/ros2_raspicam/src/client_camera_param.cpp:[m[K In function ‘[01m[Kint main(int, char**)[m[K’:
+[01m[K/home/pi/vision_system_ws/src/ros2_raspicam/src/client_camera_param.cpp:48:25:[m[K [01;31m[Kerror: [m[K‘[01m[Kusing _camera_info_type = struct sensor_msgs::msg::CameraInfo_<std::allocator<void> > {aka struct sensor_msgs::msg::CameraInfo_<std::allocator<void> >}[m[K’ has no member named ‘[01m[KK[m[K’
+   request-> camera_info.[01;31m[KK[m[K = {fx, 0,  cx,
+                         [01;31m[K^[m[K
+[01m[K/home/pi/vision_system_ws/src/ros2_raspicam/src/client_camera_param.cpp:52:51:[m[K [01;31m[Kerror: [m[Kcannot convert ‘[01m[Kstd::shared_ptr<rclcpp::Client<sensor_msgs::srv::SetCameraInfo> >[m[K’ to ‘[01m[Kint[m[K’ for argument ‘[01m[K2[m[K’ to ‘[01m[Ksensor_msgs::srv::SetCameraInfo_Response_<std::allocator<void> >::SharedPtr send_request(rclcpp::Node::SharedPtr, int)[m[K’
+   auto result = send_request(node, client, request[01;31m[K)[m[K;
+                                                   [01;31m[K^[m[K
+CMakeFiles/client_node.dir/build.make:62: set di istruzioni per l'obiettivo "CMakeFiles/client_node.dir/src/client_camera_param.cpp.o" non riuscito
+make[2]: *** [CMakeFiles/client_node.dir/src/client_camera_param.cpp.o] Errore 1
+CMakeFiles/Makefile2:1111: set di istruzioni per l'obiettivo "CMakeFiles/client_node.dir/all" non riuscito
+make[1]: *** [CMakeFiles/client_node.dir/all] Errore 2
+Makefile:138: set di istruzioni per l'obiettivo "all" non riuscito
+make: *** [all] Errore 2
+Invoked command in '/home/pi/vision_system_ws/build/ros2_raspicam' returned '2': /usr/bin/cmake --build /home/pi/vision_system_ws/build/ros2_raspicam -- -j4 -l4

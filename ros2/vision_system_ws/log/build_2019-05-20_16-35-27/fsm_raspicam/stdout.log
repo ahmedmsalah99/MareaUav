@@ -1,0 +1,18 @@
+-- Found ament_cmake: 0.6.0 (/home/pi/ros2_ws/install/ament_cmake/share/ament_cmake/cmake)
+-- Using PYTHON_EXECUTABLE: /usr/bin/python3
+-- Override CMake install command with custom implementation using symlinks instead of copying resources
+-- Found rclcpp: 0.6.3 (/home/pi/ros2_ws/install/rclcpp/share/rclcpp/cmake)
+-- Found rosidl_adapter: 0.6.3 (/home/pi/ros2_ws/install/rosidl_adapter/share/rosidl_adapter/cmake)
+-- Found rmw_implementation_cmake: 0.6.1 (/home/pi/ros2_ws/install/rmw_implementation_cmake/share/rmw_implementation_cmake/cmake)
+-- Found std_msgs: 0.6.1 (/home/pi/ros2_ws/install/std_msgs/share/std_msgs/cmake)
+-- Found sensor_msgs: 0.6.1 (/home/pi/ros2_ws/install/sensor_msgs/share/sensor_msgs/cmake)
+-- Found class_loader: 1.2.0 (/home/pi/ros2_ws/install/class_loader/share/class_loader/cmake)
+-- Found poco_vendor:  (/home/pi/ros2_ws/install/poco_vendor/share/poco_vendor/cmake)
+-- Configuring done
+-- Generating done
+-- Build files have been written to: /home/pi/vision_system_ws/build/fsm_raspicam
+[35m[1mScanning dependencies of target CameraMachine[0m
+[ 25%] [32mBuilding CXX object CMakeFiles/CameraMachine.dir/src/FiniteStateMachine.cpp.o[0m
+CMakeFiles/CameraMachine.dir/build.make:62: set di istruzioni per l'obiettivo "CMakeFiles/CameraMachine.dir/src/FiniteStateMachine.cpp.o" non riuscito
+CMakeFiles/Makefile2:547: set di istruzioni per l'obiettivo "CMakeFiles/CameraMachine.dir/all" non riuscito
+Makefile:138: set di istruzioni per l'obiettivo "all" non riuscito

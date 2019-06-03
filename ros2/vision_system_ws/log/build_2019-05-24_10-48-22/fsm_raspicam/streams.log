@@ -1,0 +1,47 @@
+Invoking command in '/home/pi/vision_system_ws/build/fsm_raspicam': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/pi/vision_system_ws/install/examples_rclpy_minimal_subscriber:/home/pi/ros2_ws/install/ament_uncrustify:/home/pi/ros2_ws/install/test_launch_ros:/home/pi/ros2_ws/install/sros2:/home/pi/ros2_ws/install/ros2lifecycle:/home/pi/ros2_ws/install/ros2service:/home/pi/ros2_ws/install/ros2topic:/home/pi/ros2_ws/install/ros2srv:/home/pi/ros2_ws/install/ros2run:/home/pi/ros2_ws/install/ros2launch:/home/pi/ros2_ws/install/ros2pkg:/home/pi/ros2_ws/install/ros2param:/home/pi/ros2_ws/install/ros2node:/home/pi/ros2_ws/install/ros2multicast:/home/pi/ros2_ws/install/ros2msg:/home/pi/ros2_ws/install/ros2cli:/home/pi/ros2_ws/install/launch_ros:/home/pi/ros2_ws/install/launch_testing:/home/pi/ros2_ws/install/launch:/home/pi/ros2_ws/install/osrf_pycommon:/home/pi/ros2_ws/install/ament_xmllint:/home/pi/ros2_ws/install/ament_pyflakes:/home/pi/ros2_ws/install/ament_pep8:/home/pi/ros2_ws/install/ament_pep257:/home/pi/ros2_ws/install/ament_pclint:/home/pi/ros2_ws/install/ament_package:/home/pi/ros2_ws/install/ament_lint_cmake:/home/pi/ros2_ws/install/ament_index_python:/home/pi/ros2_ws/install/ament_flake8:/home/pi/ros2_ws/install/ament_cpplint:/home/pi/ros2_ws/install/ament_cppcheck:/home/pi/ros2_ws/install/ament_copyright:/home/pi/ros2_ws/install/ament_clang_format /usr/bin/cmake --build /home/pi/vision_system_ws/build/fsm_raspicam -- -j4 -l4
+[ 20%] [32mBuilding CXX object CMakeFiles/camera_main_node.dir/src/camera_main.cpp.o[0m
+[ 40%] [32mBuilding CXX object CMakeFiles/camera_main_node.dir/src/CameraStates.cpp.o[0m
+In file included from [01m[K/home/pi/vision_system_ws/src/fsm_raspicam/src/camera_main.cpp:17:0[m[K:
+[01m[K/home/pi/vision_system_ws/src/fsm_raspicam/include/CameraStates.h:[m[K In constructor ‘[01m[KSearchState::SearchState(FiniteStateMachine*, int, int, int)[m[K’:
+[01m[K/home/pi/vision_system_ws/src/fsm_raspicam/include/CameraStates.h:98:15:[m[K [01;31m[Kerror: [m[K‘[01m[Kclass std::shared_ptr<sensor_msgs::msg::CameraInfo_<std::allocator<void> > >[m[K’ has no member named ‘[01m[Kheader[m[K’
+   CamInfo_msg.[01;31m[Kheader[m[K.frame_id = "camera_compressed";
+               [01;31m[K^~~~~~[m[K
+[01m[K/home/pi/vision_system_ws/src/fsm_raspicam/include/CameraStates.h:99:15:[m[K [01;31m[Kerror: [m[K‘[01m[Kclass std::shared_ptr<sensor_msgs::msg::CameraInfo_<std::allocator<void> > >[m[K’ has no member named ‘[01m[Kwidth[m[K’
+   CamInfo_msg.[01;31m[Kwidth[m[K = Width;
+               [01;31m[K^~~~~[m[K
+[01m[K/home/pi/vision_system_ws/src/fsm_raspicam/include/CameraStates.h:100:15:[m[K [01;31m[Kerror: [m[K‘[01m[Kclass std::shared_ptr<sensor_msgs::msg::CameraInfo_<std::allocator<void> > >[m[K’ has no member named ‘[01m[Kheight[m[K’
+   CamInfo_msg.[01;31m[Kheight[m[K = Height;
+               [01;31m[K^~~~~~[m[K
+[01m[K/home/pi/vision_system_ws/src/fsm_raspicam/include/CameraStates.h:103:7:[m[K [01;35m[Kwarning: [m[Kunused variable ‘[01m[Ks[m[K’ [[01;35m[K-Wunused-variable[m[K]
+   int [01;35m[Ks[m[K = 34;
+       [01;35m[K^[m[K
+In file included from [01m[K/home/pi/vision_system_ws/src/fsm_raspicam/src/CameraStates.cpp:1:0[m[K:
+[01m[K/home/pi/vision_system_ws/src/fsm_raspicam/include/CameraStates.h:[m[K In constructor ‘[01m[KSearchState::SearchState(FiniteStateMachine*, int, int, int)[m[K’:
+[01m[K/home/pi/vision_system_ws/src/fsm_raspicam/include/CameraStates.h:98:15:[m[K [01;31m[Kerror: [m[K‘[01m[Kclass std::shared_ptr<sensor_msgs::msg::CameraInfo_<std::allocator<void> > >[m[K’ has no member named ‘[01m[Kheader[m[K’
+   CamInfo_msg.[01;31m[Kheader[m[K.frame_id = "camera_compressed";
+               [01;31m[K^~~~~~[m[K
+[01m[K/home/pi/vision_system_ws/src/fsm_raspicam/include/CameraStates.h:99:15:[m[K [01;31m[Kerror: [m[K‘[01m[Kclass std::shared_ptr<sensor_msgs::msg::CameraInfo_<std::allocator<void> > >[m[K’ has no member named ‘[01m[Kwidth[m[K’
+   CamInfo_msg.[01;31m[Kwidth[m[K = Width;
+               [01;31m[K^~~~~[m[K
+[01m[K/home/pi/vision_system_ws/src/fsm_raspicam/include/CameraStates.h:100:15:[m[K [01;31m[Kerror: [m[K‘[01m[Kclass std::shared_ptr<sensor_msgs::msg::CameraInfo_<std::allocator<void> > >[m[K’ has no member named ‘[01m[Kheight[m[K’
+   CamInfo_msg.[01;31m[Kheight[m[K = Height;
+               [01;31m[K^~~~~~[m[K
+[01m[K/home/pi/vision_system_ws/src/fsm_raspicam/include/CameraStates.h:103:7:[m[K [01;35m[Kwarning: [m[Kunused variable ‘[01m[Ks[m[K’ [[01;35m[K-Wunused-variable[m[K]
+   int [01;35m[Ks[m[K = 34;
+       [01;35m[K^[m[K
+[01m[K/home/pi/vision_system_ws/src/fsm_raspicam/src/CameraStates.cpp:[m[K In member function ‘[01m[Kvirtual void LandingState::setParameters()[m[K’:
+[01m[K/home/pi/vision_system_ws/src/fsm_raspicam/src/CameraStates.cpp:59:14:[m[K [01;35m[Kwarning: [m[Kunused variable ‘[01m[Ksave[m[K’ [[01;35m[K-Wunused-variable[m[K]
+  static bool [01;35m[Ksave[m[K = true;
+              [01;35m[K^~~~[m[K
+[01m[K/home/pi/vision_system_ws/src/fsm_raspicam/src/CameraStates.cpp:[m[K At global scope:
+[01m[K/home/pi/vision_system_ws/src/fsm_raspicam/src/CameraStates.cpp:59:14:[m[K [01;35m[Kwarning: [m[K‘[01m[Ksave[m[K’ defined but not used [[01;35m[K-Wunused-variable[m[K]
+make[2]: *** [CMakeFiles/camera_main_node.dir/src/CameraStates.cpp.o] Errore 1
+make[2]: *** Attesa per i processi non terminati....
+CMakeFiles/camera_main_node.dir/build.make:134: set di istruzioni per l'obiettivo "CMakeFiles/camera_main_node.dir/src/CameraStates.cpp.o" non riuscito
+CMakeFiles/camera_main_node.dir/build.make:62: set di istruzioni per l'obiettivo "CMakeFiles/camera_main_node.dir/src/camera_main.cpp.o" non riuscito
+make[2]: *** [CMakeFiles/camera_main_node.dir/src/camera_main.cpp.o] Errore 1
+make[1]: *** [CMakeFiles/camera_main_node.dir/all] Errore 2
+CMakeFiles/Makefile2:803: set di istruzioni per l'obiettivo "CMakeFiles/camera_main_node.dir/all" non riuscito
+Makefile:138: set di istruzioni per l'obiettivo "all" non riuscito
+make: *** [all] Errore 2
+Invoked command in '/home/pi/vision_system_ws/build/fsm_raspicam' returned '2': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/pi/vision_system_ws/install/examples_rclpy_minimal_subscriber:/home/pi/ros2_ws/install/ament_uncrustify:/home/pi/ros2_ws/install/test_launch_ros:/home/pi/ros2_ws/install/sros2:/home/pi/ros2_ws/install/ros2lifecycle:/home/pi/ros2_ws/install/ros2service:/home/pi/ros2_ws/install/ros2topic:/home/pi/ros2_ws/install/ros2srv:/home/pi/ros2_ws/install/ros2run:/home/pi/ros2_ws/install/ros2launch:/home/pi/ros2_ws/install/ros2pkg:/home/pi/ros2_ws/install/ros2param:/home/pi/ros2_ws/install/ros2node:/home/pi/ros2_ws/install/ros2multicast:/home/pi/ros2_ws/install/ros2msg:/home/pi/ros2_ws/install/ros2cli:/home/pi/ros2_ws/install/launch_ros:/home/pi/ros2_ws/install/launch_testing:/home/pi/ros2_ws/install/launch:/home/pi/ros2_ws/install/osrf_pycommon:/home/pi/ros2_ws/install/ament_xmllint:/home/pi/ros2_ws/install/ament_pyflakes:/home/pi/ros2_ws/install/ament_pep8:/home/pi/ros2_ws/install/ament_pep257:/home/pi/ros2_ws/install/ament_pclint:/home/pi/ros2_ws/install/ament_package:/home/pi/ros2_ws/install/ament_lint_cmake:/home/pi/ros2_ws/install/ament_index_python:/home/pi/ros2_ws/install/ament_flake8:/home/pi/ros2_ws/install/ament_cpplint:/home/pi/ros2_ws/install/ament_cppcheck:/home/pi/ros2_ws/install/ament_copyright:/home/pi/ros2_ws/install/ament_clang_format /usr/bin/cmake --build /home/pi/vision_system_ws/build/fsm_raspicam -- -j4 -l4

@@ -1,0 +1,7 @@
+[01m[K/home/pi/vision_system_ws/src/apriltag2_node/node/src/AprilTag2Node2_0.cpp:[m[K In member function ‘[01m[Kvoid AprilTag2Node::onImage(sensor_msgs::msg::CompressedImage_<std::allocator<void> >::SharedPtr)[m[K’:
+[01m[K/home/pi/vision_system_ws/src/apriltag2_node/node/src/AprilTag2Node2_0.cpp:154:9:[m[K [01;31m[Kerror: [m[K‘[01m[Kapriltag_detection_info_t[m[K’ was not declared in this scope
+         [01;31m[Kapriltag_detection_info_t[m[K info;
+         [01;31m[K^~~~~~~~~~~~~~~~~~~~~~~~~[m[K
+make[2]: *** [CMakeFiles/AprilTag2Node.dir/src/AprilTag2Node2_0.cpp.o] Interruzione
+make[1]: *** [CMakeFiles/AprilTag2Node.dir/all] Interruzione
+make: *** [all] Interruzione

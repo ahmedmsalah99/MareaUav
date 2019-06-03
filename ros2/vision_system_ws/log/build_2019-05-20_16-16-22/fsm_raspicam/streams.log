@@ -1,0 +1,37 @@
+Invoking command in '/home/pi/vision_system_ws/build/fsm_raspicam': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/pi/ros2_ws/install/ament_uncrustify:/home/pi/ros2_ws/install/test_launch_ros:/home/pi/ros2_ws/install/sros2:/home/pi/ros2_ws/install/ros2lifecycle:/home/pi/ros2_ws/install/ros2service:/home/pi/ros2_ws/install/ros2topic:/home/pi/ros2_ws/install/ros2srv:/home/pi/ros2_ws/install/ros2run:/home/pi/ros2_ws/install/ros2launch:/home/pi/ros2_ws/install/ros2pkg:/home/pi/ros2_ws/install/ros2param:/home/pi/ros2_ws/install/ros2node:/home/pi/ros2_ws/install/ros2multicast:/home/pi/ros2_ws/install/ros2msg:/home/pi/ros2_ws/install/ros2cli:/home/pi/ros2_ws/install/launch_ros:/home/pi/ros2_ws/install/launch_testing:/home/pi/ros2_ws/install/launch:/home/pi/ros2_ws/install/osrf_pycommon:/home/pi/ros2_ws/install/ament_xmllint:/home/pi/ros2_ws/install/ament_pyflakes:/home/pi/ros2_ws/install/ament_pep8:/home/pi/ros2_ws/install/ament_pep257:/home/pi/ros2_ws/install/ament_pclint:/home/pi/ros2_ws/install/ament_package:/home/pi/ros2_ws/install/ament_lint_cmake:/home/pi/ros2_ws/install/ament_index_python:/home/pi/ros2_ws/install/ament_flake8:/home/pi/ros2_ws/install/ament_cpplint:/home/pi/ros2_ws/install/ament_cppcheck:/home/pi/ros2_ws/install/ament_copyright:/home/pi/ros2_ws/install/ament_clang_format /usr/bin/cmake /home/pi/vision_system_ws/src/fsm_raspicam -DAMENT_CMAKE_SYMLINK_INSTALL=1 -DCMAKE_INSTALL_PREFIX=/home/pi/vision_system_ws/install/fsm_raspicam
+-- The C compiler identification is GNU 6.3.0
+-- The CXX compiler identification is GNU 6.3.0
+-- Check for working C compiler: /usr/bin/cc
+-- Check for working C compiler: /usr/bin/cc -- works
+-- Detecting C compiler ABI info
+-- Detecting C compiler ABI info - done
+-- Detecting C compile features
+-- Detecting C compile features - done
+-- Check for working CXX compiler: /usr/bin/c++
+-- Check for working CXX compiler: /usr/bin/c++ -- works
+-- Detecting CXX compiler ABI info
+-- Detecting CXX compiler ABI info - done
+-- Detecting CXX compile features
+-- Detecting CXX compile features - done
+-- Found ament_cmake: 0.6.0 (/home/pi/ros2_ws/install/ament_cmake/share/ament_cmake/cmake)
+-- Found PythonInterp: /usr/bin/python3 (found suitable version "3.5.3", minimum required is "3") 
+-- Using PYTHON_EXECUTABLE: /usr/bin/python3
+-- Override CMake install command with custom implementation using symlinks instead of copying resources
+-- Found rclcpp: 0.6.3 (/home/pi/ros2_ws/install/rclcpp/share/rclcpp/cmake)
+-- Found rosidl_adapter: 0.6.3 (/home/pi/ros2_ws/install/rosidl_adapter/share/rosidl_adapter/cmake)
+-- Found rmw_implementation_cmake: 0.6.1 (/home/pi/ros2_ws/install/rmw_implementation_cmake/share/rmw_implementation_cmake/cmake)
+-- Found std_msgs: 0.6.1 (/home/pi/ros2_ws/install/std_msgs/share/std_msgs/cmake)
+-- Found sensor_msgs: 0.6.1 (/home/pi/ros2_ws/install/sensor_msgs/share/sensor_msgs/cmake)
+-- Found class_loader: 1.2.0 (/home/pi/ros2_ws/install/class_loader/share/class_loader/cmake)
+-- Found poco_vendor:  (/home/pi/ros2_ws/install/poco_vendor/share/poco_vendor/cmake)
+CMake Error at CMakeLists.txt:33 (add_executable):
+  add_executable cannot create target "camera_main_node" because another
+  target with the same name already exists.  The existing target is an
+  executable created in source directory
+  "/home/pi/vision_system_ws/src/fsm_raspicam".  See documentation for policy
+  CMP0002 for more details.
+
+
+-- Configuring incomplete, errors occurred!
+See also "/home/pi/vision_system_ws/build/fsm_raspicam/CMakeFiles/CMakeOutput.log".
+Invoked command in '/home/pi/vision_system_ws/build/fsm_raspicam' returned '1': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/pi/ros2_ws/install/ament_uncrustify:/home/pi/ros2_ws/install/test_launch_ros:/home/pi/ros2_ws/install/sros2:/home/pi/ros2_ws/install/ros2lifecycle:/home/pi/ros2_ws/install/ros2service:/home/pi/ros2_ws/install/ros2topic:/home/pi/ros2_ws/install/ros2srv:/home/pi/ros2_ws/install/ros2run:/home/pi/ros2_ws/install/ros2launch:/home/pi/ros2_ws/install/ros2pkg:/home/pi/ros2_ws/install/ros2param:/home/pi/ros2_ws/install/ros2node:/home/pi/ros2_ws/install/ros2multicast:/home/pi/ros2_ws/install/ros2msg:/home/pi/ros2_ws/install/ros2cli:/home/pi/ros2_ws/install/launch_ros:/home/pi/ros2_ws/install/launch_testing:/home/pi/ros2_ws/install/launch:/home/pi/ros2_ws/install/osrf_pycommon:/home/pi/ros2_ws/install/ament_xmllint:/home/pi/ros2_ws/install/ament_pyflakes:/home/pi/ros2_ws/install/ament_pep8:/home/pi/ros2_ws/install/ament_pep257:/home/pi/ros2_ws/install/ament_pclint:/home/pi/ros2_ws/install/ament_package:/home/pi/ros2_ws/install/ament_lint_cmake:/home/pi/ros2_ws/install/ament_index_python:/home/pi/ros2_ws/install/ament_flake8:/home/pi/ros2_ws/install/ament_cpplint:/home/pi/ros2_ws/install/ament_cppcheck:/home/pi/ros2_ws/install/ament_copyright:/home/pi/ros2_ws/install/ament_clang_format /usr/bin/cmake /home/pi/vision_system_ws/src/fsm_raspicam -DAMENT_CMAKE_SYMLINK_INSTALL=1 -DCMAKE_INSTALL_PREFIX=/home/pi/vision_system_ws/install/fsm_raspicam

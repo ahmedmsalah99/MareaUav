@@ -1,0 +1,10 @@
+[ 16%] [32mBuilding CXX object CMakeFiles/subscriber_not_composable.dir/not_composable.cpp.o[0m
+[ 33%] [32mBuilding CXX object CMakeFiles/subscriber_member_function.dir/member_function.cpp.o[0m
+[ 50%] [32mBuilding CXX object CMakeFiles/subscriber_lambda.dir/lambda.cpp.o[0m
+CMakeFiles/subscriber_lambda.dir/build.make:62: set di istruzioni per l'obiettivo "CMakeFiles/subscriber_lambda.dir/lambda.cpp.o" non riuscito
+CMakeFiles/subscriber_member_function.dir/build.make:62: set di istruzioni per l'obiettivo "CMakeFiles/subscriber_member_function.dir/member_function.cpp.o" non riuscito
+CMakeFiles/subscriber_not_composable.dir/build.make:62: set di istruzioni per l'obiettivo "CMakeFiles/subscriber_not_composable.dir/not_composable.cpp.o" non riuscito
+CMakeFiles/Makefile2:67: set di istruzioni per l'obiettivo "CMakeFiles/subscriber_not_composable.dir/all" non riuscito
+CMakeFiles/Makefile2:1037: set di istruzioni per l'obiettivo "CMakeFiles/subscriber_member_function.dir/all" non riuscito
+CMakeFiles/Makefile2:648: set di istruzioni per l'obiettivo "CMakeFiles/subscriber_lambda.dir/all" non riuscito
+Makefile:138: set di istruzioni per l'obiettivo "all" non riuscito

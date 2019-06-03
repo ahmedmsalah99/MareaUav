@@ -1,0 +1,274 @@
+[35m[1mScanning dependencies of target AprilTag2Node[0m
+[ 25%] [32mBuilding CXX object CMakeFiles/AprilTag2Node.dir/src/AprilTag2Node2_0.cpp.o[0m
+In file included from [01m[K/usr/include/c++/6/memory:65:0[m[K,
+                 from [01m[K/home/pi/ros2_ws/install/rclcpp/include/rclcpp/rclcpp.hpp:142[m[K,
+                 from [01m[K/home/pi/vision_system_ws/src/apriltag2_node/node/include/AprilTag2Node.hpp:4[m[K,
+                 from [01m[K/home/pi/vision_system_ws/src/apriltag2_node/node/src/AprilTag2Node2_0.cpp:1[m[K:
+[01m[K/usr/include/c++/6/bits/stl_uninitialized.h:[m[K In function ‘[01m[K_ForwardIterator std::__uninitialized_move_if_noexcept_a(_InputIterator, _InputIterator, _ForwardIterator, _Allocator&) [with _InputIterator = geometry_msgs::msg::TransformStamped_<std::allocator<void> >*; _ForwardIterator = geometry_msgs::msg::TransformStamped_<std::allocator<void> >*; _Allocator = std::allocator<geometry_msgs::msg::TransformStamped_<std::allocator<void> > >][m[K’:
+[01m[K/usr/include/c++/6/bits/stl_uninitialized.h:304:69:[m[K [01;36m[Knote: [m[Kparameter passing for argument of type ‘[01m[Kstd::move_iterator<geometry_msgs::msg::TransformStamped_<std::allocator<void> >*>[m[K’ will change in GCC 7.1
+   _GLIBCXX_MAKE_MOVE_IF_NOEXCEPT_ITERATOR(__last), __result, __alloc[01;36m[K)[m[K;
+                                                                     [01;36m[K^[m[K
+[01m[K/usr/include/c++/6/bits/stl_uninitialized.h:[m[K In function ‘[01m[K_ForwardIterator std::__uninitialized_copy_a(_InputIterator, _InputIterator, _ForwardIterator, std::allocator<_Tp>&) [with _InputIterator = std::move_iterator<geometry_msgs::msg::TransformStamped_<std::allocator<void> >*>; _ForwardIterator = geometry_msgs::msg::TransformStamped_<std::allocator<void> >*; _Tp = geometry_msgs::msg::TransformStamped_<std::allocator<void> >][m[K’:
+[01m[K/usr/include/c++/6/bits/stl_uninitialized.h:279:5:[m[K [01;36m[Knote: [m[Kparameter passing for argument of type ‘[01m[Kstd::move_iterator<geometry_msgs::msg::TransformStamped_<std::allocator<void> >*>[m[K’ will change in GCC 7.1
+     [01;36m[K__uninitialized_copy_a[m[K(_InputIterator __first, _InputIterator __last,
+     [01;36m[K^~~~~~~~~~~~~~~~~~~~~~[m[K
+[01m[K/usr/include/c++/6/bits/stl_uninitialized.h:279:5:[m[K [01;36m[Knote: [m[Kparameter passing for argument of type ‘[01m[Kstd::move_iterator<geometry_msgs::msg::TransformStamped_<std::allocator<void> >*>[m[K’ will change in GCC 7.1
+[01m[K/usr/include/c++/6/bits/stl_uninitialized.h:281:63:[m[K [01;36m[Knote: [m[Kparameter passing for argument of type ‘[01m[Kstd::move_iterator<geometry_msgs::msg::TransformStamped_<std::allocator<void> >*>[m[K’ will change in GCC 7.1
+     { return std::uninitialized_copy(__first, __last, __result[01;36m[K)[m[K; }
+                                                               [01;36m[K^[m[K
+In file included from [01m[K/usr/include/c++/6/vector:64:0[m[K,
+                 from [01m[K/home/pi/ros2_ws/install/rclcpp/include/rclcpp/executor.hpp:26[m[K,
+                 from [01m[K/home/pi/ros2_ws/install/rclcpp/include/rclcpp/executors/multi_threaded_executor.hpp:24[m[K,
+                 from [01m[K/home/pi/ros2_ws/install/rclcpp/include/rclcpp/executors.hpp:21[m[K,
+                 from [01m[K/home/pi/ros2_ws/install/rclcpp/include/rclcpp/rclcpp.hpp:144[m[K,
+                 from [01m[K/home/pi/vision_system_ws/src/apriltag2_node/node/include/AprilTag2Node.hpp:4[m[K,
+                 from [01m[K/home/pi/vision_system_ws/src/apriltag2_node/node/src/AprilTag2Node2_0.cpp:1[m[K:
+[01m[K/usr/include/c++/6/bits/stl_vector.h:[m[K In copy constructor ‘[01m[Kstd::vector<_Tp, _Alloc>::vector(const std::vector<_Tp, _Alloc>&) [with _Tp = geometry_msgs::msg::TransformStamped_<std::allocator<void> >; _Alloc = std::allocator<geometry_msgs::msg::TransformStamped_<std::allocator<void> > >][m[K’:
+[01m[K/usr/include/c++/6/bits/stl_vector.h:324:31:[m[K [01;36m[Knote: [m[Kparameter passing for argument of type ‘[01m[K__gnu_cxx::__normal_iterator<const geometry_msgs::msg::TransformStamped_<std::allocator<void> >*, std::vector<geometry_msgs::msg::TransformStamped_<std::allocator<void> >, std::allocator<geometry_msgs::msg::TransformStamped_<std::allocator<void> > > > >[m[K’ will change in GCC 7.1
+    [01;36m[Kstd::__uninitialized_copy_a(__x.begin(), __x.end(),[m[K
+    [01;36m[K~~~~~~~~~~~~~~~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~[m[K
+ [01;36m[K          this->_M_impl._M_start,[m[K
+           [01;36m[K~~~~~~~~~~~~~~~~~~~~~~~[m[K
+ [01;36m[K          _M_get_Tp_allocator())[m[K;
+           [01;36m[K~~~~~~~~~~~~~~~~~~~~~~[m[K
+In file included from [01m[K/usr/include/c++/6/memory:65:0[m[K,
+                 from [01m[K/home/pi/ros2_ws/install/rclcpp/include/rclcpp/rclcpp.hpp:142[m[K,
+                 from [01m[K/home/pi/vision_system_ws/src/apriltag2_node/node/include/AprilTag2Node.hpp:4[m[K,
+                 from [01m[K/home/pi/vision_system_ws/src/apriltag2_node/node/src/AprilTag2Node2_0.cpp:1[m[K:
+[01m[K/usr/include/c++/6/bits/stl_uninitialized.h:[m[K In function ‘[01m[K_ForwardIterator std::uninitialized_copy(_InputIterator, _InputIterator, _ForwardIterator) [with _InputIterator = std::move_iterator<geometry_msgs::msg::TransformStamped_<std::allocator<void> >*>; _ForwardIterator = geometry_msgs::msg::TransformStamped_<std::allocator<void> >*][m[K’:
+[01m[K/usr/include/c++/6/bits/stl_uninitialized.h:107:5:[m[K [01;36m[Knote: [m[Kparameter passing for argument of type ‘[01m[Kstd::move_iterator<geometry_msgs::msg::TransformStamped_<std::allocator<void> >*>[m[K’ will change in GCC 7.1
+     [01;36m[Kuninitialized_copy[m[K(_InputIterator __first, _InputIterator __last,
+     [01;36m[K^~~~~~~~~~~~~~~~~~[m[K
+[01m[K/usr/include/c++/6/bits/stl_uninitialized.h:107:5:[m[K [01;36m[Knote: [m[Kparameter passing for argument of type ‘[01m[Kstd::move_iterator<geometry_msgs::msg::TransformStamped_<std::allocator<void> >*>[m[K’ will change in GCC 7.1
+[01m[K/usr/include/c++/6/bits/stl_uninitialized.h:126:41:[m[K [01;36m[Knote: [m[Kparameter passing for argument of type ‘[01m[Kstd::move_iterator<geometry_msgs::msg::TransformStamped_<std::allocator<void> >*>[m[K’ will change in GCC 7.1
+  __uninit_copy(__first, __last, __result[01;36m[K)[m[K;
+                                         [01;36m[K^[m[K
+[01m[K/usr/include/c++/6/bits/stl_uninitialized.h:[m[K In function ‘[01m[K_ForwardIterator std::__uninitialized_copy_a(_InputIterator, _InputIterator, _ForwardIterator, std::allocator<_Tp>&) [with _InputIterator = __gnu_cxx::__normal_iterator<const geometry_msgs::msg::TransformStamped_<std::allocator<void> >*, std::vector<geometry_msgs::msg::TransformStamped_<std::allocator<void> >, std::allocator<geometry_msgs::msg::TransformStamped_<std::allocator<void> > > > >; _ForwardIterator = geometry_msgs::msg::TransformStamped_<std::allocator<void> >*; _Tp = geometry_msgs::msg::TransformStamped_<std::allocator<void> >][m[K’:
+[01m[K/usr/include/c++/6/bits/stl_uninitialized.h:279:5:[m[K [01;36m[Knote: [m[Kparameter passing for argument of type ‘[01m[K__gnu_cxx::__normal_iterator<const geometry_msgs::msg::TransformStamped_<std::allocator<void> >*, std::vector<geometry_msgs::msg::TransformStamped_<std::allocator<void> >, std::allocator<geometry_msgs::msg::TransformStamped_<std::allocator<void> > > > >[m[K’ will change in GCC 7.1
+     [01;36m[K__uninitialized_copy_a[m[K(_InputIterator __first, _InputIterator __last,
+     [01;36m[K^~~~~~~~~~~~~~~~~~~~~~[m[K
+[01m[K/usr/include/c++/6/bits/stl_uninitialized.h:279:5:[m[K [01;36m[Knote: [m[Kparameter passing for argument of type ‘[01m[K__gnu_cxx::__normal_iterator<const geometry_msgs::msg::TransformStamped_<std::allocator<void> >*, std::vector<geometry_msgs::msg::TransformStamped_<std::allocator<void> >, std::allocator<geometry_msgs::msg::TransformStamped_<std::allocator<void> > > > >[m[K’ will change in GCC 7.1
+[01m[K/usr/include/c++/6/bits/stl_uninitialized.h:281:63:[m[K [01;36m[Knote: [m[Kparameter passing for argument of type ‘[01m[K__gnu_cxx::__normal_iterator<const geometry_msgs::msg::TransformStamped_<std::allocator<void> >*, std::vector<geometry_msgs::msg::TransformStamped_<std::allocator<void> >, std::allocator<geometry_msgs::msg::TransformStamped_<std::allocator<void> > > > >[m[K’ will change in GCC 7.1
+     { return std::uninitialized_copy(__first, __last, __result[01;36m[K)[m[K; }
+                                                               [01;36m[K^[m[K
+[01m[K/usr/include/c++/6/bits/stl_uninitialized.h:[m[K In static member function ‘[01m[Kstatic _ForwardIterator std::__uninitialized_copy<_TrivialValueTypes>::__uninit_copy(_InputIterator, _InputIterator, _ForwardIterator) [with _InputIterator = std::move_iterator<geometry_msgs::msg::TransformStamped_<std::allocator<void> >*>; _ForwardIterator = geometry_msgs::msg::TransformStamped_<std::allocator<void> >*; bool _TrivialValueTypes = false][m[K’:
+[01m[K/usr/include/c++/6/bits/stl_uninitialized.h:68:9:[m[K [01;36m[Knote: [m[Kparameter passing for argument of type ‘[01m[Kstd::move_iterator<geometry_msgs::msg::TransformStamped_<std::allocator<void> >*>[m[K’ will change in GCC 7.1
+         [01;36m[K__uninit_copy[m[K(_InputIterator __first, _InputIterator __last,
+         [01;36m[K^~~~~~~~~~~~~[m[K
+[01m[K/usr/include/c++/6/bits/stl_uninitialized.h:68:9:[m[K [01;36m[Knote: [m[Kparameter passing for argument of type ‘[01m[Kstd::move_iterator<geometry_msgs::msg::TransformStamped_<std::allocator<void> >*>[m[K’ will change in GCC 7.1
+[01m[K/usr/include/c++/6/bits/stl_uninitialized.h:[m[K In function ‘[01m[K_ForwardIterator std::uninitialized_copy(_InputIterator, _InputIterator, _ForwardIterator) [with _InputIterator = __gnu_cxx::__normal_iterator<const geometry_msgs::msg::TransformStamped_<std::allocator<void> >*, std::vector<geometry_msgs::msg::TransformStamped_<std::allocator<void> >, std::allocator<geometry_msgs::msg::TransformStamped_<std::allocator<void> > > > >; _ForwardIterator = geometry_msgs::msg::TransformStamped_<std::allocator<void> >*][m[K’:
+[01m[K/usr/include/c++/6/bits/stl_uninitialized.h:107:5:[m[K [01;36m[Knote: [m[Kparameter passing for argument of type ‘[01m[K__gnu_cxx::__normal_iterator<const geometry_msgs::msg::TransformStamped_<std::allocator<void> >*, std::vector<geometry_msgs::msg::TransformStamped_<std::allocator<void> >, std::allocator<geometry_msgs::msg::TransformStamped_<std::allocator<void> > > > >[m[K’ will change in GCC 7.1
+     [01;36m[Kuninitialized_copy[m[K(_InputIterator __first, _InputIterator __last,
+     [01;36m[K^~~~~~~~~~~~~~~~~~[m[K
+[01m[K/usr/include/c++/6/bits/stl_uninitialized.h:107:5:[m[K [01;36m[Knote: [m[Kparameter passing for argument of type ‘[01m[K__gnu_cxx::__normal_iterator<const geometry_msgs::msg::TransformStamped_<std::allocator<void> >*, std::vector<geometry_msgs::msg::TransformStamped_<std::allocator<void> >, std::allocator<geometry_msgs::msg::TransformStamped_<std::allocator<void> > > > >[m[K’ will change in GCC 7.1
+[01m[K/usr/include/c++/6/bits/stl_uninitialized.h:126:41:[m[K [01;36m[Knote: [m[Kparameter passing for argument of type ‘[01m[K__gnu_cxx::__normal_iterator<const geometry_msgs::msg::TransformStamped_<std::allocator<void> >*, std::vector<geometry_msgs::msg::TransformStamped_<std::allocator<void> >, std::allocator<geometry_msgs::msg::TransformStamped_<std::allocator<void> > > > >[m[K’ will change in GCC 7.1
+  __uninit_copy(__first, __last, __result[01;36m[K)[m[K;
+                                         [01;36m[K^[m[K
+[01m[K/usr/include/c++/6/bits/stl_uninitialized.h:[m[K In static member function ‘[01m[Kstatic _ForwardIterator std::__uninitialized_copy<_TrivialValueTypes>::__uninit_copy(_InputIterator, _InputIterator, _ForwardIterator) [with _InputIterator = __gnu_cxx::__normal_iterator<const geometry_msgs::msg::TransformStamped_<std::allocator<void> >*, std::vector<geometry_msgs::msg::TransformStamped_<std::allocator<void> >, std::allocator<geometry_msgs::msg::TransformStamped_<std::allocator<void> > > > >; _ForwardIterator = geometry_msgs::msg::TransformStamped_<std::allocator<void> >*; bool _TrivialValueTypes = false][m[K’:
+[01m[K/usr/include/c++/6/bits/stl_uninitialized.h:68:9:[m[K [01;36m[Knote: [m[Kparameter passing for argument of type ‘[01m[K__gnu_cxx::__normal_iterator<const geometry_msgs::msg::TransformStamped_<std::allocator<void> >*, std::vector<geometry_msgs::msg::TransformStamped_<std::allocator<void> >, std::allocator<geometry_msgs::msg::TransformStamped_<std::allocator<void> > > > >[m[K’ will change in GCC 7.1
+         [01;36m[K__uninit_copy[m[K(_InputIterator __first, _InputIterator __last,
+         [01;36m[K^~~~~~~~~~~~~[m[K
+[01m[K/usr/include/c++/6/bits/stl_uninitialized.h:68:9:[m[K [01;36m[Knote: [m[Kparameter passing for argument of type ‘[01m[K__gnu_cxx::__normal_iterator<const geometry_msgs::msg::TransformStamped_<std::allocator<void> >*, std::vector<geometry_msgs::msg::TransformStamped_<std::allocator<void> >, std::allocator<geometry_msgs::msg::TransformStamped_<std::allocator<void> > > > >[m[K’ will change in GCC 7.1
+In file included from [01m[K/usr/include/c++/6/vector:64:0[m[K,
+                 from [01m[K/home/pi/ros2_ws/install/rclcpp/include/rclcpp/executor.hpp:26[m[K,
+                 from [01m[K/home/pi/ros2_ws/install/rclcpp/include/rclcpp/executors/multi_threaded_executor.hpp:24[m[K,
+                 from [01m[K/home/pi/ros2_ws/install/rclcpp/include/rclcpp/executors.hpp:21[m[K,
+                 from [01m[K/home/pi/ros2_ws/install/rclcpp/include/rclcpp/rclcpp.hpp:144[m[K,
+                 from [01m[K/home/pi/vision_system_ws/src/apriltag2_node/node/include/AprilTag2Node.hpp:4[m[K,
+                 from [01m[K/home/pi/vision_system_ws/src/apriltag2_node/node/src/AprilTag2Node2_0.cpp:1[m[K:
+[01m[K/usr/include/c++/6/bits/stl_vector.h:[m[K In copy constructor ‘[01m[Kstd::vector<_Tp, _Alloc>::vector(const std::vector<_Tp, _Alloc>&) [with _Tp = double; _Alloc = std::allocator<double>][m[K’:
+[01m[K/usr/include/c++/6/bits/stl_vector.h:324:31:[m[K [01;36m[Knote: [m[Kparameter passing for argument of type ‘[01m[K__gnu_cxx::__normal_iterator<const double*, std::vector<double> >[m[K’ will change in GCC 7.1
+    [01;36m[Kstd::__uninitialized_copy_a(__x.begin(), __x.end(),[m[K
+    [01;36m[K~~~~~~~~~~~~~~~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~[m[K
+ [01;36m[K          this->_M_impl._M_start,[m[K
+           [01;36m[K~~~~~~~~~~~~~~~~~~~~~~~[m[K
+ [01;36m[K          _M_get_Tp_allocator())[m[K;
+           [01;36m[K~~~~~~~~~~~~~~~~~~~~~~[m[K
+In file included from [01m[K/usr/include/c++/6/memory:65:0[m[K,
+                 from [01m[K/home/pi/ros2_ws/install/rclcpp/include/rclcpp/rclcpp.hpp:142[m[K,
+                 from [01m[K/home/pi/vision_system_ws/src/apriltag2_node/node/include/AprilTag2Node.hpp:4[m[K,
+                 from [01m[K/home/pi/vision_system_ws/src/apriltag2_node/node/src/AprilTag2Node2_0.cpp:1[m[K:
+[01m[K/usr/include/c++/6/bits/stl_uninitialized.h:[m[K In function ‘[01m[K_ForwardIterator std::__uninitialized_copy_a(_InputIterator, _InputIterator, _ForwardIterator, std::allocator<_Tp>&) [with _InputIterator = __gnu_cxx::__normal_iterator<const double*, std::vector<double> >; _ForwardIterator = double*; _Tp = double][m[K’:
+[01m[K/usr/include/c++/6/bits/stl_uninitialized.h:279:5:[m[K [01;36m[Knote: [m[Kparameter passing for argument of type ‘[01m[K__gnu_cxx::__normal_iterator<const double*, std::vector<double> >[m[K’ will change in GCC 7.1
+     [01;36m[K__uninitialized_copy_a[m[K(_InputIterator __first, _InputIterator __last,
+     [01;36m[K^~~~~~~~~~~~~~~~~~~~~~[m[K
+[01m[K/usr/include/c++/6/bits/stl_uninitialized.h:279:5:[m[K [01;36m[Knote: [m[Kparameter passing for argument of type ‘[01m[K__gnu_cxx::__normal_iterator<const double*, std::vector<double> >[m[K’ will change in GCC 7.1
+[01m[K/usr/include/c++/6/bits/stl_uninitialized.h:281:63:[m[K [01;36m[Knote: [m[Kparameter passing for argument of type ‘[01m[K__gnu_cxx::__normal_iterator<const double*, std::vector<double> >[m[K’ will change in GCC 7.1
+     { return std::uninitialized_copy(__first, __last, __result[01;36m[K)[m[K; }
+                                                               [01;36m[K^[m[K
+[01m[K/usr/include/c++/6/bits/stl_uninitialized.h:[m[K In function ‘[01m[K_ForwardIterator std::uninitialized_copy(_InputIterator, _InputIterator, _ForwardIterator) [with _InputIterator = __gnu_cxx::__normal_iterator<const double*, std::vector<double> >; _ForwardIterator = double*][m[K’:
+[01m[K/usr/include/c++/6/bits/stl_uninitialized.h:107:5:[m[K [01;36m[Knote: [m[Kparameter passing for argument of type ‘[01m[K__gnu_cxx::__normal_iterator<const double*, std::vector<double> >[m[K’ will change in GCC 7.1
+     [01;36m[Kuninitialized_copy[m[K(_InputIterator __first, _InputIterator __last,
+     [01;36m[K^~~~~~~~~~~~~~~~~~[m[K
+[01m[K/usr/include/c++/6/bits/stl_uninitialized.h:107:5:[m[K [01;36m[Knote: [m[Kparameter passing for argument of type ‘[01m[K__gnu_cxx::__normal_iterator<const double*, std::vector<double> >[m[K’ will change in GCC 7.1
+[01m[K/usr/include/c++/6/bits/stl_uninitialized.h:126:41:[m[K [01;36m[Knote: [m[Kparameter passing for argument of type ‘[01m[K__gnu_cxx::__normal_iterator<const double*, std::vector<double> >[m[K’ will change in GCC 7.1
+  __uninit_copy(__first, __last, __result[01;36m[K)[m[K;
+                                         [01;36m[K^[m[K
+[01m[K/usr/include/c++/6/bits/stl_uninitialized.h:[m[K In static member function ‘[01m[Kstatic _ForwardIterator std::__uninitialized_copy<true>::__uninit_copy(_InputIterator, _InputIterator, _ForwardIterator) [with _InputIterator = __gnu_cxx::__normal_iterator<const double*, std::vector<double> >; _ForwardIterator = double*][m[K’:
+[01m[K/usr/include/c++/6/bits/stl_uninitialized.h:91:9:[m[K [01;36m[Knote: [m[Kparameter passing for argument of type ‘[01m[K__gnu_cxx::__normal_iterator<const double*, std::vector<double> >[m[K’ will change in GCC 7.1
+         [01;36m[K__uninit_copy[m[K(_InputIterator __first, _InputIterator __last,
+         [01;36m[K^~~~~~~~~~~~~[m[K
+[01m[K/usr/include/c++/6/bits/stl_uninitialized.h:91:9:[m[K [01;36m[Knote: [m[Kparameter passing for argument of type ‘[01m[K__gnu_cxx::__normal_iterator<const double*, std::vector<double> >[m[K’ will change in GCC 7.1
+[01m[K/usr/include/c++/6/bits/stl_uninitialized.h:93:53:[m[K [01;36m[Knote: [m[Kparameter passing for argument of type ‘[01m[K__gnu_cxx::__normal_iterator<const double*, std::vector<double> >[m[K’ will change in GCC 7.1
+         { return std::copy(__first, __last, __result[01;36m[K)[m[K; }
+                                                     [01;36m[K^[m[K
+In file included from [01m[K/usr/include/c++/6/memory:62:0[m[K,
+                 from [01m[K/home/pi/ros2_ws/install/rclcpp/include/rclcpp/rclcpp.hpp:142[m[K,
+                 from [01m[K/home/pi/vision_system_ws/src/apriltag2_node/node/include/AprilTag2Node.hpp:4[m[K,
+                 from [01m[K/home/pi/vision_system_ws/src/apriltag2_node/node/src/AprilTag2Node2_0.cpp:1[m[K:
+[01m[K/usr/include/c++/6/bits/stl_algobase.h:[m[K In function ‘[01m[K_OI std::copy(_II, _II, _OI) [with _II = __gnu_cxx::__normal_iterator<const double*, std::vector<double> >; _OI = double*][m[K’:
+[01m[K/usr/include/c++/6/bits/stl_algobase.h:446:5:[m[K [01;36m[Knote: [m[Kparameter passing for argument of type ‘[01m[K__gnu_cxx::__normal_iterator<const double*, std::vector<double> >[m[K’ will change in GCC 7.1
+     [01;36m[Kcopy[m[K(_II __first, _II __last, _OI __result)
+     [01;36m[K^~~~[m[K
+[01m[K/usr/include/c++/6/bits/stl_algobase.h:446:5:[m[K [01;36m[Knote: [m[Kparameter passing for argument of type ‘[01m[K__gnu_cxx::__normal_iterator<const double*, std::vector<double> >[m[K’ will change in GCC 7.1
+[01m[K/usr/include/c++/6/bits/stl_algobase.h:456:18:[m[K [01;36m[Knote: [m[Kparameter passing for argument of type ‘[01m[K__gnu_cxx::__normal_iterator<const double*, std::vector<double> >[m[K’ will change in GCC 7.1
+         __result)[01;36m[K)[m[K;
+                  [01;36m[K^[m[K
+In file included from [01m[K/usr/include/c++/6/bits/stl_algobase.h:61:0[m[K,
+                 from [01m[K/usr/include/c++/6/memory:62[m[K,
+                 from [01m[K/home/pi/ros2_ws/install/rclcpp/include/rclcpp/rclcpp.hpp:142[m[K,
+                 from [01m[K/home/pi/vision_system_ws/src/apriltag2_node/node/include/AprilTag2Node.hpp:4[m[K,
+                 from [01m[K/home/pi/vision_system_ws/src/apriltag2_node/node/src/AprilTag2Node2_0.cpp:1[m[K:
+[01m[K/usr/include/c++/6/bits/cpp_type_traits.h:[m[K In function ‘[01m[K_Iterator std::__miter_base(_Iterator) [with _Iterator = __gnu_cxx::__normal_iterator<const double*, std::vector<double> >][m[K’:
+[01m[K/usr/include/c++/6/bits/cpp_type_traits.h:408:5:[m[K [01;36m[Knote: [m[Kparameter passing for argument of type ‘[01m[K__gnu_cxx::__normal_iterator<const double*, std::vector<double> >[m[K’ will change in GCC 7.1
+     [01;36m[K__miter_base[m[K(_Iterator __it)
+     [01;36m[K^~~~~~~~~~~~[m[K
+In file included from [01m[K/usr/include/c++/6/memory:62:0[m[K,
+                 from [01m[K/home/pi/ros2_ws/install/rclcpp/include/rclcpp/rclcpp.hpp:142[m[K,
+                 from [01m[K/home/pi/vision_system_ws/src/apriltag2_node/node/include/AprilTag2Node.hpp:4[m[K,
+                 from [01m[K/home/pi/vision_system_ws/src/apriltag2_node/node/src/AprilTag2Node2_0.cpp:1[m[K:
+[01m[K/usr/include/c++/6/bits/stl_algobase.h:[m[K In function ‘[01m[K_OI std::__copy_move_a2(_II, _II, _OI) [with bool _IsMove = false; _II = __gnu_cxx::__normal_iterator<const double*, std::vector<double> >; _OI = double*][m[K’:
+[01m[K/usr/include/c++/6/bits/stl_algobase.h:420:5:[m[K [01;36m[Knote: [m[Kparameter passing for argument of type ‘[01m[K__gnu_cxx::__normal_iterator<const double*, std::vector<double> >[m[K’ will change in GCC 7.1
+     [01;36m[K__copy_move_a2[m[K(_II __first, _II __last, _OI __result)
+     [01;36m[K^~~~~~~~~~~~~~[m[K
+[01m[K/usr/include/c++/6/bits/stl_algobase.h:420:5:[m[K [01;36m[Knote: [m[Kparameter passing for argument of type ‘[01m[K__gnu_cxx::__normal_iterator<const double*, std::vector<double> >[m[K’ will change in GCC 7.1
+In file included from [01m[K/usr/include/c++/6/bits/stl_algobase.h:67:0[m[K,
+                 from [01m[K/usr/include/c++/6/memory:62[m[K,
+                 from [01m[K/home/pi/ros2_ws/install/rclcpp/include/rclcpp/rclcpp.hpp:142[m[K,
+                 from [01m[K/home/pi/vision_system_ws/src/apriltag2_node/node/include/AprilTag2Node.hpp:4[m[K,
+                 from [01m[K/home/pi/vision_system_ws/src/apriltag2_node/node/src/AprilTag2Node2_0.cpp:1[m[K:
+[01m[K/usr/include/c++/6/bits/stl_iterator.h:[m[K In function ‘[01m[K_Iterator std::__niter_base(__gnu_cxx::__normal_iterator<_Iterator, _Container>) [with _Iterator = const double*; _Container = std::vector<double>][m[K’:
+[01m[K/usr/include/c++/6/bits/stl_iterator.h:980:5:[m[K [01;36m[Knote: [m[Kparameter passing for argument of type ‘[01m[K__gnu_cxx::__normal_iterator<const double*, std::vector<double> >[m[K’ will change in GCC 7.1
+     [01;36m[K__niter_base[m[K(__gnu_cxx::__normal_iterator<_Iterator, _Container> __it)
+     [01;36m[K^~~~~~~~~~~~[m[K
+[ 50%] [32m[1mLinking CXX shared library libAprilTag2Node.so[0m
+/usr/bin/ld: /home/pi/ros2_ws/install/rosgraph_msgs/lib/librosgraph_msgs__rosidl_generator_c.so: invalid string offset 1111 >= 1099 for section `.strtab'
+/usr/bin/ld: /home/pi/ros2_ws/install/rosgraph_msgs/lib/librosgraph_msgs__rosidl_generator_c.so: invalid string offset 1130 >= 1099 for section `.strtab'
+/usr/bin/ld: /home/pi/ros2_ws/install/rosgraph_msgs/lib/librosgraph_msgs__rosidl_generator_c.so: invalid string offset 1122 >= 1099 for section `.strtab'
+/usr/bin/ld: /home/pi/ros2_ws/install/rosgraph_msgs/lib/librosgraph_msgs__rosidl_generator_c.so: invalid string offset 1110 >= 1099 for section `.strtab'
+/usr/bin/ld: /home/pi/ros2_ws/install/rosgraph_msgs/lib/librosgraph_msgs__rosidl_typesupport_fastrtps_c.so: invalid string offset 1536 >= 1507 for section `.strtab'
+/usr/bin/ld: /home/pi/ros2_ws/install/rosgraph_msgs/lib/librosgraph_msgs__rosidl_typesupport_fastrtps_c.so: invalid string offset 1570 >= 1507 for section `.strtab'
+/usr/bin/ld: /home/pi/ros2_ws/install/rosgraph_msgs/lib/librosgraph_msgs__rosidl_typesupport_fastrtps_c.so: invalid string offset 1589 >= 1507 for section `.strtab'
+/usr/bin/ld: /home/pi/ros2_ws/install/rosgraph_msgs/lib/librosgraph_msgs__rosidl_typesupport_fastrtps_c.so: invalid string offset 1569 >= 1507 for section `.strtab'
+/usr/bin/ld: /home/pi/ros2_ws/install/rosgraph_msgs/lib/librosgraph_msgs__rosidl_typesupport_fastrtps_c.so: invalid string offset 1543 >= 1507 for section `.strtab'
+/usr/bin/ld: /home/pi/ros2_ws/install/rosgraph_msgs/lib/librosgraph_msgs__rosidl_typesupport_fastrtps_c.so: invalid string offset 1581 >= 1507 for section `.strtab'
+/usr/bin/ld: /home/pi/ros2_ws/install/rosgraph_msgs/lib/librosgraph_msgs__rosidl_typesupport_fastrtps_c.so: invalid string offset 1555 >= 1507 for section `.strtab'
+/usr/bin/ld: /home/pi/ros2_ws/install/rcl_yaml_param_parser/lib/librcl_yaml_param_parser.so: invalid string offset 1580 >= 1389 for section `.strtab'
+/usr/bin/ld: /home/pi/ros2_ws/install/rcl_yaml_param_parser/lib/librcl_yaml_param_parser.so: invalid string offset 1546 >= 1389 for section `.strtab'
+/usr/bin/ld: /home/pi/ros2_ws/install/rcl_yaml_param_parser/lib/librcl_yaml_param_parser.so: invalid string offset 1599 >= 1389 for section `.strtab'
+/usr/bin/ld: /home/pi/ros2_ws/install/rcl_yaml_param_parser/lib/librcl_yaml_param_parser.so: invalid string offset 1579 >= 1389 for section `.strtab'
+/usr/bin/ld: /home/pi/ros2_ws/install/rcl_yaml_param_parser/lib/librcl_yaml_param_parser.so: invalid string offset 1553 >= 1389 for section `.strtab'
+/usr/bin/ld: /home/pi/ros2_ws/install/rcl_yaml_param_parser/lib/librcl_yaml_param_parser.so: invalid string offset 1565 >= 1389 for section `.strtab'
+/usr/bin/ld: /home/pi/ros2_ws/install/rcl_yaml_param_parser/lib/librcl_yaml_param_parser.so: invalid string offset 1591 >= 1389 for section `.strtab'
+/usr/bin/ld: /home/pi/vision_system_ws/install/apriltag_msgs/lib/libapriltag_msgs__rosidl_generator_c.so: invalid string offset 2314 >= 2115 for section `.strtab'
+/usr/bin/ld: /home/pi/vision_system_ws/install/apriltag_msgs/lib/libapriltag_msgs__rosidl_generator_c.so: invalid string offset 2299 >= 2115 for section `.strtab'
+/usr/bin/ld: /home/pi/vision_system_ws/install/apriltag_msgs/lib/libapriltag_msgs__rosidl_generator_c.so: invalid string offset 2287 >= 2115 for section `.strtab'
+/usr/bin/ld: /home/pi/vision_system_ws/install/apriltag_msgs/lib/libapriltag_msgs__rosidl_generator_c.so: invalid string offset 2333 >= 2115 for section `.strtab'
+/usr/bin/ld: /home/pi/vision_system_ws/install/apriltag_msgs/lib/libapriltag_msgs__rosidl_generator_c.so: invalid string offset 2325 >= 2115 for section `.strtab'
+/usr/bin/ld: /home/pi/vision_system_ws/install/apriltag_msgs/lib/libapriltag_msgs__rosidl_generator_c.so: invalid string offset 2280 >= 2115 for section `.strtab'
+/usr/bin/ld: /home/pi/vision_system_ws/install/apriltag_msgs/lib/libapriltag_msgs__rosidl_generator_c.so: invalid string offset 2313 >= 2115 for section `.strtab'
+/usr/bin/ld: /home/pi/vision_system_ws/install/apriltag_msgs/lib/libapriltag_msgs__rosidl_typesupport_fastrtps_c.so: invalid string offset 3857 >= 3740 for section `.strtab'
+/usr/bin/ld: /home/pi/vision_system_ws/install/apriltag_msgs/lib/libapriltag_msgs__rosidl_typesupport_fastrtps_c.so: invalid string offset 3842 >= 3740 for section `.strtab'
+/usr/bin/ld: /home/pi/vision_system_ws/install/apriltag_msgs/lib/libapriltag_msgs__rosidl_typesupport_fastrtps_c.so: invalid string offset 3830 >= 3740 for section `.strtab'
+/usr/bin/ld: /home/pi/vision_system_ws/install/apriltag_msgs/lib/libapriltag_msgs__rosidl_typesupport_fastrtps_c.so: invalid string offset 3868 >= 3740 for section `.strtab'
+/usr/bin/ld: /home/pi/vision_system_ws/install/apriltag_msgs/lib/libapriltag_msgs__rosidl_typesupport_fastrtps_c.so: invalid string offset 3876 >= 3740 for section `.strtab'
+/usr/bin/ld: /home/pi/vision_system_ws/install/apriltag_msgs/lib/libapriltag_msgs__rosidl_typesupport_fastrtps_c.so: invalid string offset 3823 >= 3740 for section `.strtab'
+/usr/bin/ld: /home/pi/vision_system_ws/install/apriltag_msgs/lib/libapriltag_msgs__rosidl_typesupport_fastrtps_c.so: invalid string offset 3856 >= 3740 for section `.strtab'
+/usr/bin/ld: /home/pi/ros2_ws/install/tf2_msgs/lib/libtf2_msgs__rosidl_typesupport_fastrtps_c.so: invalid string offset 4290 >= 3958 for section `.strtab'
+/usr/bin/ld: /home/pi/ros2_ws/install/tf2_msgs/lib/libtf2_msgs__rosidl_typesupport_fastrtps_c.so: invalid string offset 4275 >= 3958 for section `.strtab'
+/usr/bin/ld: /home/pi/ros2_ws/install/tf2_msgs/lib/libtf2_msgs__rosidl_typesupport_fastrtps_c.so: invalid string offset 4263 >= 3958 for section `.strtab'
+/usr/bin/ld: /home/pi/ros2_ws/install/tf2_msgs/lib/libtf2_msgs__rosidl_typesupport_fastrtps_c.so: invalid string offset 4301 >= 3958 for section `.strtab'
+/usr/bin/ld: /home/pi/ros2_ws/install/tf2_msgs/lib/libtf2_msgs__rosidl_typesupport_fastrtps_c.so: invalid string offset 4309 >= 3958 for section `.strtab'
+/usr/bin/ld: /home/pi/ros2_ws/install/tf2_msgs/lib/libtf2_msgs__rosidl_typesupport_fastrtps_c.so: invalid string offset 4256 >= 3958 for section `.strtab'
+/usr/bin/ld: /home/pi/ros2_ws/install/tf2_msgs/lib/libtf2_msgs__rosidl_typesupport_fastrtps_c.so: invalid string offset 4289 >= 3958 for section `.strtab'
+/usr/bin/ld: /home/pi/ros2_ws/install/tf2_msgs/lib/libtf2_msgs__rosidl_generator_c.so: invalid string offset 2894 >= 2401 for section `.strtab'
+/usr/bin/ld: /home/pi/ros2_ws/install/tf2_msgs/lib/libtf2_msgs__rosidl_generator_c.so: invalid string offset 2905 >= 2401 for section `.strtab'
+/usr/bin/ld: /home/pi/ros2_ws/install/tf2_msgs/lib/libtf2_msgs__rosidl_generator_c.so: invalid string offset 2867 >= 2401 for section `.strtab'
+/usr/bin/ld: /home/pi/ros2_ws/install/tf2_msgs/lib/libtf2_msgs__rosidl_generator_c.so: invalid string offset 2913 >= 2401 for section `.strtab'
+/usr/bin/ld: /home/pi/ros2_ws/install/tf2_msgs/lib/libtf2_msgs__rosidl_generator_c.so: invalid string offset 2860 >= 2401 for section `.strtab'
+/usr/bin/ld: /home/pi/ros2_ws/install/tf2_msgs/lib/libtf2_msgs__rosidl_generator_c.so: invalid string offset 2893 >= 2401 for section `.strtab'
+/usr/bin/ld: /home/pi/ros2_ws/install/tf2_msgs/lib/libtf2_msgs__rosidl_generator_c.so: invalid string offset 2879 >= 2401 for section `.strtab'
+[ 50%] Built target AprilTag2Node
+[ 75%] [32m[1mLinking CXX executable apriltag2_node[0m
+/usr/bin/ld: /home/pi/ros2_ws/install/rosgraph_msgs/lib/librosgraph_msgs__rosidl_generator_c.so: invalid string offset 1111 >= 1099 for section `.strtab'
+/usr/bin/ld: /home/pi/ros2_ws/install/rosgraph_msgs/lib/librosgraph_msgs__rosidl_generator_c.so: invalid string offset 1130 >= 1099 for section `.strtab'
+/usr/bin/ld: /home/pi/ros2_ws/install/rosgraph_msgs/lib/librosgraph_msgs__rosidl_generator_c.so: invalid string offset 1122 >= 1099 for section `.strtab'
+/usr/bin/ld: /home/pi/ros2_ws/install/rosgraph_msgs/lib/librosgraph_msgs__rosidl_generator_c.so: invalid string offset 1110 >= 1099 for section `.strtab'
+/usr/bin/ld: /home/pi/ros2_ws/install/rosgraph_msgs/lib/librosgraph_msgs__rosidl_typesupport_fastrtps_c.so: invalid string offset 1536 >= 1507 for section `.strtab'
+/usr/bin/ld: /home/pi/ros2_ws/install/rosgraph_msgs/lib/librosgraph_msgs__rosidl_typesupport_fastrtps_c.so: invalid string offset 1570 >= 1507 for section `.strtab'
+/usr/bin/ld: /home/pi/ros2_ws/install/rosgraph_msgs/lib/librosgraph_msgs__rosidl_typesupport_fastrtps_c.so: invalid string offset 1589 >= 1507 for section `.strtab'
+/usr/bin/ld: /home/pi/ros2_ws/install/rosgraph_msgs/lib/librosgraph_msgs__rosidl_typesupport_fastrtps_c.so: invalid string offset 1569 >= 1507 for section `.strtab'
+/usr/bin/ld: /home/pi/ros2_ws/install/rosgraph_msgs/lib/librosgraph_msgs__rosidl_typesupport_fastrtps_c.so: invalid string offset 1543 >= 1507 for section `.strtab'
+/usr/bin/ld: /home/pi/ros2_ws/install/rosgraph_msgs/lib/librosgraph_msgs__rosidl_typesupport_fastrtps_c.so: invalid string offset 1581 >= 1507 for section `.strtab'
+/usr/bin/ld: /home/pi/ros2_ws/install/rosgraph_msgs/lib/librosgraph_msgs__rosidl_typesupport_fastrtps_c.so: invalid string offset 1555 >= 1507 for section `.strtab'
+/usr/bin/ld: /home/pi/ros2_ws/install/rcl_yaml_param_parser/lib/librcl_yaml_param_parser.so: invalid string offset 1580 >= 1389 for section `.strtab'
+/usr/bin/ld: /home/pi/ros2_ws/install/rcl_yaml_param_parser/lib/librcl_yaml_param_parser.so: invalid string offset 1546 >= 1389 for section `.strtab'
+/usr/bin/ld: /home/pi/ros2_ws/install/rcl_yaml_param_parser/lib/librcl_yaml_param_parser.so: invalid string offset 1599 >= 1389 for section `.strtab'
+/usr/bin/ld: /home/pi/ros2_ws/install/rcl_yaml_param_parser/lib/librcl_yaml_param_parser.so: invalid string offset 1579 >= 1389 for section `.strtab'
+/usr/bin/ld: /home/pi/ros2_ws/install/rcl_yaml_param_parser/lib/librcl_yaml_param_parser.so: invalid string offset 1553 >= 1389 for section `.strtab'
+/usr/bin/ld: /home/pi/ros2_ws/install/rcl_yaml_param_parser/lib/librcl_yaml_param_parser.so: invalid string offset 1565 >= 1389 for section `.strtab'
+/usr/bin/ld: /home/pi/ros2_ws/install/rcl_yaml_param_parser/lib/librcl_yaml_param_parser.so: invalid string offset 1591 >= 1389 for section `.strtab'
+/usr/bin/ld: /home/pi/vision_system_ws/install/apriltag_msgs/lib/libapriltag_msgs__rosidl_generator_c.so: invalid string offset 2314 >= 2115 for section `.strtab'
+/usr/bin/ld: /home/pi/vision_system_ws/install/apriltag_msgs/lib/libapriltag_msgs__rosidl_generator_c.so: invalid string offset 2299 >= 2115 for section `.strtab'
+/usr/bin/ld: /home/pi/vision_system_ws/install/apriltag_msgs/lib/libapriltag_msgs__rosidl_generator_c.so: invalid string offset 2287 >= 2115 for section `.strtab'
+/usr/bin/ld: /home/pi/vision_system_ws/install/apriltag_msgs/lib/libapriltag_msgs__rosidl_generator_c.so: invalid string offset 2333 >= 2115 for section `.strtab'
+/usr/bin/ld: /home/pi/vision_system_ws/install/apriltag_msgs/lib/libapriltag_msgs__rosidl_generator_c.so: invalid string offset 2325 >= 2115 for section `.strtab'
+/usr/bin/ld: /home/pi/vision_system_ws/install/apriltag_msgs/lib/libapriltag_msgs__rosidl_generator_c.so: invalid string offset 2280 >= 2115 for section `.strtab'
+/usr/bin/ld: /home/pi/vision_system_ws/install/apriltag_msgs/lib/libapriltag_msgs__rosidl_generator_c.so: invalid string offset 2313 >= 2115 for section `.strtab'
+/usr/bin/ld: /home/pi/vision_system_ws/install/apriltag_msgs/lib/libapriltag_msgs__rosidl_typesupport_fastrtps_c.so: invalid string offset 3857 >= 3740 for section `.strtab'
+/usr/bin/ld: /home/pi/vision_system_ws/install/apriltag_msgs/lib/libapriltag_msgs__rosidl_typesupport_fastrtps_c.so: invalid string offset 3842 >= 3740 for section `.strtab'
+/usr/bin/ld: /home/pi/vision_system_ws/install/apriltag_msgs/lib/libapriltag_msgs__rosidl_typesupport_fastrtps_c.so: invalid string offset 3830 >= 3740 for section `.strtab'
+/usr/bin/ld: /home/pi/vision_system_ws/install/apriltag_msgs/lib/libapriltag_msgs__rosidl_typesupport_fastrtps_c.so: invalid string offset 3868 >= 3740 for section `.strtab'
+/usr/bin/ld: /home/pi/vision_system_ws/install/apriltag_msgs/lib/libapriltag_msgs__rosidl_typesupport_fastrtps_c.so: invalid string offset 3876 >= 3740 for section `.strtab'
+/usr/bin/ld: /home/pi/vision_system_ws/install/apriltag_msgs/lib/libapriltag_msgs__rosidl_typesupport_fastrtps_c.so: invalid string offset 3823 >= 3740 for section `.strtab'
+/usr/bin/ld: /home/pi/vision_system_ws/install/apriltag_msgs/lib/libapriltag_msgs__rosidl_typesupport_fastrtps_c.so: invalid string offset 3856 >= 3740 for section `.strtab'
+/usr/bin/ld: /home/pi/ros2_ws/install/tf2_msgs/lib/libtf2_msgs__rosidl_typesupport_fastrtps_c.so: invalid string offset 4290 >= 3958 for section `.strtab'
+/usr/bin/ld: /home/pi/ros2_ws/install/tf2_msgs/lib/libtf2_msgs__rosidl_typesupport_fastrtps_c.so: invalid string offset 4275 >= 3958 for section `.strtab'
+/usr/bin/ld: /home/pi/ros2_ws/install/tf2_msgs/lib/libtf2_msgs__rosidl_typesupport_fastrtps_c.so: invalid string offset 4263 >= 3958 for section `.strtab'
+/usr/bin/ld: /home/pi/ros2_ws/install/tf2_msgs/lib/libtf2_msgs__rosidl_typesupport_fastrtps_c.so: invalid string offset 4301 >= 3958 for section `.strtab'
+/usr/bin/ld: /home/pi/ros2_ws/install/tf2_msgs/lib/libtf2_msgs__rosidl_typesupport_fastrtps_c.so: invalid string offset 4309 >= 3958 for section `.strtab'
+/usr/bin/ld: /home/pi/ros2_ws/install/tf2_msgs/lib/libtf2_msgs__rosidl_typesupport_fastrtps_c.so: invalid string offset 4256 >= 3958 for section `.strtab'
+/usr/bin/ld: /home/pi/ros2_ws/install/tf2_msgs/lib/libtf2_msgs__rosidl_typesupport_fastrtps_c.so: invalid string offset 4289 >= 3958 for section `.strtab'
+/usr/bin/ld: /home/pi/ros2_ws/install/tf2_msgs/lib/libtf2_msgs__rosidl_generator_c.so: invalid string offset 2894 >= 2401 for section `.strtab'
+/usr/bin/ld: /home/pi/ros2_ws/install/tf2_msgs/lib/libtf2_msgs__rosidl_generator_c.so: invalid string offset 2905 >= 2401 for section `.strtab'
+/usr/bin/ld: /home/pi/ros2_ws/install/tf2_msgs/lib/libtf2_msgs__rosidl_generator_c.so: invalid string offset 2867 >= 2401 for section `.strtab'
+/usr/bin/ld: /home/pi/ros2_ws/install/tf2_msgs/lib/libtf2_msgs__rosidl_generator_c.so: invalid string offset 2913 >= 2401 for section `.strtab'
+/usr/bin/ld: /home/pi/ros2_ws/install/tf2_msgs/lib/libtf2_msgs__rosidl_generator_c.so: invalid string offset 2860 >= 2401 for section `.strtab'
+/usr/bin/ld: /home/pi/ros2_ws/install/tf2_msgs/lib/libtf2_msgs__rosidl_generator_c.so: invalid string offset 2893 >= 2401 for section `.strtab'
+/usr/bin/ld: /home/pi/ros2_ws/install/tf2_msgs/lib/libtf2_msgs__rosidl_generator_c.so: invalid string offset 2879 >= 2401 for section `.strtab'
+[100%] Built target apriltag2_node
+[ 50%] Built target AprilTag2Node
+[100%] Built target apriltag2_node
+[36mInstall the project...[0m
+-- Install configuration: ""
+-- Execute custom install script
+-- Up-to-date symlink: /home/pi/vision_system_ws/install/apriltag2_node/share/apriltag2_node/environment/library_path.sh
+-- Up-to-date symlink: /home/pi/vision_system_ws/install/apriltag2_node/lib/libAprilTag2Node.so
+-- Up-to-date symlink: /home/pi/vision_system_ws/install/apriltag2_node/lib/apriltag2_node/apriltag2_node
+-- Up-to-date symlink: /home/pi/vision_system_ws/install/apriltag2_node/share/apriltag2_node/cfg/platform_36h11.yaml
+-- Up-to-date symlink: /home/pi/vision_system_ws/install/apriltag2_node/share/apriltag2_node/cfg/prova.yaml
+-- Up-to-date symlink: /home/pi/vision_system_ws/install/apriltag2_node/share/apriltag2_node/cfg/tags_16h5_all.yaml
+-- Up-to-date symlink: /home/pi/vision_system_ws/install/apriltag2_node/share/apriltag2_node/cfg/tags_16h5_filtered.yaml
+-- Up-to-date symlink: /home/pi/vision_system_ws/install/apriltag2_node/share/apriltag2_node/cfg/tags_36h11_all.yaml
+-- Up-to-date symlink: /home/pi/vision_system_ws/install/apriltag2_node/share/ament_index/resource_index/package_run_dependencies/apriltag2_node
+-- Up-to-date symlink: /home/pi/vision_system_ws/install/apriltag2_node/share/ament_index/resource_index/parent_prefix_path/apriltag2_node
+-- Up-to-date symlink: /home/pi/vision_system_ws/install/apriltag2_node/share/apriltag2_node/environment/ament_prefix_path.sh
+-- Up-to-date symlink: /home/pi/vision_system_ws/install/apriltag2_node/share/apriltag2_node/environment/path.sh
+-- Up-to-date symlink: /home/pi/vision_system_ws/install/apriltag2_node/share/apriltag2_node/local_setup.bash
+-- Up-to-date symlink: /home/pi/vision_system_ws/install/apriltag2_node/share/apriltag2_node/local_setup.sh
+-- Up-to-date symlink: /home/pi/vision_system_ws/install/apriltag2_node/share/apriltag2_node/local_setup.zsh
+-- Up-to-date symlink: /home/pi/vision_system_ws/install/apriltag2_node/share/ament_index/resource_index/packages/apriltag2_node
+-- Up-to-date symlink: /home/pi/vision_system_ws/install/apriltag2_node/share/ament_index/resource_index/node_plugin/apriltag2_node
+-- Up-to-date symlink: /home/pi/vision_system_ws/install/apriltag2_node/share/apriltag2_node/cmake/apriltag2_nodeConfig.cmake
+-- Up-to-date symlink: /home/pi/vision_system_ws/install/apriltag2_node/share/apriltag2_node/cmake/apriltag2_nodeConfig-version.cmake
+-- Up-to-date symlink: /home/pi/vision_system_ws/install/apriltag2_node/share/apriltag2_node/package.xml

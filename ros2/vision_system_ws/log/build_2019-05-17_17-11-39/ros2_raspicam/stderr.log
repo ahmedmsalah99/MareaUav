@@ -1,0 +1,4 @@
+You have called ADD_LIBRARY for library jpeg without any source files. This typically indicates a problem with your CMakeLists.txt file
+CMake Error: Cannot determine link language for target "jpeg".
+CMake Error: CMake can not determine linker language for target: jpeg
+make: *** [cmake_check_build_system] Errore 1

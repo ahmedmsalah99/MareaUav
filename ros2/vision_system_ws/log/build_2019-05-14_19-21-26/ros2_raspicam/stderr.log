@@ -1,0 +1,7 @@
+[01m[K/home/pi/vision_system_ws/src/ros2_raspicam/src/raspicam_compressed.cpp:[m[K In function ‘[01m[Kint main(int, char**)[m[K’:
+[01m[K/home/pi/vision_system_ws/src/ros2_raspicam/src/raspicam_compressed.cpp:46:54:[m[K [01;31m[Kerror: [m[Kcannot convert ‘[01m[Ksensor_msgs::msg::CompressedImage_<std::allocator<void> >::_data_type {aka std::vector<unsigned char>}[m[K’ to ‘[01m[Kvoid*[m[K’ for argument ‘[01m[K1[m[K’ to ‘[01m[Kvoid* memset(void*, int, size_t)[m[K’
+     memset(compressed_image_msg->data, 0x00, FullSize[01;31m[K)[m[K;
+                                                      [01;31m[K^[m[K
+make[2]: *** [CMakeFiles/raspicam_compressed_node.dir/src/raspicam_compressed.cpp.o] Errore 1
+make[1]: *** [CMakeFiles/raspicam_compressed_node.dir/all] Errore 2
+make: *** [all] Errore 2

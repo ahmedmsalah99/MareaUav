@@ -1,0 +1,30 @@
+[35m[1mScanning dependencies of target camera_main_node[0m
+[ 20%] [32mBuilding CXX object CMakeFiles/camera_main_node.dir/src/CameraStates.cpp.o[0m
+[ 40%] [32m[1mLinking CXX executable camera_main_node[0m
+/usr/bin/ld: /home/pi/ros2_ws/install/rosgraph_msgs/lib/librosgraph_msgs__rosidl_generator_c.so: invalid string offset 1111 >= 1099 for section `.strtab'
+/usr/bin/ld: /home/pi/ros2_ws/install/rosgraph_msgs/lib/librosgraph_msgs__rosidl_generator_c.so: invalid string offset 1130 >= 1099 for section `.strtab'
+/usr/bin/ld: /home/pi/ros2_ws/install/rosgraph_msgs/lib/librosgraph_msgs__rosidl_generator_c.so: invalid string offset 1122 >= 1099 for section `.strtab'
+/usr/bin/ld: /home/pi/ros2_ws/install/rosgraph_msgs/lib/librosgraph_msgs__rosidl_generator_c.so: invalid string offset 1110 >= 1099 for section `.strtab'
+/usr/bin/ld: /home/pi/ros2_ws/install/rosgraph_msgs/lib/librosgraph_msgs__rosidl_typesupport_fastrtps_c.so: invalid string offset 1536 >= 1507 for section `.strtab'
+/usr/bin/ld: /home/pi/ros2_ws/install/rosgraph_msgs/lib/librosgraph_msgs__rosidl_typesupport_fastrtps_c.so: invalid string offset 1570 >= 1507 for section `.strtab'
+/usr/bin/ld: /home/pi/ros2_ws/install/rosgraph_msgs/lib/librosgraph_msgs__rosidl_typesupport_fastrtps_c.so: invalid string offset 1589 >= 1507 for section `.strtab'
+/usr/bin/ld: /home/pi/ros2_ws/install/rosgraph_msgs/lib/librosgraph_msgs__rosidl_typesupport_fastrtps_c.so: invalid string offset 1569 >= 1507 for section `.strtab'
+/usr/bin/ld: /home/pi/ros2_ws/install/rosgraph_msgs/lib/librosgraph_msgs__rosidl_typesupport_fastrtps_c.so: invalid string offset 1543 >= 1507 for section `.strtab'
+/usr/bin/ld: /home/pi/ros2_ws/install/rosgraph_msgs/lib/librosgraph_msgs__rosidl_typesupport_fastrtps_c.so: invalid string offset 1581 >= 1507 for section `.strtab'
+/usr/bin/ld: /home/pi/ros2_ws/install/rosgraph_msgs/lib/librosgraph_msgs__rosidl_typesupport_fastrtps_c.so: invalid string offset 1555 >= 1507 for section `.strtab'
+/usr/bin/ld: /home/pi/ros2_ws/install/rcl_yaml_param_parser/lib/librcl_yaml_param_parser.so: invalid string offset 1580 >= 1389 for section `.strtab'
+/usr/bin/ld: /home/pi/ros2_ws/install/rcl_yaml_param_parser/lib/librcl_yaml_param_parser.so: invalid string offset 1546 >= 1389 for section `.strtab'
+/usr/bin/ld: /home/pi/ros2_ws/install/rcl_yaml_param_parser/lib/librcl_yaml_param_parser.so: invalid string offset 1599 >= 1389 for section `.strtab'
+/usr/bin/ld: /home/pi/ros2_ws/install/rcl_yaml_param_parser/lib/librcl_yaml_param_parser.so: invalid string offset 1579 >= 1389 for section `.strtab'
+/usr/bin/ld: /home/pi/ros2_ws/install/rcl_yaml_param_parser/lib/librcl_yaml_param_parser.so: invalid string offset 1553 >= 1389 for section `.strtab'
+/usr/bin/ld: /home/pi/ros2_ws/install/rcl_yaml_param_parser/lib/librcl_yaml_param_parser.so: invalid string offset 1565 >= 1389 for section `.strtab'
+/usr/bin/ld: /home/pi/ros2_ws/install/rcl_yaml_param_parser/lib/librcl_yaml_param_parser.so: invalid string offset 1591 >= 1389 for section `.strtab'
+CMakeFiles/camera_main_node.dir/src/CameraStates.cpp.o: nella funzione "IdleState::setParameters()":
+CameraStates.cpp:(.text._ZN9IdleState13setParametersEv+0x22c): riferimento non definito a "State::Camera"
+collect2: error: ld returned 1 exit status
+CMakeFiles/camera_main_node.dir/build.make:494: set di istruzioni per l'obiettivo "camera_main_node" non riuscito
+make[2]: *** [camera_main_node] Errore 1
+make[1]: *** [CMakeFiles/camera_main_node.dir/all] Errore 2
+make: *** [all] Errore 2
+CMakeFiles/Makefile2:803: set di istruzioni per l'obiettivo "CMakeFiles/camera_main_node.dir/all" non riuscito
+Makefile:138: set di istruzioni per l'obiettivo "all" non riuscito

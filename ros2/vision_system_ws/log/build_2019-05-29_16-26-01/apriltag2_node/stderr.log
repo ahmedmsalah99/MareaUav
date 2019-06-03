@@ -1,0 +1,10 @@
+[01m[K/home/pi/vision_system_ws/src/apriltag2_node/node/src/AprilTag2Node2_0.cpp:[m[K In member function ‘[01m[Kvoid AprilTag2Node::getPose(const matd_t&, geometry_msgs::msg::Transform&, int, bool)[m[K’:
+[01m[K/home/pi/vision_system_ws/src/apriltag2_node/node/src/AprilTag2Node2_0.cpp:195:9:[m[K [01;31m[Kerror: [m[K‘[01m[Kcoyt[m[K’ is not a member of ‘[01m[Kstd[m[K’
+         [01;31m[Kstd[m[K::coyt<<"before: "<<tt_center[0]<<tt_center[1]<<tt_center[2]<<std::endl;
+         [01;31m[K^~~[m[K
+[01m[K/home/pi/vision_system_ws/src/apriltag2_node/node/src/AprilTag2Node2_0.cpp:199:9:[m[K [01;31m[Kerror: [m[K‘[01m[Kcoyt[m[K’ is not a member of ‘[01m[Kstd[m[K’
+         [01;31m[Kstd[m[K::coyt<<"after: "<<tt_center[0]<<tt_center[1]<<tt_center[2]<<std::endl;
+         [01;31m[K^~~[m[K
+make[2]: *** [CMakeFiles/AprilTag2Node.dir/src/AprilTag2Node2_0.cpp.o] Errore 1
+make[1]: *** [CMakeFiles/AprilTag2Node.dir/all] Errore 2
+make: *** [all] Errore 2

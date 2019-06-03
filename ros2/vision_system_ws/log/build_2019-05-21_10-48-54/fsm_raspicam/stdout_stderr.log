@@ -1,0 +1,29 @@
+[35m[1mScanning dependencies of target camera_main_node[0m
+[ 20%] [32mBuilding CXX object CMakeFiles/camera_main_node.dir/src/camera_main.cpp.o[0m
+[ 40%] [32mBuilding CXX object CMakeFiles/camera_main_node.dir/src/CameraStates.cpp.o[0m
+In file included from [01m[K/home/pi/vision_system_ws/src/fsm_raspicam/src/CameraStates.cpp:1:0[m[K:
+[01m[K/home/pi/vision_system_ws/src/fsm_raspicam/include/CameraStates.h:[m[K In member function ‘[01m[Kvirtual void LandingState::setID()[m[K’:
+[01m[K/home/pi/vision_system_ws/src/fsm_raspicam/include/CameraStates.h:36:7:[m[K [01;31m[Kerror: [m[K‘[01m[KSTART[m[K’ was not declared in this scope
+  ID = [01;31m[KSTART[m[K;
+       [01;31m[K^~~~~[m[K
+In file included from [01m[K/home/pi/vision_system_ws/src/fsm_raspicam/src/camera_main.cpp:16:0[m[K:
+[01m[K/home/pi/vision_system_ws/src/fsm_raspicam/include/CameraStates.h:[m[K In member function ‘[01m[Kvirtual void LandingState::setID()[m[K’:
+[01m[K/home/pi/vision_system_ws/src/fsm_raspicam/include/CameraStates.h:36:7:[m[K [01;31m[Kerror: [m[K‘[01m[KSTART[m[K’ was not declared in this scope
+  ID = [01;31m[KSTART[m[K;
+       [01;31m[K^~~~~[m[K
+[01m[K/home/pi/vision_system_ws/src/fsm_raspicam/src/camera_main.cpp:[m[K In function ‘[01m[Kint main(int, char**)[m[K’:
+[01m[K/home/pi/vision_system_ws/src/fsm_raspicam/src/camera_main.cpp:27:5:[m[K [01;31m[Kerror: [m[K‘[01m[KStartState[m[K’ was not declared in this scope
+     [01;31m[KLandingSta[m[Kte Prova(&Camera);
+     [01;31m[K^~~~~~~~~~[m[K
+[01m[K/home/pi/vision_system_ws/src/fsm_raspicam/src/camera_main.cpp:33:5:[m[K [01;31m[Kerror: [m[K‘[01m[KProva[m[K’ was not declared in this scope
+     [01;31m[KProva[m[K.setParameters();
+     [01;31m[K^~~~~[m[K
+CMakeFiles/camera_main_node.dir/build.make:134: set di istruzioni per l'obiettivo "CMakeFiles/camera_main_node.dir/src/CameraStates.cpp.o" non riuscito
+make[2]: *** [CMakeFiles/camera_main_node.dir/src/CameraStates.cpp.o] Errore 1
+make[2]: *** Attesa per i processi non terminati....
+CMakeFiles/camera_main_node.dir/build.make:62: set di istruzioni per l'obiettivo "CMakeFiles/camera_main_node.dir/src/camera_main.cpp.o" non riuscito
+make[2]: *** [CMakeFiles/camera_main_node.dir/src/camera_main.cpp.o] Errore 1
+CMakeFiles/Makefile2:803: set di istruzioni per l'obiettivo "CMakeFiles/camera_main_node.dir/all" non riuscito
+make[1]: *** [CMakeFiles/camera_main_node.dir/all] Errore 2
+make: *** [all] Errore 2
+Makefile:138: set di istruzioni per l'obiettivo "all" non riuscito

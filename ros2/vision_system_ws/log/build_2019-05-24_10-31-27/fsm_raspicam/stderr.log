@@ -1,0 +1,9 @@
+[01m[K/home/pi/vision_system_ws/src/fsm_raspicam/src/CameraStates.cpp:[m[K In member function ‘[01m[Kvirtual void LandingState::setParameters()[m[K’:
+[01m[K/home/pi/vision_system_ws/src/fsm_raspicam/src/CameraStates.cpp:59:14:[m[K [01;35m[Kwarning: [m[Kunused variable ‘[01m[Ksave[m[K’ [[01;35m[K-Wunused-variable[m[K]
+  static bool [01;35m[Ksave[m[K = true;
+              [01;35m[K^~~~[m[K
+[01m[K/home/pi/vision_system_ws/src/fsm_raspicam/src/CameraStates.cpp:[m[K At global scope:
+[01m[K/home/pi/vision_system_ws/src/fsm_raspicam/src/CameraStates.cpp:59:14:[m[K [01;35m[Kwarning: [m[K‘[01m[Ksave[m[K’ defined but not used [[01;35m[K-Wunused-variable[m[K]
+make[2]: *** [CMakeFiles/camera_main_node.dir/src/State.cpp.o] Interruzione
+make[1]: *** [CMakeFiles/camera_main_node.dir/all] Interruzione
+make: *** [all] Interruzione

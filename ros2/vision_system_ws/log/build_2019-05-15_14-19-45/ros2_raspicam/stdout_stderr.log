@@ -1,0 +1,9 @@
+[35m[1mScanning dependencies of target service_node[0m
+[ 10%] [32mBuilding CXX object CMakeFiles/service_node.dir/src/service_camera_param.cpp.o[0m
+make[2]: *** wait: Nessun processo figlio.  Arresto.
+make[2]: *** Attesa per i processi non terminati....
+make[2]: *** wait: Nessun processo figlio.  Arresto.
+CMakeFiles/Makefile2:67: set di istruzioni per l'obiettivo "CMakeFiles/service_node.dir/all" non riuscito
+make[1]: *** [CMakeFiles/service_node.dir/all] Errore 2
+make: *** [all] Interruzione
+Makefile:138: set di istruzioni per l'obiettivo "all" non riuscito

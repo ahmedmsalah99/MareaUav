@@ -1,0 +1,7 @@
+[01m[K/home/pi/vision_system_ws/src/ros2_raspicam/src/raspicam_raw.cpp:14:37:[m[K [01;31m[Kfatal error: [m[Kraspicam/raspicam_still.h: File o directory non esistente
+ #include <raspicam/raspicam_still.h>
+                                     [01;31m[K^[m[K
+compilation terminated.
+make[2]: *** [CMakeFiles/raspicam_raw_node.dir/src/raspicam_raw.cpp.o] Errore 1
+make[1]: *** [CMakeFiles/raspicam_raw_node.dir/all] Errore 2
+make: *** [all] Errore 2

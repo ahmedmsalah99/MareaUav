@@ -1,0 +1,7 @@
+[01m[K/home/pi/vision_system_ws/src/ros2_raspicam/src/client_camera_param.cpp:[m[K In function ‘[01m[Kint main(int, char**)[m[K’:
+[01m[K/home/pi/vision_system_ws/src/ros2_raspicam/src/client_camera_param.cpp:54:2:[m[K [01;31m[Kerror: [m[Kexpected primary-expression before ‘[01m[K)[m[K’ token
+  [01;31m[K)[m[K
+  [01;31m[K^[m[K
+make[2]: *** [CMakeFiles/client_node.dir/src/client_camera_param.cpp.o] Errore 1
+make[1]: *** [CMakeFiles/client_node.dir/all] Errore 2
+make: *** [all] Errore 2

@@ -1,0 +1,1 @@
+Invoking command in '/home/pi/vision_system_ws/build/apriltag_msgs': /usr/bin/cmake --build /home/pi/vision_system_ws/build/apriltag_msgs -- -j4 -l4

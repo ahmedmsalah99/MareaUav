@@ -1,0 +1,16 @@
+[01m[K/home/pi/vision_system_ws/src/ros2_raspicam/src/raspicam_compressed.cpp:87:9:[m[K [01;35m[Kwarning: [m[K"/*" within comment [[01;35m[K-Wcomment[m[K]
+         /*
+          
+[01m[K/home/pi/vision_system_ws/src/ros2_raspicam/src/raspicam_compressed.cpp:[m[K In function ‘[01m[Kint main(int, char**)[m[K’:
+[01m[K/home/pi/vision_system_ws/src/ros2_raspicam/src/raspicam_compressed.cpp:35:26:[m[K [01;31m[Kerror: [m[K‘[01m[KCamera[m[K’ was not declared in this scope
+     uint32_t imageSize = [01;31m[KCamera[m[K.getImageTypeSize ( raspicam::RASPICAM_FORMAT_RGB );
+                          [01;31m[K^~~~~~[m[K
+[01m[K/home/pi/vision_system_ws/src/ros2_raspicam/src/raspicam_compressed.cpp:39:48:[m[K [01;31m[Kerror: [m[K‘[01m[Kgrab_retrieve[m[K’ was not declared in this scope
+     if( grab_retrieve(data_compressed,imageSize[01;31m[K)[m[K )
+                                                [01;31m[K^[m[K
+[01m[K/home/pi/vision_system_ws/src/ros2_raspicam/src/raspicam_compressed.cpp:41:23:[m[K [01;35m[Kwarning: [m[Kcomparison between signed and unsigned integer expressions [[01;35m[K-Wsign-compare[m[K]
+         for(int i=0; [01;35m[Ki<imageSize[m[K; i++)
+                      [01;35m[K~^~~~~~~~~~[m[K
+make[2]: *** [CMakeFiles/raspicam_compressed_node.dir/src/raspicam_compressed.cpp.o] Errore 1
+make[1]: *** [CMakeFiles/raspicam_compressed_node.dir/all] Errore 2
+make: *** [all] Errore 2

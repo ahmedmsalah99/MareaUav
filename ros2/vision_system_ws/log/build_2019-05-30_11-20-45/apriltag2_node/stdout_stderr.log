@@ -1,0 +1,31 @@
+[35m[1mScanning dependencies of target AprilTag2Node[0m
+[ 25%] [32mBuilding CXX object CMakeFiles/AprilTag2Node.dir/src/AprilTag2Node2_0.cpp.o[0m
+In file included from [01m[K/home/pi/vision_system_ws/src/apriltag2_node/node/src/AprilTag2Node2_0.cpp:1:0[m[K:
+[01m[K/home/pi/vision_system_ws/src/apriltag2_node/node/include/AprilTag2Node.hpp:41:17:[m[K [01;31m[Kerror: [m[K‘[01m[KMatrixXd[m[K’ was not declared in this scope
+     std::vector<[01;31m[KMatrixXd[m[K> matrices_vector;
+                 [01;31m[K^~~~~~~~[m[K
+[01m[K/home/pi/vision_system_ws/src/apriltag2_node/node/include/AprilTag2Node.hpp:41:17:[m[K [01;36m[Knote: [m[Ksuggested alternative:
+In file included from [01m[K/usr/include/eigen3/Eigen/Core:432:0[m[K,
+                 from [01m[K/home/pi/vision_system_ws/src/apriltag2_node/node/include/LandingPlatform.h:4[m[K,
+                 from [01m[K/home/pi/vision_system_ws/src/apriltag2_node/node/include/AprilTag2Node.hpp:17[m[K,
+                 from [01m[K/home/pi/vision_system_ws/src/apriltag2_node/node/src/AprilTag2Node2_0.cpp:1[m[K:
+[01m[K/usr/include/eigen3/Eigen/src/Core/Matrix.h:428:34:[m[K [01;36m[Knote: [m[K  ‘[01m[KEigen::MatrixXd[m[K’
+ typedef Matrix<Type, Size, Size> [01;36m[KM[m[Katrix##SizeSuffix##TypeSuffix;  \
+                                  [01;36m[K^[m[K
+[01m[K/usr/include/eigen3/Eigen/src/Core/Matrix.h:444:1:[m[K [01;36m[Knote: [m[Kin expansion of macro ‘[01m[KEIGEN_MAKE_TYPEDEFS[m[K’
+ [01;36m[KEIGEN_MAKE_TYPEDEFS[m[K(Type, TypeSuffix, Dynamic, X) \
+ [01;36m[K^~~~~~~~~~~~~~~~~~~[m[K
+[01m[K/usr/include/eigen3/Eigen/src/Core/Matrix.h:451:1:[m[K [01;36m[Knote: [m[Kin expansion of macro ‘[01m[KEIGEN_MAKE_TYPEDEFS_ALL_SIZES[m[K’
+ [01;36m[KEIGEN_MAKE_TYPEDEFS_ALL_SIZES[m[K(double,               d)
+ [01;36m[K^~~~~~~~~~~~~~~~~~~~~~~~~~~~~[m[K
+In file included from [01m[K/home/pi/vision_system_ws/src/apriltag2_node/node/src/AprilTag2Node2_0.cpp:1:0[m[K:
+[01m[K/home/pi/vision_system_ws/src/apriltag2_node/node/include/AprilTag2Node.hpp:41:25:[m[K [01;31m[Kerror: [m[Ktemplate argument 1 is invalid
+     std::vector<MatrixXd[01;31m[K>[m[K matrices_vector;
+                         [01;31m[K^[m[K
+[01m[K/home/pi/vision_system_ws/src/apriltag2_node/node/include/AprilTag2Node.hpp:41:25:[m[K [01;31m[Kerror: [m[Ktemplate argument 2 is invalid
+make[2]: *** [CMakeFiles/AprilTag2Node.dir/src/AprilTag2Node2_0.cpp.o] Errore 1
+CMakeFiles/AprilTag2Node.dir/build.make:62: set di istruzioni per l'obiettivo "CMakeFiles/AprilTag2Node.dir/src/AprilTag2Node2_0.cpp.o" non riuscito
+CMakeFiles/Makefile2:200: set di istruzioni per l'obiettivo "CMakeFiles/AprilTag2Node.dir/all" non riuscito
+make[1]: *** [CMakeFiles/AprilTag2Node.dir/all] Errore 2
+Makefile:138: set di istruzioni per l'obiettivo "all" non riuscito
+make: *** [all] Errore 2

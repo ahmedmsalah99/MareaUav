@@ -1,0 +1,19 @@
+[01m[K/home/pi/vision_system_ws/src/ros2_raspicam/src/checks_rate.cpp:18:43:[m[K [01;31m[Kerror: [m[K‘[01m[KFloat32[m[K’ in namespace ‘[01m[Kstd_msgs::msg[m[K’ does not name a type
+ void chatterCallback(const std_msgs::msg::[01;31m[KFloat32[m[K::SharedPtr msg)
+                                           [01;31m[K^~~~~~~[m[K
+[01m[K/home/pi/vision_system_ws/src/ros2_raspicam/src/checks_rate.cpp:18:62:[m[K [01;31m[Kerror: [m[Kexpected unqualified-id before ‘[01m[Kmsg[m[K’
+ void chatterCallback(const std_msgs::msg::Float32::SharedPtr [01;31m[Kmsg[m[K)
+                                                              [01;31m[K^~~[m[K
+[01m[K/home/pi/vision_system_ws/src/ros2_raspicam/src/checks_rate.cpp:18:62:[m[K [01;31m[Kerror: [m[Kexpected ‘[01m[K)[m[K’ before ‘[01m[Kmsg[m[K’
+[01m[K/home/pi/vision_system_ws/src/ros2_raspicam/src/checks_rate.cpp:18:62:[m[K [01;31m[Kerror: [m[Kexpected initializer before ‘[01m[Kmsg[m[K’
+[01m[K/home/pi/vision_system_ws/src/ros2_raspicam/src/checks_rate.cpp:[m[K In function ‘[01m[Kint main(int, char**)[m[K’:
+[01m[K/home/pi/vision_system_ws/src/ros2_raspicam/src/checks_rate.cpp:31:42:[m[K [01;31m[Kerror: [m[K‘[01m[KFloat32[m[K’ is not a member of ‘[01m[Kstd_msgs::msg[m[K’
+     auto sub = node->create_subscription<[01;31m[Kstd_msgs[m[K::msg::Float32>("chatter",chatterCallback,1);
+                                          [01;31m[K^~~~~~~~[m[K
+[01m[K/home/pi/vision_system_ws/src/ros2_raspicam/src/checks_rate.cpp:31:42:[m[K [01;31m[Kerror: [m[K‘[01m[KFloat32[m[K’ is not a member of ‘[01m[Kstd_msgs::msg[m[K’
+[01m[K/home/pi/vision_system_ws/src/ros2_raspicam/src/checks_rate.cpp:31:76:[m[K [01;31m[Kerror: [m[K‘[01m[KchatterCallback[m[K’ was not declared in this scope
+     auto sub = node->create_subscription<std_msgs::msg::Float32>("chatter",[01;31m[KchatterCallback[m[K,1);
+                                                                            [01;31m[K^~~~~~~~~~~~~~~[m[K
+make[2]: *** [CMakeFiles/checks_rate_node.dir/src/checks_rate.cpp.o] Errore 1
+make[1]: *** [CMakeFiles/checks_rate_node.dir/all] Errore 2
+make: *** [all] Errore 2

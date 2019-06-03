@@ -1,0 +1,12 @@
+[35m[1mScanning dependencies of target AprilTag2Node[0m
+[ 25%] [32mBuilding CXX object CMakeFiles/AprilTag2Node.dir/src/AprilTag2Node2_0.cpp.o[0m
+In file included from [01m[K/home/pi/vision_system_ws/src/apriltag2_node/node/src/AprilTag2Node2_0.cpp:1:0[m[K:
+[01m[K/home/pi/vision_system_ws/src/apriltag2_node/node/include/AprilTag2Node.hpp:37:5:[m[K [01;31m[Kerror: [m[K‘[01m[Kapriltag_detection_info_t[m[K’ does not name a type
+     [01;31m[Kapriltag_detection_info_t[m[K info;
+     [01;31m[K^~~~~~~~~~~~~~~~~~~~~~~~~[m[K
+CMakeFiles/AprilTag2Node.dir/build.make:62: set di istruzioni per l'obiettivo "CMakeFiles/AprilTag2Node.dir/src/AprilTag2Node2_0.cpp.o" non riuscito
+make[2]: *** [CMakeFiles/AprilTag2Node.dir/src/AprilTag2Node2_0.cpp.o] Errore 1
+make[1]: *** [CMakeFiles/AprilTag2Node.dir/all] Errore 2
+make: *** [all] Errore 2
+CMakeFiles/Makefile2:200: set di istruzioni per l'obiettivo "CMakeFiles/AprilTag2Node.dir/all" non riuscito
+Makefile:138: set di istruzioni per l'obiettivo "all" non riuscito

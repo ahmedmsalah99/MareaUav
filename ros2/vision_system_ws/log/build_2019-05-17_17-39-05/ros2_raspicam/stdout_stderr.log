@@ -1,0 +1,19 @@
+[35m[1mScanning dependencies of target raspicam_raw_node[0m
+[ 20%] Built target checks_rate_node
+[ 40%] Built target raspicam_compressed_node
+[ 50%] [32mBuilding CXX object CMakeFiles/raspicam_raw_node.dir/src/raspicam_raw.cpp.o[0m
+[ 70%] Built target service_node
+[ 90%] Built target client_node
+[01m[K/home/pi/vision_system_ws/src/ros2_raspicam/src/raspicam_raw.cpp:[m[K In function ‘[01m[Kint main(int, char**)[m[K’:
+[01m[K/home/pi/vision_system_ws/src/ros2_raspicam/src/raspicam_raw.cpp:144:20:[m[K [01;31m[Kerror: [m[Kunable to find string literal operator ‘[01m[Koperator""sizeof[m[K’ with ‘[01m[Kconst char [6][m[K’, ‘[01m[Kunsigned int[m[K’ arguments
+         std::cout<<[01;31m[K"size:"sizeof[m[K(mem)<<std::endl;
+                    [01;31m[K^~~~~~~~~~~~~[m[K
+[01m[K/home/pi/vision_system_ws/src/ros2_raspicam/src/raspicam_raw.cpp:28:14:[m[K [01;35m[Kwarning: [m[Kunused variable ‘[01m[Kimage_buffer[m[K’ [[01;35m[K-Wunused-variable[m[K]
+     JSAMPLE *[01;35m[Kimage_buffer[m[K;
+              [01;35m[K^~~~~~~~~~~~[m[K
+CMakeFiles/raspicam_raw_node.dir/build.make:62: set di istruzioni per l'obiettivo "CMakeFiles/raspicam_raw_node.dir/src/raspicam_raw.cpp.o" non riuscito
+make[2]: *** [CMakeFiles/raspicam_raw_node.dir/src/raspicam_raw.cpp.o] Errore 1
+make[1]: *** [CMakeFiles/raspicam_raw_node.dir/all] Errore 2
+make: *** [all] Errore 2
+CMakeFiles/Makefile2:205: set di istruzioni per l'obiettivo "CMakeFiles/raspicam_raw_node.dir/all" non riuscito
+Makefile:138: set di istruzioni per l'obiettivo "all" non riuscito

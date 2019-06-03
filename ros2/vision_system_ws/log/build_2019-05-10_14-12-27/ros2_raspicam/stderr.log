@@ -1,0 +1,7 @@
+[01m[K/home/pi/vision_system_ws/src/ros2_raspicam/src/raspicam_compressed.cpp:[m[K In function ‘[01m[Kint main(int, char**)[m[K’:
+[01m[K/home/pi/vision_system_ws/src/ros2_raspicam/src/raspicam_compressed.cpp:37:27:[m[K [01;31m[Kerror: [m[K‘[01m[KCamera2[m[K’ is not a class, namespace, or enumeration
+     std::cout<<"size: "<< [01;31m[KCamera2[m[K::getImageBufferSize() <<std::endl;
+                           [01;31m[K^~~~~~~[m[K
+make[2]: *** [CMakeFiles/raspicam_compressed_node.dir/src/raspicam_compressed.cpp.o] Errore 1
+make[1]: *** [CMakeFiles/raspicam_compressed_node.dir/all] Errore 2
+make: *** [all] Errore 2

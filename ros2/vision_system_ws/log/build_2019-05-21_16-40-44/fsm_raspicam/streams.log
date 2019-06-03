@@ -1,0 +1,33 @@
+Invoking command in '/home/pi/vision_system_ws/build/fsm_raspicam': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/pi/ros2_ws/install/ament_uncrustify:/home/pi/ros2_ws/install/test_launch_ros:/home/pi/ros2_ws/install/sros2:/home/pi/ros2_ws/install/ros2lifecycle:/home/pi/ros2_ws/install/ros2service:/home/pi/ros2_ws/install/ros2topic:/home/pi/ros2_ws/install/ros2srv:/home/pi/ros2_ws/install/ros2run:/home/pi/ros2_ws/install/ros2launch:/home/pi/ros2_ws/install/ros2pkg:/home/pi/ros2_ws/install/ros2param:/home/pi/ros2_ws/install/ros2node:/home/pi/ros2_ws/install/ros2multicast:/home/pi/ros2_ws/install/ros2msg:/home/pi/ros2_ws/install/ros2cli:/home/pi/ros2_ws/install/launch_ros:/home/pi/ros2_ws/install/launch_testing:/home/pi/ros2_ws/install/launch:/home/pi/ros2_ws/install/osrf_pycommon:/home/pi/ros2_ws/install/ament_xmllint:/home/pi/ros2_ws/install/ament_pyflakes:/home/pi/ros2_ws/install/ament_pep8:/home/pi/ros2_ws/install/ament_pep257:/home/pi/ros2_ws/install/ament_pclint:/home/pi/ros2_ws/install/ament_package:/home/pi/ros2_ws/install/ament_lint_cmake:/home/pi/ros2_ws/install/ament_index_python:/home/pi/ros2_ws/install/ament_flake8:/home/pi/ros2_ws/install/ament_cpplint:/home/pi/ros2_ws/install/ament_cppcheck:/home/pi/ros2_ws/install/ament_copyright:/home/pi/ros2_ws/install/ament_clang_format /usr/bin/cmake --build /home/pi/vision_system_ws/build/fsm_raspicam -- -j4 -l4
+[35m[1mScanning dependencies of target camera_main_node[0m
+[ 20%] [32mBuilding CXX object CMakeFiles/camera_main_node.dir/src/State.cpp.o[0m
+[ 40%] [32mBuilding CXX object CMakeFiles/camera_main_node.dir/src/camera_main.cpp.o[0m
+[ 60%] [32mBuilding CXX object CMakeFiles/camera_main_node.dir/src/CameraStates.cpp.o[0m
+[ 80%] [32mBuilding CXX object CMakeFiles/camera_main_node.dir/src/FiniteStateMachine.cpp.o[0m
+[01m[K/home/pi/vision_system_ws/src/fsm_raspicam/src/State.cpp:22:6:[m[K [01;31m[Kerror: [m[Kprototype for ‘[01m[Kvoid State::setPrevMode()[m[K’ does not match any in class ‘[01m[KState[m[K’
+ void [01;31m[KState[m[K::setPrevMode(){
+      [01;31m[K^~~~~[m[K
+In file included from [01m[K/home/pi/vision_system_ws/src/fsm_raspicam/src/State.cpp:1:0[m[K:
+[01m[K/home/pi/vision_system_ws/src/fsm_raspicam/include/State.h:31:7:[m[K [01;31m[Kerror: [m[Kcandidate is: void State::setPrevMode(int)
+  void [01;31m[KsetPrevMode[m[K(int mode);
+       [01;31m[K^~~~~~~~~~~[m[K
+[01m[K/home/pi/vision_system_ws/src/fsm_raspicam/src/camera_main.cpp:[m[K In function ‘[01m[Kint main(int, char**)[m[K’:
+[01m[K/home/pi/vision_system_ws/src/fsm_raspicam/src/camera_main.cpp:56:35:[m[K [01;31m[Kerror: [m[Kno matching function for call to ‘[01m[KIdleState::setPrevMode()[m[K’
+                 IdleS.setPrevMode([01;31m[K)[m[K;
+                                   [01;31m[K^[m[K
+In file included from [01m[K/home/pi/vision_system_ws/src/fsm_raspicam/include/FiniteStateMachine.h:4:0[m[K,
+                 from [01m[K/home/pi/vision_system_ws/src/fsm_raspicam/src/camera_main.cpp:14[m[K:
+[01m[K/home/pi/vision_system_ws/src/fsm_raspicam/include/State.h:31:7:[m[K [01;36m[Knote: [m[Kcandidate: void State::setPrevMode(int)
+  void [01;36m[KsetPrevMode[m[K(int mode);
+       [01;36m[K^~~~~~~~~~~[m[K
+[01m[K/home/pi/vision_system_ws/src/fsm_raspicam/include/State.h:31:7:[m[K [01;36m[Knote: [m[K  candidate expects 1 argument, 0 provided
+CMakeFiles/camera_main_node.dir/build.make:62: set di istruzioni per l'obiettivo "CMakeFiles/camera_main_node.dir/src/camera_main.cpp.o" non riuscito
+make[2]: *** [CMakeFiles/camera_main_node.dir/src/camera_main.cpp.o] Errore 1
+make[2]: *** Attesa per i processi non terminati....
+CMakeFiles/camera_main_node.dir/build.make:110: set di istruzioni per l'obiettivo "CMakeFiles/camera_main_node.dir/src/State.cpp.o" non riuscito
+make[2]: *** [CMakeFiles/camera_main_node.dir/src/State.cpp.o] Errore 1
+CMakeFiles/Makefile2:803: set di istruzioni per l'obiettivo "CMakeFiles/camera_main_node.dir/all" non riuscito
+make[1]: *** [CMakeFiles/camera_main_node.dir/all] Errore 2
+make: *** [all] Errore 2
+Makefile:138: set di istruzioni per l'obiettivo "all" non riuscito
+Invoked command in '/home/pi/vision_system_ws/build/fsm_raspicam' returned '2': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/pi/ros2_ws/install/ament_uncrustify:/home/pi/ros2_ws/install/test_launch_ros:/home/pi/ros2_ws/install/sros2:/home/pi/ros2_ws/install/ros2lifecycle:/home/pi/ros2_ws/install/ros2service:/home/pi/ros2_ws/install/ros2topic:/home/pi/ros2_ws/install/ros2srv:/home/pi/ros2_ws/install/ros2run:/home/pi/ros2_ws/install/ros2launch:/home/pi/ros2_ws/install/ros2pkg:/home/pi/ros2_ws/install/ros2param:/home/pi/ros2_ws/install/ros2node:/home/pi/ros2_ws/install/ros2multicast:/home/pi/ros2_ws/install/ros2msg:/home/pi/ros2_ws/install/ros2cli:/home/pi/ros2_ws/install/launch_ros:/home/pi/ros2_ws/install/launch_testing:/home/pi/ros2_ws/install/launch:/home/pi/ros2_ws/install/osrf_pycommon:/home/pi/ros2_ws/install/ament_xmllint:/home/pi/ros2_ws/install/ament_pyflakes:/home/pi/ros2_ws/install/ament_pep8:/home/pi/ros2_ws/install/ament_pep257:/home/pi/ros2_ws/install/ament_pclint:/home/pi/ros2_ws/install/ament_package:/home/pi/ros2_ws/install/ament_lint_cmake:/home/pi/ros2_ws/install/ament_index_python:/home/pi/ros2_ws/install/ament_flake8:/home/pi/ros2_ws/install/ament_cpplint:/home/pi/ros2_ws/install/ament_cppcheck:/home/pi/ros2_ws/install/ament_copyright:/home/pi/ros2_ws/install/ament_clang_format /usr/bin/cmake --build /home/pi/vision_system_ws/build/fsm_raspicam -- -j4 -l4

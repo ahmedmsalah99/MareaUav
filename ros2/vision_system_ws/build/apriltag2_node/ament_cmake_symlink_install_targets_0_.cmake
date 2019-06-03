@@ -1,0 +1,1 @@
+ament_cmake_symlink_install_targets("TARGET_FILES" "/home/pi/vision_system_ws/build/apriltag2_node/libAprilTag2Node.so" "TARGETS" "AprilTag2Node" "ARCHIVE_DESTINATION" "lib" "LIBRARY_DESTINATION" "lib" "RUNTIME_DESTINATION" "bin")

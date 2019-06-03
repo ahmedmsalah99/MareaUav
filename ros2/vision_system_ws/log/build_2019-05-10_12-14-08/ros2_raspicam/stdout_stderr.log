@@ -1,0 +1,35 @@
+[35m[1mScanning dependencies of target raspicam_compressed_node[0m
+[35m[1mScanning dependencies of target raspicam_raw_node[0m
+[ 25%] [32mBuilding CXX object CMakeFiles/raspicam_compressed_node.dir/src/raspicam_compressed.cpp.o[0m
+[ 50%] [32mBuilding CXX object CMakeFiles/raspicam_raw_node.dir/src/raspicam_raw.cpp.o[0m
+[01m[K/home/pi/vision_system_ws/src/ros2_raspicam/src/raspicam_raw.cpp:14:43:[m[K [01;31m[Kfatal error: [m[Kraspicam_still/raspicam_still.h: File o directory non esistente
+ #include <raspicam_still/raspicam_still.h>
+                                           [01;31m[K^[m[K
+compilation terminated.
+make[2]: *** [CMakeFiles/raspicam_raw_node.dir/src/raspicam_raw.cpp.o] Errore 1
+CMakeFiles/raspicam_raw_node.dir/build.make:62: set di istruzioni per l'obiettivo "CMakeFiles/raspicam_raw_node.dir/src/raspicam_raw.cpp.o" non riuscito
+CMakeFiles/Makefile2:168: set di istruzioni per l'obiettivo "CMakeFiles/raspicam_raw_node.dir/all" non riuscito
+make[1]: *** [CMakeFiles/raspicam_raw_node.dir/all] Errore 2
+make[1]: *** Attesa per i processi non terminati....
+[ 75%] [32m[1mLinking CXX executable raspicam_compressed_node[0m
+/usr/bin/ld: /home/pi/ros2_ws/install/rosgraph_msgs/lib/librosgraph_msgs__rosidl_generator_c.so: invalid string offset 1111 >= 1099 for section `.strtab'
+/usr/bin/ld: /home/pi/ros2_ws/install/rosgraph_msgs/lib/librosgraph_msgs__rosidl_generator_c.so: invalid string offset 1130 >= 1099 for section `.strtab'
+/usr/bin/ld: /home/pi/ros2_ws/install/rosgraph_msgs/lib/librosgraph_msgs__rosidl_generator_c.so: invalid string offset 1122 >= 1099 for section `.strtab'
+/usr/bin/ld: /home/pi/ros2_ws/install/rosgraph_msgs/lib/librosgraph_msgs__rosidl_generator_c.so: invalid string offset 1110 >= 1099 for section `.strtab'
+/usr/bin/ld: /home/pi/ros2_ws/install/rosgraph_msgs/lib/librosgraph_msgs__rosidl_typesupport_fastrtps_c.so: invalid string offset 1536 >= 1507 for section `.strtab'
+/usr/bin/ld: /home/pi/ros2_ws/install/rosgraph_msgs/lib/librosgraph_msgs__rosidl_typesupport_fastrtps_c.so: invalid string offset 1570 >= 1507 for section `.strtab'
+/usr/bin/ld: /home/pi/ros2_ws/install/rosgraph_msgs/lib/librosgraph_msgs__rosidl_typesupport_fastrtps_c.so: invalid string offset 1589 >= 1507 for section `.strtab'
+/usr/bin/ld: /home/pi/ros2_ws/install/rosgraph_msgs/lib/librosgraph_msgs__rosidl_typesupport_fastrtps_c.so: invalid string offset 1569 >= 1507 for section `.strtab'
+/usr/bin/ld: /home/pi/ros2_ws/install/rosgraph_msgs/lib/librosgraph_msgs__rosidl_typesupport_fastrtps_c.so: invalid string offset 1543 >= 1507 for section `.strtab'
+/usr/bin/ld: /home/pi/ros2_ws/install/rosgraph_msgs/lib/librosgraph_msgs__rosidl_typesupport_fastrtps_c.so: invalid string offset 1581 >= 1507 for section `.strtab'
+/usr/bin/ld: /home/pi/ros2_ws/install/rosgraph_msgs/lib/librosgraph_msgs__rosidl_typesupport_fastrtps_c.so: invalid string offset 1555 >= 1507 for section `.strtab'
+/usr/bin/ld: /home/pi/ros2_ws/install/rcl_yaml_param_parser/lib/librcl_yaml_param_parser.so: invalid string offset 1580 >= 1389 for section `.strtab'
+/usr/bin/ld: /home/pi/ros2_ws/install/rcl_yaml_param_parser/lib/librcl_yaml_param_parser.so: invalid string offset 1546 >= 1389 for section `.strtab'
+/usr/bin/ld: /home/pi/ros2_ws/install/rcl_yaml_param_parser/lib/librcl_yaml_param_parser.so: invalid string offset 1599 >= 1389 for section `.strtab'
+/usr/bin/ld: /home/pi/ros2_ws/install/rcl_yaml_param_parser/lib/librcl_yaml_param_parser.so: invalid string offset 1579 >= 1389 for section `.strtab'
+/usr/bin/ld: /home/pi/ros2_ws/install/rcl_yaml_param_parser/lib/librcl_yaml_param_parser.so: invalid string offset 1553 >= 1389 for section `.strtab'
+/usr/bin/ld: /home/pi/ros2_ws/install/rcl_yaml_param_parser/lib/librcl_yaml_param_parser.so: invalid string offset 1565 >= 1389 for section `.strtab'
+/usr/bin/ld: /home/pi/ros2_ws/install/rcl_yaml_param_parser/lib/librcl_yaml_param_parser.so: invalid string offset 1591 >= 1389 for section `.strtab'
+[ 75%] Built target raspicam_compressed_node
+Makefile:138: set di istruzioni per l'obiettivo "all" non riuscito
+make: *** [all] Errore 2

@@ -1,0 +1,108 @@
+In file included from [01m[K/home/pi/ros2_ws/install/rclcpp/include/rclcpp/service.hpp:33:0[m[K,
+                 from [01m[K/home/pi/ros2_ws/install/rclcpp/include/rclcpp/callback_group.hpp:24[m[K,
+                 from [01m[K/home/pi/ros2_ws/install/rclcpp/include/rclcpp/any_executable.hpp:20[m[K,
+                 from [01m[K/home/pi/ros2_ws/install/rclcpp/include/rclcpp/memory_strategy.hpp:24[m[K,
+                 from [01m[K/home/pi/ros2_ws/install/rclcpp/include/rclcpp/memory_strategies.hpp:18[m[K,
+                 from [01m[K/home/pi/ros2_ws/install/rclcpp/include/rclcpp/executor.hpp:32[m[K,
+                 from [01m[K/home/pi/ros2_ws/install/rclcpp/include/rclcpp/executors/multi_threaded_executor.hpp:24[m[K,
+                 from [01m[K/home/pi/ros2_ws/install/rclcpp/include/rclcpp/executors.hpp:21[m[K,
+                 from [01m[K/home/pi/ros2_ws/install/rclcpp/include/rclcpp/rclcpp.hpp:144[m[K,
+                 from [01m[K/home/pi/vision_system_ws/src/ros2_raspicam/src/client_camera_param.cpp:2[m[K:
+[01m[K/home/pi/vision_system_ws/src/ros2_raspicam/src/client_camera_param.cpp:[m[K In function ‘[01m[Kint main(int, char**)[m[K’:
+[01m[K/home/pi/ros2_ws/install/rclcpp/include/rclcpp/logging.hpp:412:67:[m[K [01;31m[Kerror: [m[Ktemplate argument 1 is invalid
+     ::std::is_same<typename std::remove_reference<decltype(logger)[01;31m[K>[m[K::type, \
+                                                                   [01;31m[K^[m[K
+[01m[K/home/pi/vision_system_ws/src/ros2_raspicam/src/client_camera_param.cpp:21:3:[m[K [01;36m[Knote: [m[Kin expansion of macro ‘[01m[KRCLCPP_ERROR[m[K’
+   [01;36m[KRCLCPP_ERROR[m[K(node->get_logger() "waiting for service...");
+   [01;36m[K^~~~~~~~~~~~[m[K
+[01m[K/home/pi/ros2_ws/install/rclcpp/include/rclcpp/logging.hpp:412:74:[m[K [01;31m[Kerror: [m[Kexpected ‘[01m[K([m[K’ before ‘[01m[K,[m[K’ token
+     ::std::is_same<typename std::remove_reference<decltype(logger)>::type[01;31m[K,[m[K \
+                                                                          [01;31m[K^[m[K
+[01m[K/home/pi/vision_system_ws/src/ros2_raspicam/src/client_camera_param.cpp:21:3:[m[K [01;36m[Knote: [m[Kin expansion of macro ‘[01m[KRCLCPP_ERROR[m[K’
+   [01;36m[KRCLCPP_ERROR[m[K(node->get_logger() "waiting for service...");
+   [01;36m[K^~~~~~~~~~~~[m[K
+[01m[K/home/pi/ros2_ws/install/rclcpp/include/rclcpp/logging.hpp:413:30:[m[K [01;31m[Kerror: [m[Ktemplate argument 1 is invalid
+     typename ::rclcpp::Logger[01;31m[K>[m[K::value, \
+                              [01;31m[K^[m[K
+[01m[K/home/pi/vision_system_ws/src/ros2_raspicam/src/client_camera_param.cpp:21:3:[m[K [01;36m[Knote: [m[Kin expansion of macro ‘[01m[KRCLCPP_ERROR[m[K’
+   [01;36m[KRCLCPP_ERROR[m[K(node->get_logger() "waiting for service...");
+   [01;36m[K^~~~~~~~~~~~[m[K
+In file included from [01m[K/home/pi/ros2_ws/install/rclcpp/include/rclcpp/client.hpp:39:0[m[K,
+                 from [01m[K/home/pi/ros2_ws/install/rclcpp/include/rclcpp/callback_group.hpp:23[m[K,
+                 from [01m[K/home/pi/ros2_ws/install/rclcpp/include/rclcpp/any_executable.hpp:20[m[K,
+                 from [01m[K/home/pi/ros2_ws/install/rclcpp/include/rclcpp/memory_strategy.hpp:24[m[K,
+                 from [01m[K/home/pi/ros2_ws/install/rclcpp/include/rclcpp/memory_strategies.hpp:18[m[K,
+                 from [01m[K/home/pi/ros2_ws/install/rclcpp/include/rclcpp/executor.hpp:32[m[K,
+                 from [01m[K/home/pi/ros2_ws/install/rclcpp/include/rclcpp/executors/multi_threaded_executor.hpp:24[m[K,
+                 from [01m[K/home/pi/ros2_ws/install/rclcpp/include/rclcpp/executors.hpp:21[m[K,
+                 from [01m[K/home/pi/ros2_ws/install/rclcpp/include/rclcpp/rclcpp.hpp:144[m[K,
+                 from [01m[K/home/pi/vision_system_ws/src/ros2_raspicam/src/client_camera_param.cpp:2[m[K:
+[01m[K/home/pi/vision_system_ws/src/ros2_raspicam/src/client_camera_param.cpp:21:35:[m[K [01;31m[Kerror: [m[Kexpected ‘[01m[K)[m[K’ before string constant
+   RCLCPP_ERROR(node->get_logger() [01;31m[K"[m[Kwaiting for service...");
+                                   [01;31m[K^[m[K
+[01m[K/home/pi/ros2_ws/install/rcutils/include/rcutils/logging_macros.h:70:47:[m[K [01;36m[Knote: [m[Kin definition of macro ‘[01m[KRCUTILS_LOG_COND_NAMED[m[K’
+     if (rcutils_logging_logger_is_enabled_for([01;36m[Kname[m[K, severity)) { \
+                                               [01;36m[K^~~~[m[K
+[01m[K/home/pi/ros2_ws/install/rclcpp/include/rclcpp/logging.hpp:415:3:[m[K [01;36m[Knote: [m[Kin expansion of macro ‘[01m[KRCUTILS_LOG_ERROR_NAMED[m[K’
+   [01;36m[KRCUTILS_LOG_ERROR_NAMED[m[K( \
+   [01;36m[K^~~~~~~~~~~~~~~~~~~~~~~[m[K
+[01m[K/home/pi/vision_system_ws/src/ros2_raspicam/src/client_camera_param.cpp:21:3:[m[K [01;36m[Knote: [m[Kin expansion of macro ‘[01m[KRCLCPP_ERROR[m[K’
+   [01;36m[KRCLCPP_ERROR[m[K(node->get_logger() "waiting for service...");
+   [01;36m[K^~~~~~~~~~~~[m[K
+[01m[K/home/pi/ros2_ws/install/rcutils/include/rcutils/logging_macros.h:70:61:[m[K [01;31m[Kerror: [m[Kcannot convert ‘[01m[Krclcpp::Logger[m[K’ to ‘[01m[Kconst char*[m[K’ for argument ‘[01m[K1[m[K’ to ‘[01m[Kbool rcutils_logging_logger_is_enabled_for(const char*, int)[m[K’
+     if (rcutils_logging_logger_is_enabled_for(name, severity[01;31m[K)[m[K) { \
+                                                             [01;31m[K^[m[K
+[01m[K/home/pi/ros2_ws/install/rcutils/include/rcutils/logging_macros.h:994:3:[m[K [01;36m[Knote: [m[Kin expansion of macro ‘[01m[KRCUTILS_LOG_COND_NAMED[m[K’
+   [01;36m[KRCUTILS_LOG_COND_NAMED[m[K( \
+   [01;36m[K^~~~~~~~~~~~~~~~~~~~~~[m[K
+[01m[K/home/pi/ros2_ws/install/rclcpp/include/rclcpp/logging.hpp:415:3:[m[K [01;36m[Knote: [m[Kin expansion of macro ‘[01m[KRCUTILS_LOG_ERROR_NAMED[m[K’
+   [01;36m[KRCUTILS_LOG_ERROR_NAMED[m[K( \
+   [01;36m[K^~~~~~~~~~~~~~~~~~~~~~~[m[K
+[01m[K/home/pi/vision_system_ws/src/ros2_raspicam/src/client_camera_param.cpp:21:3:[m[K [01;36m[Knote: [m[Kin expansion of macro ‘[01m[KRCLCPP_ERROR[m[K’
+   [01;36m[KRCLCPP_ERROR[m[K(node->get_logger() "waiting for service...");
+   [01;36m[K^~~~~~~~~~~~[m[K
+[01m[K/home/pi/vision_system_ws/src/ros2_raspicam/src/client_camera_param.cpp:21:35:[m[K [01;31m[Kerror: [m[Kexpected ‘[01m[K)[m[K’ before string constant
+   RCLCPP_ERROR(node->get_logger() [01;31m[K"[m[Kwaiting for service...");
+                                   [01;31m[K^[m[K
+[01m[K/home/pi/ros2_ws/install/rcutils/include/rcutils/logging_macros.h:72:58:[m[K [01;36m[Knote: [m[Kin definition of macro ‘[01m[KRCUTILS_LOG_COND_NAMED[m[K’
+       rcutils_log(&__rcutils_logging_location, severity, [01;36m[Kname[m[K, __VA_ARGS__); \
+                                                          [01;36m[K^~~~[m[K
+[01m[K/home/pi/ros2_ws/install/rclcpp/include/rclcpp/logging.hpp:415:3:[m[K [01;36m[Knote: [m[Kin expansion of macro ‘[01m[KRCUTILS_LOG_ERROR_NAMED[m[K’
+   [01;36m[KRCUTILS_LOG_ERROR_NAMED[m[K( \
+   [01;36m[K^~~~~~~~~~~~~~~~~~~~~~~[m[K
+[01m[K/home/pi/vision_system_ws/src/ros2_raspicam/src/client_camera_param.cpp:21:3:[m[K [01;36m[Knote: [m[Kin expansion of macro ‘[01m[KRCLCPP_ERROR[m[K’
+   [01;36m[KRCLCPP_ERROR[m[K(node->get_logger() "waiting for service...");
+   [01;36m[K^~~~~~~~~~~~[m[K
+[01m[K/home/pi/ros2_ws/install/rclcpp/include/rclcpp/logging.hpp:417:59:[m[K [01;31m[Kerror: [m[Kno matching function for call to ‘[01m[Kget_c_string()[m[K’
+     rclcpp::get_c_string(RCLCPP_FIRST_ARG(__VA_ARGS__, "")[01;31m[K)[m[K, \
+                                                           [01;31m[K^[m[K
+[01m[K/home/pi/ros2_ws/install/rcutils/include/rcutils/logging_macros.h:72:64:[m[K [01;36m[Knote: [m[Kin definition of macro ‘[01m[KRCUTILS_LOG_COND_NAMED[m[K’
+       rcutils_log(&__rcutils_logging_location, severity, name, [01;36m[K__VA_ARGS__[m[K); \
+                                                                [01;36m[K^~~~~~~~~~~[m[K
+[01m[K/home/pi/ros2_ws/install/rclcpp/include/rclcpp/logging.hpp:415:3:[m[K [01;36m[Knote: [m[Kin expansion of macro ‘[01m[KRCUTILS_LOG_ERROR_NAMED[m[K’
+   [01;36m[KRCUTILS_LOG_ERROR_NAMED[m[K( \
+   [01;36m[K^~~~~~~~~~~~~~~~~~~~~~~[m[K
+[01m[K/home/pi/vision_system_ws/src/ros2_raspicam/src/client_camera_param.cpp:21:3:[m[K [01;36m[Knote: [m[Kin expansion of macro ‘[01m[KRCLCPP_ERROR[m[K’
+   [01;36m[KRCLCPP_ERROR[m[K(node->get_logger() "waiting for service...");
+   [01;36m[K^~~~~~~~~~~~[m[K
+In file included from [01m[K/home/pi/ros2_ws/install/rclcpp/include/rclcpp/client.hpp:35:0[m[K,
+                 from [01m[K/home/pi/ros2_ws/install/rclcpp/include/rclcpp/callback_group.hpp:23[m[K,
+                 from [01m[K/home/pi/ros2_ws/install/rclcpp/include/rclcpp/any_executable.hpp:20[m[K,
+                 from [01m[K/home/pi/ros2_ws/install/rclcpp/include/rclcpp/memory_strategy.hpp:24[m[K,
+                 from [01m[K/home/pi/ros2_ws/install/rclcpp/include/rclcpp/memory_strategies.hpp:18[m[K,
+                 from [01m[K/home/pi/ros2_ws/install/rclcpp/include/rclcpp/executor.hpp:32[m[K,
+                 from [01m[K/home/pi/ros2_ws/install/rclcpp/include/rclcpp/executors/multi_threaded_executor.hpp:24[m[K,
+                 from [01m[K/home/pi/ros2_ws/install/rclcpp/include/rclcpp/executors.hpp:21[m[K,
+                 from [01m[K/home/pi/ros2_ws/install/rclcpp/include/rclcpp/rclcpp.hpp:144[m[K,
+                 from [01m[K/home/pi/vision_system_ws/src/ros2_raspicam/src/client_camera_param.cpp:2[m[K:
+[01m[K/home/pi/ros2_ws/install/rclcpp/include/rclcpp/utilities.hpp:294:1:[m[K [01;36m[Knote: [m[Kcandidate: const char* rclcpp::get_c_string(const char*)
+ [01;36m[Kget_c_string[m[K(const char * string_in);
+ [01;36m[K^~~~~~~~~~~~[m[K
+[01m[K/home/pi/ros2_ws/install/rclcpp/include/rclcpp/utilities.hpp:294:1:[m[K [01;36m[Knote: [m[K  candidate expects 1 argument, 0 provided
+[01m[K/home/pi/ros2_ws/install/rclcpp/include/rclcpp/utilities.hpp:303:1:[m[K [01;36m[Knote: [m[Kcandidate: const char* rclcpp::get_c_string(const string&)
+ [01;36m[Kget_c_string[m[K(const std::string & string_in);
+ [01;36m[K^~~~~~~~~~~~[m[K
+[01m[K/home/pi/ros2_ws/install/rclcpp/include/rclcpp/utilities.hpp:303:1:[m[K [01;36m[Knote: [m[K  candidate expects 1 argument, 0 provided
+make[2]: *** [CMakeFiles/client_node.dir/src/client_camera_param.cpp.o] Errore 1
+make[1]: *** [CMakeFiles/client_node.dir/all] Errore 2
+make: *** [all] Errore 2

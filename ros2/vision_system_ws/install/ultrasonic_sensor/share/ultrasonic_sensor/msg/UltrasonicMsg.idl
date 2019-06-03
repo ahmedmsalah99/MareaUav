@@ -1,0 +1,13 @@
+// generated from rosidl_adapter/resource/msg.idl.em
+// with input from ultrasonic_sensor/msg/UltrasonicMsg.msg
+
+
+module ultrasonic_sensor {
+  module msg {
+    struct UltrasonicMsg {
+      double z_position;
+
+      double z_velocity;
+    };
+  };
+};

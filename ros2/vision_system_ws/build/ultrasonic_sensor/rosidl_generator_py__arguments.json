@@ -1,0 +1,26 @@
+{
+  "package_name": "ultrasonic_sensor",
+  "output_dir": "/home/pi/vision_system_ws/build/ultrasonic_sensor/rosidl_generator_py/ultrasonic_sensor",
+  "template_dir": "/home/pi/ros2_ws/install/rosidl_generator_py/share/rosidl_generator_py/cmake/../resource",
+  "ros_interface_files": [
+    "/home/pi/vision_system_ws/src/ultrasonic_sensor/msg/UltrasonicMsg.msg"
+  ],
+  "ros_interface_dependencies": [
+    "builtin_interfaces:/home/pi/ros2_ws/install/builtin_interfaces/share/builtin_interfaces/msg/Duration.idl",
+    "builtin_interfaces:/home/pi/ros2_ws/install/builtin_interfaces/share/builtin_interfaces/msg/Time.idl",
+    "builtin_interfaces:/home/pi/ros2_ws/install/builtin_interfaces/share/builtin_interfaces/msg/Duration.msg",
+    "builtin_interfaces:/home/pi/ros2_ws/install/builtin_interfaces/share/builtin_interfaces/msg/Time.msg"
+  ],
+  "target_dependencies": [
+    "/home/pi/ros2_ws/install/rosidl_generator_py/share/rosidl_generator_py/cmake/../../../lib/rosidl_generator_py/rosidl_generator_py",
+    "/home/pi/ros2_ws/install/rosidl_generator_py/share/rosidl_generator_py/cmake/../../../lib/python3.5/site-packages/rosidl_generator_py/__init__.py",
+    "/home/pi/ros2_ws/install/rosidl_generator_py/share/rosidl_generator_py/cmake/../resource/_msg_support.c.em",
+    "/home/pi/ros2_ws/install/rosidl_generator_py/share/rosidl_generator_py/cmake/../resource/_msg_pkg_typesupport_entry_point.c.em",
+    "/home/pi/ros2_ws/install/rosidl_generator_py/share/rosidl_generator_py/cmake/../resource/_msg.py.em",
+    "/home/pi/ros2_ws/install/rosidl_generator_py/share/rosidl_generator_py/cmake/../resource/_srv.py.em",
+    "/home/pi/ros2_ws/install/builtin_interfaces/share/builtin_interfaces/msg/Duration.idl",
+    "/home/pi/ros2_ws/install/builtin_interfaces/share/builtin_interfaces/msg/Time.idl",
+    "/home/pi/ros2_ws/install/builtin_interfaces/share/builtin_interfaces/msg/Duration.msg",
+    "/home/pi/ros2_ws/install/builtin_interfaces/share/builtin_interfaces/msg/Time.msg"
+  ]
+}

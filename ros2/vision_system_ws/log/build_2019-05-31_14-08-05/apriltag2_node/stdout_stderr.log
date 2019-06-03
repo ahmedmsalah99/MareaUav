@@ -1,0 +1,17 @@
+[35m[1mScanning dependencies of target AprilTag2Node[0m
+[ 25%] [32mBuilding CXX object CMakeFiles/AprilTag2Node.dir/src/AprilTag2Node2_0.cpp.o[0m
+[01m[K/home/pi/vision_system_ws/src/apriltag2_node/node/src/AprilTag2Node2_0.cpp:[m[K In member function ‘[01m[Kvoid AprilTag2Node::onImage(sensor_msgs::msg::CompressedImage_<std::allocator<void> >::SharedPtr)[m[K’:
+[01m[K/home/pi/vision_system_ws/src/apriltag2_node/node/src/AprilTag2Node2_0.cpp:159:73:[m[K [01;31m[Kerror: [m[Kno matching function for call to ‘[01m[KAprilTag2Node::publish_data_center(apriltag_msgs::msg::AprilTagDetectionArray&, int, tf2_msgs::msg::TFMessage&)[m[K’
+         publish_data_center( msg_detections,zarray_size(detections),tfs [01;31m[K)[m[K;
+                                                                         [01;31m[K^[m[K
+In file included from [01m[K/home/pi/vision_system_ws/src/apriltag2_node/node/src/AprilTag2Node2_0.cpp:1:0[m[K:
+[01m[K/home/pi/vision_system_ws/src/apriltag2_node/node/include/AprilTag2Node.hpp:61:10:[m[K [01;36m[Knote: [m[Kcandidate: void AprilTag2Node::publish_data_center(const AprilTagDetectionArray*, int, const TFMessage&)
+     void [01;36m[Kpublish_data_center[m[K(const apriltag_msgs::msg::AprilTagDetectionArray *Detections, int numDetection, const tf2_msgs::msg::TFMessage& t_f);
+          [01;36m[K^~~~~~~~~~~~~~~~~~~[m[K
+[01m[K/home/pi/vision_system_ws/src/apriltag2_node/node/include/AprilTag2Node.hpp:61:10:[m[K [01;36m[Knote: [m[K  no known conversion for argument 1 from ‘[01m[Kapriltag_msgs::msg::AprilTagDetectionArray {aka apriltag_msgs::msg::AprilTagDetectionArray_<std::allocator<void> >}[m[K’ to ‘[01m[Kconst AprilTagDetectionArray* {aka const apriltag_msgs::msg::AprilTagDetectionArray_<std::allocator<void> >*}[m[K’
+CMakeFiles/AprilTag2Node.dir/build.make:62: set di istruzioni per l'obiettivo "CMakeFiles/AprilTag2Node.dir/src/AprilTag2Node2_0.cpp.o" non riuscito
+make[2]: *** [CMakeFiles/AprilTag2Node.dir/src/AprilTag2Node2_0.cpp.o] Errore 1
+make[1]: *** [CMakeFiles/AprilTag2Node.dir/all] Errore 2
+make: *** [all] Errore 2
+CMakeFiles/Makefile2:200: set di istruzioni per l'obiettivo "CMakeFiles/AprilTag2Node.dir/all" non riuscito
+Makefile:138: set di istruzioni per l'obiettivo "all" non riuscito

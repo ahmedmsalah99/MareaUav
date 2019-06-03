@@ -1,0 +1,4 @@
+Invoking command in '/home/pi/vision_system_ws/build/ultrasonic_sensor': /usr/bin/cmake --build /home/pi/vision_system_ws/build/ultrasonic_sensor -- -j4 -l4
+Invoked command in '/home/pi/vision_system_ws/build/ultrasonic_sensor' returned '0': /usr/bin/cmake --build /home/pi/vision_system_ws/build/ultrasonic_sensor -- -j4 -l4
+Invoking command in '/home/pi/vision_system_ws/build/ultrasonic_sensor': /usr/bin/cmake --build /home/pi/vision_system_ws/build/ultrasonic_sensor --target install
+Invoked command in '/home/pi/vision_system_ws/build/ultrasonic_sensor' returned '-2': /usr/bin/cmake --build /home/pi/vision_system_ws/build/ultrasonic_sensor --target install
