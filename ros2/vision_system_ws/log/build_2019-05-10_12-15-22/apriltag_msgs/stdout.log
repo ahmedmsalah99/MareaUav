@@ -1,9 +1,0 @@
-[  2%] Built target apriltag_msgs__cpp
-[ 12%] Built target apriltag_msgs__rosidl_generator_c
-[ 23%] Built target apriltag_msgs__rosidl_typesupport_introspection_c
-[ 34%] Built target apriltag_msgs__rosidl_typesupport_introspection_cpp
-[ 53%] Built target apriltag_msgs__rosidl_typesupport_fastrtps_cpp
-[ 55%] Built target apriltag_msgs__rosidl_typesupport_cpp
-[ 65%] Built target apriltag_msgs__rosidl_typesupport_c
-[ 76%] Built target apriltag_msgs__rosidl_typesupport_fastrtps_c
-[ 76%] Built target apriltag_msgs

@@ -1,9 +1,0 @@
-[ 20%] Built target service_node
-[ 40%] Built target checks_rate_node
-[ 60%] Built target client_node
-[ 80%] Built target raspicam_raw_node
-[35m[1mScanning dependencies of target raspicam_compressed_node[0m
-[ 90%] [32mBuilding CXX object CMakeFiles/raspicam_compressed_node.dir/src/raspicam_compressed.cpp.o[0m
-CMakeFiles/raspicam_compressed_node.dir/build.make:62: set di istruzioni per l'obiettivo "CMakeFiles/raspicam_compressed_node.dir/src/raspicam_compressed.cpp.o" non riuscito
-CMakeFiles/Makefile2:104: set di istruzioni per l'obiettivo "CMakeFiles/raspicam_compressed_node.dir/all" non riuscito
-Makefile:138: set di istruzioni per l'obiettivo "all" non riuscito

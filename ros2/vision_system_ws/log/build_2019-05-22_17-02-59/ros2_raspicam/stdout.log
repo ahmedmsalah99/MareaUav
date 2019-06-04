@@ -1,5 +1,0 @@
-[35m[1mScanning dependencies of target checks_rate_node[0m
-[ 50%] Built target trial_node
-[ 75%] [32mBuilding CXX object CMakeFiles/checks_rate_node.dir/src/checks_rate.cpp.o[0m
-[100%] [32m[1mLinking CXX executable checks_rate_node[0m
-[100%] Built target checks_rate_node

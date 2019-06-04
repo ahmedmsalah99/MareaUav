@@ -1,7 +1,0 @@
-[01m[K/home/pi/vision_system_ws/src/minimal_subscriber_cpp/checks_rate.cpp:[m[K In function ‘[01m[Kvoid chatterCallback(std_msgs::msg::String_<std::allocator<void> >::SharedPtr)[m[K’:
-[01m[K/home/pi/vision_system_ws/src/minimal_subscriber_cpp/checks_rate.cpp:17:19:[m[K [01;31m[Kerror: [m[Kcannot convert ‘[01m[Kstd_msgs::msg::String_<std::allocator<void> >::_data_type {aka std::__cxx11::basic_string<char>}[m[K’ to ‘[01m[Kint[m[K’ in assignment
-     status = msg->[01;31m[Kdata[m[K;
-                   [01;31m[K^~~~[m[K
-make[2]: *** [CMakeFiles/checks_rate.dir/checks_rate.cpp.o] Errore 1
-make[1]: *** [CMakeFiles/checks_rate.dir/all] Errore 2
-make: *** [all] Errore 2

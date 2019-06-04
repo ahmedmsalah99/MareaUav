@@ -1,7 +1,0 @@
-[01m[K/home/pi/vision_system_ws/src/fsm_raspicam/src/State.cpp:[m[K In constructor ‘[01m[KState::State(FiniteStateMachine*)[m[K’:
-[01m[K/home/pi/vision_system_ws/src/fsm_raspicam/src/State.cpp:5:94:[m[K [01;31m[Kerror: [m[Kcannot call member function ‘[01m[Kstd::shared_ptr<PublisherT> rclcpp::Node::create_publisher(const string&, size_t, std::shared_ptr<_Tp2>) [with MessageT = sensor_msgs::msg::Image_<std::allocator<void> >; Alloc = std::allocator<void>; PublisherT = rclcpp::Publisher<sensor_msgs::msg::Image_<std::allocator<void> > >; std::__cxx11::string = std::__cxx11::basic_string<char>; size_t = unsigned int][m[K’ without object
-   publisher_raw = rclcpp::Node::create_publisher<sensor_msgs::msg::Image>("raspi/image_raw",1[01;31m[K)[m[K;
-                                                                                              [01;31m[K^[m[K
-make[2]: *** [CMakeFiles/camera_main_node.dir/src/State.cpp.o] Errore 1
-make[1]: *** [CMakeFiles/camera_main_node.dir/all] Errore 2
-make: *** [all] Errore 2

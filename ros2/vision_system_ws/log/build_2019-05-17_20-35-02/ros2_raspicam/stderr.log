@@ -1,7 +1,0 @@
-[01m[K/home/pi/vision_system_ws/src/ros2_raspicam/src/raspicam_raw.cpp:[m[K In function ‘[01m[Kint main(int, char**)[m[K’:
-[01m[K/home/pi/vision_system_ws/src/ros2_raspicam/src/raspicam_raw.cpp:132:35:[m[K [01;31m[Kerror: [m[K‘[01m[Kdata[m[K’ was not declared in this scope
-         outFile.write ( ( char* ) [01;31m[Kdata[m[K, Camera.getImageTypeSize ( raspicam::RASPICAM_FORMAT_RGB ) );
-                                   [01;31m[K^~~~[m[K
-make[2]: *** [CMakeFiles/raspicam_raw_node.dir/src/raspicam_raw.cpp.o] Errore 1
-make[1]: *** [CMakeFiles/raspicam_raw_node.dir/all] Errore 2
-make: *** [all] Errore 2

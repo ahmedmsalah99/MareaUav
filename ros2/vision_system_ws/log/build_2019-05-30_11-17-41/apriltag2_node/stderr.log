@@ -1,7 +1,0 @@
-In file included from [01m[K/home/pi/vision_system_ws/src/apriltag2_node/node/src/AprilTag2Node2_0.cpp:1:0[m[K:
-[01m[K/home/pi/vision_system_ws/src/apriltag2_node/node/include/AprilTag2Node.hpp:40:5:[m[K [01;31m[Kerror: [m[K‘[01m[Kvector[m[K’ does not name a type
-     [01;31m[Kvector[m[K<MatrixXd> matrices_vector;
-     [01;31m[K^~~~~~[m[K
-make[2]: *** [CMakeFiles/AprilTag2Node.dir/src/AprilTag2Node2_0.cpp.o] Errore 1
-make[1]: *** [CMakeFiles/AprilTag2Node.dir/all] Errore 2
-make: *** [all] Errore 2

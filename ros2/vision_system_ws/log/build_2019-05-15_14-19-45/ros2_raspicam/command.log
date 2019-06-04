@@ -1,2 +1,0 @@
-Invoking command in '/home/pi/vision_system_ws/build/ros2_raspicam': /usr/bin/cmake --build /home/pi/vision_system_ws/build/ros2_raspicam -- -j4 -l4
-Invoked command in '/home/pi/vision_system_ws/build/ros2_raspicam' returned '-2': /usr/bin/cmake --build /home/pi/vision_system_ws/build/ros2_raspicam -- -j4 -l4

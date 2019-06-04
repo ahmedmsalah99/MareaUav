@@ -1,1 +1,0 @@
-Invoking command in '/home/pi/vision_system_ws/build/ultrasonic_sensor': /usr/bin/cmake --build /home/pi/vision_system_ws/build/ultrasonic_sensor -- -j4 -l4

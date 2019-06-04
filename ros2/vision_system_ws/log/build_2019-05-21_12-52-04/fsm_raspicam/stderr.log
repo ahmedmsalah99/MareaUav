@@ -1,6 +1,0 @@
-[01m[K/home/pi/vision_system_ws/src/fsm_raspicam/src/State.cpp:3:34:[m[K [01;31m[Kerror: [m[Kno ‘[01m[Kraspicam::RaspiCam State::Camera()[m[K’ member function declared in class ‘[01m[KState[m[K’
- raspicam::RaspiCam State::Camera([01;31m[K)[m[K;
-                                  [01;31m[K^[m[K
-make[2]: *** [CMakeFiles/camera_main_node.dir/src/State.cpp.o] Errore 1
-make[1]: *** [CMakeFiles/camera_main_node.dir/all] Errore 2
-make: *** [all] Errore 2

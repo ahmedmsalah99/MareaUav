@@ -1,9 +1,0 @@
-[35m[1mScanning dependencies of target AprilTag2Node[0m
-[ 25%] [32mBuilding CXX object CMakeFiles/AprilTag2Node.dir/src/AprilTag2Node2_0.cpp.o[0m
-[ 50%] [32m[1mLinking CXX shared library libAprilTag2Node.so[0m
-[ 50%] Built target AprilTag2Node
-[35m[1mScanning dependencies of target apriltag2_node[0m
-[ 75%] [32mBuilding CXX object CMakeFiles/apriltag2_node.dir/src/apriltag2_node.cpp.o[0m
-CMakeFiles/apriltag2_node.dir/build.make:62: set di istruzioni per l'obiettivo "CMakeFiles/apriltag2_node.dir/src/apriltag2_node.cpp.o" non riuscito
-CMakeFiles/Makefile2:67: set di istruzioni per l'obiettivo "CMakeFiles/apriltag2_node.dir/all" non riuscito
-Makefile:138: set di istruzioni per l'obiettivo "all" non riuscito

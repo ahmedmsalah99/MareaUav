@@ -1,4 +1,0 @@
-Invoking command in '/home/pi/vision_system_ws/build/apriltag_msgs': /usr/bin/cmake --build /home/pi/vision_system_ws/build/apriltag_msgs -- -j4 -l4
-Invoked command in '/home/pi/vision_system_ws/build/apriltag_msgs' returned '0': /usr/bin/cmake --build /home/pi/vision_system_ws/build/apriltag_msgs -- -j4 -l4
-Invoking command in '/home/pi/vision_system_ws/build/apriltag_msgs': /usr/bin/cmake --build /home/pi/vision_system_ws/build/apriltag_msgs --target install
-Invoked command in '/home/pi/vision_system_ws/build/apriltag_msgs' returned '-2': /usr/bin/cmake --build /home/pi/vision_system_ws/build/apriltag_msgs --target install

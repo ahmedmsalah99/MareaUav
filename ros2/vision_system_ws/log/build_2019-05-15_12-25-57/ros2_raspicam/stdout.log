@@ -1,5 +1,0 @@
-[35m[1mScanning dependencies of target service_node[0m
-[ 10%] [32mBuilding CXX object CMakeFiles/service_node.dir/src/service_camera_param.cpp.o[0m
-CMakeFiles/service_node.dir/build.make:62: set di istruzioni per l'obiettivo "CMakeFiles/service_node.dir/src/service_camera_param.cpp.o" non riuscito
-CMakeFiles/Makefile2:67: set di istruzioni per l'obiettivo "CMakeFiles/service_node.dir/all" non riuscito
-Makefile:138: set di istruzioni per l'obiettivo "all" non riuscito

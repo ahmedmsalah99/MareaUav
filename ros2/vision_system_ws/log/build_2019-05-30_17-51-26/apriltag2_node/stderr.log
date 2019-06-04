@@ -1,7 +1,0 @@
-[01m[K/home/pi/vision_system_ws/src/apriltag2_node/node/src/AprilTag2Node2_0.cpp:[m[K In member function ‘[01m[Kvoid AprilTag2Node::publish_data_center(const AprilTagDetectionArray&, int, const TFMessage&)[m[K’:
-[01m[K/home/pi/vision_system_ws/src/apriltag2_node/node/src/AprilTag2Node2_0.cpp:195:29:[m[K [01;31m[Kerror: [m[K‘[01m[Kl1[m[K’ was not declared in this scope
-         areaID(i,1) = pow( ([01;31m[Kl1[m[K + l2 + l3 +l4)/4,2 );
-                             [01;31m[K^~[m[K
-make[2]: *** [CMakeFiles/AprilTag2Node.dir/src/AprilTag2Node2_0.cpp.o] Errore 1
-make[1]: *** [CMakeFiles/AprilTag2Node.dir/all] Errore 2
-make: *** [all] Errore 2

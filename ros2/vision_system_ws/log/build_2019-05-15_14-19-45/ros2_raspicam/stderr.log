@@ -1,5 +1,0 @@
-make[2]: *** wait: Nessun processo figlio.  Arresto.
-make[2]: *** Attesa per i processi non terminati....
-make[2]: *** wait: Nessun processo figlio.  Arresto.
-make[1]: *** [CMakeFiles/service_node.dir/all] Errore 2
-make: *** [all] Interruzione

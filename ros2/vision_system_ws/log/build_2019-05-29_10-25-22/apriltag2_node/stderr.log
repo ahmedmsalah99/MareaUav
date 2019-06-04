@@ -1,7 +1,0 @@
-In file included from [01m[K/home/pi/vision_system_ws/src/apriltag2_node/node/src/AprilTag2Node2_0.cpp:1:0[m[K:
-[01m[K/home/pi/vision_system_ws/src/apriltag2_node/node/include/AprilTag2Node.hpp:50:10:[m[K [01;31m[Kerror: [m[Kdefault argument missing for parameter 4 of ‘[01m[Kvoid AprilTag2Node::getPose(const matd_t&, geometry_msgs::msg::Transform&, bool, int)[m[K’
-     void [01;31m[KgetPose[m[K(const matd_t& H, geometry_msgs::msg::Transform& t, const bool z_up = false, const int ID);
-          [01;31m[K^~~~~~~[m[K
-make[2]: *** [CMakeFiles/AprilTag2Node.dir/src/AprilTag2Node2_0.cpp.o] Errore 1
-make[1]: *** [CMakeFiles/AprilTag2Node.dir/all] Errore 2
-make: *** [all] Errore 2

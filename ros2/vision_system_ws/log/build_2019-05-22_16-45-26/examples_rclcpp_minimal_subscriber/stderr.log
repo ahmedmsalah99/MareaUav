@@ -1,7 +1,0 @@
-[01m[K/home/pi/vision_system_ws/src/minimal_subscriber_cpp/checks_rate.cpp:3:37:[m[K [01;31m[Kfatal error: [m[Ksensor_msgs/msg/image.hpp: File o directory non esistente
- #include <sensor_msgs/msg/image.hpp>
-                                     [01;31m[K^[m[K
-compilation terminated.
-make[2]: *** [CMakeFiles/checks_rate.dir/checks_rate.cpp.o] Errore 1
-make[1]: *** [CMakeFiles/checks_rate.dir/all] Errore 2
-make: *** [all] Errore 2

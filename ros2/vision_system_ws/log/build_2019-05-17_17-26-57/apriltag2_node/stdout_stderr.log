@@ -1,7 +1,0 @@
-[ 50%] Built target AprilTag2Node
-[100%] Built target apriltag2_node
-[ 50%] Built target AprilTag2Node
-CMakeFiles/Makefile2:67: set di istruzioni per l'obiettivo "CMakeFiles/apriltag2_node.dir/all" non riuscito
-make[1]: *** [CMakeFiles/apriltag2_node.dir/all] Interruzione
-make: *** [all] Interruzione
-Makefile:138: set di istruzioni per l'obiettivo "all" non riuscito

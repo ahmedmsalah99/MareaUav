@@ -1,6 +1,0 @@
-[35m[1mScanning dependencies of target camera_main_node[0m
-[ 33%] [32mBuilding CXX object CMakeFiles/camera_main_node.dir/src/camera_main.cpp.o[0m
-[ 66%] [32m[1mLinking CXX executable camera_main_node[0m
-CMakeFiles/camera_main_node.dir/build.make:442: set di istruzioni per l'obiettivo "camera_main_node" non riuscito
-CMakeFiles/Makefile2:803: set di istruzioni per l'obiettivo "CMakeFiles/camera_main_node.dir/all" non riuscito
-Makefile:138: set di istruzioni per l'obiettivo "all" non riuscito

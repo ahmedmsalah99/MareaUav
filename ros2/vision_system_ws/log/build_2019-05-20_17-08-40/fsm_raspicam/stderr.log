@@ -1,8 +1,0 @@
-In file included from [01m[K/home/pi/vision_system_ws/src/fsm_raspicam/include/FiniteStateMachine.h:4:0[m[K,
-                 from [01m[K/home/pi/vision_system_ws/src/fsm_raspicam/src/FiniteStateMachine.cpp:1[m[K:
-[01m[K/home/pi/vision_system_ws/src/fsm_raspicam/include/State.h:23:2:[m[K [01;31m[Kerror: [m[K‘[01m[KFiniteStateMachine[m[K’ does not name a type
-  [01;31m[KFiniteStateMachine[m[K *Machine;
-  [01;31m[K^~~~~~~~~~~~~~~~~~[m[K
-make[2]: *** [CMakeFiles/CameraMachine.dir/src/FiniteStateMachine.cpp.o] Errore 1
-make[1]: *** [CMakeFiles/CameraMachine.dir/all] Errore 2
-make: *** [all] Errore 2

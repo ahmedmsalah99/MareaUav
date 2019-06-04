@@ -1,4 +1,0 @@
-You have called ADD_LIBRARY for library CameraMachine without any source files. This typically indicates a problem with your CMakeLists.txt file
-CMake Error: Cannot determine link language for target "CameraMachine".
-CMake Error: CMake can not determine linker language for target: CameraMachine
-make: *** [cmake_check_build_system] Errore 1
