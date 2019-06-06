@@ -43,10 +43,10 @@ RM = /usr/bin/cmake -E remove -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /home/pi/vision_system_ws/src/fsm_raspicam
+CMAKE_SOURCE_DIR = /home/pi/mar_frankenrotor_ros/ros2/vision_system_ws/src/fsm_raspicam
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /home/pi/vision_system_ws/build/fsm_raspicam
+CMAKE_BINARY_DIR = /home/pi/mar_frankenrotor_ros/ros2/vision_system_ws/build/fsm_raspicam
 
 # Include any dependencies generated for this target.
 include CMakeFiles/camera_main_node.dir/depend.make
@@ -58,17 +58,17 @@ include CMakeFiles/camera_main_node.dir/progress.make
 include CMakeFiles/camera_main_node.dir/flags.make
 
 CMakeFiles/camera_main_node.dir/src/camera_main.cpp.o: CMakeFiles/camera_main_node.dir/flags.make
-CMakeFiles/camera_main_node.dir/src/camera_main.cpp.o: /home/pi/vision_system_ws/src/fsm_raspicam/src/camera_main.cpp
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/pi/vision_system_ws/build/fsm_raspicam/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building CXX object CMakeFiles/camera_main_node.dir/src/camera_main.cpp.o"
-	/usr/bin/c++   $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/camera_main_node.dir/src/camera_main.cpp.o -c /home/pi/vision_system_ws/src/fsm_raspicam/src/camera_main.cpp
+CMakeFiles/camera_main_node.dir/src/camera_main.cpp.o: /home/pi/mar_frankenrotor_ros/ros2/vision_system_ws/src/fsm_raspicam/src/camera_main.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/pi/mar_frankenrotor_ros/ros2/vision_system_ws/build/fsm_raspicam/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building CXX object CMakeFiles/camera_main_node.dir/src/camera_main.cpp.o"
+	/usr/bin/c++   $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/camera_main_node.dir/src/camera_main.cpp.o -c /home/pi/mar_frankenrotor_ros/ros2/vision_system_ws/src/fsm_raspicam/src/camera_main.cpp
 
 CMakeFiles/camera_main_node.dir/src/camera_main.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/camera_main_node.dir/src/camera_main.cpp.i"
-	/usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/pi/vision_system_ws/src/fsm_raspicam/src/camera_main.cpp > CMakeFiles/camera_main_node.dir/src/camera_main.cpp.i
+	/usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/pi/mar_frankenrotor_ros/ros2/vision_system_ws/src/fsm_raspicam/src/camera_main.cpp > CMakeFiles/camera_main_node.dir/src/camera_main.cpp.i
 
 CMakeFiles/camera_main_node.dir/src/camera_main.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/camera_main_node.dir/src/camera_main.cpp.s"
-	/usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/pi/vision_system_ws/src/fsm_raspicam/src/camera_main.cpp -o CMakeFiles/camera_main_node.dir/src/camera_main.cpp.s
+	/usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/pi/mar_frankenrotor_ros/ros2/vision_system_ws/src/fsm_raspicam/src/camera_main.cpp -o CMakeFiles/camera_main_node.dir/src/camera_main.cpp.s
 
 CMakeFiles/camera_main_node.dir/src/camera_main.cpp.o.requires:
 
@@ -82,17 +82,17 @@ CMakeFiles/camera_main_node.dir/src/camera_main.cpp.o.provides.build: CMakeFiles
 
 
 CMakeFiles/camera_main_node.dir/src/FiniteStateMachine.cpp.o: CMakeFiles/camera_main_node.dir/flags.make
-CMakeFiles/camera_main_node.dir/src/FiniteStateMachine.cpp.o: /home/pi/vision_system_ws/src/fsm_raspicam/src/FiniteStateMachine.cpp
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/pi/vision_system_ws/build/fsm_raspicam/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Building CXX object CMakeFiles/camera_main_node.dir/src/FiniteStateMachine.cpp.o"
-	/usr/bin/c++   $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/camera_main_node.dir/src/FiniteStateMachine.cpp.o -c /home/pi/vision_system_ws/src/fsm_raspicam/src/FiniteStateMachine.cpp
+CMakeFiles/camera_main_node.dir/src/FiniteStateMachine.cpp.o: /home/pi/mar_frankenrotor_ros/ros2/vision_system_ws/src/fsm_raspicam/src/FiniteStateMachine.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/pi/mar_frankenrotor_ros/ros2/vision_system_ws/build/fsm_raspicam/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Building CXX object CMakeFiles/camera_main_node.dir/src/FiniteStateMachine.cpp.o"
+	/usr/bin/c++   $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/camera_main_node.dir/src/FiniteStateMachine.cpp.o -c /home/pi/mar_frankenrotor_ros/ros2/vision_system_ws/src/fsm_raspicam/src/FiniteStateMachine.cpp
 
 CMakeFiles/camera_main_node.dir/src/FiniteStateMachine.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/camera_main_node.dir/src/FiniteStateMachine.cpp.i"
-	/usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/pi/vision_system_ws/src/fsm_raspicam/src/FiniteStateMachine.cpp > CMakeFiles/camera_main_node.dir/src/FiniteStateMachine.cpp.i
+	/usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/pi/mar_frankenrotor_ros/ros2/vision_system_ws/src/fsm_raspicam/src/FiniteStateMachine.cpp > CMakeFiles/camera_main_node.dir/src/FiniteStateMachine.cpp.i
 
 CMakeFiles/camera_main_node.dir/src/FiniteStateMachine.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/camera_main_node.dir/src/FiniteStateMachine.cpp.s"
-	/usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/pi/vision_system_ws/src/fsm_raspicam/src/FiniteStateMachine.cpp -o CMakeFiles/camera_main_node.dir/src/FiniteStateMachine.cpp.s
+	/usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/pi/mar_frankenrotor_ros/ros2/vision_system_ws/src/fsm_raspicam/src/FiniteStateMachine.cpp -o CMakeFiles/camera_main_node.dir/src/FiniteStateMachine.cpp.s
 
 CMakeFiles/camera_main_node.dir/src/FiniteStateMachine.cpp.o.requires:
 
@@ -106,17 +106,17 @@ CMakeFiles/camera_main_node.dir/src/FiniteStateMachine.cpp.o.provides.build: CMa
 
 
 CMakeFiles/camera_main_node.dir/src/State.cpp.o: CMakeFiles/camera_main_node.dir/flags.make
-CMakeFiles/camera_main_node.dir/src/State.cpp.o: /home/pi/vision_system_ws/src/fsm_raspicam/src/State.cpp
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/pi/vision_system_ws/build/fsm_raspicam/CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Building CXX object CMakeFiles/camera_main_node.dir/src/State.cpp.o"
-	/usr/bin/c++   $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/camera_main_node.dir/src/State.cpp.o -c /home/pi/vision_system_ws/src/fsm_raspicam/src/State.cpp
+CMakeFiles/camera_main_node.dir/src/State.cpp.o: /home/pi/mar_frankenrotor_ros/ros2/vision_system_ws/src/fsm_raspicam/src/State.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/pi/mar_frankenrotor_ros/ros2/vision_system_ws/build/fsm_raspicam/CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Building CXX object CMakeFiles/camera_main_node.dir/src/State.cpp.o"
+	/usr/bin/c++   $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/camera_main_node.dir/src/State.cpp.o -c /home/pi/mar_frankenrotor_ros/ros2/vision_system_ws/src/fsm_raspicam/src/State.cpp
 
 CMakeFiles/camera_main_node.dir/src/State.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/camera_main_node.dir/src/State.cpp.i"
-	/usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/pi/vision_system_ws/src/fsm_raspicam/src/State.cpp > CMakeFiles/camera_main_node.dir/src/State.cpp.i
+	/usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/pi/mar_frankenrotor_ros/ros2/vision_system_ws/src/fsm_raspicam/src/State.cpp > CMakeFiles/camera_main_node.dir/src/State.cpp.i
 
 CMakeFiles/camera_main_node.dir/src/State.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/camera_main_node.dir/src/State.cpp.s"
-	/usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/pi/vision_system_ws/src/fsm_raspicam/src/State.cpp -o CMakeFiles/camera_main_node.dir/src/State.cpp.s
+	/usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/pi/mar_frankenrotor_ros/ros2/vision_system_ws/src/fsm_raspicam/src/State.cpp -o CMakeFiles/camera_main_node.dir/src/State.cpp.s
 
 CMakeFiles/camera_main_node.dir/src/State.cpp.o.requires:
 
@@ -130,17 +130,17 @@ CMakeFiles/camera_main_node.dir/src/State.cpp.o.provides.build: CMakeFiles/camer
 
 
 CMakeFiles/camera_main_node.dir/src/CameraStates.cpp.o: CMakeFiles/camera_main_node.dir/flags.make
-CMakeFiles/camera_main_node.dir/src/CameraStates.cpp.o: /home/pi/vision_system_ws/src/fsm_raspicam/src/CameraStates.cpp
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/pi/vision_system_ws/build/fsm_raspicam/CMakeFiles --progress-num=$(CMAKE_PROGRESS_4) "Building CXX object CMakeFiles/camera_main_node.dir/src/CameraStates.cpp.o"
-	/usr/bin/c++   $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/camera_main_node.dir/src/CameraStates.cpp.o -c /home/pi/vision_system_ws/src/fsm_raspicam/src/CameraStates.cpp
+CMakeFiles/camera_main_node.dir/src/CameraStates.cpp.o: /home/pi/mar_frankenrotor_ros/ros2/vision_system_ws/src/fsm_raspicam/src/CameraStates.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/pi/mar_frankenrotor_ros/ros2/vision_system_ws/build/fsm_raspicam/CMakeFiles --progress-num=$(CMAKE_PROGRESS_4) "Building CXX object CMakeFiles/camera_main_node.dir/src/CameraStates.cpp.o"
+	/usr/bin/c++   $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/camera_main_node.dir/src/CameraStates.cpp.o -c /home/pi/mar_frankenrotor_ros/ros2/vision_system_ws/src/fsm_raspicam/src/CameraStates.cpp
 
 CMakeFiles/camera_main_node.dir/src/CameraStates.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/camera_main_node.dir/src/CameraStates.cpp.i"
-	/usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/pi/vision_system_ws/src/fsm_raspicam/src/CameraStates.cpp > CMakeFiles/camera_main_node.dir/src/CameraStates.cpp.i
+	/usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/pi/mar_frankenrotor_ros/ros2/vision_system_ws/src/fsm_raspicam/src/CameraStates.cpp > CMakeFiles/camera_main_node.dir/src/CameraStates.cpp.i
 
 CMakeFiles/camera_main_node.dir/src/CameraStates.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/camera_main_node.dir/src/CameraStates.cpp.s"
-	/usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/pi/vision_system_ws/src/fsm_raspicam/src/CameraStates.cpp -o CMakeFiles/camera_main_node.dir/src/CameraStates.cpp.s
+	/usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/pi/mar_frankenrotor_ros/ros2/vision_system_ws/src/fsm_raspicam/src/CameraStates.cpp -o CMakeFiles/camera_main_node.dir/src/CameraStates.cpp.s
 
 CMakeFiles/camera_main_node.dir/src/CameraStates.cpp.o.requires:
 
@@ -491,7 +491,7 @@ camera_main_node: /opt/vc/lib/libmmal.so
 camera_main_node: /usr/lib/arm-linux-gnueabihf/libpcre.so
 camera_main_node: /usr/lib/arm-linux-gnueabihf/libz.so
 camera_main_node: CMakeFiles/camera_main_node.dir/link.txt
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/home/pi/vision_system_ws/build/fsm_raspicam/CMakeFiles --progress-num=$(CMAKE_PROGRESS_5) "Linking CXX executable camera_main_node"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/home/pi/mar_frankenrotor_ros/ros2/vision_system_ws/build/fsm_raspicam/CMakeFiles --progress-num=$(CMAKE_PROGRESS_5) "Linking CXX executable camera_main_node"
 	$(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/camera_main_node.dir/link.txt --verbose=$(VERBOSE)
 
 # Rule to build all files generated by this target.
@@ -511,6 +511,6 @@ CMakeFiles/camera_main_node.dir/clean:
 .PHONY : CMakeFiles/camera_main_node.dir/clean
 
 CMakeFiles/camera_main_node.dir/depend:
-	cd /home/pi/vision_system_ws/build/fsm_raspicam && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /home/pi/vision_system_ws/src/fsm_raspicam /home/pi/vision_system_ws/src/fsm_raspicam /home/pi/vision_system_ws/build/fsm_raspicam /home/pi/vision_system_ws/build/fsm_raspicam /home/pi/vision_system_ws/build/fsm_raspicam/CMakeFiles/camera_main_node.dir/DependInfo.cmake --color=$(COLOR)
+	cd /home/pi/mar_frankenrotor_ros/ros2/vision_system_ws/build/fsm_raspicam && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /home/pi/mar_frankenrotor_ros/ros2/vision_system_ws/src/fsm_raspicam /home/pi/mar_frankenrotor_ros/ros2/vision_system_ws/src/fsm_raspicam /home/pi/mar_frankenrotor_ros/ros2/vision_system_ws/build/fsm_raspicam /home/pi/mar_frankenrotor_ros/ros2/vision_system_ws/build/fsm_raspicam /home/pi/mar_frankenrotor_ros/ros2/vision_system_ws/build/fsm_raspicam/CMakeFiles/camera_main_node.dir/DependInfo.cmake --color=$(COLOR)
 .PHONY : CMakeFiles/camera_main_node.dir/depend
 

@@ -1,10 +1,1 @@
-// generated from rosidl_generator_cpp/resource/msg.hpp.em
-// generated code does not contain a copyright notice
-
-#ifndef APRILTAG_MSGS__MSG__APRIL_TAG_DETECTION_HPP_
-#define APRILTAG_MSGS__MSG__APRIL_TAG_DETECTION_HPP_
-
-#include "apriltag_msgs/msg/april_tag_detection__struct.hpp"
-#include "apriltag_msgs/msg/april_tag_detection__traits.hpp"
-
-#endif  // APRILTAG_MSGS__MSG__APRIL_TAG_DETECTION_HPP_
+/home/pi/mar_frankenrotor_ros/ros2/vision_system_ws/build/apriltag_msgs/rosidl_generator_cpp/apriltag_msgs/msg/april_tag_detection.hpp

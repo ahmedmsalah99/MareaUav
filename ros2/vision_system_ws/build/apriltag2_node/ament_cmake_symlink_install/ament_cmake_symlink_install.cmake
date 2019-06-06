@@ -23,7 +23,7 @@ function(ament_cmake_symlink_install_directory cmake_current_source_dir)
 
   # make destination absolute path and ensure that it exists
   if(NOT IS_ABSOLUTE "${ARG_DESTINATION}")
-    set(ARG_DESTINATION "/home/pi/vision_system_ws/install/apriltag2_node/${ARG_DESTINATION}")
+    set(ARG_DESTINATION "/home/pi/mar_frankenrotor_ros/ros2/vision_system_ws/install/apriltag2_node/${ARG_DESTINATION}")
   endif()
   if(NOT EXISTS "${ARG_DESTINATION}")
     file(MAKE_DIRECTORY "${ARG_DESTINATION}")
@@ -123,7 +123,7 @@ function(ament_cmake_symlink_install_files cmake_current_source_dir)
 
   # make destination an absolute path and ensure that it exists
   if(NOT IS_ABSOLUTE "${ARG_DESTINATION}")
-    set(ARG_DESTINATION "/home/pi/vision_system_ws/install/apriltag2_node/${ARG_DESTINATION}")
+    set(ARG_DESTINATION "/home/pi/mar_frankenrotor_ros/ros2/vision_system_ws/install/apriltag2_node/${ARG_DESTINATION}")
   endif()
   if(NOT EXISTS "${ARG_DESTINATION}")
     file(MAKE_DIRECTORY "${ARG_DESTINATION}")
@@ -181,7 +181,7 @@ function(ament_cmake_symlink_install_programs cmake_current_source_dir)
 
   # make destination an absolute path and ensure that it exists
   if(NOT IS_ABSOLUTE "${ARG_DESTINATION}")
-    set(ARG_DESTINATION "/home/pi/vision_system_ws/install/apriltag2_node/${ARG_DESTINATION}")
+    set(ARG_DESTINATION "/home/pi/mar_frankenrotor_ros/ros2/vision_system_ws/install/apriltag2_node/${ARG_DESTINATION}")
   endif()
   if(NOT EXISTS "${ARG_DESTINATION}")
     file(MAKE_DIRECTORY "${ARG_DESTINATION}")
@@ -251,7 +251,7 @@ function(ament_cmake_symlink_install_targets)
 
     # make destination an absolute path and ensure that it exists
     if(NOT IS_ABSOLUTE "${destination}")
-      set(destination "/home/pi/vision_system_ws/install/apriltag2_node/${destination}")
+      set(destination "/home/pi/mar_frankenrotor_ros/ros2/vision_system_ws/install/apriltag2_node/${destination}")
     endif()
     if(NOT EXISTS "${destination}")
       file(MAKE_DIRECTORY "${destination}")
@@ -311,46 +311,46 @@ message(STATUS "Execute custom install script")
 # begin of custom install code
 
 # install(FILES "/home/pi/ros2_ws/build/ament_package/ament_package/template/environment_hook/library_path.sh" "DESTINATION" "share/apriltag2_node/environment")
-ament_cmake_symlink_install_files("/home/pi/vision_system_ws/src/apriltag2_node/node" FILES "/home/pi/ros2_ws/build/ament_package/ament_package/template/environment_hook/library_path.sh" "DESTINATION" "share/apriltag2_node/environment")
+ament_cmake_symlink_install_files("/home/pi/mar_frankenrotor_ros/ros2/vision_system_ws/src/apriltag2_node/node" FILES "/home/pi/ros2_ws/build/ament_package/ament_package/template/environment_hook/library_path.sh" "DESTINATION" "share/apriltag2_node/environment")
 
 # install("TARGETS" "AprilTag2Node" "ARCHIVE_DESTINATION" "lib" "LIBRARY_DESTINATION" "lib" "RUNTIME_DESTINATION" "bin")
-include("/home/pi/vision_system_ws/build/apriltag2_node/ament_cmake_symlink_install_targets_0_${CMAKE_INSTALL_CONFIG_NAME}.cmake")
+include("/home/pi/mar_frankenrotor_ros/ros2/vision_system_ws/build/apriltag2_node/ament_cmake_symlink_install_targets_0_${CMAKE_INSTALL_CONFIG_NAME}.cmake")
 
 # install("TARGETS" "apriltag2_node" "DESTINATION" "lib/apriltag2_node")
-include("/home/pi/vision_system_ws/build/apriltag2_node/ament_cmake_symlink_install_targets_1_${CMAKE_INSTALL_CONFIG_NAME}.cmake")
+include("/home/pi/mar_frankenrotor_ros/ros2/vision_system_ws/build/apriltag2_node/ament_cmake_symlink_install_targets_1_${CMAKE_INSTALL_CONFIG_NAME}.cmake")
 
 # install(DIRECTORY "cfg/" "DESTINATION" "share/apriltag2_node/cfg")
-ament_cmake_symlink_install_directory("/home/pi/vision_system_ws/src/apriltag2_node/node" DIRECTORY "cfg/" "DESTINATION" "share/apriltag2_node/cfg")
+ament_cmake_symlink_install_directory("/home/pi/mar_frankenrotor_ros/ros2/vision_system_ws/src/apriltag2_node/node" DIRECTORY "cfg/" "DESTINATION" "share/apriltag2_node/cfg")
 
-# install(FILES "/home/pi/vision_system_ws/build/apriltag2_node/ament_cmake_index/share/ament_index/resource_index/package_run_dependencies/apriltag2_node" "DESTINATION" "share/ament_index/resource_index/package_run_dependencies")
-ament_cmake_symlink_install_files("/home/pi/vision_system_ws/src/apriltag2_node/node" FILES "/home/pi/vision_system_ws/build/apriltag2_node/ament_cmake_index/share/ament_index/resource_index/package_run_dependencies/apriltag2_node" "DESTINATION" "share/ament_index/resource_index/package_run_dependencies")
+# install(FILES "/home/pi/mar_frankenrotor_ros/ros2/vision_system_ws/build/apriltag2_node/ament_cmake_index/share/ament_index/resource_index/package_run_dependencies/apriltag2_node" "DESTINATION" "share/ament_index/resource_index/package_run_dependencies")
+ament_cmake_symlink_install_files("/home/pi/mar_frankenrotor_ros/ros2/vision_system_ws/src/apriltag2_node/node" FILES "/home/pi/mar_frankenrotor_ros/ros2/vision_system_ws/build/apriltag2_node/ament_cmake_index/share/ament_index/resource_index/package_run_dependencies/apriltag2_node" "DESTINATION" "share/ament_index/resource_index/package_run_dependencies")
 
-# install(FILES "/home/pi/vision_system_ws/build/apriltag2_node/ament_cmake_index/share/ament_index/resource_index/parent_prefix_path/apriltag2_node" "DESTINATION" "share/ament_index/resource_index/parent_prefix_path")
-ament_cmake_symlink_install_files("/home/pi/vision_system_ws/src/apriltag2_node/node" FILES "/home/pi/vision_system_ws/build/apriltag2_node/ament_cmake_index/share/ament_index/resource_index/parent_prefix_path/apriltag2_node" "DESTINATION" "share/ament_index/resource_index/parent_prefix_path")
+# install(FILES "/home/pi/mar_frankenrotor_ros/ros2/vision_system_ws/build/apriltag2_node/ament_cmake_index/share/ament_index/resource_index/parent_prefix_path/apriltag2_node" "DESTINATION" "share/ament_index/resource_index/parent_prefix_path")
+ament_cmake_symlink_install_files("/home/pi/mar_frankenrotor_ros/ros2/vision_system_ws/src/apriltag2_node/node" FILES "/home/pi/mar_frankenrotor_ros/ros2/vision_system_ws/build/apriltag2_node/ament_cmake_index/share/ament_index/resource_index/parent_prefix_path/apriltag2_node" "DESTINATION" "share/ament_index/resource_index/parent_prefix_path")
 
 # install(FILES "/home/pi/ros2_ws/install/ament_cmake_core/share/ament_cmake_core/cmake/environment_hooks/environment/ament_prefix_path.sh" "DESTINATION" "share/apriltag2_node/environment")
-ament_cmake_symlink_install_files("/home/pi/vision_system_ws/src/apriltag2_node/node" FILES "/home/pi/ros2_ws/install/ament_cmake_core/share/ament_cmake_core/cmake/environment_hooks/environment/ament_prefix_path.sh" "DESTINATION" "share/apriltag2_node/environment")
+ament_cmake_symlink_install_files("/home/pi/mar_frankenrotor_ros/ros2/vision_system_ws/src/apriltag2_node/node" FILES "/home/pi/ros2_ws/install/ament_cmake_core/share/ament_cmake_core/cmake/environment_hooks/environment/ament_prefix_path.sh" "DESTINATION" "share/apriltag2_node/environment")
 
 # install(FILES "/home/pi/ros2_ws/install/ament_cmake_core/share/ament_cmake_core/cmake/environment_hooks/environment/path.sh" "DESTINATION" "share/apriltag2_node/environment")
-ament_cmake_symlink_install_files("/home/pi/vision_system_ws/src/apriltag2_node/node" FILES "/home/pi/ros2_ws/install/ament_cmake_core/share/ament_cmake_core/cmake/environment_hooks/environment/path.sh" "DESTINATION" "share/apriltag2_node/environment")
+ament_cmake_symlink_install_files("/home/pi/mar_frankenrotor_ros/ros2/vision_system_ws/src/apriltag2_node/node" FILES "/home/pi/ros2_ws/install/ament_cmake_core/share/ament_cmake_core/cmake/environment_hooks/environment/path.sh" "DESTINATION" "share/apriltag2_node/environment")
 
-# install(FILES "/home/pi/vision_system_ws/build/apriltag2_node/ament_cmake_environment_hooks/local_setup.bash" "DESTINATION" "share/apriltag2_node")
-ament_cmake_symlink_install_files("/home/pi/vision_system_ws/src/apriltag2_node/node" FILES "/home/pi/vision_system_ws/build/apriltag2_node/ament_cmake_environment_hooks/local_setup.bash" "DESTINATION" "share/apriltag2_node")
+# install(FILES "/home/pi/mar_frankenrotor_ros/ros2/vision_system_ws/build/apriltag2_node/ament_cmake_environment_hooks/local_setup.bash" "DESTINATION" "share/apriltag2_node")
+ament_cmake_symlink_install_files("/home/pi/mar_frankenrotor_ros/ros2/vision_system_ws/src/apriltag2_node/node" FILES "/home/pi/mar_frankenrotor_ros/ros2/vision_system_ws/build/apriltag2_node/ament_cmake_environment_hooks/local_setup.bash" "DESTINATION" "share/apriltag2_node")
 
-# install(FILES "/home/pi/vision_system_ws/build/apriltag2_node/ament_cmake_environment_hooks/local_setup.sh" "DESTINATION" "share/apriltag2_node")
-ament_cmake_symlink_install_files("/home/pi/vision_system_ws/src/apriltag2_node/node" FILES "/home/pi/vision_system_ws/build/apriltag2_node/ament_cmake_environment_hooks/local_setup.sh" "DESTINATION" "share/apriltag2_node")
+# install(FILES "/home/pi/mar_frankenrotor_ros/ros2/vision_system_ws/build/apriltag2_node/ament_cmake_environment_hooks/local_setup.sh" "DESTINATION" "share/apriltag2_node")
+ament_cmake_symlink_install_files("/home/pi/mar_frankenrotor_ros/ros2/vision_system_ws/src/apriltag2_node/node" FILES "/home/pi/mar_frankenrotor_ros/ros2/vision_system_ws/build/apriltag2_node/ament_cmake_environment_hooks/local_setup.sh" "DESTINATION" "share/apriltag2_node")
 
-# install(FILES "/home/pi/vision_system_ws/build/apriltag2_node/ament_cmake_environment_hooks/local_setup.zsh" "DESTINATION" "share/apriltag2_node")
-ament_cmake_symlink_install_files("/home/pi/vision_system_ws/src/apriltag2_node/node" FILES "/home/pi/vision_system_ws/build/apriltag2_node/ament_cmake_environment_hooks/local_setup.zsh" "DESTINATION" "share/apriltag2_node")
+# install(FILES "/home/pi/mar_frankenrotor_ros/ros2/vision_system_ws/build/apriltag2_node/ament_cmake_environment_hooks/local_setup.zsh" "DESTINATION" "share/apriltag2_node")
+ament_cmake_symlink_install_files("/home/pi/mar_frankenrotor_ros/ros2/vision_system_ws/src/apriltag2_node/node" FILES "/home/pi/mar_frankenrotor_ros/ros2/vision_system_ws/build/apriltag2_node/ament_cmake_environment_hooks/local_setup.zsh" "DESTINATION" "share/apriltag2_node")
 
-# install(FILES "/home/pi/vision_system_ws/build/apriltag2_node/ament_cmake_index/share/ament_index/resource_index/packages/apriltag2_node" "DESTINATION" "share/ament_index/resource_index/packages")
-ament_cmake_symlink_install_files("/home/pi/vision_system_ws/src/apriltag2_node/node" FILES "/home/pi/vision_system_ws/build/apriltag2_node/ament_cmake_index/share/ament_index/resource_index/packages/apriltag2_node" "DESTINATION" "share/ament_index/resource_index/packages")
+# install(FILES "/home/pi/mar_frankenrotor_ros/ros2/vision_system_ws/build/apriltag2_node/ament_cmake_index/share/ament_index/resource_index/packages/apriltag2_node" "DESTINATION" "share/ament_index/resource_index/packages")
+ament_cmake_symlink_install_files("/home/pi/mar_frankenrotor_ros/ros2/vision_system_ws/src/apriltag2_node/node" FILES "/home/pi/mar_frankenrotor_ros/ros2/vision_system_ws/build/apriltag2_node/ament_cmake_index/share/ament_index/resource_index/packages/apriltag2_node" "DESTINATION" "share/ament_index/resource_index/packages")
 
-# install(FILES "/home/pi/vision_system_ws/build/apriltag2_node/ament_cmake_index/share/ament_index/resource_index/node_plugin/apriltag2_node" "DESTINATION" "share/ament_index/resource_index/node_plugin")
-ament_cmake_symlink_install_files("/home/pi/vision_system_ws/src/apriltag2_node/node" FILES "/home/pi/vision_system_ws/build/apriltag2_node/ament_cmake_index/share/ament_index/resource_index/node_plugin/apriltag2_node" "DESTINATION" "share/ament_index/resource_index/node_plugin")
+# install(FILES "/home/pi/mar_frankenrotor_ros/ros2/vision_system_ws/build/apriltag2_node/ament_cmake_index/share/ament_index/resource_index/node_plugin/apriltag2_node" "DESTINATION" "share/ament_index/resource_index/node_plugin")
+ament_cmake_symlink_install_files("/home/pi/mar_frankenrotor_ros/ros2/vision_system_ws/src/apriltag2_node/node" FILES "/home/pi/mar_frankenrotor_ros/ros2/vision_system_ws/build/apriltag2_node/ament_cmake_index/share/ament_index/resource_index/node_plugin/apriltag2_node" "DESTINATION" "share/ament_index/resource_index/node_plugin")
 
-# install(FILES "/home/pi/vision_system_ws/build/apriltag2_node/ament_cmake_core/apriltag2_nodeConfig.cmake" "/home/pi/vision_system_ws/build/apriltag2_node/ament_cmake_core/apriltag2_nodeConfig-version.cmake" "DESTINATION" "share/apriltag2_node/cmake")
-ament_cmake_symlink_install_files("/home/pi/vision_system_ws/src/apriltag2_node/node" FILES "/home/pi/vision_system_ws/build/apriltag2_node/ament_cmake_core/apriltag2_nodeConfig.cmake" "/home/pi/vision_system_ws/build/apriltag2_node/ament_cmake_core/apriltag2_nodeConfig-version.cmake" "DESTINATION" "share/apriltag2_node/cmake")
+# install(FILES "/home/pi/mar_frankenrotor_ros/ros2/vision_system_ws/build/apriltag2_node/ament_cmake_core/apriltag2_nodeConfig.cmake" "/home/pi/mar_frankenrotor_ros/ros2/vision_system_ws/build/apriltag2_node/ament_cmake_core/apriltag2_nodeConfig-version.cmake" "DESTINATION" "share/apriltag2_node/cmake")
+ament_cmake_symlink_install_files("/home/pi/mar_frankenrotor_ros/ros2/vision_system_ws/src/apriltag2_node/node" FILES "/home/pi/mar_frankenrotor_ros/ros2/vision_system_ws/build/apriltag2_node/ament_cmake_core/apriltag2_nodeConfig.cmake" "/home/pi/mar_frankenrotor_ros/ros2/vision_system_ws/build/apriltag2_node/ament_cmake_core/apriltag2_nodeConfig-version.cmake" "DESTINATION" "share/apriltag2_node/cmake")
 
-# install(FILES "/home/pi/vision_system_ws/src/apriltag2_node/node/package.xml" "DESTINATION" "share/apriltag2_node")
-ament_cmake_symlink_install_files("/home/pi/vision_system_ws/src/apriltag2_node/node" FILES "/home/pi/vision_system_ws/src/apriltag2_node/node/package.xml" "DESTINATION" "share/apriltag2_node")
+# install(FILES "/home/pi/mar_frankenrotor_ros/ros2/vision_system_ws/src/apriltag2_node/node/package.xml" "DESTINATION" "share/apriltag2_node")
+ament_cmake_symlink_install_files("/home/pi/mar_frankenrotor_ros/ros2/vision_system_ws/src/apriltag2_node/node" FILES "/home/pi/mar_frankenrotor_ros/ros2/vision_system_ws/src/apriltag2_node/node/package.xml" "DESTINATION" "share/apriltag2_node")

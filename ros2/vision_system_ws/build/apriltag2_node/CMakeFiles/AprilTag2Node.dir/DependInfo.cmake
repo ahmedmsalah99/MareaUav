@@ -4,7 +4,7 @@ set(CMAKE_DEPENDS_LANGUAGES
   )
 # The set of files for implicit dependencies of each language:
 set(CMAKE_DEPENDS_CHECK_CXX
-  "/home/pi/vision_system_ws/src/apriltag2_node/node/src/AprilTag2Node2_0.cpp" "/home/pi/vision_system_ws/build/apriltag2_node/CMakeFiles/AprilTag2Node.dir/src/AprilTag2Node2_0.cpp.o"
+  "/home/pi/mar_frankenrotor_ros/ros2/vision_system_ws/src/apriltag2_node/node/src/AprilTag2Node2_0.cpp" "/home/pi/mar_frankenrotor_ros/ros2/vision_system_ws/build/apriltag2_node/CMakeFiles/AprilTag2Node.dir/src/AprilTag2Node2_0.cpp.o"
   )
 set(CMAKE_CXX_COMPILER_ID "GNU")
 
@@ -17,7 +17,7 @@ set(CMAKE_TARGET_DEFINITIONS_CXX
 set(CMAKE_CXX_TARGET_INCLUDE_PATH
   "/usr/include/eigen3"
   "/usr/local/include/apriltag"
-  "/home/pi/vision_system_ws/src/apriltag2_node/node/include"
+  "/home/pi/mar_frankenrotor_ros/ros2/vision_system_ws/src/apriltag2_node/node/include"
   "/home/pi/ros2_ws/install/rclcpp/include"
   "/home/pi/ros2_ws/install/rcl/include"
   "/home/pi/ros2_ws/install/builtin_interfaces/include"
@@ -36,7 +36,7 @@ set(CMAKE_CXX_TARGET_INCLUDE_PATH
   "/home/pi/ros2_ws/install/std_msgs/include"
   "/home/pi/ros2_ws/install/geometry_msgs/include"
   "/home/pi/ros2_ws/install/sensor_msgs/include"
-  "/home/pi/vision_system_ws/install/apriltag_msgs/include"
+  "/home/pi/mar_frankenrotor_ros/ros2/vision_system_ws/install/apriltag_msgs/include"
   "/home/pi/ros2_ws/install/console_bridge_vendor/include"
   "/home/pi/ros2_ws/install/class_loader/include"
   "/home/pi/ros2_ws/install/tf2_msgs/include"

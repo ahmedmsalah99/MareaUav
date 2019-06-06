@@ -43,10 +43,10 @@ RM = /usr/bin/cmake -E remove -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /home/pi/vision_system_ws/src/apriltag2_node/node
+CMAKE_SOURCE_DIR = /home/pi/mar_frankenrotor_ros/ros2/vision_system_ws/src/apriltag2_node/node
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /home/pi/vision_system_ws/build/apriltag2_node
+CMAKE_BINARY_DIR = /home/pi/mar_frankenrotor_ros/ros2/vision_system_ws/build/apriltag2_node
 
 # Utility rule file for uninstall.
 
@@ -54,7 +54,7 @@ CMAKE_BINARY_DIR = /home/pi/vision_system_ws/build/apriltag2_node
 include CMakeFiles/uninstall.dir/progress.make
 
 CMakeFiles/uninstall:
-	/usr/bin/cmake -P /home/pi/vision_system_ws/build/apriltag2_node/ament_cmake_uninstall_target/ament_cmake_uninstall_target.cmake
+	/usr/bin/cmake -P /home/pi/mar_frankenrotor_ros/ros2/vision_system_ws/build/apriltag2_node/ament_cmake_uninstall_target/ament_cmake_uninstall_target.cmake
 
 uninstall: CMakeFiles/uninstall
 uninstall: CMakeFiles/uninstall.dir/build.make
@@ -71,6 +71,6 @@ CMakeFiles/uninstall.dir/clean:
 .PHONY : CMakeFiles/uninstall.dir/clean
 
 CMakeFiles/uninstall.dir/depend:
-	cd /home/pi/vision_system_ws/build/apriltag2_node && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /home/pi/vision_system_ws/src/apriltag2_node/node /home/pi/vision_system_ws/src/apriltag2_node/node /home/pi/vision_system_ws/build/apriltag2_node /home/pi/vision_system_ws/build/apriltag2_node /home/pi/vision_system_ws/build/apriltag2_node/CMakeFiles/uninstall.dir/DependInfo.cmake --color=$(COLOR)
+	cd /home/pi/mar_frankenrotor_ros/ros2/vision_system_ws/build/apriltag2_node && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /home/pi/mar_frankenrotor_ros/ros2/vision_system_ws/src/apriltag2_node/node /home/pi/mar_frankenrotor_ros/ros2/vision_system_ws/src/apriltag2_node/node /home/pi/mar_frankenrotor_ros/ros2/vision_system_ws/build/apriltag2_node /home/pi/mar_frankenrotor_ros/ros2/vision_system_ws/build/apriltag2_node /home/pi/mar_frankenrotor_ros/ros2/vision_system_ws/build/apriltag2_node/CMakeFiles/uninstall.dir/DependInfo.cmake --color=$(COLOR)
 .PHONY : CMakeFiles/uninstall.dir/depend
 

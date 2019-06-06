@@ -1,21 +1,24 @@
 #include "FiniteStateMachine.h"
 
-FiniteStateMachine::FiniteStateMachine(){}
+FiniteStateMachine::FiniteStateMachine()
+{
+}
 
-State* FiniteStateMachine::getState(){
-	
-	
+State* FiniteStateMachine::getState()
+{
 	return CurrentState;
-	}
-	
-FiniteStateMachine::~FiniteStateMachine(){}
-	
-void FiniteStateMachine::setState(State *ActualState){
-	
-	CurrentState=ActualState;
-	}
+}
 
-int FiniteStateMachine::getActualID(){
-	
+FiniteStateMachine::~FiniteStateMachine()
+{
+}
+
+void FiniteStateMachine::setState(State *ActualState)
+{
+	CurrentState=ActualState;
+}
+
+int FiniteStateMachine::getActualID()
+{
 	return getState()->getID();
-	}
+}

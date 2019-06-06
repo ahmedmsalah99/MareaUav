@@ -1,3 +1,1 @@
-# generated from ament_package/template/environment_hook/pythonpath.sh.in
-
-ament_prepend_unique_value PYTHONPATH "$AMENT_CURRENT_PREFIX/lib/python3.5/site-packages"
+/home/pi/mar_frankenrotor_ros/ros2/vision_system_ws/build/apriltag_msgs/ament_cmake_environment_hooks/pythonpath.sh

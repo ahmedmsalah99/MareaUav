@@ -1,8 +1,8 @@
-# Install script for directory: /home/pi/vision_system_ws/src/apriltag2_node/node
+# Install script for directory: /home/pi/mar_frankenrotor_ros/ros2/vision_system_ws/src/apriltag2_node/node
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
-  set(CMAKE_INSTALL_PREFIX "/home/pi/vision_system_ws/install/apriltag2_node")
+  set(CMAKE_INSTALL_PREFIX "/home/pi/mar_frankenrotor_ros/ros2/vision_system_ws/install/apriltag2_node")
 endif()
 string(REGEX REPLACE "/$" "" CMAKE_INSTALL_PREFIX "${CMAKE_INSTALL_PREFIX}")
 
@@ -33,7 +33,7 @@ if(NOT DEFINED CMAKE_INSTALL_SO_NO_EXE)
 endif()
 
 if("${CMAKE_INSTALL_COMPONENT}" STREQUAL "Unspecified" OR NOT CMAKE_INSTALL_COMPONENT)
-  include("/home/pi/vision_system_ws/build/apriltag2_node/ament_cmake_symlink_install/ament_cmake_symlink_install.cmake")
+  include("/home/pi/mar_frankenrotor_ros/ros2/vision_system_ws/build/apriltag2_node/ament_cmake_symlink_install/ament_cmake_symlink_install.cmake")
 endif()
 
 if(CMAKE_INSTALL_COMPONENT)
@@ -44,5 +44,5 @@ endif()
 
 string(REPLACE ";" "\n" CMAKE_INSTALL_MANIFEST_CONTENT
        "${CMAKE_INSTALL_MANIFEST_FILES}")
-file(WRITE "/home/pi/vision_system_ws/build/apriltag2_node/${CMAKE_INSTALL_MANIFEST}"
+file(WRITE "/home/pi/mar_frankenrotor_ros/ros2/vision_system_ws/build/apriltag2_node/${CMAKE_INSTALL_MANIFEST}"
      "${CMAKE_INSTALL_MANIFEST_CONTENT}")

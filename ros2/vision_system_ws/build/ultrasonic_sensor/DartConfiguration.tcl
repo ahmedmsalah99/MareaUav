@@ -4,14 +4,14 @@
 
 
 # Configuration directories and files
-SourceDirectory: /home/pi/vision_system_ws/src/ultrasonic_sensor
-BuildDirectory: /home/pi/vision_system_ws/build/ultrasonic_sensor
+SourceDirectory: /home/pi/mar_frankenrotor_ros/ros2/vision_system_ws/src/ultrasonic_sensor
+BuildDirectory: /home/pi/mar_frankenrotor_ros/ros2/vision_system_ws/build/ultrasonic_sensor
 
 # Where to place the cost data store
 CostDataFile: 
 
 # Site is something like machine.domain, i.e. pragmatic.crd
-Site: raspberrypi
+Site: frankenrotor
 
 # Build name is osname-revision-compiler, i.e. Linux-2.4.2-2smp-c++
 BuildName: Linux-c++
@@ -33,7 +33,7 @@ ScpCommand: /usr/bin/scp
 NightlyStartTime: 00:00:00 EDT
 
 # Commands for the build/test/submit cycle
-ConfigureCommand: "/usr/bin/cmake" "/home/pi/vision_system_ws/src/ultrasonic_sensor"
+ConfigureCommand: "/usr/bin/cmake" "/home/pi/mar_frankenrotor_ros/ros2/vision_system_ws/src/ultrasonic_sensor"
 MakeCommand: /usr/bin/cmake --build . --config "${CTEST_CONFIGURATION_TYPE}"
 DefaultCTestConfigurationType: Release
 
@@ -64,9 +64,9 @@ P4UpdateOptions:
 P4UpdateCustom: 
 
 # Generic update command
-UpdateCommand: /usr/bin/git
+UpdateCommand: 
 UpdateOptions: 
-UpdateType: git
+UpdateType: 
 
 # Compiler info
 Compiler: /usr/bin/c++

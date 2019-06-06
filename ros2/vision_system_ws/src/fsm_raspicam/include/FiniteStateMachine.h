@@ -5,24 +5,19 @@
 
 class State;
 
-class FiniteStateMachine{
-	
-	
+class FiniteStateMachine {
+
 public:
-	
 	FiniteStateMachine();
 	~FiniteStateMachine();
-	
-	State* getState();
-	
+
+	State *getState();
 	void setState(State *ActualState);
 
 	int getActualID();
 
 private:
 	State *CurrentState;
-	
-	
 };
 
 #endif

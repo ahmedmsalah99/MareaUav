@@ -48,10 +48,10 @@ RM = /usr/bin/cmake -E remove -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /home/pi/vision_system_ws/src/apriltag2_node/apriltag_msgs
+CMAKE_SOURCE_DIR = /home/pi/mar_frankenrotor_ros/ros2/vision_system_ws/src/apriltag2_node/apriltag_msgs
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /home/pi/vision_system_ws/build/apriltag_msgs
+CMAKE_BINARY_DIR = /home/pi/mar_frankenrotor_ros/ros2/vision_system_ws/build/apriltag_msgs
 
 #=============================================================================
 # Targets provided globally by CMake.
@@ -113,8 +113,8 @@ install/strip/fast: install/strip
 
 # Special rule for the target edit_cache
 edit_cache:
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "Running CMake cache editor..."
-	/usr/bin/ccmake -H$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR)
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "No interactive CMake dialog available..."
+	/usr/bin/cmake -E echo No\ interactive\ CMake\ dialog\ available.
 .PHONY : edit_cache
 
 # Special rule for the target edit_cache
@@ -135,14 +135,14 @@ rebuild_cache/fast: rebuild_cache
 
 # The main all target
 all: cmake_check_build_system
-	cd /home/pi/vision_system_ws/build/apriltag_msgs && $(CMAKE_COMMAND) -E cmake_progress_start /home/pi/vision_system_ws/build/apriltag_msgs/CMakeFiles /home/pi/vision_system_ws/build/apriltag_msgs/apriltag_msgs__py/CMakeFiles/progress.marks
-	cd /home/pi/vision_system_ws/build/apriltag_msgs && $(MAKE) -f CMakeFiles/Makefile2 apriltag_msgs__py/all
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/pi/vision_system_ws/build/apriltag_msgs/CMakeFiles 0
+	cd /home/pi/mar_frankenrotor_ros/ros2/vision_system_ws/build/apriltag_msgs && $(CMAKE_COMMAND) -E cmake_progress_start /home/pi/mar_frankenrotor_ros/ros2/vision_system_ws/build/apriltag_msgs/CMakeFiles /home/pi/mar_frankenrotor_ros/ros2/vision_system_ws/build/apriltag_msgs/apriltag_msgs__py/CMakeFiles/progress.marks
+	cd /home/pi/mar_frankenrotor_ros/ros2/vision_system_ws/build/apriltag_msgs && $(MAKE) -f CMakeFiles/Makefile2 apriltag_msgs__py/all
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/pi/mar_frankenrotor_ros/ros2/vision_system_ws/build/apriltag_msgs/CMakeFiles 0
 .PHONY : all
 
 # The main clean target
 clean:
-	cd /home/pi/vision_system_ws/build/apriltag_msgs && $(MAKE) -f CMakeFiles/Makefile2 apriltag_msgs__py/clean
+	cd /home/pi/mar_frankenrotor_ros/ros2/vision_system_ws/build/apriltag_msgs && $(MAKE) -f CMakeFiles/Makefile2 apriltag_msgs__py/clean
 .PHONY : clean
 
 # The main clean target
@@ -152,22 +152,22 @@ clean/fast: clean
 
 # Prepare targets for installation.
 preinstall: all
-	cd /home/pi/vision_system_ws/build/apriltag_msgs && $(MAKE) -f CMakeFiles/Makefile2 apriltag_msgs__py/preinstall
+	cd /home/pi/mar_frankenrotor_ros/ros2/vision_system_ws/build/apriltag_msgs && $(MAKE) -f CMakeFiles/Makefile2 apriltag_msgs__py/preinstall
 .PHONY : preinstall
 
 # Prepare targets for installation.
 preinstall/fast:
-	cd /home/pi/vision_system_ws/build/apriltag_msgs && $(MAKE) -f CMakeFiles/Makefile2 apriltag_msgs__py/preinstall
+	cd /home/pi/mar_frankenrotor_ros/ros2/vision_system_ws/build/apriltag_msgs && $(MAKE) -f CMakeFiles/Makefile2 apriltag_msgs__py/preinstall
 .PHONY : preinstall/fast
 
 # clear depends
 depend:
-	cd /home/pi/vision_system_ws/build/apriltag_msgs && $(CMAKE_COMMAND) -H$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR) --check-build-system CMakeFiles/Makefile.cmake 1
+	cd /home/pi/mar_frankenrotor_ros/ros2/vision_system_ws/build/apriltag_msgs && $(CMAKE_COMMAND) -H$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR) --check-build-system CMakeFiles/Makefile.cmake 1
 .PHONY : depend
 
 # Convenience name for target.
 apriltag_msgs__py/CMakeFiles/apriltag_msgs__py.dir/rule:
-	cd /home/pi/vision_system_ws/build/apriltag_msgs && $(MAKE) -f CMakeFiles/Makefile2 apriltag_msgs__py/CMakeFiles/apriltag_msgs__py.dir/rule
+	cd /home/pi/mar_frankenrotor_ros/ros2/vision_system_ws/build/apriltag_msgs && $(MAKE) -f CMakeFiles/Makefile2 apriltag_msgs__py/CMakeFiles/apriltag_msgs__py.dir/rule
 .PHONY : apriltag_msgs__py/CMakeFiles/apriltag_msgs__py.dir/rule
 
 # Convenience name for target.
@@ -177,7 +177,7 @@ apriltag_msgs__py: apriltag_msgs__py/CMakeFiles/apriltag_msgs__py.dir/rule
 
 # fast build rule for target.
 apriltag_msgs__py/fast:
-	cd /home/pi/vision_system_ws/build/apriltag_msgs && $(MAKE) -f apriltag_msgs__py/CMakeFiles/apriltag_msgs__py.dir/build.make apriltag_msgs__py/CMakeFiles/apriltag_msgs__py.dir/build
+	cd /home/pi/mar_frankenrotor_ros/ros2/vision_system_ws/build/apriltag_msgs && $(MAKE) -f apriltag_msgs__py/CMakeFiles/apriltag_msgs__py.dir/build.make apriltag_msgs__py/CMakeFiles/apriltag_msgs__py.dir/build
 .PHONY : apriltag_msgs__py/fast
 
 # Help Target
@@ -205,6 +205,6 @@ help:
 # No rule that depends on this can have commands that come from listfiles
 # because they might be regenerated.
 cmake_check_build_system:
-	cd /home/pi/vision_system_ws/build/apriltag_msgs && $(CMAKE_COMMAND) -H$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR) --check-build-system CMakeFiles/Makefile.cmake 0
+	cd /home/pi/mar_frankenrotor_ros/ros2/vision_system_ws/build/apriltag_msgs && $(CMAKE_COMMAND) -H$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR) --check-build-system CMakeFiles/Makefile.cmake 0
 .PHONY : cmake_check_build_system
 

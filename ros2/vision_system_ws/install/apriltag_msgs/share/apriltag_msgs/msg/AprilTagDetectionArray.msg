@@ -1,2 +1,1 @@
-std_msgs/Header header
-AprilTagDetection[] detections
+/home/pi/mar_frankenrotor_ros/ros2/vision_system_ws/src/apriltag2_node/apriltag_msgs/msg/AprilTagDetectionArray.msg

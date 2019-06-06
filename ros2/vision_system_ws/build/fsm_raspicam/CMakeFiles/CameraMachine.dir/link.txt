@@ -1,2 +1,0 @@
-/usr/bin/ar qc libCameraMachine.a  CMakeFiles/CameraMachine.dir/src/FiniteStateMachine.cpp.o
-/usr/bin/ranlib libCameraMachine.a

@@ -2,7 +2,7 @@
 
 # since this file is sourced use either the provided AMENT_CURRENT_PREFIX
 # or fall back to the destination set at configure time
-: ${AMENT_CURRENT_PREFIX:="/home/pi/vision_system_ws/install/fsm_raspicam"}
+: ${AMENT_CURRENT_PREFIX:="/home/pi/mar_frankenrotor_ros/ros2/vision_system_ws/install/fsm_raspicam"}
 
 # function to append values to environment variables
 # using colons as separators and avoiding leading separators

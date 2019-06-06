@@ -23,7 +23,7 @@ function(ament_cmake_symlink_install_directory cmake_current_source_dir)
 
   # make destination absolute path and ensure that it exists
   if(NOT IS_ABSOLUTE "${ARG_DESTINATION}")
-    set(ARG_DESTINATION "/home/pi/vision_system_ws/install/fsm_raspicam/${ARG_DESTINATION}")
+    set(ARG_DESTINATION "/home/pi/mar_frankenrotor_ros/ros2/vision_system_ws/install/fsm_raspicam/${ARG_DESTINATION}")
   endif()
   if(NOT EXISTS "${ARG_DESTINATION}")
     file(MAKE_DIRECTORY "${ARG_DESTINATION}")
@@ -123,7 +123,7 @@ function(ament_cmake_symlink_install_files cmake_current_source_dir)
 
   # make destination an absolute path and ensure that it exists
   if(NOT IS_ABSOLUTE "${ARG_DESTINATION}")
-    set(ARG_DESTINATION "/home/pi/vision_system_ws/install/fsm_raspicam/${ARG_DESTINATION}")
+    set(ARG_DESTINATION "/home/pi/mar_frankenrotor_ros/ros2/vision_system_ws/install/fsm_raspicam/${ARG_DESTINATION}")
   endif()
   if(NOT EXISTS "${ARG_DESTINATION}")
     file(MAKE_DIRECTORY "${ARG_DESTINATION}")
@@ -181,7 +181,7 @@ function(ament_cmake_symlink_install_programs cmake_current_source_dir)
 
   # make destination an absolute path and ensure that it exists
   if(NOT IS_ABSOLUTE "${ARG_DESTINATION}")
-    set(ARG_DESTINATION "/home/pi/vision_system_ws/install/fsm_raspicam/${ARG_DESTINATION}")
+    set(ARG_DESTINATION "/home/pi/mar_frankenrotor_ros/ros2/vision_system_ws/install/fsm_raspicam/${ARG_DESTINATION}")
   endif()
   if(NOT EXISTS "${ARG_DESTINATION}")
     file(MAKE_DIRECTORY "${ARG_DESTINATION}")
@@ -251,7 +251,7 @@ function(ament_cmake_symlink_install_targets)
 
     # make destination an absolute path and ensure that it exists
     if(NOT IS_ABSOLUTE "${destination}")
-      set(destination "/home/pi/vision_system_ws/install/fsm_raspicam/${destination}")
+      set(destination "/home/pi/mar_frankenrotor_ros/ros2/vision_system_ws/install/fsm_raspicam/${destination}")
     endif()
     if(NOT EXISTS "${destination}")
       file(MAKE_DIRECTORY "${destination}")
@@ -311,34 +311,34 @@ message(STATUS "Execute custom install script")
 # begin of custom install code
 
 # install("TARGETS" "camera_main_node" "DESTINATION" "lib/fsm_raspicam")
-include("/home/pi/vision_system_ws/build/fsm_raspicam/ament_cmake_symlink_install_targets_0_${CMAKE_INSTALL_CONFIG_NAME}.cmake")
+include("/home/pi/mar_frankenrotor_ros/ros2/vision_system_ws/build/fsm_raspicam/ament_cmake_symlink_install_targets_0_${CMAKE_INSTALL_CONFIG_NAME}.cmake")
 
-# install(FILES "/home/pi/vision_system_ws/build/fsm_raspicam/ament_cmake_index/share/ament_index/resource_index/package_run_dependencies/fsm_raspicam" "DESTINATION" "share/ament_index/resource_index/package_run_dependencies")
-ament_cmake_symlink_install_files("/home/pi/vision_system_ws/src/fsm_raspicam" FILES "/home/pi/vision_system_ws/build/fsm_raspicam/ament_cmake_index/share/ament_index/resource_index/package_run_dependencies/fsm_raspicam" "DESTINATION" "share/ament_index/resource_index/package_run_dependencies")
+# install(FILES "/home/pi/mar_frankenrotor_ros/ros2/vision_system_ws/build/fsm_raspicam/ament_cmake_index/share/ament_index/resource_index/package_run_dependencies/fsm_raspicam" "DESTINATION" "share/ament_index/resource_index/package_run_dependencies")
+ament_cmake_symlink_install_files("/home/pi/mar_frankenrotor_ros/ros2/vision_system_ws/src/fsm_raspicam" FILES "/home/pi/mar_frankenrotor_ros/ros2/vision_system_ws/build/fsm_raspicam/ament_cmake_index/share/ament_index/resource_index/package_run_dependencies/fsm_raspicam" "DESTINATION" "share/ament_index/resource_index/package_run_dependencies")
 
-# install(FILES "/home/pi/vision_system_ws/build/fsm_raspicam/ament_cmake_index/share/ament_index/resource_index/parent_prefix_path/fsm_raspicam" "DESTINATION" "share/ament_index/resource_index/parent_prefix_path")
-ament_cmake_symlink_install_files("/home/pi/vision_system_ws/src/fsm_raspicam" FILES "/home/pi/vision_system_ws/build/fsm_raspicam/ament_cmake_index/share/ament_index/resource_index/parent_prefix_path/fsm_raspicam" "DESTINATION" "share/ament_index/resource_index/parent_prefix_path")
+# install(FILES "/home/pi/mar_frankenrotor_ros/ros2/vision_system_ws/build/fsm_raspicam/ament_cmake_index/share/ament_index/resource_index/parent_prefix_path/fsm_raspicam" "DESTINATION" "share/ament_index/resource_index/parent_prefix_path")
+ament_cmake_symlink_install_files("/home/pi/mar_frankenrotor_ros/ros2/vision_system_ws/src/fsm_raspicam" FILES "/home/pi/mar_frankenrotor_ros/ros2/vision_system_ws/build/fsm_raspicam/ament_cmake_index/share/ament_index/resource_index/parent_prefix_path/fsm_raspicam" "DESTINATION" "share/ament_index/resource_index/parent_prefix_path")
 
 # install(FILES "/home/pi/ros2_ws/install/ament_cmake_core/share/ament_cmake_core/cmake/environment_hooks/environment/ament_prefix_path.sh" "DESTINATION" "share/fsm_raspicam/environment")
-ament_cmake_symlink_install_files("/home/pi/vision_system_ws/src/fsm_raspicam" FILES "/home/pi/ros2_ws/install/ament_cmake_core/share/ament_cmake_core/cmake/environment_hooks/environment/ament_prefix_path.sh" "DESTINATION" "share/fsm_raspicam/environment")
+ament_cmake_symlink_install_files("/home/pi/mar_frankenrotor_ros/ros2/vision_system_ws/src/fsm_raspicam" FILES "/home/pi/ros2_ws/install/ament_cmake_core/share/ament_cmake_core/cmake/environment_hooks/environment/ament_prefix_path.sh" "DESTINATION" "share/fsm_raspicam/environment")
 
 # install(FILES "/home/pi/ros2_ws/install/ament_cmake_core/share/ament_cmake_core/cmake/environment_hooks/environment/path.sh" "DESTINATION" "share/fsm_raspicam/environment")
-ament_cmake_symlink_install_files("/home/pi/vision_system_ws/src/fsm_raspicam" FILES "/home/pi/ros2_ws/install/ament_cmake_core/share/ament_cmake_core/cmake/environment_hooks/environment/path.sh" "DESTINATION" "share/fsm_raspicam/environment")
+ament_cmake_symlink_install_files("/home/pi/mar_frankenrotor_ros/ros2/vision_system_ws/src/fsm_raspicam" FILES "/home/pi/ros2_ws/install/ament_cmake_core/share/ament_cmake_core/cmake/environment_hooks/environment/path.sh" "DESTINATION" "share/fsm_raspicam/environment")
 
-# install(FILES "/home/pi/vision_system_ws/build/fsm_raspicam/ament_cmake_environment_hooks/local_setup.bash" "DESTINATION" "share/fsm_raspicam")
-ament_cmake_symlink_install_files("/home/pi/vision_system_ws/src/fsm_raspicam" FILES "/home/pi/vision_system_ws/build/fsm_raspicam/ament_cmake_environment_hooks/local_setup.bash" "DESTINATION" "share/fsm_raspicam")
+# install(FILES "/home/pi/mar_frankenrotor_ros/ros2/vision_system_ws/build/fsm_raspicam/ament_cmake_environment_hooks/local_setup.bash" "DESTINATION" "share/fsm_raspicam")
+ament_cmake_symlink_install_files("/home/pi/mar_frankenrotor_ros/ros2/vision_system_ws/src/fsm_raspicam" FILES "/home/pi/mar_frankenrotor_ros/ros2/vision_system_ws/build/fsm_raspicam/ament_cmake_environment_hooks/local_setup.bash" "DESTINATION" "share/fsm_raspicam")
 
-# install(FILES "/home/pi/vision_system_ws/build/fsm_raspicam/ament_cmake_environment_hooks/local_setup.sh" "DESTINATION" "share/fsm_raspicam")
-ament_cmake_symlink_install_files("/home/pi/vision_system_ws/src/fsm_raspicam" FILES "/home/pi/vision_system_ws/build/fsm_raspicam/ament_cmake_environment_hooks/local_setup.sh" "DESTINATION" "share/fsm_raspicam")
+# install(FILES "/home/pi/mar_frankenrotor_ros/ros2/vision_system_ws/build/fsm_raspicam/ament_cmake_environment_hooks/local_setup.sh" "DESTINATION" "share/fsm_raspicam")
+ament_cmake_symlink_install_files("/home/pi/mar_frankenrotor_ros/ros2/vision_system_ws/src/fsm_raspicam" FILES "/home/pi/mar_frankenrotor_ros/ros2/vision_system_ws/build/fsm_raspicam/ament_cmake_environment_hooks/local_setup.sh" "DESTINATION" "share/fsm_raspicam")
 
-# install(FILES "/home/pi/vision_system_ws/build/fsm_raspicam/ament_cmake_environment_hooks/local_setup.zsh" "DESTINATION" "share/fsm_raspicam")
-ament_cmake_symlink_install_files("/home/pi/vision_system_ws/src/fsm_raspicam" FILES "/home/pi/vision_system_ws/build/fsm_raspicam/ament_cmake_environment_hooks/local_setup.zsh" "DESTINATION" "share/fsm_raspicam")
+# install(FILES "/home/pi/mar_frankenrotor_ros/ros2/vision_system_ws/build/fsm_raspicam/ament_cmake_environment_hooks/local_setup.zsh" "DESTINATION" "share/fsm_raspicam")
+ament_cmake_symlink_install_files("/home/pi/mar_frankenrotor_ros/ros2/vision_system_ws/src/fsm_raspicam" FILES "/home/pi/mar_frankenrotor_ros/ros2/vision_system_ws/build/fsm_raspicam/ament_cmake_environment_hooks/local_setup.zsh" "DESTINATION" "share/fsm_raspicam")
 
-# install(FILES "/home/pi/vision_system_ws/build/fsm_raspicam/ament_cmake_index/share/ament_index/resource_index/packages/fsm_raspicam" "DESTINATION" "share/ament_index/resource_index/packages")
-ament_cmake_symlink_install_files("/home/pi/vision_system_ws/src/fsm_raspicam" FILES "/home/pi/vision_system_ws/build/fsm_raspicam/ament_cmake_index/share/ament_index/resource_index/packages/fsm_raspicam" "DESTINATION" "share/ament_index/resource_index/packages")
+# install(FILES "/home/pi/mar_frankenrotor_ros/ros2/vision_system_ws/build/fsm_raspicam/ament_cmake_index/share/ament_index/resource_index/packages/fsm_raspicam" "DESTINATION" "share/ament_index/resource_index/packages")
+ament_cmake_symlink_install_files("/home/pi/mar_frankenrotor_ros/ros2/vision_system_ws/src/fsm_raspicam" FILES "/home/pi/mar_frankenrotor_ros/ros2/vision_system_ws/build/fsm_raspicam/ament_cmake_index/share/ament_index/resource_index/packages/fsm_raspicam" "DESTINATION" "share/ament_index/resource_index/packages")
 
-# install(FILES "/home/pi/vision_system_ws/build/fsm_raspicam/ament_cmake_core/fsm_raspicamConfig.cmake" "/home/pi/vision_system_ws/build/fsm_raspicam/ament_cmake_core/fsm_raspicamConfig-version.cmake" "DESTINATION" "share/fsm_raspicam/cmake")
-ament_cmake_symlink_install_files("/home/pi/vision_system_ws/src/fsm_raspicam" FILES "/home/pi/vision_system_ws/build/fsm_raspicam/ament_cmake_core/fsm_raspicamConfig.cmake" "/home/pi/vision_system_ws/build/fsm_raspicam/ament_cmake_core/fsm_raspicamConfig-version.cmake" "DESTINATION" "share/fsm_raspicam/cmake")
+# install(FILES "/home/pi/mar_frankenrotor_ros/ros2/vision_system_ws/build/fsm_raspicam/ament_cmake_core/fsm_raspicamConfig.cmake" "/home/pi/mar_frankenrotor_ros/ros2/vision_system_ws/build/fsm_raspicam/ament_cmake_core/fsm_raspicamConfig-version.cmake" "DESTINATION" "share/fsm_raspicam/cmake")
+ament_cmake_symlink_install_files("/home/pi/mar_frankenrotor_ros/ros2/vision_system_ws/src/fsm_raspicam" FILES "/home/pi/mar_frankenrotor_ros/ros2/vision_system_ws/build/fsm_raspicam/ament_cmake_core/fsm_raspicamConfig.cmake" "/home/pi/mar_frankenrotor_ros/ros2/vision_system_ws/build/fsm_raspicam/ament_cmake_core/fsm_raspicamConfig-version.cmake" "DESTINATION" "share/fsm_raspicam/cmake")
 
-# install(FILES "/home/pi/vision_system_ws/src/fsm_raspicam/package.xml" "DESTINATION" "share/fsm_raspicam")
-ament_cmake_symlink_install_files("/home/pi/vision_system_ws/src/fsm_raspicam" FILES "/home/pi/vision_system_ws/src/fsm_raspicam/package.xml" "DESTINATION" "share/fsm_raspicam")
+# install(FILES "/home/pi/mar_frankenrotor_ros/ros2/vision_system_ws/src/fsm_raspicam/package.xml" "DESTINATION" "share/fsm_raspicam")
+ament_cmake_symlink_install_files("/home/pi/mar_frankenrotor_ros/ros2/vision_system_ws/src/fsm_raspicam" FILES "/home/pi/mar_frankenrotor_ros/ros2/vision_system_ws/src/fsm_raspicam/package.xml" "DESTINATION" "share/fsm_raspicam")

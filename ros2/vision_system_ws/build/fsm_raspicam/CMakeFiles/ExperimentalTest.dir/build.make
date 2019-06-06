@@ -43,10 +43,10 @@ RM = /usr/bin/cmake -E remove -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /home/pi/vision_system_ws/src/fsm_raspicam
+CMAKE_SOURCE_DIR = /home/pi/mar_frankenrotor_ros/ros2/vision_system_ws/src/fsm_raspicam
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /home/pi/vision_system_ws/build/fsm_raspicam
+CMAKE_BINARY_DIR = /home/pi/mar_frankenrotor_ros/ros2/vision_system_ws/build/fsm_raspicam
 
 # Utility rule file for ExperimentalTest.
 
@@ -71,6 +71,6 @@ CMakeFiles/ExperimentalTest.dir/clean:
 .PHONY : CMakeFiles/ExperimentalTest.dir/clean
 
 CMakeFiles/ExperimentalTest.dir/depend:
-	cd /home/pi/vision_system_ws/build/fsm_raspicam && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /home/pi/vision_system_ws/src/fsm_raspicam /home/pi/vision_system_ws/src/fsm_raspicam /home/pi/vision_system_ws/build/fsm_raspicam /home/pi/vision_system_ws/build/fsm_raspicam /home/pi/vision_system_ws/build/fsm_raspicam/CMakeFiles/ExperimentalTest.dir/DependInfo.cmake --color=$(COLOR)
+	cd /home/pi/mar_frankenrotor_ros/ros2/vision_system_ws/build/fsm_raspicam && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /home/pi/mar_frankenrotor_ros/ros2/vision_system_ws/src/fsm_raspicam /home/pi/mar_frankenrotor_ros/ros2/vision_system_ws/src/fsm_raspicam /home/pi/mar_frankenrotor_ros/ros2/vision_system_ws/build/fsm_raspicam /home/pi/mar_frankenrotor_ros/ros2/vision_system_ws/build/fsm_raspicam /home/pi/mar_frankenrotor_ros/ros2/vision_system_ws/build/fsm_raspicam/CMakeFiles/ExperimentalTest.dir/DependInfo.cmake --color=$(COLOR)
 .PHONY : CMakeFiles/ExperimentalTest.dir/depend
 

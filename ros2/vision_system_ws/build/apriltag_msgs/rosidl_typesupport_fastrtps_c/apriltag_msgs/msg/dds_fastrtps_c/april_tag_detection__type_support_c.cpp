@@ -37,7 +37,7 @@ extern "C"
 {
 #endif
 
-#include "apriltag_msgs/msg/point__functions.h"  // centre, corners
+#include "apriltag_msgs/msg/point__functions.h"  // corners, centre
 #include "rosidl_generator_c/primitives_sequence.h"  // homography
 #include "rosidl_generator_c/primitives_sequence_functions.h"  // homography
 #include "rosidl_generator_c/string.h"  // family

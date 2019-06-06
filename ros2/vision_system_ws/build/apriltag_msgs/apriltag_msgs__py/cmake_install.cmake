@@ -1,8 +1,8 @@
-# Install script for directory: /home/pi/vision_system_ws/build/apriltag_msgs/apriltag_msgs__py
+# Install script for directory: /home/pi/mar_frankenrotor_ros/ros2/vision_system_ws/build/apriltag_msgs/apriltag_msgs__py
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
-  set(CMAKE_INSTALL_PREFIX "/home/pi/vision_system_ws/install/apriltag_msgs")
+  set(CMAKE_INSTALL_PREFIX "/home/pi/mar_frankenrotor_ros/ros2/vision_system_ws/install/apriltag_msgs")
 endif()
 string(REGEX REPLACE "/$" "" CMAKE_INSTALL_PREFIX "${CMAKE_INSTALL_PREFIX}")
 

@@ -43,10 +43,10 @@ RM = /usr/bin/cmake -E remove -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /home/pi/vision_system_ws/src/apriltag2_node/apriltag_msgs
+CMAKE_SOURCE_DIR = /home/pi/mar_frankenrotor_ros/ros2/vision_system_ws/src/apriltag2_node/apriltag_msgs
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /home/pi/vision_system_ws/build/apriltag_msgs
+CMAKE_BINARY_DIR = /home/pi/mar_frankenrotor_ros/ros2/vision_system_ws/build/apriltag_msgs
 
 # Utility rule file for ExperimentalBuild.
 
@@ -71,6 +71,6 @@ CMakeFiles/ExperimentalBuild.dir/clean:
 .PHONY : CMakeFiles/ExperimentalBuild.dir/clean
 
 CMakeFiles/ExperimentalBuild.dir/depend:
-	cd /home/pi/vision_system_ws/build/apriltag_msgs && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /home/pi/vision_system_ws/src/apriltag2_node/apriltag_msgs /home/pi/vision_system_ws/src/apriltag2_node/apriltag_msgs /home/pi/vision_system_ws/build/apriltag_msgs /home/pi/vision_system_ws/build/apriltag_msgs /home/pi/vision_system_ws/build/apriltag_msgs/CMakeFiles/ExperimentalBuild.dir/DependInfo.cmake --color=$(COLOR)
+	cd /home/pi/mar_frankenrotor_ros/ros2/vision_system_ws/build/apriltag_msgs && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /home/pi/mar_frankenrotor_ros/ros2/vision_system_ws/src/apriltag2_node/apriltag_msgs /home/pi/mar_frankenrotor_ros/ros2/vision_system_ws/src/apriltag2_node/apriltag_msgs /home/pi/mar_frankenrotor_ros/ros2/vision_system_ws/build/apriltag_msgs /home/pi/mar_frankenrotor_ros/ros2/vision_system_ws/build/apriltag_msgs /home/pi/mar_frankenrotor_ros/ros2/vision_system_ws/build/apriltag_msgs/CMakeFiles/ExperimentalBuild.dir/DependInfo.cmake --color=$(COLOR)
 .PHONY : CMakeFiles/ExperimentalBuild.dir/depend
 

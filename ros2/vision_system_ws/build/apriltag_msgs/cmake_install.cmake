@@ -1,8 +1,8 @@
-# Install script for directory: /home/pi/vision_system_ws/src/apriltag2_node/apriltag_msgs
+# Install script for directory: /home/pi/mar_frankenrotor_ros/ros2/vision_system_ws/src/apriltag2_node/apriltag_msgs
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
-  set(CMAKE_INSTALL_PREFIX "/home/pi/vision_system_ws/install/apriltag_msgs")
+  set(CMAKE_INSTALL_PREFIX "/home/pi/mar_frankenrotor_ros/ros2/vision_system_ws/install/apriltag_msgs")
 endif()
 string(REGEX REPLACE "/$" "" CMAKE_INSTALL_PREFIX "${CMAKE_INSTALL_PREFIX}")
 
@@ -33,14 +33,14 @@ if(NOT DEFINED CMAKE_INSTALL_SO_NO_EXE)
 endif()
 
 if("${CMAKE_INSTALL_COMPONENT}" STREQUAL "Unspecified" OR NOT CMAKE_INSTALL_COMPONENT)
-  include("/home/pi/vision_system_ws/build/apriltag_msgs/ament_cmake_symlink_install/ament_cmake_symlink_install.cmake")
+  include("/home/pi/mar_frankenrotor_ros/ros2/vision_system_ws/build/apriltag_msgs/ament_cmake_symlink_install/ament_cmake_symlink_install.cmake")
 endif()
 
 if("${CMAKE_INSTALL_COMPONENT}" STREQUAL "Unspecified" OR NOT CMAKE_INSTALL_COMPONENT)
   execute_process(
         COMMAND
         "/usr/bin/python3" "-m" "compileall"
-        "/home/pi/vision_system_ws/install/apriltag_msgs/lib/python3.5/site-packages/apriltag_msgs/__init__.py"
+        "/home/pi/mar_frankenrotor_ros/ros2/vision_system_ws/install/apriltag_msgs/lib/python3.5/site-packages/apriltag_msgs/__init__.py"
       )
 endif()
 
@@ -48,13 +48,13 @@ if("${CMAKE_INSTALL_COMPONENT}" STREQUAL "Unspecified" OR NOT CMAKE_INSTALL_COMP
   execute_process(
         COMMAND
         "/usr/bin/python3" "-m" "compileall"
-        "/home/pi/vision_system_ws/install/apriltag_msgs/lib/python3.5/site-packages/apriltag_msgs/msg/__init__.py"
+        "/home/pi/mar_frankenrotor_ros/ros2/vision_system_ws/install/apriltag_msgs/lib/python3.5/site-packages/apriltag_msgs/msg/__init__.py"
       )
 endif()
 
 if(NOT CMAKE_INSTALL_LOCAL_ONLY)
   # Include the install script for each subdirectory.
-  include("/home/pi/vision_system_ws/build/apriltag_msgs/apriltag_msgs__py/cmake_install.cmake")
+  include("/home/pi/mar_frankenrotor_ros/ros2/vision_system_ws/build/apriltag_msgs/apriltag_msgs__py/cmake_install.cmake")
 
 endif()
 
@@ -66,5 +66,5 @@ endif()
 
 string(REPLACE ";" "\n" CMAKE_INSTALL_MANIFEST_CONTENT
        "${CMAKE_INSTALL_MANIFEST_FILES}")
-file(WRITE "/home/pi/vision_system_ws/build/apriltag_msgs/${CMAKE_INSTALL_MANIFEST}"
+file(WRITE "/home/pi/mar_frankenrotor_ros/ros2/vision_system_ws/build/apriltag_msgs/${CMAKE_INSTALL_MANIFEST}"
      "${CMAKE_INSTALL_MANIFEST_CONTENT}")

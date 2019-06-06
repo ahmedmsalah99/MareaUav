@@ -1,9 +1,9 @@
 {
   "package_name": "ultrasonic_sensor",
-  "output_dir": "/home/pi/vision_system_ws/build/ultrasonic_sensor/rosidl_generator_cpp/ultrasonic_sensor",
+  "output_dir": "/home/pi/mar_frankenrotor_ros/ros2/vision_system_ws/build/ultrasonic_sensor/rosidl_generator_cpp/ultrasonic_sensor",
   "template_dir": "/home/pi/ros2_ws/install/rosidl_generator_cpp/share/rosidl_generator_cpp/cmake/../resource",
   "ros_interface_files": [
-    "/home/pi/vision_system_ws/src/ultrasonic_sensor/msg/UltrasonicMsg.msg"
+    "/home/pi/mar_frankenrotor_ros/ros2/vision_system_ws/src/ultrasonic_sensor/msg/UltrasonicMsg.msg"
   ],
   "ros_interface_dependencies": [
     "builtin_interfaces:/home/pi/ros2_ws/install/builtin_interfaces/share/builtin_interfaces/msg/Duration.idl",
@@ -20,7 +20,7 @@
     "/home/pi/ros2_ws/install/rosidl_generator_cpp/share/rosidl_generator_cpp/cmake/../resource/srv.hpp.em",
     "/home/pi/ros2_ws/install/rosidl_generator_cpp/share/rosidl_generator_cpp/cmake/../resource/srv__struct.hpp.em",
     "/home/pi/ros2_ws/install/rosidl_generator_cpp/share/rosidl_generator_cpp/cmake/../resource/srv__traits.hpp.em",
-    "/home/pi/vision_system_ws/src/ultrasonic_sensor/msg/UltrasonicMsg.msg",
+    "/home/pi/mar_frankenrotor_ros/ros2/vision_system_ws/src/ultrasonic_sensor/msg/UltrasonicMsg.msg",
     "/home/pi/ros2_ws/install/builtin_interfaces/share/builtin_interfaces/msg/Duration.idl",
     "/home/pi/ros2_ws/install/builtin_interfaces/share/builtin_interfaces/msg/Time.idl",
     "/home/pi/ros2_ws/install/builtin_interfaces/share/builtin_interfaces/msg/Duration.msg",

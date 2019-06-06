@@ -19,7 +19,7 @@
 #include <vector>
 
 // include message dependencies
-#include "apriltag_msgs/msg/point.hpp"  // centre, corners
+#include "apriltag_msgs/msg/point.hpp"  // corners, centre
 
 #ifndef _WIN32
 # define DEPRECATED_apriltag_msgs_msg_AprilTagDetection __attribute__((deprecated))

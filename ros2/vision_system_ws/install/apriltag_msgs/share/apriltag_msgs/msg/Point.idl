@@ -1,13 +1,1 @@
-// generated from rosidl_adapter/resource/msg.idl.em
-// with input from apriltag_msgs/msg/Point.msg
-
-
-module apriltag_msgs {
-  module msg {
-    struct Point {
-      double x;
-
-      double y;
-    };
-  };
-};
+/home/pi/mar_frankenrotor_ros/ros2/vision_system_ws/build/apriltag_msgs/rosidl_adapter/apriltag_msgs/msg/Point.idl
