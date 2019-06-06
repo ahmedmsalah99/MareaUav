@@ -27,3 +27,30 @@ This README would normally document whatever steps are necessary to get your app
 
 * Repo owner or admin
 * Other community or team contact
+
+# AprilTAG Compile #
+Extract the .tar.gz file into a temporary directory. Issue the following commands:
+
+
+```bash
+make
+sudo make install
+```
+
+Create a file named apriltag.pc and put it into /usr/local/lib/pkgconfig with this content:
+
+
+```bash
+prefix=/usr/local
+exec_prefix=${prefix}
+libdir=${exec_prefix}/lib
+includedir=${exec_prefix}/include
+
+Name: apriltag
+Description: Vision system
+Version: 3.0
+Libs: -L${libdir} -lapriltag
+Cflags: -I${includedir}/apriltag/
+```
+
+
