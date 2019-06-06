@@ -29,8 +29,11 @@ This README would normally document whatever steps are necessary to get your app
 * Other community or team contact
 
 # AprilTAG Compile #
-Extract the .tar.gz file into a temporary directory. Issue the following commands:
+Download this archive:
 
+[apriltags-raspberry](https://bitbucket.org/isme_robotics/mar_frankenrotor_ros/downloads/apriltags-raspberry.tar.gz)
+
+Extract the .tar.gz file into a temporary directory. Issue the following commands:
 
 ```bash
 make
@@ -38,7 +41,6 @@ sudo make install
 ```
 
 Create a file named apriltag.pc and put it into /usr/local/lib/pkgconfig with this content:
-
 
 ```bash
 prefix=/usr/local
