@@ -1,1 +1,0 @@
-/home/pi/mar_frankenrotor_ros/ros2/vision_system_ws/build/fsm_raspicam/ament_cmake_core/fsm_raspicamConfig.cmake

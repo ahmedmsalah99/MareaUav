@@ -1,1 +1,0 @@
-ament_cmake_symlink_install_targets("TARGET_FILES" "/home/pi/mar_frankenrotor_ros/ros2/vision_system_ws/build/fsm_raspicam/camera_main_node" "TARGETS" "camera_main_node" "DESTINATION" "lib/fsm_raspicam")

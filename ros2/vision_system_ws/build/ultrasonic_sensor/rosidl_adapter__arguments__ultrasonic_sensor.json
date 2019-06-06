@@ -1,6 +1,0 @@
-{
-  "package_name": "ultrasonic_sensor",
-  "non_idl_tuples": [
-    "/home/pi/mar_frankenrotor_ros/ros2/vision_system_ws/src/ultrasonic_sensor:msg/UltrasonicMsg.msg"
-  ]
-}

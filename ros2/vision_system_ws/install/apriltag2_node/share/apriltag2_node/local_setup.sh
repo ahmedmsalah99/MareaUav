@@ -1,1 +1,0 @@
-/home/pi/mar_frankenrotor_ros/ros2/vision_system_ws/build/apriltag2_node/ament_cmake_environment_hooks/local_setup.sh

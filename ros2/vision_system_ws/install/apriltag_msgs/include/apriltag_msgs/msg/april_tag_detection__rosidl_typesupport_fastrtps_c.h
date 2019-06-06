@@ -1,1 +1,0 @@
-/home/pi/mar_frankenrotor_ros/ros2/vision_system_ws/build/apriltag_msgs/rosidl_typesupport_fastrtps_c/apriltag_msgs/msg/april_tag_detection__rosidl_typesupport_fastrtps_c.h

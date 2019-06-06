@@ -1,1 +1,0 @@
-/home/pi/mar_frankenrotor_ros/ros2/vision_system_ws/build/apriltag_msgs/rosidl_generator_cpp/apriltag_msgs/msg/point.hpp

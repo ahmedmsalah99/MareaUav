@@ -1,8 +1,0 @@
-{
-  "package_name": "apriltag_msgs",
-  "non_idl_tuples": [
-    "/home/pi/mar_frankenrotor_ros/ros2/vision_system_ws/src/apriltag2_node/apriltag_msgs:msg/Point.msg",
-    "/home/pi/mar_frankenrotor_ros/ros2/vision_system_ws/src/apriltag2_node/apriltag_msgs:msg/AprilTagDetection.msg",
-    "/home/pi/mar_frankenrotor_ros/ros2/vision_system_ws/src/apriltag2_node/apriltag_msgs:msg/AprilTagDetectionArray.msg"
-  ]
-}

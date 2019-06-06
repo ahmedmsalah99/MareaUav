@@ -1,1 +1,0 @@
-ament_cmake_symlink_install_targets("TARGET_FILES" "/home/pi/mar_frankenrotor_ros/ros2/vision_system_ws/build/apriltag_msgs/libapriltag_msgs__rosidl_typesupport_c.so" "TARGETS" "apriltag_msgs__rosidl_typesupport_c" "ARCHIVE_DESTINATION" "lib" "LIBRARY_DESTINATION" "lib" "RUNTIME_DESTINATION" "bin")

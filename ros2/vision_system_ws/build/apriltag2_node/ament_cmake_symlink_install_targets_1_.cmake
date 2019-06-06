@@ -1,1 +1,0 @@
-ament_cmake_symlink_install_targets("TARGET_FILES" "/home/pi/mar_frankenrotor_ros/ros2/vision_system_ws/build/apriltag2_node/apriltag2_node" "TARGETS" "apriltag2_node" "DESTINATION" "lib/apriltag2_node")
