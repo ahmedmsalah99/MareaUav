@@ -1,6 +1,6 @@
-ros2/vision_system_ws/build/
-ros2/vision_system_ws/install/
-ros2/vision_system_ws/log/
+**/build/
+**/install/
+**/log/
 CMakeLists.txt.user
 __pycache__/
 DEFAULT_FASTRTPS_PROFILES.xml
