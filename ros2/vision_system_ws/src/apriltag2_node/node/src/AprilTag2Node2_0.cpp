@@ -55,7 +55,7 @@ AprilTag2Node::AprilTag2Node() : Node("apriltag2", "apriltag", true)
 	get_parameter_or<bool>("z_up", z_up, false);
 
 	if(!tag_create.count(tag_family)) {
-		throw std::runtime_error("unsupported tag family: "+tag_family);
+		throw std::runtime_error("unsupported tag family: " + tag_family);
 	}
 	tf = tag_create.at(tag_family)();
 	td = apriltag_detector_create();
@@ -169,17 +169,13 @@ void AprilTag2Node::publish_data_center(const apriltag_msgs::msg::AprilTagDetect
 		double l3 = sqrt( pow(Detections.detections.at(i).corners[3].y - Detections.detections.at(i).corners[2].y,2) + pow(Detections.detections.at(i).corners[3].x - Detections.detections.at(i).corners[2].x,2));
 		double l4 = sqrt( pow(Detections.detections.at(i).corners[0].y - Detections.detections.at(i).corners[3].y,2) + pow(Detections.detections.at(i).corners[0].x - Detections.detections.at(i).corners[3].x,2));
 
-#ifdef DEBUG_MSGS
-		std::cerr<<"lati: "<<" "<<l1<<" "<<l2<<" "<<l3<<" "<<l4<<std::endl;
-#endif
-		areaID(i,0) = i;
+		RCLCPP_INFO(get_logger(), "Lati: %lf %lf %lf %lf", l1, l2, l3, l4);
 
+		areaID(i,0) = i;
 		areaID(i,1) = pow( (l1 + l2 + l3 +l4)/4,2 );
 
-#ifdef DEBUG_MSGS
-		std::cerr<<"Area: "<<areaID(i,1)<<std::endl;
-#endif
-		}
+		RCLCPP_INFO(get_logger(), "Area: %lf", areaID(i, 1));
+	}
 
 	double weighTot = 0;
 
@@ -211,7 +207,6 @@ void AprilTag2Node::publish_data_center(const apriltag_msgs::msg::AprilTagDetect
 
 void AprilTag2Node::getPose(const matd_t& H, geometry_msgs::msg::Transform& t, const int ID, const bool z_up)
 {
-
 	const Eigen::Map<const Mat3> Hm(H.data);
 
 	// compute extrinsic camera parameter
@@ -234,13 +229,12 @@ void AprilTag2Node::getPose(const matd_t& H, geometry_msgs::msg::Transform& t, c
 
 	const Eigen::Vector3d tt = T.rightCols<1>() / ((T.col(0).norm() + T.col(0).norm()) / 2.0) * (platform_tags[ID] / 2.0);
 
-
 	Eigen::Matrix4d pose;
 
-	pose   << R(0,0),R(0,1),R(0,2),tt[0],
-				R(1,0),R(1,1),R(1,2),tt[1],
-				R(2,0),R(2,1),R(2,2),tt[2],
-					0,     0,	 0,	   1;
+	pose << R(0,0), R(0,1), R(0,2), tt[0],
+				R(1,0), R(1,1), R(1,2), tt[1],
+				R(2,0), R(2,1), R(2,2), tt[2],
+					 0,      0,      0,     1;
 
 	if (ID == 1) {
 		pose = pose * TAGS.TAG1_T_TAG5;
