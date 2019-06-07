@@ -14,30 +14,33 @@ class FiniteStateMachine;
 class State {
 
 public:
-	rclcpp::Publisher<sensor_msgs::msg::Image>::SharedPtr publisher_raw;
-	rclcpp::Publisher<sensor_msgs::msg::CompressedImage>::SharedPtr publisher_compressed;
-	rclcpp::Publisher<sensor_msgs::msg::CameraInfo>::SharedPtr pub_cameraInfo;
-
-	static raspicam::RaspiCam cameraRaw_;
-	static raspicam::RaspiCam cameraComp_;
-
 	State(FiniteStateMachine *machine);
-	~State();
+	virtual ~State() = default;
 
-	enum states { IDLE, LANDING, SEARCH, STOP };
-
-	int getID() const;
-	void setMode(int mode);
+	int32_t getID() const;
+	void setMode(int32_t mode);
 //	void setPrevMode();
 
 	virtual void setParameters() = 0;
 
 protected:
 	virtual void setID() = 0;
-	int ID;
-	FiniteStateMachine *Machine;
-	static int flightMode_;
-	static int preFlightMode_;
+
+public:
+	rclcpp::Publisher<sensor_msgs::msg::Image>::SharedPtr           publisherRaw_;
+	rclcpp::Publisher<sensor_msgs::msg::CompressedImage>::SharedPtr publisherCompressed_;
+	rclcpp::Publisher<sensor_msgs::msg::CameraInfo>::SharedPtr      pubCameraInfo_;
+
+	static raspicam::RaspiCam cameraRaw_;
+	static raspicam::RaspiCam cameraComp_;
+
+	enum states { IDLE, LANDING, SEARCH, STOP };
+
+protected:
+	int32_t             id_;
+	FiniteStateMachine *machine_;
+	static int32_t      flightMode_;
+	static int32_t      preFlightMode_;
 
 };
 
