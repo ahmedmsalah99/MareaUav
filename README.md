@@ -36,11 +36,15 @@ Download this archive:
 Extract the .tar.gz. file into a temporary directory. Issue the following commands:
 
 ```bash
+cd build
 make
 sudo make install
+cd ..
+cd tools
+cd @GEOGRAPHICLIB_DATA@
+sudo mkdir /usr/local/share/GeographicLib/
+sudo cp -rv * /usr/local/share/GeographicLib/
 ```
-
-
 
 # AprilTAG Compile #
 Download this archive:
@@ -54,7 +58,7 @@ make
 sudo make install
 ```
 
-Create a file named apriltag.pc and put it into /usr/local/lib/pkgconfig with this content:
+Create a file named apriltag.pc and put it into `/usr/local/lib/pkgconfig` with this content:
 
 ```bash
 prefix=/usr/local
