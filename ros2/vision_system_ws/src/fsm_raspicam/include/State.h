@@ -18,8 +18,8 @@ public:
 	rclcpp::Publisher<sensor_msgs::msg::CompressedImage>::SharedPtr publisher_compressed;
 	rclcpp::Publisher<sensor_msgs::msg::CameraInfo>::SharedPtr pub_cameraInfo;
 
-	static raspicam::RaspiCam Camera_raw;
-	static raspicam::RaspiCam Camera_comp;
+	static raspicam::RaspiCam cameraRaw_;
+	static raspicam::RaspiCam cameraComp_;
 
 	State(FiniteStateMachine *machine);
 	~State();
@@ -36,8 +36,8 @@ protected:
 	virtual void setID() = 0;
 	int ID;
 	FiniteStateMachine *Machine;
-	static int FlightMode;
-	static int PreFlightMode;
+	static int flightMode_;
+	static int preFlightMode_;
 
 };
 

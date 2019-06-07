@@ -6,16 +6,16 @@ FiniteStateMachine::FiniteStateMachine()
 
 State* FiniteStateMachine::getState()
 {
-	return CurrentState;
+	return currentState_;
 }
 
 FiniteStateMachine::~FiniteStateMachine()
 {
 }
 
-void FiniteStateMachine::setState(State *ActualState)
+void FiniteStateMachine::setState(State *actualState)
 {
-	CurrentState=ActualState;
+	currentState_ = actualState;
 }
 
 int FiniteStateMachine::getActualID()

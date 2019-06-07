@@ -7,10 +7,10 @@
 
 void IdleState::setParameters()
 {
-	if (FlightMode == 0) {
+	if (flightMode_ == 0) {
 		// raw image
-		Camera_comp.release();
-		Camera_raw.release();
+		cameraComp_.release();
+		cameraRaw_.release();
 
 		usleep(2*1000000);
 
@@ -20,35 +20,34 @@ void IdleState::setParameters()
 		//Camera_raw.setFrameRate(20);
 
 		std::cout<<"Opening Camera for raw image..."<<std::endl;
-		if (!Camera_raw.open()) {
+		if (!cameraRaw_.open()) {
 			std::cerr<<"Error opening camera"<<std::endl;
 		}
 		std::cout<<"Sleeping for 3 secs"<<std::endl;
 
 		usleep(3 * 1000000); // wait a while until camera stabilizes
 
-		this->Machine->setState(nextLandingState);
+		this->Machine->setState(nextLandingState_);
 
 	}
 	// land
-	else if( FlightMode == 1 ){
+	else if (flightMode_ == 1) {
 		// Compressed image
 
-		Camera_comp.release();
-		Camera_raw.release();
+		cameraComp_.release();
+		cameraRaw_.release();
 
-		usleep(2*1000000);
+		usleep(2 * 1000000);
 
 		std::cout<<"Opening Camera for compressed image..."<<std::endl;
-		if ( !Camera_comp.open()) {
+		if ( !cameraComp_.open()) {
 			std::cerr<<"Error opening camera"<<std::endl;
 		}
 		std::cout<<"Sleeping for 3 secs"<<std::endl;
 
 		usleep(3 * 1000000); // wait a while until camera stabilizes
 
-		this->Machine->setState(nextSearchState);
-
+		this->Machine->setState(nextSearchState_);
 	}
 	//PreFlightMode = FlightMode;
 }
@@ -59,19 +58,19 @@ void LandingState::setParameters()
 
 	//static bool save = true;
 
-	gettimeofday(&time,NULL);
+	gettimeofday(&time_,NULL);
 
-	Camera_raw.grab();
+	cameraRaw_.grab();
 	//extract the image in rgb format
-	Camera_raw.retrieve ( data_raw,raspicam::RASPICAM_FORMAT_BGR ); // get camera image
+	cameraRaw_.retrieve(dataRaw_, raspicam::RASPICAM_FORMAT_BGR); // get camera image
 
-	raw_image_msg->header.stamp.sec = time.tv_sec ;
-	raw_image_msg->header.stamp.nanosec = 1000*time.tv_usec;
+	rawImageMsg_->header.stamp.sec = time_.tv_sec ;
+	rawImageMsg_->header.stamp.nanosec = 1000 * time_.tv_usec;
 
-	std::cout<<"dim_raw:"<<imageSize<<std::endl;
+	std::cout<<"dim_raw:"<<imageSize_<<std::endl;
 
-	for(uint32_t i = 0; i < imageSize; i++) {
-		raw_image_msg->data[i] = data_raw[i];
+	for(uint32_t i = 0; i < imageSize_; i++) {
+		rawImageMsg_->data[i] = dataRaw_[i];
 	}
 	
 	/*
@@ -83,21 +82,21 @@ void LandingState::setParameters()
 	}
 	*/
 
-	publisher_raw->publish(raw_image_msg);
+	publisher_raw->publish(rawImageMsg_);
 
 	//CAMERA INFO DATA
-	CamInfo_msg->header.stamp.sec = time.tv_sec ;
-	CamInfo_msg->header.stamp.nanosec = 1000*time.tv_usec;
-	pub_cameraInfo->publish(CamInfo_msg);
+	camInfoMsg_->header.stamp.sec = time_.tv_sec ;
+	camInfoMsg_->header.stamp.nanosec = 1000 * time_.tv_usec;
+	pub_cameraInfo->publish(camInfoMsg_);
 	
-	if (PreFlightMode == 0 && FlightMode == 1) {
+	if (preFlightMode_ == 0 && flightMode_ == 1) {
 		// Release the camera resource
 
 		// Set next state
-		this->Machine->setState(nextState);
+		this->Machine->setState(nextState_);
 	}
 
-	PreFlightMode = FlightMode;
+	preFlightMode_ = flightMode_;
 }
 
 void SearchState::setParameters()
@@ -105,37 +104,36 @@ void SearchState::setParameters()
 	//compressed image
 	//static bool save = true;
 
-	Camera_comp.grab();
+	cameraComp_.grab();
 	//extract the image in rgb format
-	Camera_comp.retrieve ( data_raw,raspicam::RASPICAM_FORMAT_BGR ); // get camera image
+	cameraComp_.retrieve(dataRaw_, raspicam::RASPICAM_FORMAT_BGR); // get camera image
 
-	unsigned char *mem = NULL;
-	unsigned long mem_size = 0;
-	jpeg_mem_dest(&cinfo, &mem, &mem_size);
+	uint8_t *mem = NULL;
+	long unsigned int memSize = 0;
 
-	jpeg_start_compress(&cinfo,TRUE);
+	jpeg_mem_dest(&cInfo_, &mem, &memSize);
+	jpeg_start_compress(&cInfo_, TRUE);
 	
-	while (cinfo.next_scanline < cinfo.image_height) {
-		row_pointer[0] = &data_raw[cinfo.next_scanline * row_stride];
-		jpeg_write_scanlines(&cinfo, row_pointer, 1);
-
+	while (cInfo_.next_scanline < cInfo_.image_height) {
+		rowPointer_[0] = &dataRaw_[cInfo_.next_scanline * rowStride_];
+		jpeg_write_scanlines(&cInfo_, rowPointer_, 1);
 	}
 
-	jpeg_finish_compress(&cinfo);
+	jpeg_finish_compress(&cInfo_);
 
-	std::cout<<"dim_compressed: "<<mem_size<<std::endl;
+	std::cout<<"dim_compressed: "<<memSize<<std::endl;
 
-	compressed_image_msg->data.resize(mem_size);
+	compressedImageMsg_->data.resize(memSize);
 	
-	for(uint32_t i = 0; i < mem_size; i++) {
-		compressed_image_msg->data[i] = mem[i];
+	for(uint32_t i = 0; i < memSize; i++) {
+		compressedImageMsg_->data[i] = mem[i];
 	}
 	
-	gettimeofday(&time,NULL);
-	compressed_image_msg->header.stamp.sec = time.tv_sec ;
-	compressed_image_msg->header.stamp.nanosec = 1000 * time.tv_usec;
+	gettimeofday(&time_, NULL);
+	compressedImageMsg_->header.stamp.sec = time_.tv_sec ;
+	compressedImageMsg_->header.stamp.nanosec = 1000 * time_.tv_usec;
 
-	publisher_compressed->publish(compressed_image_msg);
+	publisher_compressed->publish(compressedImageMsg_);
 	
 	/*
 	if (save) {
@@ -146,20 +144,20 @@ void SearchState::setParameters()
 	*/
 
 	if (mem != NULL) {
-		delete mem;
+		free(mem);
 		mem = NULL;
 	}
 
 	// CAMERA INFO DATA
-	CamInfo_msg->header.stamp.sec = time.tv_sec ;
-	CamInfo_msg->header.stamp.nanosec = 1000 * time.tv_usec;
-	pub_cameraInfo->publish(CamInfo_msg);
+	camInfoMsg_->header.stamp.sec = time_.tv_sec ;
+	camInfoMsg_->header.stamp.nanosec = 1000 * time_.tv_usec;
+	pub_cameraInfo->publish(camInfoMsg_);
 
-	if (PreFlightMode == 1 && FlightMode == 0) {
-		this->Machine->setState(nextState);
+	if (preFlightMode_ == 1 && flightMode_ == 0) {
+		this->Machine->setState(nextState_);
 	}
 
-	PreFlightMode = FlightMode;
+	preFlightMode_ = flightMode_;
 }
 
 void StopState::setParameters()

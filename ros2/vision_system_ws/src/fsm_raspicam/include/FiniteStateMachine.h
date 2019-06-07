@@ -17,7 +17,7 @@ public:
 	int getActualID();
 
 private:
-	State *CurrentState;
+	State *currentState_;
 };
 
 #endif

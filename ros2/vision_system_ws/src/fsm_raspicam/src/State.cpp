@@ -1,10 +1,10 @@
 #include "State.h"
 
-raspicam::RaspiCam State::Camera_raw;
-raspicam::RaspiCam State::Camera_comp;
+raspicam::RaspiCam State::cameraRaw_;
+raspicam::RaspiCam State::cameraComp_;
 
-int State::FlightMode = -1;
-int State::PreFlightMode = -1;
+int State::flightMode_ = -1;
+int State::preFlightMode_ = -1;
 
 State::State(FiniteStateMachine *machine) : Machine(machine)
 {
@@ -22,7 +22,7 @@ int State::getID() const
 
 void State::setMode(int mode)
 {
-	FlightMode = mode;
+	flightMode_ = mode;
 }
 
 //void State::setPrevMode()

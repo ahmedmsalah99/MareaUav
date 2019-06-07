@@ -39,10 +39,10 @@ int main ( int argc,char **argv )
 	//SearchState SearchS(&CameraMachine,1280,960,50);
 	SearchState SearchS(&CameraMachine, 640, 480, 20);
 
-	IdleS.nextLandingState = &LandS;
-	IdleS.nextSearchState = &SearchS;
-	LandS.nextState = &IdleS;
-	SearchS.nextState = &IdleS; 
+	IdleS.nextLandingState_ = &LandS;
+	IdleS.nextSearchState_ = &SearchS;
+	LandS.nextState_ = &IdleS;
+	SearchS.nextState_ = &IdleS; 
 
 	CameraMachine.setState(&IdleS);
 
