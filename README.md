@@ -28,6 +28,20 @@ This README would normally document whatever steps are necessary to get your app
 * Repo owner or admin
 * Other community or team contact
 
+# GeographicLib Compile #
+Download this archive:
+
+[GeographicLib-raspberry](https://bitbucket.org/isme_robotics/mar_frankenrotor_ros/downloads/GeographicLib-1.49.tar.gz)
+
+Extract the .tar.gz. file into a temporary directory. Issue the following commands:
+
+```bash
+make
+sudo make install
+```
+
+
+
 # AprilTAG Compile #
 Download this archive:
 
