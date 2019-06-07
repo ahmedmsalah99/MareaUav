@@ -20,45 +20,39 @@
 #include <Eigen/Geometry>
 #include <Eigen/Core>
 
-
 class AprilTag2Node : public rclcpp::Node {
 public:
-    AprilTag2Node();
-
-    ~AprilTag2Node();
+	AprilTag2Node();
+	~AprilTag2Node();
 
 private:
-    typedef Eigen::Matrix<double, 3, 3, Eigen::RowMajor> Mat3;
+	typedef Eigen::Matrix<double, 3, 3, Eigen::RowMajor> Mat3;
 
-    apriltag_family_t* tf;
-    apriltag_detector_t* td;
-    std::string tag_family;
-    double tag_edge_size;
-    int max_hamming;
-    std::map<int, std::string> tracked_tags;
-    std::map<int, float> platform_tags;    
+	apriltag_family_t *tf;
+	apriltag_detector_t *td;
+	std::string tag_family;
+	double tag_edge_size;
+	int max_hamming;
+	std::map<int, std::string> tracked_tags;
+	std::map<int, float> platform_tags;
 
-    Mat3 K;
+	Mat3 K;
+	bool z_up;
 
-    bool z_up;
+	// function pointer for tag family creation / destruction
+	static std::map<std::string, apriltag_family_t *(*)(void)> tag_create;
+	static std::map<std::string, void (*)(apriltag_family_t*)> tag_destroy;
 
-    // function pointer for tag family creation / destruction
-    static std::map<std::string, apriltag_family_t *(*)(void)> tag_create;
-    static std::map<std::string, void (*)(apriltag_family_t*)> tag_destroy;
+	rclcpp::Subscription<sensor_msgs::msg::CompressedImage>::SharedPtr sub_img;
+	rclcpp::Subscription<sensor_msgs::msg::CameraInfo>::SharedPtr sub_info;
+	rclcpp::Publisher<tf2_msgs::msg::TFMessage>::SharedPtr pub_tf;
+	rclcpp::Publisher<apriltag_msgs::msg::AprilTagDetectionArray>::SharedPtr pub_detections;
 
-    rclcpp::Subscription<sensor_msgs::msg::CompressedImage>::SharedPtr sub_img;
-    rclcpp::Subscription<sensor_msgs::msg::CameraInfo>::SharedPtr sub_info;
-    rclcpp::Publisher<tf2_msgs::msg::TFMessage>::SharedPtr pub_tf;
-    rclcpp::Publisher<apriltag_msgs::msg::AprilTagDetectionArray>::SharedPtr pub_detections;
+	rclcpp::Publisher<geometry_msgs::msg::TransformStamped>::SharedPtr pub_platformCenter;
 
-    rclcpp::Publisher<geometry_msgs::msg::TransformStamped>::SharedPtr pub_platformCenter;
+	void onImage(const sensor_msgs::msg::CompressedImage::SharedPtr msg_img);
+	void getPose(const matd_t& H, geometry_msgs::msg::Transform& t, const int ID, const bool z_up = false);
 
+	void publish_data_center(const apriltag_msgs::msg::AprilTagDetectionArray& Detections, const tf2_msgs::msg::TFMessage& t_f);
 
-    void onImage(const sensor_msgs::msg::CompressedImage::SharedPtr msg_img);
-
-    void getPose(const matd_t& H, geometry_msgs::msg::Transform& t, const int ID, const bool z_up = false);
-    
-    void publish_data_center(const apriltag_msgs::msg::AprilTagDetectionArray& Detections, const tf2_msgs::msg::TFMessage& t_f);
-
-    
 };
