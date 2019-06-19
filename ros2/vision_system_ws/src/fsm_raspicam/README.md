@@ -1,7 +1,7 @@
 # Finite State Machine for Raspberry Pi Camera #
 Ros2 package which allows to publish camera info and image data via ros2 topic.
 
-Finite State Machine is composed of four states, namely : IDLE, LAND, SEARCH, STOP.
+It has a Finite State Machine composed of four states, namely : IDLE, LAND, SEARCH, STOP.
 
 During the LAND state the camera has the following parameters:
 
@@ -20,11 +20,25 @@ During the STOP state the camera is closed and there are no publications.
 The switch between the two camera configurations is handled by the state machine.
 
 ## How to Run ##
-To run the finite state machine..
 
-```ros2 run fsm_raspicam camera_main_node
+To run the finite state machine:
+
+```
+ros2 run fsm_raspicam camera_main_node
+```
+The package with publish camera info onto raspi/camera_info and image data onto raspi/compressed_image.
+
+To change the state of the machine, publish on /drone_state 0 or 1 or 2.
+
+```
+ros2 topic pub /drone_state std_msgs/Float32 "data: 1"
 ```
 
-```ros2 topic pub /drone_state std_msgs/Float32 "data: 1"
-```
+LAND state: 0
+
+SEARCH state: 1 
+
+STOP state: 2
+
+
 
