@@ -69,26 +69,26 @@ void SetMatrix(struct Platform_tag *TAGS) {
 	//The following values are computed using motion capture
 	TAGS->yaw = -PI/2;
 	TAGS->pitch = PI;
-	TAGS->x = 0.043;
+	TAGS->x = 0.0;
 	TAGS->y = 0.0;
-	TAGS->z = -0.084;
+	TAGS->z = -0.09;
 
 	//computing the rotation matrix..
 	TAGS->R_z << cos(TAGS->yaw), -sin(TAGS->yaw), 0,
-				sin(TAGS->yaw),  cos(TAGS->yaw), 0,
-							0,               0, 1;	
+		     sin(TAGS->yaw),  cos(TAGS->yaw), 0,
+				  0,               0, 1;
 	TAGS->R_x << 1,0,0,
 				0,1,0,
 				0,0,1;
 	TAGS->R_y << 1,                0,                 0,
-				0, cos(TAGS->pitch), -sin(TAGS->pitch),
-				0, sin(TAGS->pitch),  cos(TAGS->pitch);	
+		     0, cos(TAGS->pitch), -sin(TAGS->pitch),
+	             0, sin(TAGS->pitch),  cos(TAGS->pitch);
 	//Complessive rotation matrix..
 	TAGS->R_rpy = TAGS->R_z * TAGS->R_y * TAGS->R_x;
 	TAGS->robot_T_cam << TAGS->R_rpy(0,0), TAGS->R_rpy(0,1), TAGS->R_rpy(0,2), TAGS->x,
-						TAGS->R_rpy(1,0), TAGS->R_rpy(1,1), TAGS->R_rpy(1,2), TAGS->y,
-						TAGS->R_rpy(2,0), TAGS->R_rpy(2,1), TAGS->R_rpy(2,2), TAGS->z,
-										0,				  0,			    0,		 1;
+			     TAGS->R_rpy(1,0), TAGS->R_rpy(1,1), TAGS->R_rpy(1,2), TAGS->y,
+	        	     TAGS->R_rpy(2,0), TAGS->R_rpy(2,1), TAGS->R_rpy(2,2), TAGS->z,
+			                    0,	              0,	        0,       1;
 }
 
 #endif
