@@ -21,22 +21,25 @@ AprilTag2Node::AprilTag2Node() : Node("apriltag2", "apriltag", true)
 		rmw_qos_profile_sensor_data);
 	rmw_qos_profile_t tf_qos_profile = rmw_qos_profile_default;
 	tf_qos_profile.depth = 1;
-	pub_tf = this->create_publisher<tf2_msgs::msg::TFMessage>("/tf", tf_qos_profile);
 
-	pub_detections = this->create_publisher<apriltag_msgs::msg::AprilTagDetectionArray>("detections");
+	//tf of each tags in the scene
+	//pub_tf = this->create_publisher<tf2_msgs::msg::TFMessage>("/tf", tf_qos_profile);
 
-	pub_platformCenter = this->create_publisher<geometry_msgs::msg::TransformStamped>("/platform_center");
+	//information from the vision system(hamming, goodness, corners..)
+	//pub_detections = this->create_publisher<apriltag_msgs::msg::AprilTagDetectionArray>("detections");
 
-	// get single camera info message
-	sub_info = this->create_subscription<sensor_msgs::msg::CameraInfo>(
-		"image/camera_info",
-		[this](sensor_msgs::msg::CameraInfo::UniquePtr info){
-			RCLCPP_INFO(get_logger(), "got camera parameters");
-			std::memcpy(K.data(), info->k.data(), 9 * sizeof(double));
-			// delete subscription
-			sub_info.reset();
-		}
-	);
+	//platform center pose
+	pub_platformCenter = this->create_publisher<geometry_msgs::msg::TransformStamped>("/platform_center",1);
+
+	// set camera info message, these values are obtained after calibration and they are good for 640x480.
+	const double fx = 508.624627;
+        const double cx = 323.83127;
+        const double fy = 508.77675;
+        const double cy = 248.651286;
+
+	K << fx, 0, cx, 0, fy, cy, 0, 0, 1;
+
+	//std::cout<<"K: "<<K<<std::endl;
 
 	get_parameter_or<std::string>("family", tag_family, "36h11");
 	get_parameter_or<double>("size", tag_edge_size, 2.0);
@@ -66,7 +69,6 @@ AprilTag2Node::AprilTag2Node() : Node("apriltag2", "apriltag", true)
 	get_parameter_or<int>("refine-edges", td->refine_edges, true);
 	apriltag_detector_add_family(td, tf);
 
-	//std::cout<<"eeeeeeeeeeeeeeeeeeeeeeeeeeee"<<td->quad_decimate<<std::endl;
 }
 
 AprilTag2Node::~AprilTag2Node()
@@ -110,9 +112,6 @@ void AprilTag2Node::onImage(const sensor_msgs::msg::CompressedImage::SharedPtr m
 
 	tf2_msgs::msg::TFMessage tfs;
 
-	//AREA
-	//Eigen::MatrixXd areaID(zarray_size(detections),2);
-
 	for (int i = 0; i < zarray_size(detections); i++) {
 		apriltag_detection_t *det;
 		zarray_get(detections, i, &det);
@@ -140,6 +139,9 @@ void AprilTag2Node::onImage(const sensor_msgs::msg::CompressedImage::SharedPtr m
 		tf.header = msg_img->header;
 		// set child frame name by generic tag name or configured tag name
 		tf.child_frame_id = tracked_tags.size() ? tracked_tags.at(det->id) : std::string(det->family->name) + ":" + std::to_string(det->id);
+		
+		//This function computes the relative translation and rotation of each tag in the scene w.r.t the camera. 
+		//Then, it projects this information in the centre of the platform (related to the tag in the centre).
 		getPose(*(det->H), tf.transform, det->id, z_up);
 
 		tfs.transforms.push_back(tf);
@@ -149,8 +151,8 @@ void AprilTag2Node::onImage(const sensor_msgs::msg::CompressedImage::SharedPtr m
 		publish_data_center( msg_detections,tfs );
 	}
 
-	pub_detections->publish(msg_detections);
-	pub_tf->publish(tfs);
+	//pub_detections->publish(msg_detections);
+	//pub_tf->publish(tfs);
 
 	apriltag_detections_destroy(detections);
 
@@ -164,33 +166,39 @@ void AprilTag2Node::publish_data_center(const apriltag_msgs::msg::AprilTagDetect
 	geometry_msgs::msg::TransformStamped msg_relative_pose;
 
 	for( int i=0; i< Detections.detections.size(); i++ ) {
-		double l1 = sqrt( pow(Detections.detections.at(i).corners[1].y - Detections.detections.at(i).corners[0].y,2) + pow(Detections.detections.at(i).corners[1].x - Detections.detections.at(i).corners[0].x,2));
-		double l2 = sqrt( pow(Detections.detections.at(i).corners[2].y - Detections.detections.at(i).corners[1].y,2) + pow(Detections.detections.at(i).corners[2].x - Detections.detections.at(i).corners[1].x,2));
-		double l3 = sqrt( pow(Detections.detections.at(i).corners[3].y - Detections.detections.at(i).corners[2].y,2) + pow(Detections.detections.at(i).corners[3].x - Detections.detections.at(i).corners[2].x,2));
-		double l4 = sqrt( pow(Detections.detections.at(i).corners[0].y - Detections.detections.at(i).corners[3].y,2) + pow(Detections.detections.at(i).corners[0].x - Detections.detections.at(i).corners[3].x,2));
+		double l1 = sqrt( pow(Detections.detections.at(i).corners.at(1).y - Detections.detections.at(i).corners.at(0).y,2) + pow(Detections.detections.at(i).corners.at(1).x - Detections.detections.at(i).corners.at(0).x,2));
+		double l2 = sqrt( pow(Detections.detections.at(i).corners.at(2).y - Detections.detections.at(i).corners.at(1).y,2) + pow(Detections.detections.at(i).corners.at(2).x - Detections.detections.at(i).corners.at(1).x,2));
+		double l3 = sqrt( pow(Detections.detections.at(i).corners.at(3).y - Detections.detections.at(i).corners.at(2).y,2) + pow(Detections.detections.at(i).corners.at(3).x - Detections.detections.at(i).corners.at(2).x,2));
+		double l4 = sqrt( pow(Detections.detections.at(i).corners.at(0).y - Detections.detections.at(i).corners.at(3).y,2) + pow(Detections.detections.at(i).corners.at(0).x - Detections.detections.at(i).corners.at(3).x,2));
 
-		RCLCPP_INFO(get_logger(), "Lati: %lf %lf %lf %lf", l1, l2, l3, l4);
+		//RCLCPP_INFO(get_logger(), "Lati: %lf %lf %lf %lf", l1, l2, l3, l4);
 
 		areaID(i,0) = i;
 		areaID(i,1) = pow( (l1 + l2 + l3 +l4)/4,2 );
 
-		RCLCPP_INFO(get_logger(), "Area: %lf", areaID(i, 1));
+		//RCLCPP_INFO(get_logger(), "Area: %lf", areaID(i, 1));
 	}
 
 	double weighTot = 0;
 
-	for( int i = 0; i< areaID.rows(); i++ ) {
-		msg_relative_pose.transform.translation.x += t_f.transforms[areaID(i, 0)].transform.translation.x * areaID(i, 1);
-		msg_relative_pose.transform.translation.y += t_f.transforms[areaID(i, 0)].transform.translation.y * areaID(i, 1);
-		msg_relative_pose.transform.translation.z += t_f.transforms[areaID(i, 0)].transform.translation.z * areaID(i, 1);
+	//std::cout<<"detection_size: "<<Detections.detections.size()<< " Rows: "<<areaID.rows()<<std::endl;
 
-		msg_relative_pose.transform.rotation.x += t_f.transforms[areaID(i, 0)].transform.rotation.x * areaID(i, 1);
-		msg_relative_pose.transform.rotation.y += t_f.transforms[areaID(i, 0)].transform.rotation.y * areaID(i, 1);
-		msg_relative_pose.transform.rotation.z += t_f.transforms[areaID(i, 0)].transform.rotation.z * areaID(i, 1);
-		msg_relative_pose.transform.rotation.w += t_f.transforms[areaID(i, 0)].transform.rotation.w * areaID(i, 1);
+
+	for( int i = 0; i< areaID.rows(); i++ ) {
+		msg_relative_pose.transform.translation.x += t_f.transforms.at( areaID(i, 0) ).transform.translation.x * areaID(i, 1);
+		msg_relative_pose.transform.translation.y += t_f.transforms.at( areaID(i, 0) ).transform.translation.y * areaID(i, 1);
+		msg_relative_pose.transform.translation.z += t_f.transforms.at( areaID(i, 0) ).transform.translation.z * areaID(i, 1);
+
+		msg_relative_pose.transform.rotation.x += t_f.transforms.at( areaID(i, 0) ).transform.rotation.x * areaID(i, 1);
+		msg_relative_pose.transform.rotation.y += t_f.transforms.at( areaID(i, 0) ).transform.rotation.y * areaID(i, 1);
+		msg_relative_pose.transform.rotation.z += t_f.transforms.at( areaID(i, 0) ).transform.rotation.z * areaID(i, 1);
+		msg_relative_pose.transform.rotation.w += t_f.transforms.at( areaID(i, 0) ).transform.rotation.w * areaID(i, 1);
 
 		weighTot += areaID(i, 1);
 	}
+
+	
+
 
 	msg_relative_pose.transform.translation.x = msg_relative_pose.transform.translation.x / weighTot;
 	msg_relative_pose.transform.translation.y = msg_relative_pose.transform.translation.y / weighTot;
@@ -254,6 +262,9 @@ void AprilTag2Node::getPose(const matd_t& H, geometry_msgs::msg::Transform& t, c
 		pose = pose * TAGS.TAG9_T_TAG5;
 	}
 
+	pose = TAGS.robot_T_cam * pose;  
+
+
 	const Eigen::Quaterniond q(R);
 
 	t.translation.x = pose(0, 3);
@@ -281,45 +292,4 @@ std::map<std::string, void (*)(apriltag_family_t*)> AprilTag2Node::tag_destroy =
 
 CLASS_LOADER_REGISTER_CLASS(AprilTag2Node, rclcpp::Node)
 
-/*
-
-	std::cout<<"lati: "<<" "<<l1<<" "<<l2<<" "<<l3<<" "<<l4<<std::endl;
-
-	areaID(i,0) = i;
-	areaID(i,1) = pow( (l1 + l2 + l3 +l4)/4,2 );
-	
-	std::cout<<"Area: "<<areaID(i,1)<<std::endl;
-	
-	}
-
-
-
-double weighTot = 0;
-
-for( int i=0; i< areaID.rows(); i++ ){
-	
-	msg_relative_pose.transform.translation.x += t_f.transforms[areaID(i,0)].transform.translation.x*areaID(i,1);
-	msg_relative_pose.transform.translation.y += t_f.transforms[areaID(i,0)].transform.translation.y*areaID(i,1);
-	msg_relative_pose.transform.translation.z += t_f.transforms[areaID(i,0)].transform.translation.z*areaID(i,1);
-	
-	msg_relative_pose.transform.rotation.x += t_f.transforms[areaID(i,0)].transform.rotation.x*areaID(i,1);
-	msg_relative_pose.transform.rotation.y += t_f.transforms[areaID(i,0)].transform.rotation.y*areaID(i,1);
-	msg_relative_pose.transform.rotation.z += t_f.transforms[areaID(i,0)].transform.rotation.z*areaID(i,1);
-	msg_relative_pose.transform.rotation.w += t_f.transforms[areaID(i,0)].transform.rotation.w*areaID(i,1);
-
-	weighTot += areaID(i,1);
-	}
-
-	msg_relative_pose.transform.translation.x = msg_relative_pose.transform.translation.x/weighTot;
-	msg_relative_pose.transform.translation.y = msg_relative_pose.transform.translation.y/weighTot;
-	msg_relative_pose.transform.translation.z = msg_relative_pose.transform.translation.z/weighTot;
-	
-	msg_relative_pose.transform.rotation.x = msg_relative_pose.transform.rotation.x/weighTot;
-	msg_relative_pose.transform.rotation.y = msg_relative_pose.transform.rotation.y/weighTot;
-	msg_relative_pose.transform.rotation.z = msg_relative_pose.transform.rotation.z/weighTot;
-	msg_relative_pose.transform.rotation.w = msg_relative_pose.transform.rotation.w/weighTot;
-
-pub_platformCenter->publish(msg_relative_pose);
-
-*/
 
