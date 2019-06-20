@@ -22,15 +22,15 @@ UltrasonicSensor::UltrasonicSensor( int trigger, int echo ) {
 	digitalWrite( trigger, LOW ); 
 
 	delay(500); //delay in milliseconds.
-	
+
 }
 
 void UltrasonicSensor::TimeOfTravel() {
 
 	startTimeUsec = micros();
-	
+
 	while ( digitalRead(echo) == HIGH );
-	
+
 	endTimeUsec = micros();
 
 }
@@ -58,14 +58,14 @@ double UltrasonicSensor::distance( int timeout) {
 
 	//taking the actual time.
 	now = micros();    
-	
+
 	//The sensor sets ECHO to high for the amount of time it takes for the pulse to go and 		come back, so it is necessary to measure the amount of time that the ECHO pin stays high.
 	while ( digitalRead(echo) == LOW && isExpired( timeout,now ) );	
 	TimeOfTravel();
 
 
 	travelTimeUsec = endTimeUsec - startTimeUsec;
-	
+
 	distanceMeters = ( (travelTimeUsec/1000000.0)*SpeedOfSound )/2;
 
 	return distanceMeters;	
@@ -85,44 +85,43 @@ void mean(double& sum,double plus,double minus){
 
 }
 
-void EstimatedVelocity(geometry::UltrasonicPosition *Actual_plat, geometry::UltrasonicPosition *Prev_plat, std::queue<double> *queue_t, bool *flag, const TimeManager& time, double *int_z ) {
+double EstimatedVelocity(double *distance, double *prev_distance, std::queue<double> *queue_t, bool *flag, double _dt, double *int_z , int n_window) {
 
-	int window = 6;
+	double Z_velocity = 0;
 
 	if( *flag ) {
-		
-		Actual_plat->Z_Velocity = 0;
-		Actual_plat->Z_Velocity = 0;
-		Actual_plat->Z_Velocity = 0;
 		*flag = false;
+		return 0;
 	}
 	else {
-		
-		double dz = Actual_plat->Z_Position - Prev_plat->Z_Position;
-		double vz = dz/time._dt;
-		
+
+		double dz = *distance - *prev_distance;
+		double vz = dz/_dt;
+
 		//DEBUG:
 		//std::cout<<"dz: "<<dz<<std::endl;
 		//std::cout<<"vz: "<<vz<<std::endl;
-		//std::cout<<"time: "<<time._dt<<std::endl;
+		//std::cout<<"time: "<<_dt<<std::endl;
 
 
 		//mean for smoothing
-		if (queue_t->size() == window) {
-            
+		if (queue_t->size() == n_window) {
+
 			mean(*int_z , vz, queue_t->front()); //return the oldest element of the FIFO queue
 			queue_t->pop(); //it removes the oldest method.
-        
+
 		}else
-            mean(*int_z,vz,0);		
+            	mean(*int_z,vz,0);
 
 		queue_t->push(vz);
-		Actual_plat->Z_Velocity = *int_z/queue_t->size();
+		Z_velocity = *int_z/queue_t->size();
 	}
 
-	Prev_plat->Z_Position = Actual_plat->Z_Position;
+	*prev_distance = *distance;
+	return Z_velocity;
 
 }
+
 
 void KF(double Pred_Xk_1, double Pred_P_k_1,double  Zk, double *Xk, double *Pk,double Q, double R){
 /**

@@ -62,8 +62,7 @@ add_library(UltrasonicSensor source/UltrasonicSensor.cpp include/UltrasonicSenso
 
 find_library(wiringPi_LIB wiringPi)
 
-target_link_libraries(UltrasonicSensor ${wiringPi_LIB} 
-				       ${LCM_LIBRARIES})
+target_link_libraries(UltrasonicSensor ${wiringPi_LIB} ${LCM_LIBRARIES})
 
 
 ## Declare a C++ executable
@@ -72,10 +71,12 @@ target_link_libraries(UltrasonicSensor ${wiringPi_LIB}
 
 add_executable(${PROJECT_NAME}_node_Mocap2mav src/mainMocap2mav.cpp)
 
-target_link_libraries(${PROJECT_NAME}_node_Mocap2mav UltrasonicSensor)
+target_link_libraries(${PROJECT_NAME}_node_Mocap2mav UltrasonicSensor ${rclcpp_LIBRARIES} ${rmw_implementation_LIBRARIES} ${std_msgs_LIBRARIES} ${geometry_msgs_LIBRARIES}  )
 
 rosidl_target_interfaces(${PROJECT_NAME}_node_Mocap2mav ${PROJECT_NAME} "rosidl_typesupport_cpp" )
 
 ament_target_dependencies(${PROJECT_NAME}_node_Mocap2mav rclcpp std_msgs geometry_msgs)
+
+install(TARGETS ${PROJECT_NAME}_node_Mocap2mav DESTINATION lib/${PROJECT_NAME})
 
 ament_package()
