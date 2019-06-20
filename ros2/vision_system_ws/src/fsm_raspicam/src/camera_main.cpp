@@ -35,60 +35,75 @@ int main ( int argc,char **argv )
 	FiniteStateMachine CameraMachine;
 
 	IdleState IdleS(&CameraMachine);
-	LandingState LandS(&CameraMachine, 640, 480, 30);
-	//SearchState SearchS(&CameraMachine,1280,960,50);
-	SearchState SearchS(&CameraMachine, 640, 480, 20);
+	LandingState LandS(&CameraMachine, 640, 480, 20);
+	SearchState SearchS(&CameraMachine, 1280, 960, 2);
+	StopState StopS(&CameraMachine);
 
+	IdleS.nextStopState_ = &StopS;
 	IdleS.nextLandingState_ = &LandS;
 	IdleS.nextSearchState_ = &SearchS;
 	LandS.nextState_ = &IdleS;
-	SearchS.nextState_ = &IdleS; 
-
+	LandS.nextStopState_ = &StopS;
+	SearchS.nextState_ = &IdleS;
+	SearchS.nextStopState_ = &StopS;
+	StopS.nextState_ = &IdleS;
 	CameraMachine.setState(&IdleS);
 
 	int actualState;
 
 	enum flightMode{LAND,SEARCH};
-
-//	bool init = true;
+	//during land mode the camera is set as compressed image 640x480 at 20 Hz
+	//during search mode the camera is set as compressed image 1280x960 at 2 Hz
 
 	struct timeval timer;
 	struct timeval end;
 
-	rclcpp::WallRate loop_rate(40);
+	rclcpp::WallRate loop_rate(20);
 
+	int printStateMachine = 0;
+	int printRate = 0;
 
 	while (rclcpp::ok()) {
 		gettimeofday(&timer,NULL);
-		
+
 		actualState = CameraMachine.getActualID();
 
-		if (status == 1 || status == 0) {
+		if (status == 1 || status == 0 || status == 2) {
 			switch(actualState) {
 			case(State::states::IDLE):
-				std::cout<<"IDLE"<<std::endl;
+				if(printStateMachine >= 10){
+					std::cout<<"IDLE"<<std::endl;
+					printStateMachine = 0;
+				}
 				IdleS.setMode(status);
-//				if(init) {
-					//IdleS.setPrevMode();
-//					init = false;
-//				}
 				IdleS.setParameters();
 				break;
 
 			case(State::states::LANDING):
-				std::cout<<"LANDING"<<std::endl;
+				 if(printStateMachine >= 10){
+                                 	 std::cout<<"LANDING"<<std::endl;
+                                       	 printStateMachine = 0;
+                                }
 				LandS.setMode(status);
 				LandS.setParameters();
 				break;
-		
+
 			case(State::states::SEARCH):
-				std::cout<<"SEARCH"<<std::endl;
+				if(printStateMachine >= 10){
+                                        std::cout<<"SEARCH"<<std::endl;
+                                        printStateMachine = 0;
+                                }
 				SearchS.setMode(status);
 				SearchS.setParameters();
 				break;
-		
+
 			case(State::states::STOP):
-				std::cout<<"STOP"<<std::endl;
+				if(printStateMachine >= 10){
+                                        std::cout<<"STOP"<<std::endl;
+                                        printStateMachine = 0;
+				}
+				StopS.setMode(status);
+				StopS.setParameters();
 				break;
 			}
 		}
@@ -98,7 +113,13 @@ int main ( int argc,char **argv )
 
 		loop_rate.sleep();
 		gettimeofday(&end,NULL);
-		std::cout<<"rate: "<< 1000000.0 / (double) ((end.tv_sec - timer.tv_sec) * 1000000 + (end.tv_usec - timer.tv_usec))<<std::endl;
+
+		if(printRate == 10){
+			std::cout<<"rate: "<< 1000000.0 / (double) ((end.tv_sec - timer.tv_sec) * 1000000 + (end.tv_usec - timer.tv_usec))<<std::endl;
+			printRate = 0;
+		}
+		printRate++;
+		printStateMachine++;
 	}
 
 	return 0;
