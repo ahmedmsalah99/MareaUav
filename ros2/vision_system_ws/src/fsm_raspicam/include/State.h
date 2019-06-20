@@ -27,12 +27,13 @@ protected:
 	virtual void setID() = 0;
 
 public:
-	rclcpp::Publisher<sensor_msgs::msg::Image>::SharedPtr           publisherRaw_;
+	//rclcpp::Publisher<sensor_msgs::msg::Image>::SharedPtr           publisherRaw_;
 	rclcpp::Publisher<sensor_msgs::msg::CompressedImage>::SharedPtr publisherCompressed_;
 	rclcpp::Publisher<sensor_msgs::msg::CameraInfo>::SharedPtr      pubCameraInfo_;
 
-	static raspicam::RaspiCam cameraRaw_;
+	static raspicam::RaspiCam cameraComp2_;
 	static raspicam::RaspiCam cameraComp_;
+	//raspicam::RaspiCam cameraComp_;
 
 	enum states { IDLE, LANDING, SEARCH, STOP };
 
@@ -41,7 +42,7 @@ protected:
 	FiniteStateMachine *machine_;
 	static int32_t      flightMode_;
 	static int32_t      preFlightMode_;
-
+	bool 		    Init;
 };
 
 #endif
