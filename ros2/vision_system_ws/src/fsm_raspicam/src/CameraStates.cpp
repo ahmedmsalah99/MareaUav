@@ -42,7 +42,7 @@ LandingState::LandingState(FiniteStateMachine *machine, int32_t width, int32_t h
 
         compressedImageMsg_ = std::make_shared<sensor_msgs::msg::CompressedImage>();
 
-        imageSize_ = cameraComp2_.getImageTypeSize ( raspicam::RASPICAM_FORMAT_BGR );
+        imageSize_ = cameraComp_.getImageTypeSize ( raspicam::RASPICAM_FORMAT_BGR );
         dataRaw_ = new uint8_t[ imageSize_ ];
 
         compressedImageMsg_->header.frame_id = "camera_compressed";
@@ -70,15 +70,15 @@ LandingState::LandingState(FiniteStateMachine *machine, int32_t width, int32_t h
 void LandingState::setParameters()
 {
 	if(!Init){
-		cameraComp2_.setBrightness(45);
-        	cameraComp2_.setContrast(-10);
-        	cameraComp2_.setWidth(width_);
-        	cameraComp2_.setHeight(height_);
-        	cameraComp2_.setFormat(raspicam::RASPICAM_FORMAT_BGR);
-        	cameraComp2_.setFrameRate(rate_);
+		cameraComp_.setBrightness(45);
+        	cameraComp_.setContrast(-10);
+        	cameraComp_.setWidth(width_);
+        	cameraComp_.setHeight(height_);
+        	cameraComp_.setFormat(raspicam::RASPICAM_FORMAT_BGR);
+        	cameraComp_.setFrameRate(rate_);
 
 		std::cout<<"Opening Camera for landing action..."<<std::endl;
-                if (!cameraComp2_.open()) {
+                if (!cameraComp_.open()) {
                         std::cerr<<"Error opening camera"<<std::endl;
                 }
         	std::cout<<"Sleeping for 3 secs"<<std::endl;
@@ -89,9 +89,9 @@ void LandingState::setParameters()
 
         //static bool save = true;
 
-        cameraComp2_.grab();
+        cameraComp_.grab();
         //extract the image in rgb format
-        cameraComp2_.retrieve(dataRaw_, raspicam::RASPICAM_FORMAT_BGR); // get camera image
+        cameraComp_.retrieve(dataRaw_, raspicam::RASPICAM_FORMAT_BGR); // get camera image
 
         uint8_t *mem = NULL; // This is allocated with malloc() --> deallocate with free()
         long unsigned int memSize = 0;
@@ -106,7 +106,7 @@ void LandingState::setParameters()
 
 	jpeg_finish_compress(&cInfo_);
 
-        //std::cout<<"dim compression: "<<memSize<<std::endl;
+        std::cout<<"dim compression: "<<memSize<<std::endl;
 
         compressedImageMsg_->data.resize(memSize);
 
@@ -241,7 +241,7 @@ void SearchState::setParameters()
 
 	jpeg_finish_compress(&cInfo_);
 
-	//std::cout<<"dim compression "<<memSize<<std::endl;
+	std::cout<<"dim compression "<<memSize<<std::endl;
 
 	compressedImageMsg_->data.resize(memSize);
 
@@ -290,7 +290,6 @@ void StopState::setParameters()
 {
 	if(!Init){
 		cameraComp_.release();
-		cameraComp2_.release();
 		Init = true;
 	}
 	usleep( 1000000);

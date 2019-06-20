@@ -31,7 +31,7 @@ public:
 	rclcpp::Publisher<sensor_msgs::msg::CompressedImage>::SharedPtr publisherCompressed_;
 	rclcpp::Publisher<sensor_msgs::msg::CameraInfo>::SharedPtr      pubCameraInfo_;
 
-	static raspicam::RaspiCam cameraComp2_;
+	//static raspicam::RaspiCam cameraComp2_;
 	static raspicam::RaspiCam cameraComp_;
 	//raspicam::RaspiCam cameraComp_;
 
