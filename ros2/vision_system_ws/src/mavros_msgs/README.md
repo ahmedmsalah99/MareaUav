@@ -16,8 +16,8 @@ possible information between autopilot/flight controller and the offboard comput
 
 The messages created are:
 
-- `ExtendedState.msg` (info: `landing state and VTOL status`)
-- `State.msg` (info: `state of the drone: armed, connected..`)
+- `ExtendedState.msg` (info: landing state and VTOL status)
+- `State.msg` (info: state of the drone: armed, connected..)
 
 
 
