@@ -13,11 +13,11 @@ ros2 run lcm_bridge bridge_node
 ```
 The package subscribes to ROS 2 topics and it publishes onto LCM topics.
 
-## Ros2 Topics subscription:
+### Ros2 Topics Subscription:
 - `/raspi/camera_info` (type: `sensor_msgs/CameraInfo`)
 - `/raspi/compressed_image` (type: `sensor_msgs/CompressedImage`)
 
-## LCM Topics publication:
+### LCM Topics Publication:
 
 
 
