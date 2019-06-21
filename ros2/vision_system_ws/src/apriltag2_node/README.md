@@ -8,15 +8,18 @@ For more information on AprilTag 2, the paper and the reference implementation: 
 
 ### Subscriptions:
 - `/apriltag/image/compressed` (type: `sensor_msgs/CompressedImage`, format: `"jpeg"` or `"jpg"`)
-- `/apriltag/image/camera_info` (type: `sensor_msgs/CameraInfo`)
 
 ### Publisher:
-- `/tf` (type: `tf2_msgs/TFMessage`)
-- `/apriltag/detections` (type: `apriltag_msgs/AprilTagDetectionArray`)
+- `/platform_center` (type: `geometry_msgs/TransformStamped`)
 
-The camera intrinsics `K` in `CameraInfo` are used to compute the marker tag pose `T` from the homography `H`. The node sets `K` from the first `CameraInfo` message and unsubscribes after this.
+The camera intrinsics `K` in `CameraInfo` are used to compute the marker tag pose `T` from the homography `H`. 
+The node sets `K` from the first `CameraInfo` message and unsubscribes after this.
 
-The tag poses are published on the standard TF topic `/tf` with the header set to the image header and `child_frame_id` set to either `<tag_family>:<id>` (e.g. "36h11:0") or the frame name selected via configuration file. Additional information about detected tag is published as `AprilTagDetectionArray` message, which contains the original homography  matrix, the `goodness` and the `decision_margin` of the detection.
+The relative pose between platform center and the drone is published on the topic `/platform_center`.
+The platform center is estimated knowing the transformation matrices between each tag respect to the tag in the center. 
+Subsequently, the pose respect to the camera is transferred on drone frame (ENU).
+
+These information are stored in : `include/LandingPlatform.h`
 
 ## Configuration
 
@@ -59,6 +62,5 @@ To run the node and load the configuration, pass the configuration file to `__pa
 ```bash
 ros2 run apriltag2_node apriltag2_node \
     /apriltag/image/compressed:=/camera/image/compressed \
-    /apriltag/image/camera_info:=/camera/image/camera_info \
-    __params:=`ros2 pkg prefix apriltag2_node`/share/apriltag2_node/cfg/tags_16h5_all.yaml
+    __params:=`ros2 pkg prefix apriltag2_node`/share/apriltag2_node/cfg/platform.yaml
 ```
