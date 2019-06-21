@@ -1,4 +1,8 @@
 # ROS 2 Ultrasonic Sensor package for Raspberry Pi
+It's a ROS 2 package which computes relative position and velocity between the sensor and a surface. The employed sensor is HC-SR04
+and the GPIO Interface library for the Raspberry Pi (WiringPi) is used for the connection between sensor and board.
+The relative position is obtained by the ultrasonic sensor; the relative velocity is computed using a Kalman filter.
+These information are published onto ROS 2 topic and LCM topic. 
 
 To run the sensor:
 
@@ -6,10 +10,14 @@ To run the sensor:
 ros2 run ultrasonic_sensor mainMocap2mav.cpp
 ```
 ## Ros2 Topics Publication:
-- `/mavros/setpoint_position/local` (type: `ultrasonic_sensor/UltrasonicMsg`, /UltrasonicSensor_filtr)
+- `/UltrasonicSensor_filtr` (type: `ultrasonic_sensor/UltrasonicMsg`)
+
+The custom message contains relative position and velocity.
 
 ## LCM Topics Publication:
-- `UltrasonicSensor/platform` ( )
+- `UltrasonicSensor/platform` (relative position and velocity)
+
+The LCM topic allows to send data to the guidance controller.
 
 
 
