@@ -9,15 +9,15 @@ and they satisfy the package suffix condition above, then the messages will auto
 additional specification. The bridge needs to be recompiled, after the ROS and ROS 2 packages have been compiled and sourced,
 each in a separate workspace, for a total of three workspaces (ROS 2 ROS 2 overlaid and ROS).
 
-This package is an exact copy of a ROS package called mavros_msgs since this package is not available in ROS 2.
+We create this package being an exact copy of a ROS package called mavros_msgs. Adding this packages mapping, we are now able to exchange all
+possible information between autopilot/flight controller and the offboard computer.
 
 ## Messages ##
 
 The messages created are:
 
-## Ros2 Topics:
-- `ExtendedState.msg` (info: ``)
-- `State.msg` (info: ``)
+- `ExtendedState.msg` (info: `landing state and VTOL status`)
+- `State.msg` (info: `state of the drone: armed, connected..`)
 
 
 
