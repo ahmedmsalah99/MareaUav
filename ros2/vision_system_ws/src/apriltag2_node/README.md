@@ -4,6 +4,8 @@ This ROS2 node uses the AprilTag 2 library to detect AprilTags in images and pub
 
 For more information on AprilTag 2, the paper and the reference implementation: https://april.eecs.umich.edu/software/apriltag.html
 
+The source file as reference is `AprilTag2Node2_0.cpp`.
+
 ## Topics
 
 ### Subscriptions:
@@ -45,18 +47,30 @@ apriltag:                           # namespace
 
             # (optional) list of tags
             tag_lists:
-                <frame name>: <id>  # tag frame name and ID
-                <frame name>: <id>
-                [...]
+                1: 0.195
+                2: 0.195
+                3: 0.195
+                4: 0.195
+                5: 0.025
+                6: 0.035
+                7: 0.035
+                8: 0.035
+                9: 0.035
 ```
 
-The parameters `family` and `size` are required. `family` (string) defines the tag family for the detector and must be one of `16h5`, `25h7`, `25h9`, `36h10`, `36h11`, `36artoolkit`. `size` (float) is the tag edge size in meters, assuming square markers.
+The parameters `family` and `size` are required as default dimension. 
+`family` (string) defines the tag family for the detector and must be one of 
+`16h5`, `25h7`, `25h9`, `36h10`, `36h11`, `36artoolkit`. `size` (float) is the tag edge size in meters, assuming square markers.
 
-`tag_lists` is an optional list to map detected tag IDs to frame names. If it is provided, only the the listed tag IDs will be published, with `child_frame_id` set to the frame name. If not provided, the pose of all detected tags is published with a generic `child_frame_id`.
+`tag_lists` is list containing the  IDs' tags on the platform and their dimensions in meters, assuming square markers.
+The dimension is related to the black square.
 
-The remaining parameters are set to the their default values from the library. See `apriltag.h` for a more detailed description of their function.
+The remaining parameters are set to the their default values from the library. 
+See `apriltag.h` for a more detailed description of their function.
 
-See [tags_16h5_all.yaml](node/cfg/tags_16h5_all.yaml) for an example configuration that publishes all markers in the 16h5 family and [tags_16h5_filtered.yaml](node/cfg/tags_16h5_filtered.yaml) for filtering tags.
+See [tags_16h5_all.yaml](node/cfg/tags_16h5_all.yaml) for 
+an example configuration that publishes all markers in the 16h5 family and [tags_16h5_filtered.yaml](node/cfg/tags_16h5_filtered.yaml)
+for filtering tags.
 
 To run the node and load the configuration, pass the configuration file to `__params`:
 ```bash
