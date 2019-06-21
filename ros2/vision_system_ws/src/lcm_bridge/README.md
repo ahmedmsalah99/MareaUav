@@ -9,14 +9,23 @@ To run the bridge:
 ```
 ros2 run lcm_bridge bridge_node
 ```
-The package subscribes to ROS 2 topics and it publishes onto LCM topics.
+The package subscribes and publishes to ROS 2 topics and it publishes onto LCM topics.
 
 ## Ros2 Topics Subscription:
-- `/raspi/camera_info` (type: `sensor_msgs/CameraInfo`)
-- `/raspi/compressed_image` (type: `sensor_msgs/CompressedImage`)
+- `/mavros/local_position/odom` (type: `nav_msgs/Odometry`, local position and velocity of the drone)
+- `/mavros/state` (type: `mavros_msgs/State`, state of the drone)
+- `/mavros/extended_state` (type: `mavros_msgs/ExtendedState`, status of the drone)
+- `/platform_center` (type: `geometry_msgs/TransformStamped`, information coming from the vision system)
+
+## Ros2 Topics Publication:
+- `/mavros/setpoint_position/local` (type: `geometry_msgs/PoseStamped`, position setpoint to send to the PX4)
+- `/mavros/setpoint_velocity/cmd_vel` (type: `geometry_msgs/TwistStamped`, velocity setpoint to send to the PX4)
 
 ## LCM Topics Publication:
-
+- `apriltag_vision_system` ( local position and velocity of the drone)
+- `/mavros/state` (type: `mavros_msgs/State`, state of the drone)
+- `/mavros/extended_state` (type: `mavros_msgs/ExtendedState`, status of the drone)
+- `/platform_center` (type: `geometry_msgs/TransformStamped`, information coming from the vision system)
 
 
 
