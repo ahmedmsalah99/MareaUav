@@ -17,16 +17,20 @@ The package subscribes and publishes to ROS 2 topics and it publishes onto LCM t
 - `/mavros/extended_state` (type: `mavros_msgs/ExtendedState`, status of the drone)
 - `/platform_center` (type: `geometry_msgs/TransformStamped`, information coming from the vision system)
 
+These topics allows to take information coming from the PX4(via mavros) and from the vision system.
+
 ## Ros2 Topics Publication:
 - `/mavros/setpoint_position/local` (type: `geometry_msgs/PoseStamped`, position setpoint to send to the PX4)
 - `/mavros/setpoint_velocity/cmd_vel` (type: `geometry_msgs/TwistStamped`, velocity setpoint to send to the PX4)
 
+These topics allows to send position/velocity setpoints to the PX4. This setpoints are the output of the guidance controller.
+
 ## LCM Topics Publication:
-- `apriltag_vision_system` ( local position and velocity of the drone)
-- `/mavros/state` (type: `mavros_msgs/State`, state of the drone)
-- `/mavros/extended_state` (type: `mavros_msgs/ExtendedState`, status of the drone)
-- `/platform_center` (type: `geometry_msgs/TransformStamped`, information coming from the vision system)
+- `apriltag_vision_system` ( relative pose between platform and drone)
+- `vision_position_estimate` (position and velocity of the drone)
+- `state` (state of the drone)
 
-
+These topics are the input of the guidance controller. With this information, the guidance controller is able to generate position/velocity setpoints 
+based on the actual data..
 
 
