@@ -1,7 +1,7 @@
 # Finite State Machine for Raspberry Pi Camera #
-Ros2 package which allows to publish camera info and image data via ros2 topic.
+Ros2 package which allows to publish camera parameters and image compressed data via ros2 topic.
 
-It has a Finite State Machine composed of four states, namely : IDLE, LAND, SEARCH, STOP.
+It is a State Machine composed of four states, namely : IDLE, LAND, SEARCH, STOP.
 
 During the LAND state the camera has the following parameters:
 
