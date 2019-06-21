@@ -26,7 +26,11 @@ To run the finite state machine:
 ```
 ros2 run fsm_raspicam camera_main_node
 ```
-The package with publish camera info onto raspi/camera_info and image data onto raspi/compressed_image.
+The package publishes camera parameters and image compressed data through ros2 topics.
+
+### Ros2 Topics:
+- `/raspi/camera_info` (type: `sensor_msgs/CameraInfo`)
+- `/raspi/compressed_image` (type: `sensor_msgs/CompressedImage`)
 
 To change the state of the machine, publish on /drone_state 0 or 1 or 2.
 
