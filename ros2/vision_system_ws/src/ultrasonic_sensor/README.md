@@ -1,6 +1,18 @@
-# UltrasonicSensor module for Raspberry Pi
+# ROS 2 Ultrasonic Sensor package for Raspberry Pi
 
-It returns the distance and the estimated velocity on the z axis.
+To run the sensor:
+
+```
+ros2 run ultrasonic_sensor mainMocap2mav.cpp
+```
+## Ros2 Topics Publication:
+- `/mavros/setpoint_position/local` (type: `ultrasonic_sensor/UltrasonicMsg`, /UltrasonicSensor_filtr)
+
+## LCM Topics Publication:
+- `UltrasonicSensor/platform` ( )
 
 
-It publishes the results on a lcm topic.
+
+
+
+
