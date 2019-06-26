@@ -1,6 +1,7 @@
 # Finite State Machine for Raspberry Pi Camera #
 Ros2 package which allows to publish camera parameters and image compressed data via ros2 topic.
-It has a dependency of `raspicam` package ( `git clone https://NicoNelli@bitbucket.org/isme_robotics/mar_utils.git` )
+It has a dependency of `raspicam` package ( `git clone https://NicoNelli@bitbucket.org/isme_robotics/mar_utils.git` ).
+
 It's C++ set of classes which communicate with low level Raspberry Pi camera library.
 
 It is a State Machine composed of four states, namely : IDLE, LAND, SEARCH, STOP.
