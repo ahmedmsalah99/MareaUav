@@ -4,8 +4,7 @@ This ROS2 node uses the AprilTag 2 library to detect AprilTags in images and pub
 
 For more information on AprilTag 2, the paper and the reference implementation: https://april.eecs.umich.edu/software/apriltag.html
 
-In addition, this ros2 package depends on `apriltag` package. For download please refer to `git clone https://NicoNelli@bitbucket.org/isme_robotics/mar_frankenrotor_ros.git`
-README.md.
+In addition, this ros2 package depends on `apriltag` package. For download please refer to the README.md provided at `git clone https://NicoNelli@bitbucket.org/isme_robotics/mar_frankenrotor_ros.git`.
 
 
 The source file as reference is `AprilTag2Node2_0.cpp`.
