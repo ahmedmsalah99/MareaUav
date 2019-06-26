@@ -14,8 +14,7 @@ The source file as reference is `AprilTag2Node2_0.cpp`.
 ### Publisher:
 - `/platform_center` (type: `geometry_msgs/TransformStamped`)
 
-The camera intrinsics `K` in `CameraInfo` are used to compute the marker tag pose `T` from the homography `H`. 
-The node sets `K` from the first `CameraInfo` message and unsubscribes after this.
+The camera intrinsics `K` is used to compute the marker tag pose `T` from the homography `H`. 
 
 The relative pose between platform center and the drone is published on the topic `/platform_center`.
 The platform center is estimated knowing the transformation matrices between each tag respect to the tag in the center. 
