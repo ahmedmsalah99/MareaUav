@@ -81,42 +81,42 @@
       <velocity_decay/>
       <gravity>1</gravity>
       <velocity_decay/>
-       <sensor name='camera1' type='camera'>
-	 <update_rate>30</update_rate>
-	 <camera name='head'>
-	   <pose frame=''>0.06 0 -0.03 0 1.57 0</pose>
-	   <horizontal_fov>1.39626</horizontal_fov>
-	   <image>
-	     <width>640</width>
-	     <height>480</height>
-	     <format>R8G8B8</format>
-	   </image>
-	   <clip>
-	     <near>0.02</near>
-	     <far>300</far>
-	   </clip>
-	   <noise>
-	     <type>gaussian</type>
-	     <mean>0</mean>
-	     <stddev>0.007</stddev>
-	   </noise>
-	 </camera>
-	 <plugin name='camera_controller' filename='libgazebo_ros_camera.so'>
-	   <alwaysOn>1</alwaysOn>
-	   <updateRate>30</updateRate>
-	   <robotNamespace>iris</robotNamespace>
-	   <cameraName>camera_rect</cameraName>
-	   <imageTopicName>image_rect</imageTopicName>
-	   <cameraInfoTopicName>camera_info</cameraInfoTopicName>
-	   <frameName>camera_link</frameName>
-	   <hackBaseline>0.07</hackBaseline>
-	   <distortionK1>0.0</distortionK1>
-	   <distortionK2>0.0</distortionK2>
-	   <distortionK3>0.0</distortionK3>
-	   <distortionT1>0.0</distortionT1>
-	   <distortionT2>0.0</distortionT2>
-	 </plugin>
-	 <pose frame=''>0 0 0 0 -0 0</pose>
+      <sensor name='camera1' type='camera'>
+        <update_rate>30</update_rate>
+        <camera name='head'>
+          <pose frame=''>0.06 0 -0.03 0 1.57 0</pose>
+          <horizontal_fov>1.39626</horizontal_fov>
+          <image>
+            <width>640</width>
+            <height>480</height>
+            <format>R8G8B8</format>
+          </image>
+          <clip>
+            <near>0.02</near>
+            <far>300</far>
+          </clip>
+          <noise>
+            <type>gaussian</type>
+            <mean>0</mean>
+            <stddev>0.007</stddev>
+          </noise>
+        </camera>
+        <plugin name='camera_controller' filename='libgazebo_ros_camera.so'>
+          <alwaysOn>1</alwaysOn>
+          <updateRate>30</updateRate>
+          <robotNamespace>iris</robotNamespace>
+          <cameraName>camera_rect</cameraName>
+          <imageTopicName>image_rect</imageTopicName>
+          <cameraInfoTopicName>camera_info</cameraInfoTopicName>
+          <frameName>camera_link</frameName>
+          <hackBaseline>0.07</hackBaseline>
+          <distortionK1>0.0</distortionK1>
+          <distortionK2>0.0</distortionK2>
+          <distortionK3>0.0</distortionK3>
+          <distortionT1>0.0</distortionT1>
+          <distortionT2>0.0</distortionT2>
+        </plugin>
+        <pose frame=''>0 0 0 0 -0 0</pose>
       </sensor>
     </link>
     <link name='/imu_link'>
@@ -521,8 +521,8 @@
       <hil_mode>0</hil_mode>
       <hil_state_level>0</hil_state_level>
       <vehicle_is_tailsitter>0</vehicle_is_tailsitter>
-      <send_vision_estimation>1</send_vision_estimation>
-      <send_odometry>0</send_odometry>
+      <send_vision_estimation>0</send_vision_estimation>
+      <send_odometry>1</send_odometry>
       <enable_lockstep>1</enable_lockstep>
       <use_tcp>1</use_tcp>
       <motorSpeedCommandPubTopic>/gazebo/command/motor_speed</motorSpeedCommandPubTopic>
