@@ -1,0 +1,2 @@
+apriltag_ros/apriltag_ros:lcm_bridge:load_simulation:rapyuta_msgs
+-DCATKIN_DEVEL_PREFIX=/home/andrea/Desktop/Marea/VisionSystem/apriltag/catkin_ws/devel -DCMAKE_INSTALL_PREFIX=/home/andrea/Desktop/Marea/VisionSystem/apriltag/catkin_ws/install -G Unix Makefiles

@@ -1,0 +1,1 @@
+/usr/bin/c++  -std=c++11 -Wno-all -Wno-deprecated  -g   -rdynamic CMakeFiles/mocapTest.dir/src/mocapTest.cpp.o CMakeFiles/mocapTest.dir/__/__/include/common/MavState.cpp.o  -o ../../bin/mocapTest -Wl,-rpath,/usr/local/lib ../../lib/libmocap.a ../../lib/libStateMachine.a ../../lib/libminiPID.a /usr/local/lib/librudeconfig.so 

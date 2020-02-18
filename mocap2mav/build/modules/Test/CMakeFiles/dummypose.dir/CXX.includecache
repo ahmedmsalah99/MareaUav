@@ -1,0 +1,32 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+../include/lcm_messages/geometry/pose.hpp
+lcm/lcm_coretypes.h
+-
+
+../include/utils/TimeHelpers.hpp
+iostream
+-
+chrono
+-
+unistd.h
+-
+
+/home/andrea/Desktop/Marea/VisionSystem/mocap2mav/modules/Test/src/dummyPose.cpp
+iostream
+-
+lcm/lcm-cpp.hpp
+/home/andrea/Desktop/Marea/VisionSystem/mocap2mav/modules/Test/src/lcm/lcm-cpp.hpp
+poll.h
+/home/andrea/Desktop/Marea/VisionSystem/mocap2mav/modules/Test/src/poll.h
+utils/TimeHelpers.hpp
+/home/andrea/Desktop/Marea/VisionSystem/mocap2mav/modules/Test/src/utils/TimeHelpers.hpp
+lcm_messages/geometry/pose.hpp
+/home/andrea/Desktop/Marea/VisionSystem/mocap2mav/modules/Test/src/lcm_messages/geometry/pose.hpp
+

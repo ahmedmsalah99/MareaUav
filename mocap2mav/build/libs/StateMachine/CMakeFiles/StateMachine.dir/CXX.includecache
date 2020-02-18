@@ -1,0 +1,24 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+../libs/StateMachine/include/AbstractState.h
+Machine.h
+../libs/StateMachine/include/Machine.h
+
+../libs/StateMachine/include/Machine.h
+AbstractState.h
+../libs/StateMachine/include/AbstractState.h
+
+/home/andrea/Desktop/Marea/VisionSystem/mocap2mav/libs/StateMachine/src/AbstractState.cpp
+AbstractState.h
+/home/andrea/Desktop/Marea/VisionSystem/mocap2mav/libs/StateMachine/src/AbstractState.h
+
+/home/andrea/Desktop/Marea/VisionSystem/mocap2mav/libs/StateMachine/src/Machine.cpp
+Machine.h
+/home/andrea/Desktop/Marea/VisionSystem/mocap2mav/libs/StateMachine/src/Machine.h
+

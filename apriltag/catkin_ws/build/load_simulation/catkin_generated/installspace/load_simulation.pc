@@ -1,0 +1,8 @@
+prefix=/home/andrea/Desktop/Marea/VisionSystem/apriltag/catkin_ws/install
+
+Name: load_simulation
+Description: Description of load_simulation
+Version: 0.0.0
+Cflags: 
+Libs: -L${prefix}/lib 
+Requires: 

@@ -1,0 +1,8 @@
+prefix=/home/andrea/Desktop/Marea/VisionSystem/apriltag/catkin_ws/install
+
+Name: lcm_bridge
+Description: Description of lcm_bridge
+Version: 0.0.0
+Cflags: 
+Libs: -L${prefix}/lib 
+Requires: 

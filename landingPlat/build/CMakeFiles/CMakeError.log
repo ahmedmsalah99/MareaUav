@@ -1,0 +1,55 @@
+Determining if the pthread_create exist failed with the following output:
+Change Dir: /home/andrea/Desktop/Marea/VisionSystem/landingPlat/build/CMakeFiles/CMakeTmp
+
+Run Build Command:"/usr/bin/make" "cmTC_3ccff/fast"
+/usr/bin/make -f CMakeFiles/cmTC_3ccff.dir/build.make CMakeFiles/cmTC_3ccff.dir/build
+make[1]: Entering directory '/home/andrea/Desktop/Marea/VisionSystem/landingPlat/build/CMakeFiles/CMakeTmp'
+Building CXX object CMakeFiles/cmTC_3ccff.dir/CheckSymbolExists.cxx.o
+/usr/bin/c++     -o CMakeFiles/cmTC_3ccff.dir/CheckSymbolExists.cxx.o -c /home/andrea/Desktop/Marea/VisionSystem/landingPlat/build/CMakeFiles/CMakeTmp/CheckSymbolExists.cxx
+Linking CXX executable cmTC_3ccff
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_3ccff.dir/link.txt --verbose=1
+/usr/bin/c++       -rdynamic CMakeFiles/cmTC_3ccff.dir/CheckSymbolExists.cxx.o  -o cmTC_3ccff 
+CMakeFiles/cmTC_3ccff.dir/CheckSymbolExists.cxx.o: In function `main':
+CheckSymbolExists.cxx:(.text+0x1b): undefined reference to `pthread_create'
+collect2: error: ld returned 1 exit status
+CMakeFiles/cmTC_3ccff.dir/build.make:97: recipe for target 'cmTC_3ccff' failed
+make[1]: *** [cmTC_3ccff] Error 1
+make[1]: Leaving directory '/home/andrea/Desktop/Marea/VisionSystem/landingPlat/build/CMakeFiles/CMakeTmp'
+Makefile:126: recipe for target 'cmTC_3ccff/fast' failed
+make: *** [cmTC_3ccff/fast] Error 2
+
+File /home/andrea/Desktop/Marea/VisionSystem/landingPlat/build/CMakeFiles/CMakeTmp/CheckSymbolExists.cxx:
+/* */
+#include <pthread.h>
+
+int main(int argc, char** argv)
+{
+  (void)argv;
+#ifndef pthread_create
+  return ((int*)(&pthread_create))[argc];
+#else
+  (void)argc;
+  return 0;
+#endif
+}
+
+Determining if the function pthread_create exists in the pthreads failed with the following output:
+Change Dir: /home/andrea/Desktop/Marea/VisionSystem/landingPlat/build/CMakeFiles/CMakeTmp
+
+Run Build Command:"/usr/bin/make" "cmTC_3258d/fast"
+/usr/bin/make -f CMakeFiles/cmTC_3258d.dir/build.make CMakeFiles/cmTC_3258d.dir/build
+make[1]: Entering directory '/home/andrea/Desktop/Marea/VisionSystem/landingPlat/build/CMakeFiles/CMakeTmp'
+Building CXX object CMakeFiles/cmTC_3258d.dir/CheckFunctionExists.cxx.o
+/usr/bin/c++    -DCHECK_FUNCTION_EXISTS=pthread_create   -o CMakeFiles/cmTC_3258d.dir/CheckFunctionExists.cxx.o -c /home/andrea/Desktop/Marea/VisionSystem/landingPlat/build/CMakeFiles/CheckLibraryExists/CheckFunctionExists.cxx
+Linking CXX executable cmTC_3258d
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_3258d.dir/link.txt --verbose=1
+/usr/bin/c++   -DCHECK_FUNCTION_EXISTS=pthread_create    -rdynamic CMakeFiles/cmTC_3258d.dir/CheckFunctionExists.cxx.o  -o cmTC_3258d -lpthreads 
+/usr/bin/ld: cannot find -lpthreads
+collect2: error: ld returned 1 exit status
+CMakeFiles/cmTC_3258d.dir/build.make:97: recipe for target 'cmTC_3258d' failed
+make[1]: *** [cmTC_3258d] Error 1
+make[1]: Leaving directory '/home/andrea/Desktop/Marea/VisionSystem/landingPlat/build/CMakeFiles/CMakeTmp'
+Makefile:126: recipe for target 'cmTC_3258d/fast' failed
+make: *** [cmTC_3258d/fast] Error 2
+
+

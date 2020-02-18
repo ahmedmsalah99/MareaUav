@@ -1,0 +1,20 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+../libs/miniPID/MiniPID.h
+
+/home/andrea/Desktop/Marea/VisionSystem/mocap2mav/libs/miniPID/examples/GeneralCPP/main.cpp
+iostream
+-
+chrono
+-
+zconf.h
+-
+MiniPID.h
+/home/andrea/Desktop/Marea/VisionSystem/mocap2mav/libs/miniPID/examples/GeneralCPP/MiniPID.h
+

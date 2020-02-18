@@ -1,0 +1,3 @@
+/home/andrea/Desktop/Marea/VisionSystem/landingPlat/build/CMakeFiles/rebuild_cache.dir
+/home/andrea/Desktop/Marea/VisionSystem/landingPlat/build/CMakeFiles/platformPlugin.dir
+/home/andrea/Desktop/Marea/VisionSystem/landingPlat/build/CMakeFiles/edit_cache.dir

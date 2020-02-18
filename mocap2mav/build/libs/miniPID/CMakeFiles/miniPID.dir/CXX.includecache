@@ -1,0 +1,14 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/home/andrea/Desktop/Marea/VisionSystem/mocap2mav/libs/miniPID/MiniPID.cpp
+MiniPID.h
+/home/andrea/Desktop/Marea/VisionSystem/mocap2mav/libs/miniPID/MiniPID.h
+
+/home/andrea/Desktop/Marea/VisionSystem/mocap2mav/libs/miniPID/MiniPID.h
+

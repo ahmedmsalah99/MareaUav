@@ -1,0 +1,16 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/home/andrea/Desktop/Marea/VisionSystem/mocap2mav/modules/Test/src/configtest.cpp
+iostream
+-
+string
+-
+rude/config.h
+/home/andrea/Desktop/Marea/VisionSystem/mocap2mav/modules/Test/src/rude/config.h
+

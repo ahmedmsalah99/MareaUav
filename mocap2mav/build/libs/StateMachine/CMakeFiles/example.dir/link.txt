@@ -1,0 +1,1 @@
+/usr/bin/c++  -std=c++11 -Wno-all -Wno-deprecated  -g   -rdynamic CMakeFiles/example.dir/src/main.cpp.o  -o ../../bin/example ../../lib/libStateMachine.a 

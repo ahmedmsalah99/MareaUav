@@ -1,0 +1,31 @@
+<launch>
+
+<!-- the second one load the iris world in gazebo  -->
+
+<include file="$(find gazebo_ros)/launch/empty_world.launch">
+
+<arg name="world_name" value="/home/andrea/Desktop/Marea/VisionSystem/Firmware/Tools/sitl_gazebo/worlds/iris.world" />
+
+</include>
+
+<!-- the third one runs mavros package  -->
+
+
+<include file="$(find mavros)/launch/px4.launch">
+
+<arg name="fcu_url" value="udp://:14540@192.168.1.36:14557" />
+
+</include>
+
+
+<!--The fourth one allows to launch the apriltag system -->
+
+
+<!-- <include file="$(find apriltags)/launch/gazebo_cam_apriltags.launch"/> -->
+
+<include file = "$(find apriltag_ros)/launch/continuous_detection.launch"/>
+
+
+</launch>
+
+
