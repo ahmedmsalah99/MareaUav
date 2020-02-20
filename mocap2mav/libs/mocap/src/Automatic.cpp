@@ -7,6 +7,12 @@ MavState Automatic::getState()
 {
     return _state;
 }
+
+MavState Automatic::getPlatformState()
+{
+    return _platformState;
+}
+
 exec::task Automatic::getTask()
 {
     return _actualTask;
@@ -34,7 +40,7 @@ void Automatic::handleCommands() {
 
     /*
     The automatic class has a member 'std::unique_ptr<Command> _actualCommand' which is a template of the class Command.
-    In the above line, being Idle, Move , Takeoff and Land derived classes from the command one, I set only the variable of the Command one 
+    In the above line, being Idle, Move , Takeoff and Land derived classes from the command one, I set only the variable of the Command one
     which Idle or Move or Land or Takeoff inherits.
 
     */
@@ -101,7 +107,7 @@ to reduce the boost:).
 ----IF the action is LAND:
 1)take the actual position of the drone and a land parameter(_plat).
 2)if _plat == 0 ==> simple landing(without z compensation).
-3)if _plat == 1 ==> state machine with z compensation. 
+3)if _plat == 1 ==> state machine with z compensation.
 */
 
 void Automatic::setVisionFeedback(MavState pose){

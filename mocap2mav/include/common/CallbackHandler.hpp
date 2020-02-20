@@ -105,7 +105,6 @@ public:
       battery.voltage = msg->voltage;
       battery.current = msg->current;
       battery.remaining = msg->remaining;
-      std::cout << msg->remaining << std::endl;
     }
 
     void ApriltagCallback(const lcm::ReceiveBuffer* rbuf, const std::string& chan, const geometry::vision* msg){

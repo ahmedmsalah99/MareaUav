@@ -26,6 +26,7 @@ public:
     void setTask(exec::task task);
     exec::task getTask();
     MavState getState();
+    MavState getPlatformState();
     MavState _comm; //the command to sent to the UAV
     exec::task _actualTask;
 

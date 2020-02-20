@@ -31,10 +31,10 @@ int main(int argc, char** argv){
 	lcm::Subscription *sub2  = handler2.subscribe("Landing_Site/pose", &CallbackHandler::positionSetpointCallback, &call);
 	//topic for platform pose
 
+	lcm::Subscription *sub3  = handler3.subscribe("actual_task", &CallbackHandler::actualTaskCallback, &call);
+
 	lcm::Subscription *sub4  = handler4.subscribe("apriltag_vision_system", &CallbackHandler::ApriltagCallback, &call);
 	//topic of the vision system (Apriltag)
-
-	lcm::Subscription *sub3  = handler3.subscribe("actual_task", &CallbackHandler::actualTaskCallback, &call);
 
 	lcm::Subscription *sub5 = handler5.subscribe("battery", &CallbackHandler::batteryStatusCallback, &call);
 
@@ -146,6 +146,14 @@ int main(int argc, char** argv){
     if(!waiting) {
 
       //Call commands
+			// if the MOVE action is the current one, we set the target as the platform's position
+			// (Handle case where it returns to home due to failure)
+			if(call._task.action == actions::MOVE)
+			{
+				autom._actualTask.x = autom.getPlatformState().getX();
+				autom._actualTask.y = autom.getPlatformState().getY();
+				autom._actualTask.z = autom.getPlatformState().getZ();
+			}
       autom.executeCommand();
 
       //Prepare LCM stuff
