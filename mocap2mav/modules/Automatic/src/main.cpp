@@ -13,9 +13,9 @@ int main(int argc, char** argv){
 
 	Duration VisionData(1); //Timer of 1 second
 
-	lcm::LCM handler, handler2, handler3, handler4;
+	lcm::LCM handler, handler2, handler3, handler4, handler5;
 
-	if (!handler.good() && !handler2.good() && !handler3.good() && !handler4.good())
+	if (!handler.good() && !handler2.good() && !handler3.good() && !handler4.good() && !handler5.good())
 		return 1;
 
 	CallbackHandler call;
@@ -36,6 +36,8 @@ int main(int argc, char** argv){
 
 	lcm::Subscription *sub3  = handler3.subscribe("actual_task", &CallbackHandler::actualTaskCallback, &call);
 
+	lcm::Subscription *sub5 = handler5.subscribe("battery", &CallbackHandler::batteryStatusCallback, &call);
+
 	sub ->setQueueCapacity(1);
 
 	sub2->setQueueCapacity(1);
@@ -44,8 +46,10 @@ int main(int argc, char** argv){
 
 	sub4->setQueueCapacity(1);
 
+	sub5->setQueueCapacity(1);
 
-	struct pollfd fds[3];
+
+	struct pollfd fds[4];
 
 	fds[0].fd = handler3.getFileno(); // Actual task
 	fds[0].events = POLLIN;
@@ -56,6 +60,8 @@ int main(int argc, char** argv){
 	fds[2].fd = handler4.getFileno(); //vision feedback
 	fds[2].events = POLLIN;
 
+	fds[3].fd = handler5.getFileno(); // Battery Status
+	fds[3].events = POLLIN;
 
 
   bool waiting = true;
@@ -75,7 +81,8 @@ int main(int argc, char** argv){
 		int ret = poll(fds,3,0);
 
 		//the following instruction checks with bitwise AND if the two events are the same.
-		if(fds[0].revents & POLLIN){
+		if(fds[0].revents & POLLIN)
+		{
 
 			handler3.handle();
 			autom.setTask(call._task);
@@ -87,7 +94,8 @@ int main(int argc, char** argv){
       autom.handleCommands();
 		}
 
-		if(fds[1].revents & POLLIN){
+		if(fds[1].revents & POLLIN)
+		{
 
 			handler2.handle();
 
@@ -98,7 +106,6 @@ int main(int argc, char** argv){
 			//std::cout<<"z:"<<platform.getZ()<<std::endl;
       autom.setPlatformState(platform);
 		}
-
 		if(fds[2].revents & POLLIN){
 
 			handler4.handle();
@@ -119,7 +126,8 @@ int main(int argc, char** argv){
       autom.setVisionFeedback(visionSystem);
 
 		}
-		else {
+		else
+		{
 
 			if(VisionData.isExpired()) {//if It passed one second the vision data are not
 				//available
@@ -127,9 +135,11 @@ int main(int argc, char** argv){
 				visionSystem.VisionDataUpdated = false; //the vision data are updated
 				autom.setVisionFeedback(visionSystem);
 			}
+		}
 
-
-
+		if(fds[3].revents & POLLIN)
+		{
+			handler5.handle();
 		}
 
 		// if the first task didn't come yet, skip; else keep on the algorithm

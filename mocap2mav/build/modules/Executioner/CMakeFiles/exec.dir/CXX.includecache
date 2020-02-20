@@ -19,6 +19,8 @@ lcm_messages/exec/task.hpp
 ../include/common/lcm_messages/exec/task.hpp
 lcm_messages/exec/state.hpp
 ../include/common/lcm_messages/exec/state.hpp
+lcm_messages/exec/battery.hpp
+../include/common/lcm_messages/exec/battery.hpp
 iostream
 -
 
@@ -38,6 +40,10 @@ chrono
 map
 -
 string
+-
+
+../include/lcm_messages/exec/battery.hpp
+lcm/lcm_coretypes.h
 -
 
 ../include/lcm_messages/exec/state.hpp

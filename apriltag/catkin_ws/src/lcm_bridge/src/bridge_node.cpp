@@ -3,11 +3,13 @@
 #include "geometry_msgs/PoseStamped.h"
 #include "geometry_msgs/TwistStamped.h"
 #include "mavros_msgs/State.h"
+#include "sensor_msgs/BatteryState.h"
 #include "mavros_msgs/ExtendedState.h"
 #include "mavros_msgs/ParamSet.h"
 #include "lcm_messages/geometry/pose.hpp"
 #include "lcm_messages/geometry/vision.hpp"
 #include "lcm_messages/exec/state.hpp"
+#include "lcm_messages/exec/battery.hpp"
 #include "common/MavState.h"
 #include "common/CallbackHandler.hpp"
 #include "nav_msgs/Odometry.h"
@@ -19,9 +21,10 @@
 #include <queue>
 #include <string>
 
-lcm::LCM handler, handler2, handler3, handler4;
+lcm::LCM handler, handler2, handler3, handler4,handler5;
 geometry::pose lcm_pose;
 exec::state robot_state;
+exec::battery battery_lcm;
 nav_msgs::Odometry platPos;
 mavros_msgs::State disarmed;
 mavros_msgs::ExtendedState landed;
@@ -158,6 +161,17 @@ void stateCallback(mavros_msgs::State s){
     else robot_state.armed = 1;
 
 }
+
+void batteryStatusCallback(sensor_msgs::BatteryState bs)
+{
+  battery_lcm.voltage = bs.voltage;
+  battery_lcm.current = bs.current;
+  battery_lcm.remaining = bs.percentage;
+  std::cout << bs.percentage << std::endl;
+
+  handler5.publish("battery", &battery_lcm);
+}
+
 void EStateCallback(mavros_msgs::ExtendedState es){
 
     if (firstEState) {
@@ -258,6 +272,7 @@ int main(int argc, char **argv)
     ros::Subscriber state_sub = n.subscribe("/mavros/state",1,&stateCallback);
     ros::Subscriber state_extended_sub = n.subscribe("/mavros/extended_state",1,&EStateCallback);
     ros::Subscriber relative_pose_sub = n.subscribe("/apriltag_ros/camera_rect/tag_detections",1,&ApriltagCallback);//apriltags system.
+    ros::Subscriber battery_status_sub = n.subscribe("/mavros/battery", 1, &batteryStatusCallback);
 
 
     ros::Publisher  pub  = n.advertise<geometry_msgs::PoseStamped>("/mavros/setpoint_position/local",1);
@@ -289,7 +304,8 @@ int main(int argc, char **argv)
     int*  platformDataRec = new int(0);
     int*  robotDataRec    = new int(0);
 
-    while (ros::ok()){
+    while (ros::ok())
+    {
 
         //Poll file descriptors
         int ret = poll(fds,2,0);

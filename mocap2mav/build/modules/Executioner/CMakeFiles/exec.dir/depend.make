@@ -10,6 +10,7 @@ modules/Executioner/CMakeFiles/exec.dir/src/Parser.cpp.o: ../modules/Executioner
 modules/Executioner/CMakeFiles/exec.dir/src/main.cpp.o: ../include/common/CallbackHandler.hpp
 modules/Executioner/CMakeFiles/exec.dir/src/main.cpp.o: ../include/common/MavState.h
 modules/Executioner/CMakeFiles/exec.dir/src/main.cpp.o: ../include/common/common.h
+modules/Executioner/CMakeFiles/exec.dir/src/main.cpp.o: ../include/lcm_messages/exec/battery.hpp
 modules/Executioner/CMakeFiles/exec.dir/src/main.cpp.o: ../include/lcm_messages/exec/state.hpp
 modules/Executioner/CMakeFiles/exec.dir/src/main.cpp.o: ../include/lcm_messages/exec/task.hpp
 modules/Executioner/CMakeFiles/exec.dir/src/main.cpp.o: ../include/lcm_messages/geometry/pose.hpp

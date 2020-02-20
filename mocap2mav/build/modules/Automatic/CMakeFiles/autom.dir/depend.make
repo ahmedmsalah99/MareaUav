@@ -5,6 +5,7 @@ modules/Automatic/CMakeFiles/autom.dir/src/main.cpp.o: ../include/common/Callbac
 modules/Automatic/CMakeFiles/autom.dir/src/main.cpp.o: ../include/common/MavState.h
 modules/Automatic/CMakeFiles/autom.dir/src/main.cpp.o: ../include/common/common.h
 modules/Automatic/CMakeFiles/autom.dir/src/main.cpp.o: ../include/common/conversions.h
+modules/Automatic/CMakeFiles/autom.dir/src/main.cpp.o: ../include/lcm_messages/exec/battery.hpp
 modules/Automatic/CMakeFiles/autom.dir/src/main.cpp.o: ../include/lcm_messages/exec/state.hpp
 modules/Automatic/CMakeFiles/autom.dir/src/main.cpp.o: ../include/lcm_messages/exec/task.hpp
 modules/Automatic/CMakeFiles/autom.dir/src/main.cpp.o: ../include/lcm_messages/geometry/pose.hpp

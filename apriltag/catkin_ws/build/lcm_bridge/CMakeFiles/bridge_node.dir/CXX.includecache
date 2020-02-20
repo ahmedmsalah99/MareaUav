@@ -57,6 +57,8 @@ geometry_msgs/TwistStamped.h
 /home/andrea/Desktop/Marea/VisionSystem/apriltag/catkin_ws/src/lcm_bridge/src/geometry_msgs/TwistStamped.h
 mavros_msgs/State.h
 /home/andrea/Desktop/Marea/VisionSystem/apriltag/catkin_ws/src/lcm_bridge/src/mavros_msgs/State.h
+sensor_msgs/BatteryState.h
+/home/andrea/Desktop/Marea/VisionSystem/apriltag/catkin_ws/src/lcm_bridge/src/sensor_msgs/BatteryState.h
 mavros_msgs/ExtendedState.h
 /home/andrea/Desktop/Marea/VisionSystem/apriltag/catkin_ws/src/lcm_bridge/src/mavros_msgs/ExtendedState.h
 mavros_msgs/ParamSet.h
@@ -67,6 +69,8 @@ lcm_messages/geometry/vision.hpp
 /home/andrea/Desktop/Marea/VisionSystem/apriltag/catkin_ws/src/lcm_bridge/src/lcm_messages/geometry/vision.hpp
 lcm_messages/exec/state.hpp
 /home/andrea/Desktop/Marea/VisionSystem/apriltag/catkin_ws/src/lcm_bridge/src/lcm_messages/exec/state.hpp
+lcm_messages/exec/battery.hpp
+/home/andrea/Desktop/Marea/VisionSystem/apriltag/catkin_ws/src/lcm_bridge/src/lcm_messages/exec/battery.hpp
 common/MavState.h
 /home/andrea/Desktop/Marea/VisionSystem/apriltag/catkin_ws/src/lcm_bridge/src/common/MavState.h
 common/CallbackHandler.hpp
@@ -101,6 +105,8 @@ lcm_messages/exec/task.hpp
 /home/andrea/Desktop/Marea/VisionSystem/mocap2mav/include/common/lcm_messages/exec/task.hpp
 lcm_messages/exec/state.hpp
 /home/andrea/Desktop/Marea/VisionSystem/mocap2mav/include/common/lcm_messages/exec/state.hpp
+lcm_messages/exec/battery.hpp
+/home/andrea/Desktop/Marea/VisionSystem/mocap2mav/include/common/lcm_messages/exec/battery.hpp
 iostream
 -
 
@@ -116,6 +122,10 @@ cstdint
 math.h
 -
 Eigen/Eigen
+-
+
+/home/andrea/Desktop/Marea/VisionSystem/mocap2mav/include/lcm_messages/exec/battery.hpp
+lcm/lcm_coretypes.h
 -
 
 /home/andrea/Desktop/Marea/VisionSystem/mocap2mav/include/lcm_messages/exec/state.hpp
@@ -1097,6 +1107,24 @@ ros/forwards.h
 /opt/ros/melodic/include/ros/ros/forwards.h
 
 /opt/ros/melodic/include/rosconsole/macros_generated.h
+
+/opt/ros/melodic/include/sensor_msgs/BatteryState.h
+string
+-
+vector
+-
+map
+-
+ros/types.h
+-
+ros/serialization.h
+-
+ros/builtin_message_traits.h
+-
+ros/message_operations.h
+-
+std_msgs/Header.h
+-
 
 /opt/ros/melodic/include/std_msgs/Header.h
 string

@@ -104,7 +104,7 @@ namespace gazebo
 
                 //_pose.pos.x = newX;
 
-                // _pose.Set(ignition::math::Vector3<double>(newX, 0, wave.generateWaveHeightAtPoint(_pose.Pos()[0],_pose.Pos()[1],_actual_sim_time,0) + 2), ignition::math::Quaternion<double>(1,0,0,0));
+                //_pose.Set(ignition::math::Vector3<double>(newX, 0, wave.generateWaveHeightAtPoint(_pose.Pos()[0],_pose.Pos()[1],_actual_sim_time,0) + 2), ignition::math::Quaternion<double>(1,0,0,0));
                 _pose.Set(ignition::math::Vector3<double>(0, 0, wave.generateWaveHeightAtPoint(_pose.Pos()[0],_pose.Pos()[1],_actual_sim_time,0) + 2), ignition::math::Quaternion<double>(1,0,0,0));
                 _model.get()->SetAngularVel(ignition::math::Vector3<double>(0,0,0));
                 _model.get()->SetWorldPose(_pose);

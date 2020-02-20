@@ -11,6 +11,7 @@ modules/Executioner/CMakeFiles/exec.dir/src/main.cpp.o
  ../include/common/CallbackHandler.hpp
  ../include/common/MavState.h
  ../include/common/common.h
+ ../include/lcm_messages/exec/battery.hpp
  ../include/lcm_messages/exec/state.hpp
  ../include/lcm_messages/exec/task.hpp
  ../include/lcm_messages/geometry/pose.hpp

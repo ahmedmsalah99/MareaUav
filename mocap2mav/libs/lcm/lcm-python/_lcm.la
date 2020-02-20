@@ -17,7 +17,7 @@ old_library=''
 inherited_linker_flags=' -pthread'
 
 # Libraries that this one depends upon.
-dependency_libs=' /home/andrea/Marea/mar_utils/mocap2mav/projectLIBS/lcm/lcm/liblcm.la -lgthread-2.0 -lglib-2.0'
+dependency_libs=' /home/andrea/Desktop/Marea/VisionSystem/mocap2mav/libs/lcm/lcm/liblcm.la -lgthread-2.0 -lglib-2.0'
 
 # Names of additional weak libraries provided by this library
 weak_library_names=''
@@ -39,4 +39,4 @@ dlpreopen=''
 
 # Directory that this library needs to be installed in:
 libdir='/usr/local/lib/python2.7/dist-packages/lcm'
-relink_command="(cd /home/andrea/Marea/mar_utils/mocap2mav/projectLIBS/lcm/lcm-python; /bin/bash \"/home/andrea/Marea/mar_utils/mocap2mav/projectLIBS/lcm/libtool\"  --silent --tag CC --mode=relink gcc -I.. -g -O2 -module -avoid-version -o _lcm.la -rpath /usr/local/lib/python2.7/dist-packages/lcm _lcm_la-module.lo _lcm_la-pyeventlog.lo _lcm_la-pylcm.lo _lcm_la-pylcm_subscription.lo ../lcm/liblcm.la @inst_prefix_dir@)"
+relink_command="(cd /home/andrea/Desktop/Marea/VisionSystem/mocap2mav/libs/lcm/lcm-python; /bin/bash \"/home/andrea/Desktop/Marea/VisionSystem/mocap2mav/libs/lcm/libtool\"  --silent --tag CC --mode=relink gcc -I.. -g -O2 -module -avoid-version -o _lcm.la -rpath /usr/local/lib/python2.7/dist-packages/lcm _lcm_la-module.lo _lcm_la-pyeventlog.lo _lcm_la-pylcm.lo _lcm_la-pylcm_subscription.lo ../lcm/liblcm.la @inst_prefix_dir@)"

@@ -11,6 +11,7 @@
 #include "lcm_messages/geometry/vision.hpp"
 #include "lcm_messages/exec/task.hpp"
 #include "lcm_messages/exec/state.hpp"
+#include "lcm_messages/exec/battery.hpp"
 #include <iostream>
 class CallbackHandler {
 
@@ -26,6 +27,13 @@ public:
     bool _armed;
     bool _estimate_ready;
     bool _position_sp_ready;
+
+    struct
+    {
+      float voltage;
+      float current;
+      float remaining;
+    }battery {};
 
     CallbackHandler(){
 
@@ -92,6 +100,14 @@ public:
 
     }
 
+    void batteryStatusCallback(const lcm::ReceiveBuffer* rbuf, const std::string& chan, const exec::battery* msg)
+    {
+      battery.voltage = msg->voltage;
+      battery.current = msg->current;
+      battery.remaining = msg->remaining;
+      std::cout << msg->remaining << std::endl;
+    }
+
     void ApriltagCallback(const lcm::ReceiveBuffer* rbuf, const std::string& chan, const geometry::vision* msg){
         //callback of the vision system.
 
@@ -108,6 +124,7 @@ public:
         _relative_pos.setYaw((float)msg->yaw);
 
     }
+
 
 
 
