@@ -178,20 +178,22 @@ bool Executioner::CheckActions(int a)
     {
             //MOVE
         case actions::MOVE:
-
-            return (fabs(_state.getX() - _nodeList[_actualNode].x) < 0.15 &&
-                    fabs(_state.getY() - _nodeList[_actualNode].y) < 0.15 &&
-                    fabs(_state.getZ() - _nodeList[_actualNode].z) < 0.15 );
+            std::cout << fabs(_state.getZ() - _nodeList[_actualNode].z) << std::endl;
+            return (fabs(_state.getX() - _nodeList[_actualNode].x) < _actualTask.params[5] &&
+                    fabs(_state.getY() - _nodeList[_actualNode].y) < _actualTask.params[5] &&
+                    fabs(_state.getZ() - _nodeList[_actualNode].z) < _actualTask.params[5] );
 
             //TAKE_OFF
         case actions::TAKE_OFF:
 
-            return (fabs(_state.getZ()) >= (fabs(_actualTask.params[0]) - 0.15));
+            return (fabs(_state.getZ()) >= (fabs(_actualTask.params[0]) - _actualTask.params[1]));
 
             //ROTATE
         case actions::ROTATE:
 
-            return (fabs(fabs(_actualTask.yaw) - fabs(_state.getYawFromQuat())) < PI/10);
+            return (fabs(fabs(_actualTask.yaw) - fabs(_state.getYawFromQuat())) < _actualTask.params[4]);
+
+            // return (fabs(fabs(_actualTask.yaw) - fabs(_state.getYawFromQuat())) < PI/10);
 
 
             //LAND
@@ -258,6 +260,8 @@ void Executioner::loadTask() {
     _actualTask.params[1] = _nodeList[_actualNode].params[1];
     _actualTask.params[2] = _nodeList[_actualNode].params[2];
     _actualTask.params[3] = _nodeList[_actualNode].params[3];
+    _actualTask.params[4] = _nodeList[_actualNode].params[4];
+    _actualTask.params[5] = _nodeList[_actualNode].params[5];
 
 }
 

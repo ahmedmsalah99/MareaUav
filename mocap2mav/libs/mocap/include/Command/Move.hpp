@@ -50,6 +50,7 @@ private:
             comm.setY(state.getY() + (float)incrementVect[1]);
             comm.setZ(state.getZ() + (float)incrementVect[2]);
         }
+        // std::cout << fabs(dist) << std::endl;
         return comm;
 
     }

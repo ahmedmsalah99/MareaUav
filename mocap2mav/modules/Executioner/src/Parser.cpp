@@ -168,6 +168,24 @@ bool Parser::parseTakeOff(exec::task& task,int pos) {
             task.id = (int)value;
 
         }
+        else if(field == "threshold")
+        {
+          // if the found value is a threshold
+          double value = getValue(value_str);
+          // we check its validity
+          if(std::isfinite(value) && value >= 0)
+          {
+            std::cout << "  threshold: " <<value<< " found for action: " << pos << std::endl;
+            // and we assign it to task's parameters
+            task.params[1] = value;
+          }
+          else
+          {
+            // otherwhise we signal it and we stop the execution
+            std::cout << "value threshold is not valid" << std::endl;
+            return false;
+          }
+        }
         else{
 
             std::cout << "unrecognized field" << std::endl;
@@ -265,7 +283,24 @@ bool Parser::parseMove(exec::task& task,int pos) {
             }
 
         }
-
+        else if(field == "threshold")
+        {
+          // if the found value is a threshold
+          double value = getValue(value_str);
+          // we check its validity
+          if(std::isfinite(value) && value >= 0)
+          {
+            std::cout << "  threshold: " <<value<< " found for action: " << pos << std::endl;
+            // and we assign it to task's parameters
+            task.params[5] = value;
+          }
+          else
+          {
+            // otherwhise we signal it and we stop the execution
+            std::cout << "value threshold is not valid" << std::endl;
+            return false;
+          }
+        }
         else{
 
             std::cout << "unrecognized field" << std::endl;
@@ -347,7 +382,29 @@ bool Parser::parseRotate(exec::task& task, int pos) {
             }
 
         }
+        else if(field == "threshold")
+        {
+          // if the found value is a threshold
+          double value = getValue(value_str);
+          // we check its validity
+          if(std::isfinite(value) && value >= 0)
+          {
+            std::cout << "  threshold: " <<value<< " found for action: " << pos << std::endl;
+            // and we assign it to task's parameters
+            task.params[4] = value;
+          }
+          else
+          {
+            // otherwhise we signal it and we stop the execution
+            std::cout << "value threshold is not valid" << std::endl;
+            return false;
+          }
+        }
+        else{
 
+            std::cout << "unrecognized field" << std::endl;
+
+        }
     }
     _taskListParsed.push_back(task);
     return true;
@@ -398,4 +455,3 @@ bool Parser::parseIdle(exec::task &task) {
     _taskListParsed.push_back(task);
     return true;
 }
-

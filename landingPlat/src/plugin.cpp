@@ -7,7 +7,7 @@
 #include "lcm_messages/geometry/pose.hpp"
 #include "WaveGen.h"
 
-#define VEL 0.8
+#define VEL 0.2
 #define MAX_DIST 15
 
 namespace gazebo

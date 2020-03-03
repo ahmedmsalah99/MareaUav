@@ -102,7 +102,7 @@ void Lander::loadMachine() {
 
 void Lander::initStateMachine() {
 
-	Inspection = false;
+	  Inspection = false;
 
     switchSensor = false;
 
@@ -151,10 +151,10 @@ void Lander::initStateMachine() {
     //keep in mind that _nextState object is inherited from the AbstractLandState class.
     //the following instructions set the machine state.
     _initS._nextState       = &_holdS;
-	_initS._nextInspeState  = &_inspeS;
+	  _initS._nextInspeState  = &_inspeS;
     _initS._nextHomingState = &_homingS;
 
-	_inspeS._nextState      = &_initS;
+	  _inspeS._nextState      = &_initS;
 
     _homingS._nextState     = &_initS;
 

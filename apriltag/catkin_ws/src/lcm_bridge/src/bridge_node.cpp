@@ -167,7 +167,6 @@ void batteryStatusCallback(sensor_msgs::BatteryState bs)
   battery_lcm.voltage = bs.voltage;
   battery_lcm.current = bs.current;
   battery_lcm.remaining = bs.percentage;
-  std::cout << bs.percentage << std::endl;
 
   handler5.publish("battery", &battery_lcm);
 }

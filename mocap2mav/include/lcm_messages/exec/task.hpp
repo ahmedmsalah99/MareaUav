@@ -26,7 +26,7 @@ class task
 
         int8_t     action;
 
-        double     params[4];
+        double     params[6];
 
         int8_t     id;
 

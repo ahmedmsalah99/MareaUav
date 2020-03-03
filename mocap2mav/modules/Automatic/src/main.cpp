@@ -150,9 +150,9 @@ int main(int argc, char** argv){
 			// (Handle case where it returns to home due to failure)
 			if(call._task.action == actions::MOVE)
 			{
-				autom._actualTask.x = autom.getPlatformState().getX();
-				autom._actualTask.y = autom.getPlatformState().getY();
-				autom._actualTask.z = autom.getPlatformState().getZ();
+				autom._actualTask.x = platform.getX();
+				autom._actualTask.y = platform.getY();
+				// autom._actualTask.z = call._task.z;
 			}
       autom.executeCommand();
 
