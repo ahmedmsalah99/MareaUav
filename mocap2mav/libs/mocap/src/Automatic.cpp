@@ -34,6 +34,8 @@ void Automatic::setTask(exec::task rTask)
     _actualTask.params[1]=rTask.params[1];
     _actualTask.params[2]=rTask.params[2];
     _actualTask.params[3]=rTask.params[3];
+    _actualTask.params[4]=rTask.params[4];
+    _actualTask.params[5]=rTask.params[5];
 }
 
 void Automatic::handleCommands() {

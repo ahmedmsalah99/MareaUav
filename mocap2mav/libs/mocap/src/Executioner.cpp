@@ -48,6 +48,12 @@ void Executioner::setState(MavState s){
 
 }
 
+void Executioner::setPlatformState(MavState ps){
+
+    _platState = ps;
+
+}
+
 void::Executioner::setList(std::deque<exec::task> list) {
 
     _nodeList = list;
@@ -178,9 +184,9 @@ bool Executioner::CheckActions(int a)
     {
             //MOVE
         case actions::MOVE:
-            std::cout << fabs(_state.getZ() - _nodeList[_actualNode].z) << std::endl;
-            return (fabs(_state.getX() - _nodeList[_actualNode].x) < _actualTask.params[5] &&
-                    fabs(_state.getY() - _nodeList[_actualNode].y) < _actualTask.params[5] &&
+            // returns the distance condition wrt the platform coordinates and the prefixed desired altitude
+            return (fabs(_state.getX() - _platState.getX()) < _actualTask.params[5] &&
+                    fabs(_state.getY() - _platState.getY()) < _actualTask.params[5] &&
                     fabs(_state.getZ() - _nodeList[_actualNode].z) < _actualTask.params[5] );
 
             //TAKE_OFF

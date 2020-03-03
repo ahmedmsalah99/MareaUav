@@ -35,20 +35,30 @@ int main(int argc, char** argv){
     }
     // Call init everytime you have a new list.
     e.init();
-    lcm::LCM handler,handler2;
+    lcm::LCM handler,handler2, handler3;
 
     if (!handler.good())
         return 1;
     CallbackHandler call;
 
 
-    handler.subscribe("vision_position_estimate", &CallbackHandler::visionEstimateCallback, &call);
-    handler2.subscribe("state", &CallbackHandler::stateCallback, &call);
+    lcm::Subscription *sub = handler.subscribe("vision_position_estimate", &CallbackHandler::visionEstimateCallback, &call);
+    lcm::Subscription *sub2 = handler2.subscribe("state", &CallbackHandler::stateCallback, &call);
+    lcm::Subscription *sub3 = handler3.subscribe("Landing_Site/pose", &CallbackHandler::positionSetpointCallback, &call);
 
-    struct pollfd fds[1];
+    sub ->setQueueCapacity(1);
+
+    sub2->setQueueCapacity(1);
+
+    sub3->setQueueCapacity(1);
+
+    struct pollfd fds[2];
 
     fds[0].fd = handler2.getFileno(); // Actual task
     fds[0].events = POLLIN;
+
+    fds[1].fd = handler3.getFileno(); // platform position
+    fds[1].events = POLLIN;
 
     Spinner sp(5);
     sp.suppressWarnings();
@@ -57,19 +67,26 @@ int main(int argc, char** argv){
 
         //Fetch land messages from mavros
 
-        int ret = poll(fds,1,0);
+        int ret = poll(fds,2,0);
 
-        if(fds[0].revents & POLLIN){
+        if(fds[0].revents & POLLIN)
+        {
             handler2.handle();
             e.setStatus(call._armed,call._landed);
-
         }
-
+        // checking if the current platform position has been updated
+        if(fds[1].revents & POLLIN)
+        {
+          handler3.handle();
+          // and if it is, update it.
+          e.setPlatformState(call._position_sp);
+        }
         //Run state machine
         e.setState(call._vision_pos);
         e.run();
         //Publish next task
-        if (e.readyToPublish()) {
+        if (e.readyToPublish())
+        {
 
             std::cout << "publishing task" << std::endl;
             handler.publish("actual_task", &e._actualTask);

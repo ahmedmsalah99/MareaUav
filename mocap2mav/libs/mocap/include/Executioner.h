@@ -25,6 +25,7 @@ public:
 	void rtl();
     void loadTask();
 	void setState(MavState s);
+	void setPlatformState(MavState ps);
     void init();
 	void setList(std::deque<exec::task> list);
 	void setStatus(bool armed, bool landed);
@@ -36,6 +37,7 @@ public:
 private:
 
 	MavState _state;
+	MavState _platState;
 	std::deque<exec::task> _nodeList;
 	bool _newTask;
 	bool _publish_task;

@@ -57,7 +57,7 @@ int main(int argc, char** argv){
 	fds[1].fd = handler2.getFileno(); //platform
 	fds[1].events = POLLIN;
 
-	fds[2].fd = handler4.getFileno(); //vision feedback
+	fds[2].fd = handler4.getFileno(); // vision feedback
 	fds[2].events = POLLIN;
 
 	fds[3].fd = handler5.getFileno(); // Battery Status
@@ -78,7 +78,7 @@ int main(int argc, char** argv){
   	lander.setState(call._vision_pos);
 
 
-		int ret = poll(fds,3,0);
+		int ret = poll(fds,4,0);
 
 		//the following instruction checks with bitwise AND if the two events are the same.
 		if(fds[0].revents & POLLIN)
