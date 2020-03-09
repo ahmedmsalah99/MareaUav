@@ -19,6 +19,7 @@ class SafetyHandler
     SafetyHandler();
     bool handleBattery(float remaining);
     void setParamsStruct(std::map<std::string, float> map);
+    exec::safety safety;
 };
 
 #endif

@@ -80,8 +80,8 @@ int main(int argc, char** argv)
     {
       // we handle it
       handler2.handle();
-      // checking then its remaining
-      if(safetyHandler.handleBattery(call.battery.remaining))
+      // checking then its remaining, and if it's gone already
+      if(safetyHandler.handleBattery(call.battery.remaining) && !safetyHandler.safety.isbatterygone)
       {
         // if we are in landing state, just land. else, perform emergency land
         if(call._task.action != actions::LAND)
@@ -90,13 +90,9 @@ int main(int argc, char** argv)
           // need to come back to the platform, else, it performs and emergency land.
           // QUEST: should we consider two thresholds?
           // signaling then to Executioner to change modality
-
-          // TODO: make safety struct static
-          exec::safety safety;
-          // setting the safety status
-          safety.isbatterygone = 1;
+          safetyHandler.safety.isbatterygone = 1;
           // and signaling it
-          handler6.publish("safety", &safety);
+          handler6.publish("safety", &safetyHandler.safety);
         }
       }
     }
