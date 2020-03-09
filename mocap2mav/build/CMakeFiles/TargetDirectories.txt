@@ -6,6 +6,9 @@
 /home/andrea/Desktop/Marea/VisionSystem/mocap2mav/build/modules/Automatic/CMakeFiles/rebuild_cache.dir
 /home/andrea/Desktop/Marea/VisionSystem/mocap2mav/build/modules/Automatic/CMakeFiles/autom.dir
 /home/andrea/Desktop/Marea/VisionSystem/mocap2mav/build/modules/Automatic/CMakeFiles/edit_cache.dir
+/home/andrea/Desktop/Marea/VisionSystem/mocap2mav/build/modules/SafetyHandler/CMakeFiles/rebuild_cache.dir
+/home/andrea/Desktop/Marea/VisionSystem/mocap2mav/build/modules/SafetyHandler/CMakeFiles/safety.dir
+/home/andrea/Desktop/Marea/VisionSystem/mocap2mav/build/modules/SafetyHandler/CMakeFiles/edit_cache.dir
 /home/andrea/Desktop/Marea/VisionSystem/mocap2mav/build/modules/Test/CMakeFiles/rebuild_cache.dir
 /home/andrea/Desktop/Marea/VisionSystem/mocap2mav/build/modules/Test/CMakeFiles/config.dir
 /home/andrea/Desktop/Marea/VisionSystem/mocap2mav/build/modules/Test/CMakeFiles/edit_cache.dir

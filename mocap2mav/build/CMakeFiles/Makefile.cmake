@@ -17,6 +17,7 @@ set(CMAKE_MAKEFILE_DEPENDS
   "../libs/mocap/CMakeLists.txt"
   "../modules/Automatic/CMakeLists.txt"
   "../modules/Executioner/CMakeLists.txt"
+  "../modules/SafetyHandler/CMakeLists.txt"
   "../modules/Test/CMakeLists.txt"
   "/usr/share/cmake-3.10/Modules/CMakeCInformation.cmake"
   "/usr/share/cmake-3.10/Modules/CMakeCXXInformation.cmake"
@@ -50,6 +51,7 @@ set(CMAKE_MAKEFILE_PRODUCTS
   "CMakeFiles/CMakeDirectoryInformation.cmake"
   "modules/Executioner/CMakeFiles/CMakeDirectoryInformation.cmake"
   "modules/Automatic/CMakeFiles/CMakeDirectoryInformation.cmake"
+  "modules/SafetyHandler/CMakeFiles/CMakeDirectoryInformation.cmake"
   "modules/Test/CMakeFiles/CMakeDirectoryInformation.cmake"
   "libs/StateMachine/CMakeFiles/CMakeDirectoryInformation.cmake"
   "libs/miniPID/CMakeFiles/CMakeDirectoryInformation.cmake"
@@ -60,6 +62,7 @@ set(CMAKE_MAKEFILE_PRODUCTS
 set(CMAKE_DEPEND_INFO_FILES
   "modules/Executioner/CMakeFiles/exec.dir/DependInfo.cmake"
   "modules/Automatic/CMakeFiles/autom.dir/DependInfo.cmake"
+  "modules/SafetyHandler/CMakeFiles/safety.dir/DependInfo.cmake"
   "modules/Test/CMakeFiles/config.dir/DependInfo.cmake"
   "modules/Test/CMakeFiles/mocapTest.dir/DependInfo.cmake"
   "modules/Test/CMakeFiles/dummypose.dir/DependInfo.cmake"

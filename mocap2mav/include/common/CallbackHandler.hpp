@@ -12,6 +12,7 @@
 #include "lcm_messages/exec/task.hpp"
 #include "lcm_messages/exec/state.hpp"
 #include "lcm_messages/exec/battery.hpp"
+#include "lcm_messages/exec/safety.hpp"
 #include <iostream>
 class CallbackHandler {
 
@@ -20,6 +21,7 @@ public:
     MavState _vision_pos;
     MavState _position_sp;
     exec::task _task;
+    exec::safety safety;
 
     MavState _relative_pos; //filled by apriltag topic
 
@@ -106,6 +108,15 @@ public:
       battery.current = msg->current;
       battery.remaining = msg->remaining;
     }
+
+    void safetyCallback(const lcm::ReceiveBuffer* rbuf, const std::string& chan, const exec::safety* msg)
+    {
+      safety.isbatterygone = msg->isbatterygone;
+      safety.isgpsgone = msg->isgpsgone;
+      safety.issonargone = msg->issonargone;
+      safety.iscameragone = msg->iscameragone;
+    }
+
 
     void ApriltagCallback(const lcm::ReceiveBuffer* rbuf, const std::string& chan, const geometry::vision* msg){
         //callback of the vision system.

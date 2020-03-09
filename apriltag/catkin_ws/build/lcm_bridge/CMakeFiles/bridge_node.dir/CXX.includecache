@@ -107,6 +107,8 @@ lcm_messages/exec/state.hpp
 /home/andrea/Desktop/Marea/VisionSystem/mocap2mav/include/common/lcm_messages/exec/state.hpp
 lcm_messages/exec/battery.hpp
 /home/andrea/Desktop/Marea/VisionSystem/mocap2mav/include/common/lcm_messages/exec/battery.hpp
+lcm_messages/exec/safety.hpp
+/home/andrea/Desktop/Marea/VisionSystem/mocap2mav/include/common/lcm_messages/exec/safety.hpp
 iostream
 -
 
@@ -125,6 +127,10 @@ Eigen/Eigen
 -
 
 /home/andrea/Desktop/Marea/VisionSystem/mocap2mav/include/lcm_messages/exec/battery.hpp
+lcm/lcm_coretypes.h
+-
+
+/home/andrea/Desktop/Marea/VisionSystem/mocap2mav/include/lcm_messages/exec/safety.hpp
 lcm/lcm_coretypes.h
 -
 

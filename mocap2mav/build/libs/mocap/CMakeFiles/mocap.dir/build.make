@@ -153,9 +153,33 @@ libs/mocap/CMakeFiles/mocap.dir/src/Parameters.cpp.o.provides: libs/mocap/CMakeF
 libs/mocap/CMakeFiles/mocap.dir/src/Parameters.cpp.o.provides.build: libs/mocap/CMakeFiles/mocap.dir/src/Parameters.cpp.o
 
 
+libs/mocap/CMakeFiles/mocap.dir/src/SafetyHandler.cpp.o: libs/mocap/CMakeFiles/mocap.dir/flags.make
+libs/mocap/CMakeFiles/mocap.dir/src/SafetyHandler.cpp.o: ../libs/mocap/src/SafetyHandler.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/andrea/Desktop/Marea/VisionSystem/mocap2mav/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_5) "Building CXX object libs/mocap/CMakeFiles/mocap.dir/src/SafetyHandler.cpp.o"
+	cd /home/andrea/Desktop/Marea/VisionSystem/mocap2mav/build/libs/mocap && /usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/mocap.dir/src/SafetyHandler.cpp.o -c /home/andrea/Desktop/Marea/VisionSystem/mocap2mav/libs/mocap/src/SafetyHandler.cpp
+
+libs/mocap/CMakeFiles/mocap.dir/src/SafetyHandler.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/mocap.dir/src/SafetyHandler.cpp.i"
+	cd /home/andrea/Desktop/Marea/VisionSystem/mocap2mav/build/libs/mocap && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/andrea/Desktop/Marea/VisionSystem/mocap2mav/libs/mocap/src/SafetyHandler.cpp > CMakeFiles/mocap.dir/src/SafetyHandler.cpp.i
+
+libs/mocap/CMakeFiles/mocap.dir/src/SafetyHandler.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/mocap.dir/src/SafetyHandler.cpp.s"
+	cd /home/andrea/Desktop/Marea/VisionSystem/mocap2mav/build/libs/mocap && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/andrea/Desktop/Marea/VisionSystem/mocap2mav/libs/mocap/src/SafetyHandler.cpp -o CMakeFiles/mocap.dir/src/SafetyHandler.cpp.s
+
+libs/mocap/CMakeFiles/mocap.dir/src/SafetyHandler.cpp.o.requires:
+
+.PHONY : libs/mocap/CMakeFiles/mocap.dir/src/SafetyHandler.cpp.o.requires
+
+libs/mocap/CMakeFiles/mocap.dir/src/SafetyHandler.cpp.o.provides: libs/mocap/CMakeFiles/mocap.dir/src/SafetyHandler.cpp.o.requires
+	$(MAKE) -f libs/mocap/CMakeFiles/mocap.dir/build.make libs/mocap/CMakeFiles/mocap.dir/src/SafetyHandler.cpp.o.provides.build
+.PHONY : libs/mocap/CMakeFiles/mocap.dir/src/SafetyHandler.cpp.o.provides
+
+libs/mocap/CMakeFiles/mocap.dir/src/SafetyHandler.cpp.o.provides.build: libs/mocap/CMakeFiles/mocap.dir/src/SafetyHandler.cpp.o
+
+
 libs/mocap/CMakeFiles/mocap.dir/src/StateClasses.cpp.o: libs/mocap/CMakeFiles/mocap.dir/flags.make
 libs/mocap/CMakeFiles/mocap.dir/src/StateClasses.cpp.o: ../libs/mocap/src/StateClasses.cpp
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/andrea/Desktop/Marea/VisionSystem/mocap2mav/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_5) "Building CXX object libs/mocap/CMakeFiles/mocap.dir/src/StateClasses.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/andrea/Desktop/Marea/VisionSystem/mocap2mav/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_6) "Building CXX object libs/mocap/CMakeFiles/mocap.dir/src/StateClasses.cpp.o"
 	cd /home/andrea/Desktop/Marea/VisionSystem/mocap2mav/build/libs/mocap && /usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/mocap.dir/src/StateClasses.cpp.o -c /home/andrea/Desktop/Marea/VisionSystem/mocap2mav/libs/mocap/src/StateClasses.cpp
 
 libs/mocap/CMakeFiles/mocap.dir/src/StateClasses.cpp.i: cmake_force
@@ -179,7 +203,7 @@ libs/mocap/CMakeFiles/mocap.dir/src/StateClasses.cpp.o.provides.build: libs/moca
 
 libs/mocap/CMakeFiles/mocap.dir/__/__/include/common/MavState.cpp.o: libs/mocap/CMakeFiles/mocap.dir/flags.make
 libs/mocap/CMakeFiles/mocap.dir/__/__/include/common/MavState.cpp.o: ../include/common/MavState.cpp
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/andrea/Desktop/Marea/VisionSystem/mocap2mav/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_6) "Building CXX object libs/mocap/CMakeFiles/mocap.dir/__/__/include/common/MavState.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/andrea/Desktop/Marea/VisionSystem/mocap2mav/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_7) "Building CXX object libs/mocap/CMakeFiles/mocap.dir/__/__/include/common/MavState.cpp.o"
 	cd /home/andrea/Desktop/Marea/VisionSystem/mocap2mav/build/libs/mocap && /usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/mocap.dir/__/__/include/common/MavState.cpp.o -c /home/andrea/Desktop/Marea/VisionSystem/mocap2mav/include/common/MavState.cpp
 
 libs/mocap/CMakeFiles/mocap.dir/__/__/include/common/MavState.cpp.i: cmake_force
@@ -207,6 +231,7 @@ mocap_OBJECTS = \
 "CMakeFiles/mocap.dir/src/Executioner.cpp.o" \
 "CMakeFiles/mocap.dir/src/Lander.cpp.o" \
 "CMakeFiles/mocap.dir/src/Parameters.cpp.o" \
+"CMakeFiles/mocap.dir/src/SafetyHandler.cpp.o" \
 "CMakeFiles/mocap.dir/src/StateClasses.cpp.o" \
 "CMakeFiles/mocap.dir/__/__/include/common/MavState.cpp.o"
 
@@ -217,11 +242,12 @@ lib/libmocap.a: libs/mocap/CMakeFiles/mocap.dir/src/Automatic.cpp.o
 lib/libmocap.a: libs/mocap/CMakeFiles/mocap.dir/src/Executioner.cpp.o
 lib/libmocap.a: libs/mocap/CMakeFiles/mocap.dir/src/Lander.cpp.o
 lib/libmocap.a: libs/mocap/CMakeFiles/mocap.dir/src/Parameters.cpp.o
+lib/libmocap.a: libs/mocap/CMakeFiles/mocap.dir/src/SafetyHandler.cpp.o
 lib/libmocap.a: libs/mocap/CMakeFiles/mocap.dir/src/StateClasses.cpp.o
 lib/libmocap.a: libs/mocap/CMakeFiles/mocap.dir/__/__/include/common/MavState.cpp.o
 lib/libmocap.a: libs/mocap/CMakeFiles/mocap.dir/build.make
 lib/libmocap.a: libs/mocap/CMakeFiles/mocap.dir/link.txt
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/home/andrea/Desktop/Marea/VisionSystem/mocap2mav/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_7) "Linking CXX static library ../../lib/libmocap.a"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/home/andrea/Desktop/Marea/VisionSystem/mocap2mav/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_8) "Linking CXX static library ../../lib/libmocap.a"
 	cd /home/andrea/Desktop/Marea/VisionSystem/mocap2mav/build/libs/mocap && $(CMAKE_COMMAND) -P CMakeFiles/mocap.dir/cmake_clean_target.cmake
 	cd /home/andrea/Desktop/Marea/VisionSystem/mocap2mav/build/libs/mocap && $(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/mocap.dir/link.txt --verbose=$(VERBOSE)
 
@@ -234,6 +260,7 @@ libs/mocap/CMakeFiles/mocap.dir/requires: libs/mocap/CMakeFiles/mocap.dir/src/Au
 libs/mocap/CMakeFiles/mocap.dir/requires: libs/mocap/CMakeFiles/mocap.dir/src/Executioner.cpp.o.requires
 libs/mocap/CMakeFiles/mocap.dir/requires: libs/mocap/CMakeFiles/mocap.dir/src/Lander.cpp.o.requires
 libs/mocap/CMakeFiles/mocap.dir/requires: libs/mocap/CMakeFiles/mocap.dir/src/Parameters.cpp.o.requires
+libs/mocap/CMakeFiles/mocap.dir/requires: libs/mocap/CMakeFiles/mocap.dir/src/SafetyHandler.cpp.o.requires
 libs/mocap/CMakeFiles/mocap.dir/requires: libs/mocap/CMakeFiles/mocap.dir/src/StateClasses.cpp.o.requires
 libs/mocap/CMakeFiles/mocap.dir/requires: libs/mocap/CMakeFiles/mocap.dir/__/__/include/common/MavState.cpp.o.requires
 

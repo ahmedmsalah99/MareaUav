@@ -167,7 +167,8 @@ CSCOPE = cscope
 DIST_SUBDIRS = m4 lcm liblcm-test lcmgen lcm-logger m4macros examples \
 	lcm-python lcm-lua
 am__DIST_COMMON = $(srcdir)/Makefile.in AUTHORS COPYING INSTALL NEWS \
-	compile config.guess config.sub install-sh ltmain.sh missing
+	compile config.guess config.sub depcomp install-sh ltmain.sh \
+	missing py-compile
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
 distdir = $(PACKAGE)-$(VERSION)
 top_distdir = $(distdir)

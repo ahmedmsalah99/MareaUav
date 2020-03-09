@@ -32,6 +32,10 @@ cstdint
 Eigen/Geometry
 -
 
+../include/lcm_messages/exec/safety.hpp
+lcm/lcm_coretypes.h
+-
+
 ../include/lcm_messages/exec/task.hpp
 lcm/lcm_coretypes.h
 -
@@ -156,6 +160,18 @@ algorithm
 rude/config.h
 ../libs/mocap/include/rude/config.h
 
+../libs/mocap/include/SafetyHandler.h
+lcm_messages/exec/safety.hpp
+../libs/mocap/include/lcm_messages/exec/safety.hpp
+iostream
+-
+poll.h
+-
+common/common.h
+../libs/mocap/include/common/common.h
+map
+-
+
 ../libs/mocap/include/StatesClasses.hpp
 iostream
 -
@@ -193,6 +209,10 @@ common/conversions.h
 /home/andrea/Desktop/Marea/VisionSystem/mocap2mav/libs/mocap/src/Parameters.cpp
 Parameters.h
 /home/andrea/Desktop/Marea/VisionSystem/mocap2mav/libs/mocap/src/Parameters.h
+
+/home/andrea/Desktop/Marea/VisionSystem/mocap2mav/libs/mocap/src/SafetyHandler.cpp
+SafetyHandler.h
+/home/andrea/Desktop/Marea/VisionSystem/mocap2mav/libs/mocap/src/SafetyHandler.h
 
 /home/andrea/Desktop/Marea/VisionSystem/mocap2mav/libs/mocap/src/StateClasses.cpp
 StatesClasses.hpp

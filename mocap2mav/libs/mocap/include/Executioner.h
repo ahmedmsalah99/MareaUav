@@ -21,14 +21,19 @@ public:
 	void setNextTask(const exec::task task);
 	void setLastTask(const exec::task task);
 	void clearList();
-    void abort();
+    	void abort();
 	void rtl();
-    void loadTask();
+   	void loadTask();
 	void setState(MavState s);
 	void setPlatformState(MavState ps);
-    void init();
+    	void init();
 	void setList(std::deque<exec::task> list);
 	void setStatus(bool armed, bool landed);
+	void batteryGoneHandler();
+	void cameraGoneHandler();
+	void gpsGoneHandler();
+	void sonarGoneHandler();
+
 	exec::task _actualTask;
 	bool _can_run;
 	int _actualNode;

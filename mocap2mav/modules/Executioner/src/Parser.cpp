@@ -46,7 +46,7 @@ bool Parser::parse() {
 
     //Save type position
     std::vector<int> type_pos;
-
+    
     for (int i = 0; i < _tokens.size(); ++i) {
 
         if(_tokens[i][0] == "type") type_pos.push_back(i);

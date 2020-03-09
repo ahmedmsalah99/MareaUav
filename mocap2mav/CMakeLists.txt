@@ -25,6 +25,7 @@ include_directories("${MODULES_SRC_DIR}")
 #Project modules
 add_subdirectory(${MODULES_SRC_DIR}/Executioner)
 add_subdirectory(${MODULES_SRC_DIR}/Automatic)
+add_subdirectory(${MODULES_SRC_DIR}/SafetyHandler)
 add_subdirectory(${MODULES_SRC_DIR}/Test)
 
 #Project external libs

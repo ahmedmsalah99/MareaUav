@@ -1,3 +1,4 @@
 autom
 exec
+safety
 >

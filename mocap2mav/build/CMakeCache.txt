@@ -203,6 +203,12 @@ Executioner_SOURCE_DIR:STATIC=/home/andrea/Desktop/Marea/VisionSystem/mocap2mav/
 PKG_CONFIG_EXECUTABLE:FILEPATH=/usr/bin/pkg-config
 
 //Value Computed by CMake
+SafetyHandler_BINARY_DIR:STATIC=/home/andrea/Desktop/Marea/VisionSystem/mocap2mav/build/modules/SafetyHandler
+
+//Value Computed by CMake
+SafetyHandler_SOURCE_DIR:STATIC=/home/andrea/Desktop/Marea/VisionSystem/mocap2mav/modules/SafetyHandler
+
+//Value Computed by CMake
 StateMachine_BINARY_DIR:STATIC=/home/andrea/Desktop/Marea/VisionSystem/mocap2mav/build/libs/StateMachine
 
 //Dependencies for target
@@ -336,7 +342,7 @@ CMAKE_MODULE_LINKER_FLAGS_RELWITHDEBINFO-ADVANCED:INTERNAL=1
 //ADVANCED property for variable: CMAKE_NM
 CMAKE_NM-ADVANCED:INTERNAL=1
 //number of local generators
-CMAKE_NUMBER_OF_MAKEFILES:INTERNAL=7
+CMAKE_NUMBER_OF_MAKEFILES:INTERNAL=8
 //ADVANCED property for variable: CMAKE_OBJCOPY
 CMAKE_OBJCOPY-ADVANCED:INTERNAL=1
 //ADVANCED property for variable: CMAKE_OBJDUMP

@@ -1173,6 +1173,11 @@ libs/mocap/CMakeFiles/mocap.dir/src/Lander.cpp.o: /usr/include/eigen3/Eigen/src/
 libs/mocap/CMakeFiles/mocap.dir/src/Parameters.cpp.o: ../libs/mocap/include/Parameters.h
 libs/mocap/CMakeFiles/mocap.dir/src/Parameters.cpp.o: ../libs/mocap/src/Parameters.cpp
 
+libs/mocap/CMakeFiles/mocap.dir/src/SafetyHandler.cpp.o: ../include/common/common.h
+libs/mocap/CMakeFiles/mocap.dir/src/SafetyHandler.cpp.o: ../include/lcm_messages/exec/safety.hpp
+libs/mocap/CMakeFiles/mocap.dir/src/SafetyHandler.cpp.o: ../libs/mocap/include/SafetyHandler.h
+libs/mocap/CMakeFiles/mocap.dir/src/SafetyHandler.cpp.o: ../libs/mocap/src/SafetyHandler.cpp
+
 libs/mocap/CMakeFiles/mocap.dir/src/StateClasses.cpp.o: ../include/common/MavState.h
 libs/mocap/CMakeFiles/mocap.dir/src/StateClasses.cpp.o: ../libs/StateMachine/include/AbstractState.h
 libs/mocap/CMakeFiles/mocap.dir/src/StateClasses.cpp.o: ../libs/StateMachine/include/Machine.h

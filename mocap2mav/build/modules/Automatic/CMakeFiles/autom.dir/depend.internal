@@ -7,6 +7,7 @@ modules/Automatic/CMakeFiles/autom.dir/src/main.cpp.o
  ../include/common/common.h
  ../include/common/conversions.h
  ../include/lcm_messages/exec/battery.hpp
+ ../include/lcm_messages/exec/safety.hpp
  ../include/lcm_messages/exec/state.hpp
  ../include/lcm_messages/exec/task.hpp
  ../include/lcm_messages/geometry/pose.hpp

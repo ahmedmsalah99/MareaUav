@@ -9,6 +9,7 @@ set(CMAKE_DEPENDS_CHECK_CXX
   "/home/andrea/Desktop/Marea/VisionSystem/mocap2mav/libs/mocap/src/Executioner.cpp" "/home/andrea/Desktop/Marea/VisionSystem/mocap2mav/build/libs/mocap/CMakeFiles/mocap.dir/src/Executioner.cpp.o"
   "/home/andrea/Desktop/Marea/VisionSystem/mocap2mav/libs/mocap/src/Lander.cpp" "/home/andrea/Desktop/Marea/VisionSystem/mocap2mav/build/libs/mocap/CMakeFiles/mocap.dir/src/Lander.cpp.o"
   "/home/andrea/Desktop/Marea/VisionSystem/mocap2mav/libs/mocap/src/Parameters.cpp" "/home/andrea/Desktop/Marea/VisionSystem/mocap2mav/build/libs/mocap/CMakeFiles/mocap.dir/src/Parameters.cpp.o"
+  "/home/andrea/Desktop/Marea/VisionSystem/mocap2mav/libs/mocap/src/SafetyHandler.cpp" "/home/andrea/Desktop/Marea/VisionSystem/mocap2mav/build/libs/mocap/CMakeFiles/mocap.dir/src/SafetyHandler.cpp.o"
   "/home/andrea/Desktop/Marea/VisionSystem/mocap2mav/libs/mocap/src/StateClasses.cpp" "/home/andrea/Desktop/Marea/VisionSystem/mocap2mav/build/libs/mocap/CMakeFiles/mocap.dir/src/StateClasses.cpp.o"
   )
 set(CMAKE_CXX_COMPILER_ID "GNU")

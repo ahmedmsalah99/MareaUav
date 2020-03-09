@@ -260,6 +260,33 @@ src/Parameters.cpp.s:
 	cd /home/andrea/Desktop/Marea/VisionSystem/mocap2mav/build && $(MAKE) -f libs/mocap/CMakeFiles/mocap.dir/build.make libs/mocap/CMakeFiles/mocap.dir/src/Parameters.cpp.s
 .PHONY : src/Parameters.cpp.s
 
+src/SafetyHandler.o: src/SafetyHandler.cpp.o
+
+.PHONY : src/SafetyHandler.o
+
+# target to build an object file
+src/SafetyHandler.cpp.o:
+	cd /home/andrea/Desktop/Marea/VisionSystem/mocap2mav/build && $(MAKE) -f libs/mocap/CMakeFiles/mocap.dir/build.make libs/mocap/CMakeFiles/mocap.dir/src/SafetyHandler.cpp.o
+.PHONY : src/SafetyHandler.cpp.o
+
+src/SafetyHandler.i: src/SafetyHandler.cpp.i
+
+.PHONY : src/SafetyHandler.i
+
+# target to preprocess a source file
+src/SafetyHandler.cpp.i:
+	cd /home/andrea/Desktop/Marea/VisionSystem/mocap2mav/build && $(MAKE) -f libs/mocap/CMakeFiles/mocap.dir/build.make libs/mocap/CMakeFiles/mocap.dir/src/SafetyHandler.cpp.i
+.PHONY : src/SafetyHandler.cpp.i
+
+src/SafetyHandler.s: src/SafetyHandler.cpp.s
+
+.PHONY : src/SafetyHandler.s
+
+# target to generate assembly for a file
+src/SafetyHandler.cpp.s:
+	cd /home/andrea/Desktop/Marea/VisionSystem/mocap2mav/build && $(MAKE) -f libs/mocap/CMakeFiles/mocap.dir/build.make libs/mocap/CMakeFiles/mocap.dir/src/SafetyHandler.cpp.s
+.PHONY : src/SafetyHandler.cpp.s
+
 src/StateClasses.o: src/StateClasses.cpp.o
 
 .PHONY : src/StateClasses.o
@@ -311,6 +338,9 @@ help:
 	@echo "... src/Parameters.o"
 	@echo "... src/Parameters.i"
 	@echo "... src/Parameters.s"
+	@echo "... src/SafetyHandler.o"
+	@echo "... src/SafetyHandler.i"
+	@echo "... src/SafetyHandler.s"
 	@echo "... src/StateClasses.o"
 	@echo "... src/StateClasses.i"
 	@echo "... src/StateClasses.s"

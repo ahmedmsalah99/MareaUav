@@ -1,2 +1,2 @@
-/usr/bin/ar qc ../../lib/libmocap.a  CMakeFiles/mocap.dir/src/Automatic.cpp.o CMakeFiles/mocap.dir/src/Executioner.cpp.o CMakeFiles/mocap.dir/src/Lander.cpp.o CMakeFiles/mocap.dir/src/Parameters.cpp.o CMakeFiles/mocap.dir/src/StateClasses.cpp.o CMakeFiles/mocap.dir/__/__/include/common/MavState.cpp.o
+/usr/bin/ar qc ../../lib/libmocap.a  CMakeFiles/mocap.dir/src/Automatic.cpp.o CMakeFiles/mocap.dir/src/Executioner.cpp.o CMakeFiles/mocap.dir/src/Lander.cpp.o CMakeFiles/mocap.dir/src/Parameters.cpp.o CMakeFiles/mocap.dir/src/SafetyHandler.cpp.o CMakeFiles/mocap.dir/src/StateClasses.cpp.o CMakeFiles/mocap.dir/__/__/include/common/MavState.cpp.o
 /usr/bin/ranlib ../../lib/libmocap.a

@@ -137,6 +137,19 @@ autom/fast:
 .PHONY : autom/fast
 
 #=============================================================================
+# Target rules for targets named safety
+
+# Build rule for target.
+safety: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 safety
+.PHONY : safety
+
+# fast build rule for target.
+safety/fast:
+	$(MAKE) -f modules/SafetyHandler/CMakeFiles/safety.dir/build.make modules/SafetyHandler/CMakeFiles/safety.dir/build
+.PHONY : safety/fast
+
+#=============================================================================
 # Target rules for targets named config
 
 # Build rule for target.
@@ -250,6 +263,7 @@ help:
 	@echo "... edit_cache"
 	@echo "... exec"
 	@echo "... autom"
+	@echo "... safety"
 	@echo "... config"
 	@echo "... mocapTest"
 	@echo "... dummypose"

@@ -6,7 +6,7 @@ x=0
 y=0
 z=6
 alpha=2
-threshold=0.25
+threshold=0.0
 type=land
 platform=1
 #

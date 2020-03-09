@@ -41,6 +41,7 @@ if(NOT CMAKE_INSTALL_LOCAL_ONLY)
   # Include the install script for each subdirectory.
   include("/home/andrea/Desktop/Marea/VisionSystem/mocap2mav/build/modules/Executioner/cmake_install.cmake")
   include("/home/andrea/Desktop/Marea/VisionSystem/mocap2mav/build/modules/Automatic/cmake_install.cmake")
+  include("/home/andrea/Desktop/Marea/VisionSystem/mocap2mav/build/modules/SafetyHandler/cmake_install.cmake")
   include("/home/andrea/Desktop/Marea/VisionSystem/mocap2mav/build/modules/Test/cmake_install.cmake")
   include("/home/andrea/Desktop/Marea/VisionSystem/mocap2mav/build/libs/StateMachine/cmake_install.cmake")
   include("/home/andrea/Desktop/Marea/VisionSystem/mocap2mav/build/libs/miniPID/cmake_install.cmake")

@@ -3,6 +3,7 @@ file(REMOVE_RECURSE
   "CMakeFiles/mocap.dir/src/Executioner.cpp.o"
   "CMakeFiles/mocap.dir/src/Lander.cpp.o"
   "CMakeFiles/mocap.dir/src/Parameters.cpp.o"
+  "CMakeFiles/mocap.dir/src/SafetyHandler.cpp.o"
   "CMakeFiles/mocap.dir/src/StateClasses.cpp.o"
   "CMakeFiles/mocap.dir/__/__/include/common/MavState.cpp.o"
   "../../lib/libmocap.pdb"

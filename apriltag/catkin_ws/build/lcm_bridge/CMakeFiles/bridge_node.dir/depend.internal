@@ -293,6 +293,7 @@ lcm_bridge/CMakeFiles/bridge_node.dir/src/bridge_node.cpp.o
  /home/andrea/Desktop/Marea/VisionSystem/mocap2mav/include/common/CallbackHandler.hpp
  /home/andrea/Desktop/Marea/VisionSystem/mocap2mav/include/common/MavState.h
  /home/andrea/Desktop/Marea/VisionSystem/mocap2mav/include/lcm_messages/exec/battery.hpp
+ /home/andrea/Desktop/Marea/VisionSystem/mocap2mav/include/lcm_messages/exec/safety.hpp
  /home/andrea/Desktop/Marea/VisionSystem/mocap2mav/include/lcm_messages/exec/state.hpp
  /home/andrea/Desktop/Marea/VisionSystem/mocap2mav/include/lcm_messages/exec/task.hpp
  /home/andrea/Desktop/Marea/VisionSystem/mocap2mav/include/lcm_messages/geometry/pose.hpp

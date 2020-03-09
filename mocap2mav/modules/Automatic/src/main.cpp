@@ -13,7 +13,7 @@ int main(int argc, char** argv){
 
 	Duration VisionData(1); //Timer of 1 second
 
-	lcm::LCM handler, handler2, handler3, handler4, handler5;
+	lcm::LCM handler, handler2, handler3, handler4, handler5, handler6;
 
 	if (!handler.good() && !handler2.good() && !handler3.good() && !handler4.good() && !handler5.good())
 		return 1;
@@ -36,8 +36,6 @@ int main(int argc, char** argv){
 	lcm::Subscription *sub4  = handler4.subscribe("apriltag_vision_system", &CallbackHandler::ApriltagCallback, &call);
 	//topic of the vision system (Apriltag)
 
-	lcm::Subscription *sub5 = handler5.subscribe("battery", &CallbackHandler::batteryStatusCallback, &call);
-
 	sub ->setQueueCapacity(1);
 
 	sub2->setQueueCapacity(1);
@@ -45,8 +43,6 @@ int main(int argc, char** argv){
 	sub3->setQueueCapacity(1);
 
 	sub4->setQueueCapacity(1);
-
-	sub5->setQueueCapacity(1);
 
 
 	struct pollfd fds[4];
@@ -59,9 +55,6 @@ int main(int argc, char** argv){
 
 	fds[2].fd = handler4.getFileno(); // vision feedback
 	fds[2].events = POLLIN;
-
-	fds[3].fd = handler5.getFileno(); // Battery Status
-	fds[3].events = POLLIN;
 
 
   bool waiting = true;
@@ -135,11 +128,6 @@ int main(int argc, char** argv){
 				visionSystem.VisionDataUpdated = false; //the vision data are updated
 				autom.setVisionFeedback(visionSystem);
 			}
-		}
-
-		if(fds[3].revents & POLLIN)
-		{
-			handler5.handle();
 		}
 
 		// if the first task didn't come yet, skip; else keep on the algorithm

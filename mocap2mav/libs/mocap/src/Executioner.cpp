@@ -54,7 +54,7 @@ void Executioner::setPlatformState(MavState ps){
 
 }
 
-void::Executioner::setList(std::deque<exec::task> list) {
+void Executioner::setList(std::deque<exec::task> list) {
 
     _nodeList = list;
 
@@ -67,6 +67,26 @@ bool Executioner::readyToPublish() {
         return true;
     }
     else return false;
+
+}
+
+void Executioner::batteryGoneHandler()
+{
+
+}
+
+void Executioner::cameraGoneHandler()
+{
+
+}
+
+void Executioner::gpsGoneHandler()
+{
+
+}
+
+void Executioner::sonarGoneHandler()
+{
 
 }
 
