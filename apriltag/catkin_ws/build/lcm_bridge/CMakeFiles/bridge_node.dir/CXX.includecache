@@ -63,6 +63,8 @@ mavros_msgs/ExtendedState.h
 /home/andrea/Desktop/Marea/VisionSystem/apriltag/catkin_ws/src/lcm_bridge/src/mavros_msgs/ExtendedState.h
 mavros_msgs/ParamSet.h
 /home/andrea/Desktop/Marea/VisionSystem/apriltag/catkin_ws/src/lcm_bridge/src/mavros_msgs/ParamSet.h
+mavros_msgs/ActuatorControl.h
+/home/andrea/Desktop/Marea/VisionSystem/apriltag/catkin_ws/src/lcm_bridge/src/mavros_msgs/ActuatorControl.h
 lcm_messages/geometry/pose.hpp
 /home/andrea/Desktop/Marea/VisionSystem/apriltag/catkin_ws/src/lcm_bridge/src/lcm_messages/geometry/pose.hpp
 lcm_messages/geometry/vision.hpp
@@ -348,6 +350,24 @@ ros/serialization.h
 ros/builtin_message_traits.h
 -
 ros/message_operations.h
+-
+
+/opt/ros/melodic/include/mavros_msgs/ActuatorControl.h
+string
+-
+vector
+-
+map
+-
+ros/types.h
+-
+ros/serialization.h
+-
+ros/builtin_message_traits.h
+-
+ros/message_operations.h
+-
+std_msgs/Header.h
 -
 
 /opt/ros/melodic/include/mavros_msgs/ExtendedState.h

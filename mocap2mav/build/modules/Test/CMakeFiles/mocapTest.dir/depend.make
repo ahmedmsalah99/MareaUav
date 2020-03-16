@@ -289,6 +289,7 @@ modules/Test/CMakeFiles/mocapTest.dir/__/__/include/common/MavState.cpp.o: /usr/
 modules/Test/CMakeFiles/mocapTest.dir/src/mocapTest.cpp.o: ../include/common/MavState.h
 modules/Test/CMakeFiles/mocapTest.dir/src/mocapTest.cpp.o: ../include/common/common.h
 modules/Test/CMakeFiles/mocapTest.dir/src/mocapTest.cpp.o: ../include/common/conversions.h
+modules/Test/CMakeFiles/mocapTest.dir/src/mocapTest.cpp.o: ../include/lcm_messages/exec/safety.hpp
 modules/Test/CMakeFiles/mocapTest.dir/src/mocapTest.cpp.o: ../include/lcm_messages/exec/task.hpp
 modules/Test/CMakeFiles/mocapTest.dir/src/mocapTest.cpp.o: ../include/lcm_messages/geometry/pose.hpp
 modules/Test/CMakeFiles/mocapTest.dir/src/mocapTest.cpp.o: ../libs/StateMachine/include/AbstractState.h
@@ -296,6 +297,7 @@ modules/Test/CMakeFiles/mocapTest.dir/src/mocapTest.cpp.o: ../libs/StateMachine/
 modules/Test/CMakeFiles/mocapTest.dir/src/mocapTest.cpp.o: ../libs/miniPID/MiniPID.h
 modules/Test/CMakeFiles/mocapTest.dir/src/mocapTest.cpp.o: ../libs/mocap/include/Automatic.h
 modules/Test/CMakeFiles/mocapTest.dir/src/mocapTest.cpp.o: ../libs/mocap/include/Command/Command.hpp
+modules/Test/CMakeFiles/mocapTest.dir/src/mocapTest.cpp.o: ../libs/mocap/include/Command/EmergLand.hpp
 modules/Test/CMakeFiles/mocapTest.dir/src/mocapTest.cpp.o: ../libs/mocap/include/Command/Idle.hpp
 modules/Test/CMakeFiles/mocapTest.dir/src/mocapTest.cpp.o: ../libs/mocap/include/Command/Land.hpp
 modules/Test/CMakeFiles/mocapTest.dir/src/mocapTest.cpp.o: ../libs/mocap/include/Command/Move.hpp

@@ -81,6 +81,8 @@ lcm_messages/geometry/pose.hpp
 ../libs/mocap/include/lcm_messages/geometry/pose.hpp
 lcm_messages/exec/task.hpp
 ../libs/mocap/include/lcm_messages/exec/task.hpp
+lcm_messages/exec/safety.hpp
+../libs/mocap/include/lcm_messages/exec/safety.hpp
 string
 -
 common/MavState.h

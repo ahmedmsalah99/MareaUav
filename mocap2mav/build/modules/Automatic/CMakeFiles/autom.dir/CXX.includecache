@@ -121,12 +121,20 @@ Command/Rotate.hpp
 ../libs/mocap/include/Command/Rotate.hpp
 Command/Idle.hpp
 ../libs/mocap/include/Command/Idle.hpp
+Command/EmergLand.hpp
+../libs/mocap/include/Command/EmergLand.hpp
 
 ../libs/mocap/include/Command/Command.hpp
 common/MavState.h
 ../libs/mocap/include/Command/common/MavState.h
 lcm_messages/exec/task.hpp
 ../libs/mocap/include/Command/lcm_messages/exec/task.hpp
+
+../libs/mocap/include/Command/EmergLand.hpp
+Command.hpp
+../libs/mocap/include/Command/Command.hpp
+math.h
+../libs/mocap/include/Command/math.h
 
 ../libs/mocap/include/Command/Idle.hpp
 Command.hpp

@@ -296,6 +296,7 @@ libs/mocap/CMakeFiles/mocap.dir/src/Automatic.cpp.o: ../libs/StateMachine/includ
 libs/mocap/CMakeFiles/mocap.dir/src/Automatic.cpp.o: ../libs/miniPID/MiniPID.h
 libs/mocap/CMakeFiles/mocap.dir/src/Automatic.cpp.o: ../libs/mocap/include/Automatic.h
 libs/mocap/CMakeFiles/mocap.dir/src/Automatic.cpp.o: ../libs/mocap/include/Command/Command.hpp
+libs/mocap/CMakeFiles/mocap.dir/src/Automatic.cpp.o: ../libs/mocap/include/Command/EmergLand.hpp
 libs/mocap/CMakeFiles/mocap.dir/src/Automatic.cpp.o: ../libs/mocap/include/Command/Idle.hpp
 libs/mocap/CMakeFiles/mocap.dir/src/Automatic.cpp.o: ../libs/mocap/include/Command/Land.hpp
 libs/mocap/CMakeFiles/mocap.dir/src/Automatic.cpp.o: ../libs/mocap/include/Command/Move.hpp
@@ -590,6 +591,7 @@ libs/mocap/CMakeFiles/mocap.dir/src/Automatic.cpp.o: /usr/include/eigen3/Eigen/s
 
 libs/mocap/CMakeFiles/mocap.dir/src/Executioner.cpp.o: ../include/common/MavState.h
 libs/mocap/CMakeFiles/mocap.dir/src/Executioner.cpp.o: ../include/common/common.h
+libs/mocap/CMakeFiles/mocap.dir/src/Executioner.cpp.o: ../include/lcm_messages/exec/safety.hpp
 libs/mocap/CMakeFiles/mocap.dir/src/Executioner.cpp.o: ../include/lcm_messages/exec/task.hpp
 libs/mocap/CMakeFiles/mocap.dir/src/Executioner.cpp.o: ../include/lcm_messages/geometry/pose.hpp
 libs/mocap/CMakeFiles/mocap.dir/src/Executioner.cpp.o: ../libs/mocap/include/Executioner.h

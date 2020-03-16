@@ -13,6 +13,7 @@
 #include "Command/Move.hpp"
 #include "Command/Rotate.hpp"
 #include "Command/Idle.hpp"
+#include "Command/EmergLand.hpp"
 
 class Automatic
 {

@@ -290,6 +290,7 @@ modules/Test/CMakeFiles/mocapTest.dir/src/mocapTest.cpp.o
  ../include/common/MavState.h
  ../include/common/common.h
  ../include/common/conversions.h
+ ../include/lcm_messages/exec/safety.hpp
  ../include/lcm_messages/exec/task.hpp
  ../include/lcm_messages/geometry/pose.hpp
  ../libs/StateMachine/include/AbstractState.h
@@ -297,6 +298,7 @@ modules/Test/CMakeFiles/mocapTest.dir/src/mocapTest.cpp.o
  ../libs/miniPID/MiniPID.h
  ../libs/mocap/include/Automatic.h
  ../libs/mocap/include/Command/Command.hpp
+ ../libs/mocap/include/Command/EmergLand.hpp
  ../libs/mocap/include/Command/Idle.hpp
  ../libs/mocap/include/Command/Land.hpp
  ../libs/mocap/include/Command/Move.hpp

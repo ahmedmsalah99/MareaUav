@@ -24,6 +24,8 @@ class safety
 
         int8_t     iscameragone;
 
+        double     params[3];
+
     public:
         /**
          * Encode a message into binary form.
@@ -132,6 +134,9 @@ int safety::_encodeNoHash(void *buf, int offset, int maxlen) const
     tlen = __boolean_encode_array(buf, offset + pos, maxlen - pos, &this->iscameragone, 1);
     if(tlen < 0) return tlen; else pos += tlen;
 
+    tlen = __double_encode_array(buf, offset + pos, maxlen - pos, &this->params[0], 3);
+    if(tlen < 0) return tlen; else pos += tlen;
+
     return pos;
 }
 
@@ -151,6 +156,9 @@ int safety::_decodeNoHash(const void *buf, int offset, int maxlen)
     tlen = __boolean_decode_array(buf, offset + pos, maxlen - pos, &this->iscameragone, 1);
     if(tlen < 0) return tlen; else pos += tlen;
 
+    tlen = __double_decode_array(buf, offset + pos, maxlen - pos, &this->params[0], 3);
+    if(tlen < 0) return tlen; else pos += tlen;
+
     return pos;
 }
 
@@ -161,12 +169,13 @@ int safety::_getEncodedSizeNoHash() const
     enc_size += __boolean_encoded_array_size(NULL, 1);
     enc_size += __boolean_encoded_array_size(NULL, 1);
     enc_size += __boolean_encoded_array_size(NULL, 1);
+    enc_size += __double_encoded_array_size(NULL, 3);
     return enc_size;
 }
 
 uint64_t safety::_computeHash(const __lcm_hash_ptr *)
 {
-    uint64_t hash = 0xc7602b68824840ffLL;
+    uint64_t hash = 0xfbda5e54e6f717d1LL;
     return (hash<<1) + ((hash>>63)&1);
 }
 

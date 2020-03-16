@@ -77,24 +77,40 @@ bool SafetyParser::parseParameter(int pos)
     //Select the right parameter and parse it
     if(a.compare("battery_threshold") == 0)
     {
-      if(std::isfinite(value))
-      {
-        // inserting it in parameters Map
-        _paramsMapParsed.insert({a, value});
-        // and returning success
-        return  true;
-      }
-      else
-      {
-        // else returning fail
-        std::cout << "value is not finite" << std::endl;
-        return false;
-      }
+      return insertValue(a,value);
+    }
+    else if(a.compare("emergland_threshold1") == 0)
+    {
+      return insertValue(a,value);
+    }
+    else if(a.compare("emergland_threshold2") == 0)
+    {
+      return insertValue(a,value);
+    }
+    else if(a.compare("emergland_gain") == 0)
+    {
+      return insertValue(a,value);
     }
 
     std::cout << "Unrecognised type at position: "<< pos << std::endl;
     return false;
 }
+
+
+bool SafetyParser::insertValue(std::string a, float value)
+{
+  if(std::isfinite(value))
+  {
+    // inserting it in parameters Map
+    _paramsMapParsed.insert({a, value});
+    // and returning success
+    return  true;
+  }
+  // else returning fail
+  std::cout << "value is not finite" << std::endl;
+  return false;
+}
+
 
 std::map<std::string, float> SafetyParser::getParamsMapParsed()
 {

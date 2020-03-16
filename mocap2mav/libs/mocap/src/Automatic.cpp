@@ -76,6 +76,12 @@ void Automatic::handleCommands() {
 
             break;
 
+
+        case actions::EMERG_LAND:
+            _actualCommand = std::unique_ptr<Command>(new EmergLand(&_state,&_comm,&_actualTask));
+            std::cout << "Actual command: Emergency Land" << std::endl;
+            break;
+
         default:
 
             std::cout << "Unknown action" << std::endl;

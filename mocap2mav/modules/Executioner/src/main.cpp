@@ -57,7 +57,7 @@ int main(int argc, char** argv){
 
     struct pollfd fds[3];
 
-    fds[0].fd = handler2.getFileno(); // Actual task
+    fds[0].fd = handler2.getFileno(); // state
     fds[0].events = POLLIN;
 
     fds[1].fd = handler3.getFileno(); // platform position
@@ -73,7 +73,6 @@ int main(int argc, char** argv){
     {
 
         //Fetch land messages from mavros
-
         int ret = poll(fds,3,0);
 
         if(fds[0].revents & POLLIN)
@@ -97,9 +96,11 @@ int main(int argc, char** argv){
           // defining then a priority policy, where the battery is the first to be
           // checked, then comes the camera, gps and finally the sonar.
           // depending on where the problem is, a different behaviour is adopted.
+
+          //TODO: gestire caso dove arriva un'altro fail e una security task sta runnando
           if(call.safety.isbatterygone)
           {
-            e.batteryGoneHandler();
+            e.batteryGoneHandler(call.safety);
           }
           else if(call.safety.iscameragone)
           {

@@ -13,12 +13,14 @@ class SafetyHandler
     struct
     {
       float battery_threshold;
+      double params[3];
     } _safety_params {};
 
   public:
     SafetyHandler();
     bool handleBattery(float remaining);
     void setParamsStruct(std::map<std::string, float> map);
+    double getParam(int i);
     exec::safety safety;
 };
 

@@ -2,6 +2,7 @@
 #define EXECUTIONER_H
 #include "lcm_messages/geometry/pose.hpp"
 #include "lcm_messages/exec/task.hpp"
+#include "lcm_messages/exec/safety.hpp"
 #include <string>
 #include "common/MavState.h"
 #include "common/common.h"
@@ -29,7 +30,7 @@ public:
     	void init();
 	void setList(std::deque<exec::task> list);
 	void setStatus(bool armed, bool landed);
-	void batteryGoneHandler();
+	void batteryGoneHandler(exec::safety safety);
 	void cameraGoneHandler();
 	void gpsGoneHandler();
 	void sonarGoneHandler();

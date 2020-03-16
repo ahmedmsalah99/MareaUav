@@ -6,6 +6,7 @@
 #include "sensor_msgs/BatteryState.h"
 #include "mavros_msgs/ExtendedState.h"
 #include "mavros_msgs/ParamSet.h"
+#include "mavros_msgs/ActuatorControl.h"
 #include "lcm_messages/geometry/pose.hpp"
 #include "lcm_messages/geometry/vision.hpp"
 #include "lcm_messages/exec/state.hpp"
@@ -206,7 +207,7 @@ void ApriltagCallback(apriltag_ros::AprilTagDetectionArray A_det){
                         //filled the matrix
                         AreaID(i,0) = i;
                         AreaID(i,1) = pow(meanL,2); //area of the tag.
-                        std::cout<<AreaID(i,1)<<std::endl;
+                        // std::cout<<AreaID(i,1)<<std::endl;
                 }
 
                 //now an avarage weighted to estimate the position.

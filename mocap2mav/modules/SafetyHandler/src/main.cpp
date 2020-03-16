@@ -86,11 +86,14 @@ int main(int argc, char** argv)
         // if we are in landing state, just land. else, perform emergency land
         if(call._task.action != actions::LAND)
         {
-          // TODO: divide patrolling to reach platofrom, if it patrols, it may
+          // TODO: divide patrolling to reach platfrom; if it patrols, it may
           // need to come back to the platform, else, it performs and emergency land.
           // QUEST: should we consider two thresholds?
           // signaling then to Executioner to change modality
           safetyHandler.safety.isbatterygone = 1;
+          safetyHandler.safety.params[0] = safetyHandler.getParam(0);
+          safetyHandler.safety.params[1] = safetyHandler.getParam(1);
+          safetyHandler.safety.params[2] = safetyHandler.getParam(2);
           // and signaling it
           handler6.publish("safety", &safetyHandler.safety);
         }

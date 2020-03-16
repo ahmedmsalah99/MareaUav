@@ -20,6 +20,7 @@ private:
 
     double getValue(std::string str);
     bool parseParameter(int pos);
+    bool insertValue(std::string a, float value);
     std::vector<std::vector<std::string>> _tokens;
     std::map<std::string, float> _paramsMapParsed;
 

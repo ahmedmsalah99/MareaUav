@@ -17,6 +17,7 @@ modules/Automatic/CMakeFiles/autom.dir/src/main.cpp.o: ../libs/StateMachine/incl
 modules/Automatic/CMakeFiles/autom.dir/src/main.cpp.o: ../libs/miniPID/MiniPID.h
 modules/Automatic/CMakeFiles/autom.dir/src/main.cpp.o: ../libs/mocap/include/Automatic.h
 modules/Automatic/CMakeFiles/autom.dir/src/main.cpp.o: ../libs/mocap/include/Command/Command.hpp
+modules/Automatic/CMakeFiles/autom.dir/src/main.cpp.o: ../libs/mocap/include/Command/EmergLand.hpp
 modules/Automatic/CMakeFiles/autom.dir/src/main.cpp.o: ../libs/mocap/include/Command/Idle.hpp
 modules/Automatic/CMakeFiles/autom.dir/src/main.cpp.o: ../libs/mocap/include/Command/Land.hpp
 modules/Automatic/CMakeFiles/autom.dir/src/main.cpp.o: ../libs/mocap/include/Command/Move.hpp

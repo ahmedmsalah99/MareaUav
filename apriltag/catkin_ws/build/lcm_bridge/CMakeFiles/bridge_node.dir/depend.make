@@ -308,6 +308,7 @@ lcm_bridge/CMakeFiles/bridge_node.dir/src/bridge_node.cpp.o: /opt/ros/melodic/in
 lcm_bridge/CMakeFiles/bridge_node.dir/src/bridge_node.cpp.o: /opt/ros/melodic/include/geometry_msgs/TwistStamped.h
 lcm_bridge/CMakeFiles/bridge_node.dir/src/bridge_node.cpp.o: /opt/ros/melodic/include/geometry_msgs/TwistWithCovariance.h
 lcm_bridge/CMakeFiles/bridge_node.dir/src/bridge_node.cpp.o: /opt/ros/melodic/include/geometry_msgs/Vector3.h
+lcm_bridge/CMakeFiles/bridge_node.dir/src/bridge_node.cpp.o: /opt/ros/melodic/include/mavros_msgs/ActuatorControl.h
 lcm_bridge/CMakeFiles/bridge_node.dir/src/bridge_node.cpp.o: /opt/ros/melodic/include/mavros_msgs/ExtendedState.h
 lcm_bridge/CMakeFiles/bridge_node.dir/src/bridge_node.cpp.o: /opt/ros/melodic/include/mavros_msgs/ParamSet.h
 lcm_bridge/CMakeFiles/bridge_node.dir/src/bridge_node.cpp.o: /opt/ros/melodic/include/mavros_msgs/ParamSetRequest.h

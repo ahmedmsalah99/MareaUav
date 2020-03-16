@@ -70,25 +70,6 @@ bool Executioner::readyToPublish() {
 
 }
 
-void Executioner::batteryGoneHandler()
-{
-
-}
-
-void Executioner::cameraGoneHandler()
-{
-
-}
-
-void Executioner::gpsGoneHandler()
-{
-
-}
-
-void Executioner::sonarGoneHandler()
-{
-
-}
 
 void Executioner::run(){
 
@@ -236,6 +217,17 @@ bool Executioner::CheckActions(int a)
 
             }
 
+        case actions::EMERG_LAND:
+        {
+          // in this case the task never finishes, cause the drone has to signal
+          // its gps position once landed.
+
+          // TODO: set condition on velocity on Z, and check if IDLE state works
+          // if(_state.getVz() < _actualTask.params[2] && fabs(_state.getZ() - _actualTask.z) < _actualTask.params[5])
+          //   return true;
+
+          return false;
+        }
         default:
             std::cout << "IDLE" << std::endl;
             return true;
@@ -295,4 +287,62 @@ void Executioner::setStatus(bool armed, bool landed) {
 
     _armed = armed;
     _landed = landed;
+}
+
+
+void Executioner::batteryGoneHandler(exec::safety safety)
+{
+  // first thing to do is to clear tasks list, so that noone of them gets executed
+  clearList();
+  // hence, the safety task has to be build
+  exec::task tempTask;
+  // resetting the index to access the task list
+  _actualNode = 0;
+  // setting the action to EMERG_LAND
+  tempTask.action = actions::EMERG_LAND;
+  // with a proper id
+  tempTask.id = 100;
+  // setting the desired position on x and y as the actual state of the drone,
+  // so that it stays on the current position.
+  // This happens iff the gps is not gone as well
+  if(!safety.isgpsgone)
+  {
+    tempTask.x = _state.getX();
+    tempTask.y = _state.getY();
+  }
+  else
+  {
+    //TODO: handle this case.
+  }
+  // this is the desired position on z the drone has to achieve
+  tempTask.z = 0;
+  // this one is the first threshold
+  tempTask.params[0] = safety.params[0];
+  // and this one the corresponding "turn off motors" one
+  tempTask.params[1] = safety.params[1];
+  // then we have the descendent rate default gain
+  tempTask.params[2] = safety.params[2];
+  // and the speed threshold on z used to change mode
+  // tempTask.params[2] = 0.1;
+  // setting the task list then
+  setNextTask(tempTask);
+  // calling init every time there is a new list
+  init();
+  // and loading the task
+  loadTask();
+}
+
+void Executioner::cameraGoneHandler()
+{
+
+}
+
+void Executioner::gpsGoneHandler()
+{
+
+}
+
+void Executioner::sonarGoneHandler()
+{
+
 }

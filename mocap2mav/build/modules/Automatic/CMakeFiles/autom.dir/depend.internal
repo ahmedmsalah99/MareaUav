@@ -18,6 +18,7 @@ modules/Automatic/CMakeFiles/autom.dir/src/main.cpp.o
  ../libs/miniPID/MiniPID.h
  ../libs/mocap/include/Automatic.h
  ../libs/mocap/include/Command/Command.hpp
+ ../libs/mocap/include/Command/EmergLand.hpp
  ../libs/mocap/include/Command/Idle.hpp
  ../libs/mocap/include/Command/Land.hpp
  ../libs/mocap/include/Command/Move.hpp
