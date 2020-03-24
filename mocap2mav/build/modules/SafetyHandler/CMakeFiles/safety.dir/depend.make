@@ -10,6 +10,8 @@ modules/SafetyHandler/CMakeFiles/safety.dir/src/main.cpp.o: ../include/common/Ca
 modules/SafetyHandler/CMakeFiles/safety.dir/src/main.cpp.o: ../include/common/MavState.h
 modules/SafetyHandler/CMakeFiles/safety.dir/src/main.cpp.o: ../include/common/common.h
 modules/SafetyHandler/CMakeFiles/safety.dir/src/main.cpp.o: ../include/lcm_messages/exec/battery.hpp
+modules/SafetyHandler/CMakeFiles/safety.dir/src/main.cpp.o: ../include/lcm_messages/exec/camera_info.hpp
+modules/SafetyHandler/CMakeFiles/safety.dir/src/main.cpp.o: ../include/lcm_messages/exec/gps_status.hpp
 modules/SafetyHandler/CMakeFiles/safety.dir/src/main.cpp.o: ../include/lcm_messages/exec/safety.hpp
 modules/SafetyHandler/CMakeFiles/safety.dir/src/main.cpp.o: ../include/lcm_messages/exec/state.hpp
 modules/SafetyHandler/CMakeFiles/safety.dir/src/main.cpp.o: ../include/lcm_messages/exec/task.hpp

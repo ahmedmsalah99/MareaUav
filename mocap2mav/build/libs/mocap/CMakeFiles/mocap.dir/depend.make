@@ -1177,6 +1177,7 @@ libs/mocap/CMakeFiles/mocap.dir/src/Parameters.cpp.o: ../libs/mocap/src/Paramete
 
 libs/mocap/CMakeFiles/mocap.dir/src/SafetyHandler.cpp.o: ../include/common/common.h
 libs/mocap/CMakeFiles/mocap.dir/src/SafetyHandler.cpp.o: ../include/lcm_messages/exec/safety.hpp
+libs/mocap/CMakeFiles/mocap.dir/src/SafetyHandler.cpp.o: ../include/utils/TimeHelpers.hpp
 libs/mocap/CMakeFiles/mocap.dir/src/SafetyHandler.cpp.o: ../libs/mocap/include/SafetyHandler.h
 libs/mocap/CMakeFiles/mocap.dir/src/SafetyHandler.cpp.o: ../libs/mocap/src/SafetyHandler.cpp
 

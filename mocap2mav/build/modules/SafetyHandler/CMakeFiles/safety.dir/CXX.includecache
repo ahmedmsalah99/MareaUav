@@ -21,8 +21,12 @@ lcm_messages/exec/state.hpp
 ../include/common/lcm_messages/exec/state.hpp
 lcm_messages/exec/battery.hpp
 ../include/common/lcm_messages/exec/battery.hpp
+lcm_messages/exec/gps_status.hpp
+../include/common/lcm_messages/exec/gps_status.hpp
 lcm_messages/exec/safety.hpp
 ../include/common/lcm_messages/exec/safety.hpp
+lcm_messages/exec/camera_info.hpp
+../include/common/lcm_messages/exec/camera_info.hpp
 iostream
 -
 
@@ -45,6 +49,14 @@ string
 -
 
 ../include/lcm_messages/exec/battery.hpp
+lcm/lcm_coretypes.h
+-
+
+../include/lcm_messages/exec/camera_info.hpp
+lcm/lcm_coretypes.h
+-
+
+../include/lcm_messages/exec/gps_status.hpp
 lcm/lcm_coretypes.h
 -
 
@@ -85,6 +97,8 @@ poll.h
 -
 common/common.h
 ../libs/mocap/include/common/common.h
+utils/TimeHelpers.hpp
+../libs/mocap/include/utils/TimeHelpers.hpp
 map
 -
 

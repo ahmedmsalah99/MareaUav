@@ -151,7 +151,6 @@ apriltag_ros_single_image_detector_EXTERNAL_OBJECTS =
 /home/andrea/Desktop/Marea/VisionSystem/apriltag/catkin_ws/devel/lib/libapriltag_ros_single_image_detector.so: /opt/ros/melodic/lib/libmessage_filters.so
 /home/andrea/Desktop/Marea/VisionSystem/apriltag/catkin_ws/devel/lib/libapriltag_ros_single_image_detector.so: /opt/ros/melodic/lib/libroscpp.so
 /home/andrea/Desktop/Marea/VisionSystem/apriltag/catkin_ws/devel/lib/libapriltag_ros_single_image_detector.so: /usr/lib/x86_64-linux-gnu/libboost_filesystem.so
-/home/andrea/Desktop/Marea/VisionSystem/apriltag/catkin_ws/devel/lib/libapriltag_ros_single_image_detector.so: /usr/lib/x86_64-linux-gnu/libboost_signals.so
 /home/andrea/Desktop/Marea/VisionSystem/apriltag/catkin_ws/devel/lib/libapriltag_ros_single_image_detector.so: /opt/ros/melodic/lib/libxmlrpcpp.so
 /home/andrea/Desktop/Marea/VisionSystem/apriltag/catkin_ws/devel/lib/libapriltag_ros_single_image_detector.so: /opt/ros/melodic/lib/libtf2.so
 /home/andrea/Desktop/Marea/VisionSystem/apriltag/catkin_ws/devel/lib/libapriltag_ros_single_image_detector.so: /opt/ros/melodic/lib/libroscpp_serialization.so

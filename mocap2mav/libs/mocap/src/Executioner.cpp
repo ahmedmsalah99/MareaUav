@@ -19,7 +19,10 @@ Executioner::Executioner(){
     _publish_task = false;
     _nodeList.clear();
     _nodeList.shrink_to_fit();
-
+    isBatterySafetyTaskRunning = 0;
+    isGPSSafetyTaskRunning = 0;
+    isCameraSafetyTaskRunning = 0;
+    isSonarSafetyTaskRunning = 0;
 }
 
 void Executioner::init(){

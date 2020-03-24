@@ -11,6 +11,8 @@ modules/Executioner/CMakeFiles/exec.dir/src/main.cpp.o: ../include/common/Callba
 modules/Executioner/CMakeFiles/exec.dir/src/main.cpp.o: ../include/common/MavState.h
 modules/Executioner/CMakeFiles/exec.dir/src/main.cpp.o: ../include/common/common.h
 modules/Executioner/CMakeFiles/exec.dir/src/main.cpp.o: ../include/lcm_messages/exec/battery.hpp
+modules/Executioner/CMakeFiles/exec.dir/src/main.cpp.o: ../include/lcm_messages/exec/camera_info.hpp
+modules/Executioner/CMakeFiles/exec.dir/src/main.cpp.o: ../include/lcm_messages/exec/gps_status.hpp
 modules/Executioner/CMakeFiles/exec.dir/src/main.cpp.o: ../include/lcm_messages/exec/safety.hpp
 modules/Executioner/CMakeFiles/exec.dir/src/main.cpp.o: ../include/lcm_messages/exec/state.hpp
 modules/Executioner/CMakeFiles/exec.dir/src/main.cpp.o: ../include/lcm_messages/exec/task.hpp

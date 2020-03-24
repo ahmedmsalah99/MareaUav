@@ -57,8 +57,8 @@ struct DataType< ::apriltag_ros::AnalyzeSingleImage > {
 };
 
 
-// service_traits::MD5Sum< ::apriltag_ros::AnalyzeSingleImageRequest> should match 
-// service_traits::MD5Sum< ::apriltag_ros::AnalyzeSingleImage > 
+// service_traits::MD5Sum< ::apriltag_ros::AnalyzeSingleImageRequest> should match
+// service_traits::MD5Sum< ::apriltag_ros::AnalyzeSingleImage >
 template<>
 struct MD5Sum< ::apriltag_ros::AnalyzeSingleImageRequest>
 {
@@ -72,8 +72,8 @@ struct MD5Sum< ::apriltag_ros::AnalyzeSingleImageRequest>
   }
 };
 
-// service_traits::DataType< ::apriltag_ros::AnalyzeSingleImageRequest> should match 
-// service_traits::DataType< ::apriltag_ros::AnalyzeSingleImage > 
+// service_traits::DataType< ::apriltag_ros::AnalyzeSingleImageRequest> should match
+// service_traits::DataType< ::apriltag_ros::AnalyzeSingleImage >
 template<>
 struct DataType< ::apriltag_ros::AnalyzeSingleImageRequest>
 {
@@ -87,8 +87,8 @@ struct DataType< ::apriltag_ros::AnalyzeSingleImageRequest>
   }
 };
 
-// service_traits::MD5Sum< ::apriltag_ros::AnalyzeSingleImageResponse> should match 
-// service_traits::MD5Sum< ::apriltag_ros::AnalyzeSingleImage > 
+// service_traits::MD5Sum< ::apriltag_ros::AnalyzeSingleImageResponse> should match
+// service_traits::MD5Sum< ::apriltag_ros::AnalyzeSingleImage >
 template<>
 struct MD5Sum< ::apriltag_ros::AnalyzeSingleImageResponse>
 {
@@ -102,8 +102,8 @@ struct MD5Sum< ::apriltag_ros::AnalyzeSingleImageResponse>
   }
 };
 
-// service_traits::DataType< ::apriltag_ros::AnalyzeSingleImageResponse> should match 
-// service_traits::DataType< ::apriltag_ros::AnalyzeSingleImage > 
+// service_traits::DataType< ::apriltag_ros::AnalyzeSingleImageResponse> should match
+// service_traits::DataType< ::apriltag_ros::AnalyzeSingleImage >
 template<>
 struct DataType< ::apriltag_ros::AnalyzeSingleImageResponse>
 {

@@ -1,0 +1,6 @@
+package exec;
+struct gps_status
+{
+	int8_t status;
+	double timestamp;
+}

@@ -91,6 +91,18 @@ bool SafetyParser::parseParameter(int pos)
     {
       return insertValue(a,value);
     }
+    else if(a.compare("gpsgone_threshold1") == 0)
+    {
+      return insertValue(a,value);
+    }
+    else if(a.compare("gpsgone_threshold2") == 0)
+    {
+      return insertValue(a,value);
+    }
+    else if(a.compare("cameragone_threshold") == 0)
+    {
+      return insertValue(a,value);
+    }
 
     std::cout << "Unrecognised type at position: "<< pos << std::endl;
     return false;

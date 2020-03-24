@@ -12,7 +12,9 @@
 #include "lcm_messages/exec/task.hpp"
 #include "lcm_messages/exec/state.hpp"
 #include "lcm_messages/exec/battery.hpp"
+#include "lcm_messages/exec/gps_status.hpp"
 #include "lcm_messages/exec/safety.hpp"
+#include "lcm_messages/exec/camera_info.hpp"
 #include <iostream>
 class CallbackHandler {
 
@@ -22,6 +24,7 @@ public:
     MavState _position_sp;
     exec::task _task;
     exec::safety safety;
+    exec::gps_status gps;
 
     MavState _relative_pos; //filled by apriltag topic
 
@@ -29,6 +32,8 @@ public:
     bool _armed;
     bool _estimate_ready;
     bool _position_sp_ready;
+    double camera_timestamp;
+
 
     struct
     {
@@ -107,6 +112,17 @@ public:
       battery.voltage = msg->voltage;
       battery.current = msg->current;
       battery.remaining = msg->remaining;
+    }
+
+    void gpsStatusCallback(const lcm::ReceiveBuffer* rbuf, const std::string& chan, const exec::gps_status* msg)
+    {
+      gps.status = msg->status;
+      gps.timestamp = msg->timestamp;
+    }
+
+    void cameraInfoCallback(const lcm::ReceiveBuffer* rbuf, const std::string& chan, const exec::camera_info* msg)
+    {
+      camera_timestamp = msg->timestamp;
     }
 
     void safetyCallback(const lcm::ReceiveBuffer* rbuf, const std::string& chan, const exec::safety* msg)

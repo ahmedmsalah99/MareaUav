@@ -6,6 +6,8 @@ modules/Automatic/CMakeFiles/autom.dir/src/main.cpp.o: ../include/common/MavStat
 modules/Automatic/CMakeFiles/autom.dir/src/main.cpp.o: ../include/common/common.h
 modules/Automatic/CMakeFiles/autom.dir/src/main.cpp.o: ../include/common/conversions.h
 modules/Automatic/CMakeFiles/autom.dir/src/main.cpp.o: ../include/lcm_messages/exec/battery.hpp
+modules/Automatic/CMakeFiles/autom.dir/src/main.cpp.o: ../include/lcm_messages/exec/camera_info.hpp
+modules/Automatic/CMakeFiles/autom.dir/src/main.cpp.o: ../include/lcm_messages/exec/gps_status.hpp
 modules/Automatic/CMakeFiles/autom.dir/src/main.cpp.o: ../include/lcm_messages/exec/safety.hpp
 modules/Automatic/CMakeFiles/autom.dir/src/main.cpp.o: ../include/lcm_messages/exec/state.hpp
 modules/Automatic/CMakeFiles/autom.dir/src/main.cpp.o: ../include/lcm_messages/exec/task.hpp

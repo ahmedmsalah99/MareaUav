@@ -293,6 +293,8 @@ lcm_bridge/CMakeFiles/bridge_node.dir/src/bridge_node.cpp.o
  /home/andrea/Desktop/Marea/VisionSystem/mocap2mav/include/common/CallbackHandler.hpp
  /home/andrea/Desktop/Marea/VisionSystem/mocap2mav/include/common/MavState.h
  /home/andrea/Desktop/Marea/VisionSystem/mocap2mav/include/lcm_messages/exec/battery.hpp
+ /home/andrea/Desktop/Marea/VisionSystem/mocap2mav/include/lcm_messages/exec/camera_info.hpp
+ /home/andrea/Desktop/Marea/VisionSystem/mocap2mav/include/lcm_messages/exec/gps_status.hpp
  /home/andrea/Desktop/Marea/VisionSystem/mocap2mav/include/lcm_messages/exec/safety.hpp
  /home/andrea/Desktop/Marea/VisionSystem/mocap2mav/include/lcm_messages/exec/state.hpp
  /home/andrea/Desktop/Marea/VisionSystem/mocap2mav/include/lcm_messages/exec/task.hpp
@@ -309,7 +311,6 @@ lcm_bridge/CMakeFiles/bridge_node.dir/src/bridge_node.cpp.o
  /opt/ros/melodic/include/geometry_msgs/TwistStamped.h
  /opt/ros/melodic/include/geometry_msgs/TwistWithCovariance.h
  /opt/ros/melodic/include/geometry_msgs/Vector3.h
- /opt/ros/melodic/include/mavros_msgs/ActuatorControl.h
  /opt/ros/melodic/include/mavros_msgs/ExtendedState.h
  /opt/ros/melodic/include/mavros_msgs/ParamSet.h
  /opt/ros/melodic/include/mavros_msgs/ParamSetRequest.h
@@ -374,6 +375,10 @@ lcm_bridge/CMakeFiles/bridge_node.dir/src/bridge_node.cpp.o
  /opt/ros/melodic/include/ros/wall_timer_options.h
  /opt/ros/melodic/include/rosconsole/macros_generated.h
  /opt/ros/melodic/include/sensor_msgs/BatteryState.h
+ /opt/ros/melodic/include/sensor_msgs/CameraInfo.h
+ /opt/ros/melodic/include/sensor_msgs/NavSatFix.h
+ /opt/ros/melodic/include/sensor_msgs/NavSatStatus.h
+ /opt/ros/melodic/include/sensor_msgs/RegionOfInterest.h
  /opt/ros/melodic/include/std_msgs/Header.h
  /opt/ros/melodic/include/xmlrpcpp/XmlRpcDecl.h
  /opt/ros/melodic/include/xmlrpcpp/XmlRpcValue.h

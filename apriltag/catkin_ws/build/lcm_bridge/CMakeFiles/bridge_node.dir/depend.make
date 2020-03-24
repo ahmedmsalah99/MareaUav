@@ -292,6 +292,8 @@ lcm_bridge/CMakeFiles/bridge_node.dir/src/bridge_node.cpp.o: /home/andrea/Deskto
 lcm_bridge/CMakeFiles/bridge_node.dir/src/bridge_node.cpp.o: /home/andrea/Desktop/Marea/VisionSystem/mocap2mav/include/common/CallbackHandler.hpp
 lcm_bridge/CMakeFiles/bridge_node.dir/src/bridge_node.cpp.o: /home/andrea/Desktop/Marea/VisionSystem/mocap2mav/include/common/MavState.h
 lcm_bridge/CMakeFiles/bridge_node.dir/src/bridge_node.cpp.o: /home/andrea/Desktop/Marea/VisionSystem/mocap2mav/include/lcm_messages/exec/battery.hpp
+lcm_bridge/CMakeFiles/bridge_node.dir/src/bridge_node.cpp.o: /home/andrea/Desktop/Marea/VisionSystem/mocap2mav/include/lcm_messages/exec/camera_info.hpp
+lcm_bridge/CMakeFiles/bridge_node.dir/src/bridge_node.cpp.o: /home/andrea/Desktop/Marea/VisionSystem/mocap2mav/include/lcm_messages/exec/gps_status.hpp
 lcm_bridge/CMakeFiles/bridge_node.dir/src/bridge_node.cpp.o: /home/andrea/Desktop/Marea/VisionSystem/mocap2mav/include/lcm_messages/exec/safety.hpp
 lcm_bridge/CMakeFiles/bridge_node.dir/src/bridge_node.cpp.o: /home/andrea/Desktop/Marea/VisionSystem/mocap2mav/include/lcm_messages/exec/state.hpp
 lcm_bridge/CMakeFiles/bridge_node.dir/src/bridge_node.cpp.o: /home/andrea/Desktop/Marea/VisionSystem/mocap2mav/include/lcm_messages/exec/task.hpp
@@ -308,7 +310,6 @@ lcm_bridge/CMakeFiles/bridge_node.dir/src/bridge_node.cpp.o: /opt/ros/melodic/in
 lcm_bridge/CMakeFiles/bridge_node.dir/src/bridge_node.cpp.o: /opt/ros/melodic/include/geometry_msgs/TwistStamped.h
 lcm_bridge/CMakeFiles/bridge_node.dir/src/bridge_node.cpp.o: /opt/ros/melodic/include/geometry_msgs/TwistWithCovariance.h
 lcm_bridge/CMakeFiles/bridge_node.dir/src/bridge_node.cpp.o: /opt/ros/melodic/include/geometry_msgs/Vector3.h
-lcm_bridge/CMakeFiles/bridge_node.dir/src/bridge_node.cpp.o: /opt/ros/melodic/include/mavros_msgs/ActuatorControl.h
 lcm_bridge/CMakeFiles/bridge_node.dir/src/bridge_node.cpp.o: /opt/ros/melodic/include/mavros_msgs/ExtendedState.h
 lcm_bridge/CMakeFiles/bridge_node.dir/src/bridge_node.cpp.o: /opt/ros/melodic/include/mavros_msgs/ParamSet.h
 lcm_bridge/CMakeFiles/bridge_node.dir/src/bridge_node.cpp.o: /opt/ros/melodic/include/mavros_msgs/ParamSetRequest.h
@@ -373,6 +374,10 @@ lcm_bridge/CMakeFiles/bridge_node.dir/src/bridge_node.cpp.o: /opt/ros/melodic/in
 lcm_bridge/CMakeFiles/bridge_node.dir/src/bridge_node.cpp.o: /opt/ros/melodic/include/ros/wall_timer_options.h
 lcm_bridge/CMakeFiles/bridge_node.dir/src/bridge_node.cpp.o: /opt/ros/melodic/include/rosconsole/macros_generated.h
 lcm_bridge/CMakeFiles/bridge_node.dir/src/bridge_node.cpp.o: /opt/ros/melodic/include/sensor_msgs/BatteryState.h
+lcm_bridge/CMakeFiles/bridge_node.dir/src/bridge_node.cpp.o: /opt/ros/melodic/include/sensor_msgs/CameraInfo.h
+lcm_bridge/CMakeFiles/bridge_node.dir/src/bridge_node.cpp.o: /opt/ros/melodic/include/sensor_msgs/NavSatFix.h
+lcm_bridge/CMakeFiles/bridge_node.dir/src/bridge_node.cpp.o: /opt/ros/melodic/include/sensor_msgs/NavSatStatus.h
+lcm_bridge/CMakeFiles/bridge_node.dir/src/bridge_node.cpp.o: /opt/ros/melodic/include/sensor_msgs/RegionOfInterest.h
 lcm_bridge/CMakeFiles/bridge_node.dir/src/bridge_node.cpp.o: /opt/ros/melodic/include/std_msgs/Header.h
 lcm_bridge/CMakeFiles/bridge_node.dir/src/bridge_node.cpp.o: /opt/ros/melodic/include/xmlrpcpp/XmlRpcDecl.h
 lcm_bridge/CMakeFiles/bridge_node.dir/src/bridge_node.cpp.o: /opt/ros/melodic/include/xmlrpcpp/XmlRpcValue.h

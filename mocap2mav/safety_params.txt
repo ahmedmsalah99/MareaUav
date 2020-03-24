@@ -1,5 +1,7 @@
-battery_threshold=0.70
+battery_threshold=0.50
 emergland_threshold1=2
 emergland_threshold2=0.25
 emergland_gain=3
+gpsgone_threshold=5.0
+cameragone_threshold=5.0
 #

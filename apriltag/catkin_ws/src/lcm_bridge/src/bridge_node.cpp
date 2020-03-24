@@ -6,11 +6,14 @@
 #include "sensor_msgs/BatteryState.h"
 #include "mavros_msgs/ExtendedState.h"
 #include "mavros_msgs/ParamSet.h"
-#include "mavros_msgs/ActuatorControl.h"
+#include "sensor_msgs/NavSatFix.h"
+#include "sensor_msgs/CameraInfo.h"
 #include "lcm_messages/geometry/pose.hpp"
 #include "lcm_messages/geometry/vision.hpp"
 #include "lcm_messages/exec/state.hpp"
 #include "lcm_messages/exec/battery.hpp"
+#include "lcm_messages/exec/gps_status.hpp"
+#include "lcm_messages/exec/camera_info.hpp"
 #include "common/MavState.h"
 #include "common/CallbackHandler.hpp"
 #include "nav_msgs/Odometry.h"
@@ -20,12 +23,16 @@
 #include "apriltag_ros/AprilTagDetectionArray.h"
 #include <cmath>
 #include <queue>
+#include <chrono>
+#include <ctime>
 #include <string>
 
-lcm::LCM handler, handler2, handler3, handler4,handler5;
+lcm::LCM handler, handler2, handler3, handler4, handler5, handler6, handler7;
 geometry::pose lcm_pose;
 exec::state robot_state;
 exec::battery battery_lcm;
+exec::camera_info camera_info_lcm;
+exec::gps_status gps_status_lcm;
 nav_msgs::Odometry platPos;
 mavros_msgs::State disarmed;
 mavros_msgs::ExtendedState landed;
@@ -172,6 +179,21 @@ void batteryStatusCallback(sensor_msgs::BatteryState bs)
   handler5.publish("battery", &battery_lcm);
 }
 
+void gpsStatusCallback(sensor_msgs::NavSatFix nsf)
+{
+  gps_status_lcm.status = nsf.status.status;
+  gps_status_lcm.timestamp = (double)(std::chrono::system_clock::now().time_since_epoch() / std::chrono::milliseconds(1));
+  handler6.publish("gps_status", &gps_status_lcm);
+}
+
+void CameraInfoCallback(sensor_msgs::CameraInfo ci)
+{
+    // saving the time the callback gets called.
+    // this is used for safety purposes, to know if the camera is dead.
+    camera_info_lcm.timestamp = (double)(std::chrono::system_clock::now().time_since_epoch() / std::chrono::milliseconds(1));
+    handler7.publish("camera_info", &camera_info_lcm);
+}
+
 void EStateCallback(mavros_msgs::ExtendedState es){
 
     if (firstEState) {
@@ -253,13 +275,13 @@ void ApriltagCallback(apriltag_ros::AprilTagDetectionArray A_det){
                 vision_pose.pitch = movingFilter(pitch, &Queue_pitch, &integral_pitch);
                 vision_pose.yaw = movingFilter(yaw, &Queue_yaw, &integral_yaw);
 
-
                handler4.publish("apriltag_vision_system",&vision_pose);
                //lcm publication.
 
 	}
 
 }
+
 
 int main(int argc, char **argv)
 {
@@ -272,7 +294,9 @@ int main(int argc, char **argv)
     ros::Subscriber state_sub = n.subscribe("/mavros/state",1,&stateCallback);
     ros::Subscriber state_extended_sub = n.subscribe("/mavros/extended_state",1,&EStateCallback);
     ros::Subscriber relative_pose_sub = n.subscribe("/apriltag_ros/camera_rect/tag_detections",1,&ApriltagCallback);//apriltags system.
+    ros::Subscriber camera_info_sub = n.subscribe("/iris/camera_rect/camera_info",1,&CameraInfoCallback); // camera info.
     ros::Subscriber battery_status_sub = n.subscribe("/mavros/battery", 1, &batteryStatusCallback);
+    ros::Subscriber gps_status_sub = n.subscribe("/mavros/global_position/global", 1, &gpsStatusCallback);
 
 
     ros::Publisher  pub  = n.advertise<geometry_msgs::PoseStamped>("/mavros/setpoint_position/local",1);

@@ -39,6 +39,7 @@
  */
 
 #include <float.h>
+#include <iostream>   // std::cout
 
 #include <drivers/drv_hrt.h>
 #include <lib/ecl/EKF/ekf.h>
@@ -1225,6 +1226,7 @@ void Ekf2::Run()
 				const float lpos_y_prev = lpos.y;
 				lpos.x = (_ekf.local_position_is_valid()) ? position[0] : 0.0f;
 				lpos.y = (_ekf.local_position_is_valid()) ? position[1] : 0.0f;
+				// std::cout << _ekf.inertial_dead_reckoning() << std::endl;
 				lpos.z = position[2];
 
 				// Vehicle odometry position

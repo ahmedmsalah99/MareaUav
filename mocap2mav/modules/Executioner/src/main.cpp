@@ -92,27 +92,41 @@ int main(int argc, char** argv){
         {
           // we have to handle it
           handler4.handle();
-          // depending on struct values, we have to take a decision and change task
-          // defining then a priority policy, where the battery is the first to be
-          // checked, then comes the camera, gps and finally the sonar.
-          // depending on where the problem is, a different behaviour is adopted.
 
-          //TODO: gestire caso dove arriva un'altro fail e una security task sta runnando
-          if(call.safety.isbatterygone)
+          // First let's check if any Safety task is running already
+          if(!e.isBatterySafetyTaskRunning && !e.isGPSSafetyTaskRunning && !e.isCameraSafetyTaskRunning && !e.isSonarSafetyTaskRunning)
           {
-            e.batteryGoneHandler(call.safety);
+            // Second, depending on struct values, we have to take a decision and change task
+            // defining then a priority policy, where the battery is the first to be
+            // checked, then comes the camera, gps and finally the sonar.
+            // depending on where the problem is, a different behaviour is adopted.
+            if(call.safety.isbatterygone)
+            {
+              e.isBatterySafetyTaskRunning = 1;
+              e.batteryGoneHandler(call.safety);
+            }
+            else if(call.safety.iscameragone)
+            {
+              e.isCameraSafetyTaskRunning = 1;
+              e.cameraGoneHandler();
+            }
+            else if(call.safety.isgpsgone)
+            {
+              e.isGPSSafetyTaskRunning = 1;
+              e.gpsGoneHandler();
+            }
+            else if(call.safety.issonargone)
+            {
+              e.isSonarSafetyTaskRunning = 1;
+              e.sonarGoneHandler();
+            }
           }
-          else if(call.safety.iscameragone)
+
+          // TODO: handle the case when the gps starts working again after the
+          // safety task has been deployed
+          if(e.isGPSSafetyTaskRunning && !call.safety.isgpsgone)
           {
-            e.cameraGoneHandler();
-          }
-          else if(call.safety.isgpsgone)
-          {
-            e.gpsGoneHandler();
-          }
-          else if(call.safety.issonargone)
-          {
-            e.sonarGoneHandler();
+            // TODO
           }
         }
         //Run state machine

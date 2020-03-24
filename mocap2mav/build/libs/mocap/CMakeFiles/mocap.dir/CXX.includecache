@@ -44,6 +44,14 @@ lcm/lcm_coretypes.h
 lcm/lcm_coretypes.h
 -
 
+../include/utils/TimeHelpers.hpp
+iostream
+-
+chrono
+-
+unistd.h
+-
+
 ../libs/StateMachine/include/AbstractState.h
 Machine.h
 ../libs/StateMachine/include/Machine.h
@@ -179,6 +187,8 @@ poll.h
 -
 common/common.h
 ../libs/mocap/include/common/common.h
+utils/TimeHelpers.hpp
+../libs/mocap/include/utils/TimeHelpers.hpp
 map
 -
 

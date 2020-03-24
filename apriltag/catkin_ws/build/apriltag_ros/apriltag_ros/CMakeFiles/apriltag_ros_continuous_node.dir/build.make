@@ -151,7 +151,6 @@ apriltag_ros_continuous_node_EXTERNAL_OBJECTS =
 /home/andrea/Desktop/Marea/VisionSystem/apriltag/catkin_ws/devel/lib/apriltag_ros/apriltag_ros_continuous_node: /opt/ros/melodic/lib/libmessage_filters.so
 /home/andrea/Desktop/Marea/VisionSystem/apriltag/catkin_ws/devel/lib/apriltag_ros/apriltag_ros_continuous_node: /opt/ros/melodic/lib/libroscpp.so
 /home/andrea/Desktop/Marea/VisionSystem/apriltag/catkin_ws/devel/lib/apriltag_ros/apriltag_ros_continuous_node: /usr/lib/x86_64-linux-gnu/libboost_filesystem.so
-/home/andrea/Desktop/Marea/VisionSystem/apriltag/catkin_ws/devel/lib/apriltag_ros/apriltag_ros_continuous_node: /usr/lib/x86_64-linux-gnu/libboost_signals.so
 /home/andrea/Desktop/Marea/VisionSystem/apriltag/catkin_ws/devel/lib/apriltag_ros/apriltag_ros_continuous_node: /opt/ros/melodic/lib/libxmlrpcpp.so
 /home/andrea/Desktop/Marea/VisionSystem/apriltag/catkin_ws/devel/lib/apriltag_ros/apriltag_ros_continuous_node: /opt/ros/melodic/lib/libtf2.so
 /home/andrea/Desktop/Marea/VisionSystem/apriltag/catkin_ws/devel/lib/apriltag_ros/apriltag_ros_continuous_node: /opt/ros/melodic/lib/libroscpp_serialization.so
@@ -230,7 +229,6 @@ apriltag_ros_continuous_node_EXTERNAL_OBJECTS =
 /home/andrea/Desktop/Marea/VisionSystem/apriltag/catkin_ws/devel/lib/apriltag_ros/apriltag_ros_continuous_node: /opt/ros/melodic/lib/libmessage_filters.so
 /home/andrea/Desktop/Marea/VisionSystem/apriltag/catkin_ws/devel/lib/apriltag_ros/apriltag_ros_continuous_node: /opt/ros/melodic/lib/libroscpp.so
 /home/andrea/Desktop/Marea/VisionSystem/apriltag/catkin_ws/devel/lib/apriltag_ros/apriltag_ros_continuous_node: /usr/lib/x86_64-linux-gnu/libboost_filesystem.so
-/home/andrea/Desktop/Marea/VisionSystem/apriltag/catkin_ws/devel/lib/apriltag_ros/apriltag_ros_continuous_node: /usr/lib/x86_64-linux-gnu/libboost_signals.so
 /home/andrea/Desktop/Marea/VisionSystem/apriltag/catkin_ws/devel/lib/apriltag_ros/apriltag_ros_continuous_node: /opt/ros/melodic/lib/libxmlrpcpp.so
 /home/andrea/Desktop/Marea/VisionSystem/apriltag/catkin_ws/devel/lib/apriltag_ros/apriltag_ros_continuous_node: /opt/ros/melodic/lib/libtf2.so
 /home/andrea/Desktop/Marea/VisionSystem/apriltag/catkin_ws/devel/lib/apriltag_ros/apriltag_ros_continuous_node: /opt/ros/melodic/lib/libroscpp_serialization.so

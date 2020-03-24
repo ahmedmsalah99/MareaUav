@@ -40,6 +40,11 @@ public:
 	int _actualNode;
 	bool _idle;
 
+	bool isBatterySafetyTaskRunning;
+	bool isGPSSafetyTaskRunning;
+	bool isCameraSafetyTaskRunning;
+	bool isSonarSafetyTaskRunning;
+
 private:
 
 	MavState _state;

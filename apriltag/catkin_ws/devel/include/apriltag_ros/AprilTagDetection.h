@@ -79,6 +79,23 @@ ros::message_operations::Printer< ::apriltag_ros::AprilTagDetection_<ContainerAl
 return s;
 }
 
+
+template<typename ContainerAllocator1, typename ContainerAllocator2>
+bool operator==(const ::apriltag_ros::AprilTagDetection_<ContainerAllocator1> & lhs, const ::apriltag_ros::AprilTagDetection_<ContainerAllocator2> & rhs)
+{
+  return lhs.id == rhs.id &&
+    lhs.size == rhs.size &&
+    lhs.pose == rhs.pose &&
+    lhs.corners2d == rhs.corners2d;
+}
+
+template<typename ContainerAllocator1, typename ContainerAllocator2>
+bool operator!=(const ::apriltag_ros::AprilTagDetection_<ContainerAllocator1> & lhs, const ::apriltag_ros::AprilTagDetection_<ContainerAllocator2> & rhs)
+{
+  return !(lhs == rhs);
+}
+
+
 } // namespace apriltag_ros
 
 namespace ros
@@ -86,12 +103,6 @@ namespace ros
 namespace message_traits
 {
 
-
-
-// BOOLTRAITS {'IsFixedSize': False, 'IsMessage': True, 'HasHeader': False}
-// {'std_msgs': ['/opt/ros/melodic/share/std_msgs/cmake/../msg'], 'sensor_msgs': ['/opt/ros/melodic/share/sensor_msgs/cmake/../msg'], 'geometry_msgs': ['/opt/ros/melodic/share/geometry_msgs/cmake/../msg'], 'apriltag_ros': ['/home/andrea/Desktop/Marea/VisionSystem/apriltag/catkin_ws/src/apriltag_ros/apriltag_ros/msg']}
-
-// !!!!!!!!!!! ['__class__', '__delattr__', '__dict__', '__doc__', '__eq__', '__format__', '__getattribute__', '__hash__', '__init__', '__module__', '__ne__', '__new__', '__reduce__', '__reduce_ex__', '__repr__', '__setattr__', '__sizeof__', '__str__', '__subclasshook__', '__weakref__', '_parsed_fields', 'constants', 'fields', 'full_name', 'has_header', 'header_present', 'names', 'package', 'parsed_fields', 'short_name', 'text', 'types']
 
 
 
