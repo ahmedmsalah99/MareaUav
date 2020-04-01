@@ -14,6 +14,7 @@ modules/Executioner/CMakeFiles/exec.dir/src/main.cpp.o: ../include/lcm_messages/
 modules/Executioner/CMakeFiles/exec.dir/src/main.cpp.o: ../include/lcm_messages/exec/camera_info.hpp
 modules/Executioner/CMakeFiles/exec.dir/src/main.cpp.o: ../include/lcm_messages/exec/gps_status.hpp
 modules/Executioner/CMakeFiles/exec.dir/src/main.cpp.o: ../include/lcm_messages/exec/safety.hpp
+modules/Executioner/CMakeFiles/exec.dir/src/main.cpp.o: ../include/lcm_messages/exec/safety_ack.hpp
 modules/Executioner/CMakeFiles/exec.dir/src/main.cpp.o: ../include/lcm_messages/exec/state.hpp
 modules/Executioner/CMakeFiles/exec.dir/src/main.cpp.o: ../include/lcm_messages/exec/task.hpp
 modules/Executioner/CMakeFiles/exec.dir/src/main.cpp.o: ../include/lcm_messages/geometry/pose.hpp

@@ -23,6 +23,7 @@ Executioner::Executioner(){
     isGPSSafetyTaskRunning = 0;
     isCameraSafetyTaskRunning = 0;
     isSonarSafetyTaskRunning = 0;
+    isGoingInSafeHarbor = 0;
 }
 
 void Executioner::init(){
@@ -155,6 +156,11 @@ void Executioner::run(){
         while(!done);
     }
 
+    if(!isGoingInSafeHarbor)
+    {
+      _nodeList[_actualNode].x = _platState.getX();
+      _nodeList[_actualNode].y = _platState.getY();
+    }
     // Check for next task
     if((CheckActions(_actualTask.action) || skip) && _can_run) {
 
@@ -188,10 +194,14 @@ bool Executioner::CheckActions(int a)
     {
             //MOVE
         case actions::MOVE:
-            // returns the distance condition wrt the platform coordinates and the prefixed desired altitude
-            return (fabs(_state.getX() - _platState.getX()) < _actualTask.params[5] &&
-                    fabs(_state.getY() - _platState.getY()) < _actualTask.params[5] &&
-                    fabs(_state.getZ() - _nodeList[_actualNode].z) < _actualTask.params[5] );
+            // in the case the camera safety task runs, the drone has to follow
+            // the platform for a while, waiting the system to come back online
+            if(isCameraSafetyTaskRunning)
+              return false;
+            else  // returns the distance condition wrt the platform coordinates and the prefixed desired altitude
+              return (fabs(_state.getX() - _nodeList[_actualNode].x) < _actualTask.params[5] &&
+                      fabs(_state.getY() - _nodeList[_actualNode].y) < _actualTask.params[5] &&
+                      fabs(_state.getZ() - _nodeList[_actualNode].z) < _actualTask.params[5] );
 
             //TAKE_OFF
         case actions::TAKE_OFF:
@@ -335,8 +345,69 @@ void Executioner::batteryGoneHandler(exec::safety safety)
   loadTask();
 }
 
-void Executioner::cameraGoneHandler()
+void Executioner::cameraGoneHandler(exec::safety safety)
 {
+  // we create the object for the task
+  exec::task tempTask;
+  // this time we don't clear the task list, cause the camera may come back online,
+  // hence the mission could continue
+  tempTask.action = actions::MOVE;
+  // filling the coordinates to follow, which correspond to platform position
+  tempTask.x = _platState.getX();
+  tempTask.y = _platState.getY();
+  tempTask.z = safety.params[0];
+  // setting the alpha as well
+  tempTask.params[0] = safety.params[1];
+  // setting the task list then
+  setNextTask(tempTask);
+  // calling init every time there is a new list
+  init();
+  // and loading the task
+  loadTask();
+}
+
+void Executioner::moveToSafeHarbor(exec::safety safety)
+{
+  // first thing to do is to clear tasks list, so that noone of them gets executed
+  clearList();
+  // hence, the safety tasks have to be build
+  exec::task tempTask1;
+  exec::task tempTask2;
+  // resetting the index to access the task list
+  _actualNode = 0;
+  // setting the first task to MOVE
+  tempTask1.action = actions::MOVE;
+  // setting then the params of both tasks, starting from Move
+  // filling the coordinates of the desired safe harbor place
+  tempTask1.x = safety.safeharbor_coord[0];
+  tempTask1.y = safety.safeharbor_coord[1];
+  tempTask1.z = safety.params[4];
+  // the gain to used to reach it
+  tempTask1.params[0] = safety.params[5];
+  // and the threshold to satisfy the condition
+  tempTask1.params[5] = safety.params[3];
+
+  // proceeding with the second task, the Emergency Land
+  tempTask2.action = actions::EMERG_LAND;
+  // with a proper id
+  tempTask2.id = 100;
+  // this is the desired position on z the drone has to achieve
+  tempTask2.z = safety.safeharbor_coord[2];
+  // this one is the first threshold
+  tempTask2.params[0] = safety.params[0];
+  // and this one the corresponding "turn off motors" one
+  tempTask2.params[1] = safety.params[1];
+  // then we have the descendent rate default gain
+  tempTask2.params[2] = safety.params[2];
+  // finally filling it on the execution list, as the last to be executed
+  setNextTask(tempTask2);
+  // setting the task first
+  setNextTask(tempTask1);
+
+  // calling init every time there is a new list
+  init();
+  // and loading the task
+  loadTask();
 
 }
 

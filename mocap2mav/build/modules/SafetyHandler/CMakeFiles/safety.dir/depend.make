@@ -13,6 +13,7 @@ modules/SafetyHandler/CMakeFiles/safety.dir/src/main.cpp.o: ../include/lcm_messa
 modules/SafetyHandler/CMakeFiles/safety.dir/src/main.cpp.o: ../include/lcm_messages/exec/camera_info.hpp
 modules/SafetyHandler/CMakeFiles/safety.dir/src/main.cpp.o: ../include/lcm_messages/exec/gps_status.hpp
 modules/SafetyHandler/CMakeFiles/safety.dir/src/main.cpp.o: ../include/lcm_messages/exec/safety.hpp
+modules/SafetyHandler/CMakeFiles/safety.dir/src/main.cpp.o: ../include/lcm_messages/exec/safety_ack.hpp
 modules/SafetyHandler/CMakeFiles/safety.dir/src/main.cpp.o: ../include/lcm_messages/exec/state.hpp
 modules/SafetyHandler/CMakeFiles/safety.dir/src/main.cpp.o: ../include/lcm_messages/exec/task.hpp
 modules/SafetyHandler/CMakeFiles/safety.dir/src/main.cpp.o: ../include/lcm_messages/geometry/pose.hpp

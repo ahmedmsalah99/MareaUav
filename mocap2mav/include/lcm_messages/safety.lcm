@@ -5,5 +5,7 @@ struct safety
 	boolean isgpsgone;
 	boolean issonargone;
 	boolean iscameragone;
-	double params[3];
+	boolean goingsafeharbor;
+	double safeharbor_coord[3];
+	double params[6];
 }

@@ -14,6 +14,7 @@
 #include "lcm_messages/exec/battery.hpp"
 #include "lcm_messages/exec/gps_status.hpp"
 #include "lcm_messages/exec/safety.hpp"
+#include "lcm_messages/exec/safety_ack.hpp"
 #include "lcm_messages/exec/camera_info.hpp"
 #include <iostream>
 class CallbackHandler {
@@ -24,6 +25,8 @@ public:
     MavState _position_sp;
     exec::task _task;
     exec::safety safety;
+    exec::safety_ack safety_ack;
+    exec::battery battery;
     exec::gps_status gps;
 
     MavState _relative_pos; //filled by apriltag topic
@@ -33,14 +36,6 @@ public:
     bool _estimate_ready;
     bool _position_sp_ready;
     double camera_timestamp;
-
-
-    struct
-    {
-      float voltage;
-      float current;
-      float remaining;
-    }battery {};
 
     CallbackHandler(){
 
@@ -55,6 +50,20 @@ public:
         _vision_pos.setOrientation(1,0,0,0);
         _vision_pos.setYaw(0);
         _vision_pos.setType(MavState::type::POSITION);
+
+
+      	safety_ack.isbatterysafetytaskrunning = 0;
+      	safety_ack.isgpssafetytaskrunning = 0;
+      	safety_ack.iscamerasafetytaskrunning = 0;
+      	safety_ack.issonarsafetytaskrunning = 0;
+        safety_ack.isgoinginsafeharbor = 0;
+      	safety_ack.iscameragone_timestamp = 0.0;
+
+        safety.isbatterygone = 0;
+        safety.isgpsgone = 0;
+        safety.iscameragone = 0;
+        safety.issonargone = 0;
+        safety.goingsafeharbor = 0;
 
         _armed = false;
         _landed = true;
@@ -131,11 +140,27 @@ public:
       safety.isgpsgone = msg->isgpsgone;
       safety.issonargone = msg->issonargone;
       safety.iscameragone = msg->iscameragone;
+      safety.goingsafeharbor = msg->goingsafeharbor;
+      safety.safeharbor_coord[0] = msg->safeharbor_coord[0];
+      safety.safeharbor_coord[1] = msg->safeharbor_coord[1];
+      safety.safeharbor_coord[2] = msg->safeharbor_coord[2];
       safety.params[0] = msg->params[0];
       safety.params[1] = msg->params[1];
       safety.params[2] = msg->params[2];
+      safety.params[3] = msg->params[3];
+      safety.params[4] = msg->params[4];
+      safety.params[5] = msg->params[5];
     }
 
+    void safetyAckCallback(const lcm::ReceiveBuffer* rbuf, const std::string& chan, const exec::safety_ack* msg)
+    {
+      safety_ack.isbatterysafetytaskrunning = msg->isbatterysafetytaskrunning;
+      safety_ack.isgpssafetytaskrunning = msg->isgpssafetytaskrunning;
+      safety_ack.iscamerasafetytaskrunning = msg->iscamerasafetytaskrunning;
+      safety_ack.issonarsafetytaskrunning = msg->issonarsafetytaskrunning;
+      safety_ack.isgoinginsafeharbor = msg->isgoinginsafeharbor;
+      safety_ack.iscameragone_timestamp = msg->iscameragone_timestamp;
+    }
 
     void ApriltagCallback(const lcm::ReceiveBuffer* rbuf, const std::string& chan, const geometry::vision* msg){
         //callback of the vision system.

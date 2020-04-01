@@ -13,7 +13,7 @@ int main(int argc, char** argv){
 
 	Duration VisionData(1); //Timer of 1 second
 
-	lcm::LCM handler, handler2, handler3, handler4, handler5, handler6;
+	lcm::LCM handler, handler2, handler3, handler4, handler5;
 
 	if (!handler.good() && !handler2.good() && !handler3.good() && !handler4.good() && !handler5.good())
 		return 1;
@@ -34,6 +34,8 @@ int main(int argc, char** argv){
 	lcm::Subscription *sub3  = handler3.subscribe("actual_task", &CallbackHandler::actualTaskCallback, &call);
 
 	lcm::Subscription *sub4  = handler4.subscribe("apriltag_vision_system", &CallbackHandler::ApriltagCallback, &call);
+
+	lcm::Subscription *sub5 = handler5.subscribe("safety_ack", &CallbackHandler::safetyAckCallback, &call);
 	//topic of the vision system (Apriltag)
 
 	sub ->setQueueCapacity(1);
@@ -43,6 +45,8 @@ int main(int argc, char** argv){
 	sub3->setQueueCapacity(1);
 
 	sub4->setQueueCapacity(1);
+
+	sub5->setQueueCapacity(1);
 
 
 	struct pollfd fds[4];
@@ -55,6 +59,9 @@ int main(int argc, char** argv){
 
 	fds[2].fd = handler4.getFileno(); // vision feedback
 	fds[2].events = POLLIN;
+
+	fds[3].fd = handler5.getFileno(); // Safety Acknowledgements
+	fds[3].events = POLLIN;
 
 
   bool waiting = true;
@@ -72,6 +79,11 @@ int main(int argc, char** argv){
 
 
 		int ret = poll(fds,4,0);
+
+		if(fds[3].revents & POLLIN)
+		{
+			handler5.handle();
+		}
 
 		//the following instruction checks with bitwise AND if the two events are the same.
 		if(fds[0].revents & POLLIN)
@@ -135,8 +147,8 @@ int main(int argc, char** argv){
 
       //Call commands
 			// if the MOVE action is the current one, we set the target as the platform's position
-			// (Handle case where it returns to home due to failure)
-			if(call._task.action == actions::MOVE)
+			// Handling the case where it rgoes in safe harbor due to failure
+			if(call._task.action == actions::MOVE && !call.safety_ack.isgoinginsafeharbor)
 			{
 				autom._actualTask.x = platform.getX();
 				autom._actualTask.y = platform.getY();

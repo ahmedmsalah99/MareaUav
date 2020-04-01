@@ -10,6 +10,7 @@ modules/Automatic/CMakeFiles/autom.dir/src/main.cpp.o
  ../include/lcm_messages/exec/camera_info.hpp
  ../include/lcm_messages/exec/gps_status.hpp
  ../include/lcm_messages/exec/safety.hpp
+ ../include/lcm_messages/exec/safety_ack.hpp
  ../include/lcm_messages/exec/state.hpp
  ../include/lcm_messages/exec/task.hpp
  ../include/lcm_messages/geometry/pose.hpp

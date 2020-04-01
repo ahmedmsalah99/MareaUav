@@ -75,31 +75,14 @@ bool SafetyParser::parseParameter(int pos)
     std::string a = _tokens[pos][0];
     float value = getValue(_tokens[pos][1]);
     //Select the right parameter and parse it
-    if(a.compare("battery_threshold") == 0)
-    {
-      return insertValue(a,value);
-    }
-    else if(a.compare("emergland_threshold1") == 0)
-    {
-      return insertValue(a,value);
-    }
-    else if(a.compare("emergland_threshold2") == 0)
-    {
-      return insertValue(a,value);
-    }
-    else if(a.compare("emergland_gain") == 0)
-    {
-      return insertValue(a,value);
-    }
-    else if(a.compare("gpsgone_threshold1") == 0)
-    {
-      return insertValue(a,value);
-    }
-    else if(a.compare("gpsgone_threshold2") == 0)
-    {
-      return insertValue(a,value);
-    }
-    else if(a.compare("cameragone_threshold") == 0)
+    if(a.compare("battery_threshold") == 0 || a.compare("emergland_threshold1") == 0 ||
+      a.compare("emergland_threshold2") == 0 || a.compare("emergland_gain") == 0 ||
+      a.compare("gpsgone_threshold1") == 0 || a.compare("gpsgone_threshold2") == 0 ||
+      a.compare("cameragone_threshold") == 0 || a.compare("safeharbor_lat") == 0 ||
+      a.compare("safeharbor_lon") == 0 || a.compare("safeharbor_alt") == 0 ||
+      a.compare("cameratosafe_threshold") == 0 || a.compare("safeharbor_threshold") == 0 ||
+      a.compare("cameragone_altitude") == 0 || a.compare("movetosafeharbor_altitude") == 0 ||
+      a.compare("move_alpha") == 0)
     {
       return insertValue(a,value);
     }

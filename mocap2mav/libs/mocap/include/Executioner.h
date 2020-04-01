@@ -3,6 +3,7 @@
 #include "lcm_messages/geometry/pose.hpp"
 #include "lcm_messages/exec/task.hpp"
 #include "lcm_messages/exec/safety.hpp"
+#include "lcm_messages/exec/safety_ack.hpp"
 #include <string>
 #include "common/MavState.h"
 #include "common/common.h"
@@ -31,9 +32,10 @@ public:
 	void setList(std::deque<exec::task> list);
 	void setStatus(bool armed, bool landed);
 	void batteryGoneHandler(exec::safety safety);
-	void cameraGoneHandler();
+	void cameraGoneHandler(exec::safety safety);
 	void gpsGoneHandler();
 	void sonarGoneHandler();
+	void moveToSafeHarbor(exec::safety safety);
 
 	exec::task _actualTask;
 	bool _can_run;
@@ -44,6 +46,8 @@ public:
 	bool isGPSSafetyTaskRunning;
 	bool isCameraSafetyTaskRunning;
 	bool isSonarSafetyTaskRunning;
+	bool isGoingInSafeHarbor;
+
 
 private:
 

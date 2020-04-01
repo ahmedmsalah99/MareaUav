@@ -296,6 +296,7 @@ lcm_bridge/CMakeFiles/bridge_node.dir/src/bridge_node.cpp.o
  /home/andrea/Desktop/Marea/VisionSystem/mocap2mav/include/lcm_messages/exec/camera_info.hpp
  /home/andrea/Desktop/Marea/VisionSystem/mocap2mav/include/lcm_messages/exec/gps_status.hpp
  /home/andrea/Desktop/Marea/VisionSystem/mocap2mav/include/lcm_messages/exec/safety.hpp
+ /home/andrea/Desktop/Marea/VisionSystem/mocap2mav/include/lcm_messages/exec/safety_ack.hpp
  /home/andrea/Desktop/Marea/VisionSystem/mocap2mav/include/lcm_messages/exec/state.hpp
  /home/andrea/Desktop/Marea/VisionSystem/mocap2mav/include/lcm_messages/exec/task.hpp
  /home/andrea/Desktop/Marea/VisionSystem/mocap2mav/include/lcm_messages/geometry/pose.hpp

@@ -1,6 +1,7 @@
 #ifndef SAFETYHANDLER_H
 #define SAFETYHANDLER_H
 #include "lcm_messages/exec/safety.hpp"
+#include "lcm_messages/exec/safety_ack.hpp"
 #include <iostream>
 #include <poll.h>
 #include "common/common.h"
@@ -15,8 +16,10 @@ class SafetyHandler
     {
       float battery_threshold;
       double cameragone_threshold;
-      double gpsgone_threshold;
-      double params[3];
+      double gpsgone_threshold1;
+      double gpsgone_threshold2;
+      double cameratosafe_threshold;
+      double params[10];
     } _safety_params {};
 
 	
@@ -27,11 +30,12 @@ class SafetyHandler
     bool handleBattery(float remaining);
     bool handleCamera(double camera_timestamp);
     bool handleGPS(double gps_timestamp);
+    bool handleSafeHarbor(double cameragone_timestamp);
     void setParamsStruct(std::map<std::string, float> map);
     double getParam(int i);
     void setParam(int i, double value);
     
-    exec::safety safety;
+    exec::safety_ack safety_ack;
     int gpsGoneCounter;
 };
 

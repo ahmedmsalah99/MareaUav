@@ -295,6 +295,7 @@ lcm_bridge/CMakeFiles/bridge_node.dir/src/bridge_node.cpp.o: /home/andrea/Deskto
 lcm_bridge/CMakeFiles/bridge_node.dir/src/bridge_node.cpp.o: /home/andrea/Desktop/Marea/VisionSystem/mocap2mav/include/lcm_messages/exec/camera_info.hpp
 lcm_bridge/CMakeFiles/bridge_node.dir/src/bridge_node.cpp.o: /home/andrea/Desktop/Marea/VisionSystem/mocap2mav/include/lcm_messages/exec/gps_status.hpp
 lcm_bridge/CMakeFiles/bridge_node.dir/src/bridge_node.cpp.o: /home/andrea/Desktop/Marea/VisionSystem/mocap2mav/include/lcm_messages/exec/safety.hpp
+lcm_bridge/CMakeFiles/bridge_node.dir/src/bridge_node.cpp.o: /home/andrea/Desktop/Marea/VisionSystem/mocap2mav/include/lcm_messages/exec/safety_ack.hpp
 lcm_bridge/CMakeFiles/bridge_node.dir/src/bridge_node.cpp.o: /home/andrea/Desktop/Marea/VisionSystem/mocap2mav/include/lcm_messages/exec/state.hpp
 lcm_bridge/CMakeFiles/bridge_node.dir/src/bridge_node.cpp.o: /home/andrea/Desktop/Marea/VisionSystem/mocap2mav/include/lcm_messages/exec/task.hpp
 lcm_bridge/CMakeFiles/bridge_node.dir/src/bridge_node.cpp.o: /home/andrea/Desktop/Marea/VisionSystem/mocap2mav/include/lcm_messages/geometry/pose.hpp

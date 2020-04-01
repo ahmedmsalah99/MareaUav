@@ -25,6 +25,8 @@ lcm_messages/exec/gps_status.hpp
 ../include/common/lcm_messages/exec/gps_status.hpp
 lcm_messages/exec/safety.hpp
 ../include/common/lcm_messages/exec/safety.hpp
+lcm_messages/exec/safety_ack.hpp
+../include/common/lcm_messages/exec/safety_ack.hpp
 lcm_messages/exec/camera_info.hpp
 ../include/common/lcm_messages/exec/camera_info.hpp
 iostream
@@ -64,6 +66,10 @@ lcm/lcm_coretypes.h
 lcm/lcm_coretypes.h
 -
 
+../include/lcm_messages/exec/safety_ack.hpp
+lcm/lcm_coretypes.h
+-
+
 ../include/lcm_messages/exec/state.hpp
 lcm/lcm_coretypes.h
 -
@@ -95,6 +101,8 @@ lcm_messages/exec/task.hpp
 ../libs/mocap/include/lcm_messages/exec/task.hpp
 lcm_messages/exec/safety.hpp
 ../libs/mocap/include/lcm_messages/exec/safety.hpp
+lcm_messages/exec/safety_ack.hpp
+../libs/mocap/include/lcm_messages/exec/safety_ack.hpp
 string
 -
 common/MavState.h
@@ -203,6 +211,8 @@ mocap/include/Executioner.h
 /home/andrea/Desktop/Marea/VisionSystem/mocap2mav/modules/Executioner/src/mocap/include/Executioner.h
 common/CallbackHandler.hpp
 /home/andrea/Desktop/Marea/VisionSystem/mocap2mav/modules/Executioner/src/common/CallbackHandler.hpp
+lcm_messages/exec/safety_ack.hpp
+/home/andrea/Desktop/Marea/VisionSystem/mocap2mav/modules/Executioner/src/lcm_messages/exec/safety_ack.hpp
 Parser.h
 /home/andrea/Desktop/Marea/VisionSystem/mocap2mav/modules/Executioner/src/Parser.h
 utils/TimeHelpers.hpp

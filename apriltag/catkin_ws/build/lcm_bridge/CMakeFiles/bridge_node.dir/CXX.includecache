@@ -123,6 +123,8 @@ lcm_messages/exec/gps_status.hpp
 /home/andrea/Desktop/Marea/VisionSystem/mocap2mav/include/common/lcm_messages/exec/gps_status.hpp
 lcm_messages/exec/safety.hpp
 /home/andrea/Desktop/Marea/VisionSystem/mocap2mav/include/common/lcm_messages/exec/safety.hpp
+lcm_messages/exec/safety_ack.hpp
+/home/andrea/Desktop/Marea/VisionSystem/mocap2mav/include/common/lcm_messages/exec/safety_ack.hpp
 lcm_messages/exec/camera_info.hpp
 /home/andrea/Desktop/Marea/VisionSystem/mocap2mav/include/common/lcm_messages/exec/camera_info.hpp
 iostream
@@ -155,6 +157,10 @@ lcm/lcm_coretypes.h
 -
 
 /home/andrea/Desktop/Marea/VisionSystem/mocap2mav/include/lcm_messages/exec/safety.hpp
+lcm/lcm_coretypes.h
+-
+
+/home/andrea/Desktop/Marea/VisionSystem/mocap2mav/include/lcm_messages/exec/safety_ack.hpp
 lcm/lcm_coretypes.h
 -
 

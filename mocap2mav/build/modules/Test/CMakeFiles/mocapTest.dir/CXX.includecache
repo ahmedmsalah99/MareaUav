@@ -36,6 +36,10 @@ Eigen/Geometry
 lcm/lcm_coretypes.h
 -
 
+../include/lcm_messages/exec/safety_ack.hpp
+lcm/lcm_coretypes.h
+-
+
 ../include/lcm_messages/exec/task.hpp
 lcm/lcm_coretypes.h
 -
@@ -133,6 +137,8 @@ lcm_messages/exec/task.hpp
 ../libs/mocap/include/lcm_messages/exec/task.hpp
 lcm_messages/exec/safety.hpp
 ../libs/mocap/include/lcm_messages/exec/safety.hpp
+lcm_messages/exec/safety_ack.hpp
+../libs/mocap/include/lcm_messages/exec/safety_ack.hpp
 string
 -
 common/MavState.h

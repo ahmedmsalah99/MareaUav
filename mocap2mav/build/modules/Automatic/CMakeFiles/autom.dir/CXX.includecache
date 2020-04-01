@@ -25,6 +25,8 @@ lcm_messages/exec/gps_status.hpp
 ../include/common/lcm_messages/exec/gps_status.hpp
 lcm_messages/exec/safety.hpp
 ../include/common/lcm_messages/exec/safety.hpp
+lcm_messages/exec/safety_ack.hpp
+../include/common/lcm_messages/exec/safety_ack.hpp
 lcm_messages/exec/camera_info.hpp
 ../include/common/lcm_messages/exec/camera_info.hpp
 iostream
@@ -69,6 +71,10 @@ lcm/lcm_coretypes.h
 -
 
 ../include/lcm_messages/exec/safety.hpp
+lcm/lcm_coretypes.h
+-
+
+../include/lcm_messages/exec/safety_ack.hpp
 lcm/lcm_coretypes.h
 -
 

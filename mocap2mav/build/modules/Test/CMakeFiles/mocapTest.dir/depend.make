@@ -290,6 +290,7 @@ modules/Test/CMakeFiles/mocapTest.dir/src/mocapTest.cpp.o: ../include/common/Mav
 modules/Test/CMakeFiles/mocapTest.dir/src/mocapTest.cpp.o: ../include/common/common.h
 modules/Test/CMakeFiles/mocapTest.dir/src/mocapTest.cpp.o: ../include/common/conversions.h
 modules/Test/CMakeFiles/mocapTest.dir/src/mocapTest.cpp.o: ../include/lcm_messages/exec/safety.hpp
+modules/Test/CMakeFiles/mocapTest.dir/src/mocapTest.cpp.o: ../include/lcm_messages/exec/safety_ack.hpp
 modules/Test/CMakeFiles/mocapTest.dir/src/mocapTest.cpp.o: ../include/lcm_messages/exec/task.hpp
 modules/Test/CMakeFiles/mocapTest.dir/src/mocapTest.cpp.o: ../include/lcm_messages/geometry/pose.hpp
 modules/Test/CMakeFiles/mocapTest.dir/src/mocapTest.cpp.o: ../libs/StateMachine/include/AbstractState.h

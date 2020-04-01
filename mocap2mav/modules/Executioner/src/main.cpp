@@ -4,6 +4,7 @@
 #include <poll.h>
 #include "mocap/include/Executioner.h"
 #include "common/CallbackHandler.hpp"
+#include "lcm_messages/exec/safety_ack.hpp"
 #include "Parser.h"
 #include "utils/TimeHelpers.hpp"
 
@@ -12,6 +13,14 @@ int main(int argc, char** argv){
 
     Parser p;
     Executioner e;
+
+    exec::safety_ack safety_ack;
+    safety_ack.isbatterysafetytaskrunning = 0;
+    safety_ack.isgpssafetytaskrunning = 0;
+    safety_ack.iscamerasafetytaskrunning = 0;
+    safety_ack.issonarsafetytaskrunning = 0;
+    safety_ack.isgoinginsafeharbor = 0;
+    safety_ack.iscameragone_timestamp = 0.0;
 
     //Fetch list path
     std::string listPath;
@@ -35,10 +44,13 @@ int main(int argc, char** argv){
     }
     // Call init everytime you have a new list.
     e.init();
-    lcm::LCM handler,handler2, handler3, handler4;
+    lcm::LCM handler,handler2, handler3, handler4, handler5;
 
-    if (!handler.good())
+
+    if (!handler.good() || !handler2.good() || !handler3.good() || !handler4.good() || !handler5.good())
         return 1;
+
+
     CallbackHandler call;
 
 
@@ -93,8 +105,9 @@ int main(int argc, char** argv){
           // we have to handle it
           handler4.handle();
 
-          // First let's check if any Safety task is running already
-          if(!e.isBatterySafetyTaskRunning && !e.isGPSSafetyTaskRunning && !e.isCameraSafetyTaskRunning && !e.isSonarSafetyTaskRunning)
+          // First let's check if the battery Safety task is running, cause if it is,
+          // there is no point to execute the others
+          if(!e.isBatterySafetyTaskRunning)
           {
             // Second, depending on struct values, we have to take a decision and change task
             // defining then a priority policy, where the battery is the first to be
@@ -104,30 +117,68 @@ int main(int argc, char** argv){
             {
               e.isBatterySafetyTaskRunning = 1;
               e.batteryGoneHandler(call.safety);
+              std::cout << "Battery Safety Task Deployed" << std::endl;
+              // notifying back the safety handler process
+              safety_ack.isbatterysafetytaskrunning = 1;
+              handler5.publish("safety_ack", &safety_ack);
             }
-            else if(call.safety.iscameragone)
-            {
-              e.isCameraSafetyTaskRunning = 1;
-              e.cameraGoneHandler();
-            }
-            else if(call.safety.isgpsgone)
+            else if(call.safety.isgpsgone && !e.isGPSSafetyTaskRunning) // TODO: if gps does not include tasks, put it outside of if?
             {
               e.isGPSSafetyTaskRunning = 1;
               e.gpsGoneHandler();
+              std::cout << "GPS Safety Task Deployed" << std::endl;
+              // notifying back the safety handler process
+              safety_ack.isgpssafetytaskrunning = 1;
+              handler5.publish("safety_ack", &safety_ack);
             }
-            else if(call.safety.issonargone)
+            else if(call.safety.goingsafeharbor && !e.isGoingInSafeHarbor)
+            {
+              // if the safe harbor necessity came from a Camera failure,
+              // we now notify that the task is not running anymore.
+              if(e.isCameraSafetyTaskRunning)
+
+              {
+                e.isCameraSafetyTaskRunning = 0;
+                safety_ack.iscamerasafetytaskrunning = 0;
+              }
+              e.isGoingInSafeHarbor = 1;
+              e.moveToSafeHarbor(call.safety);
+              std::cout << "Safe Harbor Safety Task Deployed" << std::endl;
+              // notifying back the safety handler process
+              safety_ack.isgoinginsafeharbor = 1;
+              handler5.publish("safety_ack", &safety_ack);
+            }
+            else if(call.safety.iscameragone && !e.isCameraSafetyTaskRunning && !e.isGoingInSafeHarbor)
+            {
+              e.isCameraSafetyTaskRunning = 1;
+              e.cameraGoneHandler(call.safety);
+              std::cout << "Camera Safety Task Deployed" << std::endl;
+              // notifying back the safety handler with the timestamp, so he can go in safe harbor
+              TimeManager tm;
+              safety_ack.iscamerasafetytaskrunning = 1;
+              safety_ack.iscameragone_timestamp = (double)tm.getTimeMilliSecond();
+              handler5.publish("safety_ack", &safety_ack);
+            }
+            else if(call.safety.issonargone && !e.isSonarSafetyTaskRunning && !e.isGPSSafetyTaskRunning &&
+                    !e.isCameraSafetyTaskRunning && !e.isGoingInSafeHarbor)
             {
               e.isSonarSafetyTaskRunning = 1;
               e.sonarGoneHandler();
+              std::cout << "Sonar Safety Task Deployed" << std::endl;
+              // notifying back the safety handler process
+              safety_ack.issonarsafetytaskrunning = 1;
+              handler5.publish("safety_ack", &safety_ack);
+            }
+
+
+            // TODO: handle the case when the gps starts working again after the
+            // safety task has been deployed
+            if(e.isGPSSafetyTaskRunning && !call.safety.isgpsgone)
+            {
+              // TODO
             }
           }
 
-          // TODO: handle the case when the gps starts working again after the
-          // safety task has been deployed
-          if(e.isGPSSafetyTaskRunning && !call.safety.isgpsgone)
-          {
-            // TODO
-          }
         }
         //Run state machine
         e.setState(call._vision_pos);
