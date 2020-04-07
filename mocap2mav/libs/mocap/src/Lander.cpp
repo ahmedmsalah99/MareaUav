@@ -360,13 +360,16 @@ int Lander::getActualMachineState() {
 }
 
 void Lander::run() {
-
     _prevState = _actualState; //set the previous state with the actual one, initially is INIT.
 
     handleMachine();
 
     _actualState = _machine.getActualNodeId();//it obtains the new state
 
+    if(startFromBeginning) // in case the landing should get reinitialized after a Safety Task
+    {
+      _actualState = AbstractLandState::states::INIT;
+    }
     managetime();
 
     static bool initDone = false;
@@ -382,6 +385,15 @@ void Lander::run() {
 
             	initDone = _VisionPose.VisionDataUpdated;
 
+            }
+
+            if(startFromBeginning)
+            {
+              std::cout<<"INIT2"<<std::endl;
+
+              init();
+
+              startFromBeginning = false;
             }
 
             break;

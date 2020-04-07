@@ -6,7 +6,7 @@
 #define GUI
 
 int node = 0;
-bool skip = false;
+
 
 using namespace common;
 
@@ -17,6 +17,7 @@ Executioner::Executioner(){
     _can_run = false;
     _newTask = true;
     _publish_task = false;
+    skip = false;
     _nodeList.clear();
     _nodeList.shrink_to_fit();
     isBatterySafetyTaskRunning = 0;
@@ -163,6 +164,8 @@ void Executioner::run(){
     }
     // Check for next task
     if((CheckActions(_actualTask.action) || skip) && _can_run) {
+        // resetting skip variable
+        skip = false;
 
         if(_nodeList.size() > 0){
 
@@ -199,9 +202,9 @@ bool Executioner::CheckActions(int a)
             if(isCameraSafetyTaskRunning)
               return false;
             else  // returns the distance condition wrt the platform coordinates and the prefixed desired altitude
-              return (fabs(_state.getX() - _nodeList[_actualNode].x) < _actualTask.params[5] &&
-                      fabs(_state.getY() - _nodeList[_actualNode].y) < _actualTask.params[5] &&
-                      fabs(_state.getZ() - _nodeList[_actualNode].z) < _actualTask.params[5] );
+              return (fabs(_state.getX() - _nodeList[_actualNode].x) < _actualTask.params[1] &&
+                      fabs(_state.getY() - _nodeList[_actualNode].y) < _actualTask.params[1] &&
+                      fabs(_state.getZ() - _nodeList[_actualNode].z) < _actualTask.params[1] );
 
             //TAKE_OFF
         case actions::TAKE_OFF:
@@ -211,7 +214,7 @@ bool Executioner::CheckActions(int a)
             //ROTATE
         case actions::ROTATE:
 
-            return (fabs(fabs(_actualTask.yaw) - fabs(_state.getYawFromQuat())) < _actualTask.params[4]);
+            return (fabs(fabs(_actualTask.yaw) - fabs(_state.getYawFromQuat())) < _actualTask.params[0]);
 
             // return (fabs(fabs(_actualTask.yaw) - fabs(_state.getYawFromQuat())) < PI/10);
 
@@ -234,10 +237,6 @@ bool Executioner::CheckActions(int a)
         {
           // in this case the task never finishes, cause the drone has to signal
           // its gps position once landed.
-
-          // TODO: set condition on velocity on Z, and check if IDLE state works
-          // if(_state.getVz() < _actualTask.params[2] && fabs(_state.getZ() - _actualTask.z) < _actualTask.params[5])
-          //   return true;
 
           return false;
         }
@@ -291,8 +290,6 @@ void Executioner::loadTask() {
     _actualTask.params[1] = _nodeList[_actualNode].params[1];
     _actualTask.params[2] = _nodeList[_actualNode].params[2];
     _actualTask.params[3] = _nodeList[_actualNode].params[3];
-    _actualTask.params[4] = _nodeList[_actualNode].params[4];
-    _actualTask.params[5] = _nodeList[_actualNode].params[5];
 
 }
 
@@ -358,6 +355,8 @@ void Executioner::cameraGoneHandler(exec::safety safety)
   tempTask.z = safety.params[0];
   // setting the alpha as well
   tempTask.params[0] = safety.params[1];
+  // and the threshold to satisfy the condition, in case camera would come back online
+  tempTask.params[1] = safety.params[2];
   // setting the task list then
   setNextTask(tempTask);
   // calling init every time there is a new list
@@ -385,7 +384,7 @@ void Executioner::moveToSafeHarbor(exec::safety safety)
   // the gain to used to reach it
   tempTask1.params[0] = safety.params[5];
   // and the threshold to satisfy the condition
-  tempTask1.params[5] = safety.params[3];
+  tempTask1.params[1] = safety.params[3];
 
   // proceeding with the second task, the Emergency Land
   tempTask2.action = actions::EMERG_LAND;
@@ -419,4 +418,21 @@ void Executioner::gpsGoneHandler()
 void Executioner::sonarGoneHandler()
 {
 
+}
+
+void Executioner::setSkip()
+{
+  skip = true;
+}
+
+void Executioner::resetLanding()
+{
+  // resetting the Land task, if it's getting executed
+  for(int i = 0; i < _nodeList.size(); i++)
+  {
+    if(_nodeList[i].action == actions::LAND)
+    {
+      _nodeList[i].params[3] = 127.0;
+    }
+  }
 }

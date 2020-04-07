@@ -1,14 +1,15 @@
-battery_threshold=0.50
+battery_threshold=0.20
 emergland_threshold1=2
 emergland_threshold2=0.25
 emergland_gain=3
 gpsgone_threshold1=5.0
 gpsgone_threshold2=10.0
 cameragone_threshold=5.0
-cameragone_altitude=7.0
+cameragone_altitude=6.0
 move_alpha=2.0
 safeharbor_threshold=0.50
 cameratosafe_threshold=10.0
+cameraonline_threshold=0.25
 safeharbor_lon=0.0
 safeharbor_lat=0.0
 safeharbor_alt=0.0

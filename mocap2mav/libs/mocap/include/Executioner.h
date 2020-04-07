@@ -36,11 +36,14 @@ public:
 	void gpsGoneHandler();
 	void sonarGoneHandler();
 	void moveToSafeHarbor(exec::safety safety);
+	void setSkip();
+	void resetLanding();
 
 	exec::task _actualTask;
 	bool _can_run;
 	int _actualNode;
 	bool _idle;
+	bool skip;
 
 	bool isBatterySafetyTaskRunning;
 	bool isGPSSafetyTaskRunning;

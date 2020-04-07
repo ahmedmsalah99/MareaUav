@@ -14,12 +14,12 @@ class SafetyHandler
 
     struct
     {
-      float battery_threshold;
-      double cameragone_threshold;
-      double gpsgone_threshold1;
-      double gpsgone_threshold2;
-      double cameratosafe_threshold;
-      double params[10];
+	float battery_threshold;
+	double cameragone_threshold;
+	double gpsgone_threshold1;
+	double gpsgone_threshold2;
+	double cameratosafe_threshold;
+	double params[11];
     } _safety_params {};
 
 	

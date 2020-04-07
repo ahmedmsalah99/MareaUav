@@ -46,7 +46,7 @@ bool Parser::parse() {
 
     //Save type position
     std::vector<int> type_pos;
-    
+
     for (int i = 0; i < _tokens.size(); ++i) {
 
         if(_tokens[i][0] == "type") type_pos.push_back(i);
@@ -292,7 +292,7 @@ bool Parser::parseMove(exec::task& task,int pos) {
           {
             std::cout << "  threshold: " <<value<< " found for action: " << pos << std::endl;
             // and we assign it to task's parameters
-            task.params[5] = value;
+            task.params[1] = value;
           }
           else
           {
@@ -391,7 +391,7 @@ bool Parser::parseRotate(exec::task& task, int pos) {
           {
             std::cout << "  threshold: " <<value<< " found for action: " << pos << std::endl;
             // and we assign it to task's parameters
-            task.params[4] = value;
+            task.params[0] = value;
           }
           else
           {

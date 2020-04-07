@@ -23,6 +23,7 @@ void SafetyHandler::setParamsStruct(std::map<std::string, float> map)
   _safety_params.params[7] = map.at("cameragone_altitude");
   _safety_params.params[8] = map.at("movetosafeharbor_altitude");
   _safety_params.params[9] = map.at("move_alpha");
+  _safety_params.params[10] = map.at("cameraonline_threshold");
 }
 
 double SafetyHandler::getParam(int i)

@@ -68,7 +68,6 @@ void Automatic::handleCommands() {
             break;
 
         case actions::LAND:
-
             _actualCommand = std::unique_ptr<Command>(new Land(&_state,&_comm,&_actualTask,&_platformState,&_visionFeedbackPose));
             std::cout << "Actual command: Land" << std::endl;
             break;

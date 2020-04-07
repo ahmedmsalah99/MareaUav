@@ -82,7 +82,7 @@ bool SafetyParser::parseParameter(int pos)
       a.compare("safeharbor_lon") == 0 || a.compare("safeharbor_alt") == 0 ||
       a.compare("cameratosafe_threshold") == 0 || a.compare("safeharbor_threshold") == 0 ||
       a.compare("cameragone_altitude") == 0 || a.compare("movetosafeharbor_altitude") == 0 ||
-      a.compare("move_alpha") == 0)
+      a.compare("move_alpha") == 0 || a.compare("cameraonline_threshold") == 0)
     {
       return insertValue(a,value);
     }

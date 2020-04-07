@@ -23,6 +23,8 @@ int main(int argc, char** argv)
   safety.issonargone = 0;
   safety.goingsafeharbor = 0;
 
+  // bool first = true;
+
   //Fetch list path
   std::string listPath;
   std::ifstream listF(".direnv/lists.txt");
@@ -147,18 +149,29 @@ int main(int argc, char** argv)
         std::cout << "GOOD NEWS: CAMERA WORKS AGAIN!!! Coming Back To Mission" << std::endl;
       }
     }
+
+    // FOR TEST CAMERA ONLINE AGAIN
+    // if(safety.iscameragone && !call.safety_ack.isgoinginsafeharbor && call.safety_ack.iscamerasafetytaskrunning && call.safety_ack.iscameragone_timestamp == 0.1)
+    // {
+    //   safety.iscameragone = 0;
+    //   handler6.publish("safety", &safety);
+    //   std::cout << "GOOD NEWS: CAMERA WORKS AGAIN!!! Coming Back To Mission" << std::endl;
+    // }
+
     // in this case the camera is used only in the Landing phase, so it makes sense
     // to check its integrity during that phase only. If it would be gone before
     // that phase, at least the drone would move in the proximity of the landing plat.
-
+//&& first)
     if(call._task.action == actions::LAND && !safety.iscameragone && safetyHandler.handleCamera(call.camera_timestamp))
     {
       // in this case, we signal it.
       safety.iscameragone = 1;
-      // filling with desired altitude and alpha
+      // filling with desired altitude, alpha and threshold
       safety.params[0] = safetyHandler.getParam(7);
       safety.params[1] = safetyHandler.getParam(9);
+      safety.params[2] = safetyHandler.getParam(10);
       handler6.publish("safety", &safety);
+      // first = false;
       std::cout << "CRITIC: CAMERA STOPPED WORKING!!! Safety Task Deployed" << std::endl;
     }
 
@@ -178,7 +191,7 @@ int main(int argc, char** argv)
       safety.params[4] = safetyHandler.getParam(8);
       safety.params[5] = safetyHandler.getParam(9);
       handler6.publish("safety", &safety);
-      std::cout << "CRITIC: Going In Safe Harbor!!!" << std::endl;
+      // std::cout << "CRITIC: Going In Safe Harbor!!!" << std::endl;
     }
 
     // checking then if GPS status got updated

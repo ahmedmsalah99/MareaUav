@@ -44,6 +44,8 @@ public:
     bool switchSensor; //used to switch between vision system and ultrasonic sensor.
 
     bool _resetMachine; //used to reset the whole machine state.
+    
+    bool startFromBeginning;	
 
     //perform inspection
     double time;

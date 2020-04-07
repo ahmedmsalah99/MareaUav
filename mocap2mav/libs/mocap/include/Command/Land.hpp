@@ -22,6 +22,8 @@ private:
 
     Lander _lander;
 
+    bool first = true;
+
     double calculateDescendRate(double dz,double drate_max,double drate_min, double tmax, double tmin){
 
         //Calculate the descend rate profile (linear) through y = mx + q
@@ -75,6 +77,7 @@ private:
 
         //Save initial state if we have a new task
         if (_newTask) {
+
             _xin   = _state->getX();
             _yin   = _state->getY();
             _yawin = _state->getYawFromQuat();
@@ -85,6 +88,14 @@ private:
         if (_plat == 0){
             simpleLanding((float)_xin,(float)_yin,0);
         } else {
+
+            // this is used to reset the lander if needed
+            if(_actualTask->params[3] = 127.0 && first)
+            {
+              first = false;
+              _lander.startFromBeginning = true;
+            }
+
             _lander.setState(*_state);//set the state of the UAV
 
             _lander.setPlatformState(*_platformPose);//set the platformPose

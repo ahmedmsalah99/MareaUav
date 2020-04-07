@@ -146,6 +146,7 @@ int main(int argc, char** argv){
               std::cout << "Safe Harbor Safety Task Deployed" << std::endl;
               // notifying back the safety handler process
               safety_ack.isgoinginsafeharbor = 1;
+              // safety_ack.iscameragone_timestamp = 0.1;
               handler5.publish("safety_ack", &safety_ack);
             }
             else if(call.safety.iscameragone && !e.isCameraSafetyTaskRunning && !e.isGoingInSafeHarbor)
@@ -176,6 +177,17 @@ int main(int argc, char** argv){
             if(e.isGPSSafetyTaskRunning && !call.safety.isgpsgone)
             {
               // TODO
+            }
+
+            // handling then the case where the Camera comes back online
+            if(e.isCameraSafetyTaskRunning && !call.safety.iscameragone)
+            {
+              // notifying back the safety handler process
+              e.isCameraSafetyTaskRunning = 0;
+              safety_ack.iscamerasafetytaskrunning = 0;
+              // resetting landing phase
+              e.resetLanding();
+              handler5.publish("safety_ack", &safety_ack);
             }
           }
 

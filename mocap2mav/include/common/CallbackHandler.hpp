@@ -192,8 +192,6 @@ public:
         _task.params[1] = msg->params[1];
         _task.params[2] = msg->params[2];
         _task.params[3] = msg->params[3];
-        _task.params[4] = msg->params[4];
-        _task.params[5] = msg->params[5];
 
         _task.x = msg->x;
         _task.y = msg->y;
