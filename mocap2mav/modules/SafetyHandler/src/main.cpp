@@ -65,14 +65,16 @@ int main(int argc, char** argv)
   lcm::Subscription *sub3 = handler3.subscribe("actual_task", &CallbackHandler::actualTaskCallback, &call);
   lcm::Subscription *sub4 = handler4.subscribe("gps_status", &CallbackHandler::gpsStatusCallback, &call);
   lcm::Subscription *sub5 = handler5.subscribe("safety_ack", &CallbackHandler::safetyAckCallback, &call);
+  lcm::Subscription *sub6 = handler6.subscribe("vision_position_estimate", &CallbackHandler::visionEstimateCallback, &call);
   // and setting the desired queue capacity
 	sub -> setQueueCapacity(1);
 	sub2 -> setQueueCapacity(1);
 	sub3 -> setQueueCapacity(1);
 	sub4 -> setQueueCapacity(1);
-	sub5 -> setQueueCapacity(1);
+  sub5 -> setQueueCapacity(1);
+	sub6 -> setQueueCapacity(1);
   // defining then the structure used to poll from topics
-  struct pollfd fds[5];
+  struct pollfd fds[6];
   // and the interested topics to poll
 	fds[0].fd = handler3.getFileno(); // Actual Task
 	fds[0].events = POLLIN;
@@ -89,11 +91,17 @@ int main(int argc, char** argv)
   fds[4].fd = handler5.getFileno(); // Safety Acknowledgements
 	fds[4].events = POLLIN;
 
+  fds[5].fd = handler6.getFileno(); // Drone state
+	fds[5].events = POLLIN;
+
+  // transforming the global Safe Harbor coordinates in local ones, wrt the Home position
+  safetyHandler.globalToLocalCoords();
+
   // here begins the task, choosen to loop infinitely (safety has priority)
   while(true)
   {
     // updating the struct
-		int ret = poll(fds,5,0);
+		int ret = poll(fds,6,0);
     // if some new tasks came to the topic
     if(fds[0].revents & POLLIN)
     {
@@ -107,6 +115,10 @@ int main(int argc, char** argv)
       handler5.handle();
     }
 
+    if(fds[5].revents & POLLIN)
+    {
+      handler6.handle();
+    }
     // if the battery status got updated
     if(fds[1].revents & POLLIN)
     {
@@ -142,12 +154,12 @@ int main(int argc, char** argv)
       // unless we are already going in safe harbor
 
       // TODO: check on the distance to choose to come back in mission???
-      if(safety.iscameragone && !call.safety_ack.isgoinginsafeharbor)
-      {
-        safety.iscameragone = 0;
-        handler6.publish("safety", &safety);
-        std::cout << "GOOD NEWS: CAMERA WORKS AGAIN!!! Coming Back To Mission" << std::endl;
-      }
+      // if(safety.iscameragone && !call.safety_ack.isgoinginsafeharbor)
+      // {
+      //   safety.iscameragone = 0;
+      //   handler6.publish("safety", &safety);
+      //   std::cout << "GOOD NEWS: CAMERA WORKS AGAIN!!! Coming Back To Mission" << std::endl;
+      // }
     }
 
     // FOR TEST CAMERA ONLINE AGAIN
@@ -161,8 +173,8 @@ int main(int argc, char** argv)
     // in this case the camera is used only in the Landing phase, so it makes sense
     // to check its integrity during that phase only. If it would be gone before
     // that phase, at least the drone would move in the proximity of the landing plat.
-//&& first)
-    if(call._task.action == actions::LAND && !safety.iscameragone && safetyHandler.handleCamera(call.camera_timestamp))
+//&& first) && safetyHandler.handleCamera(call.camera_timestamp)
+    if(call._task.action == actions::LAND && !safety.iscameragone)
     {
       // in this case, we signal it.
       safety.iscameragone = 1;
@@ -177,21 +189,23 @@ int main(int argc, char** argv)
 
     // if the camera didn't come back online after the second prefixed threshold,
     // we go to a safe harbor place.
-    if(safety.iscameragone && call.safety_ack.iscamerasafetytaskrunning && !safety.goingsafeharbor && safetyHandler.handleSafeHarbor(call.safety_ack.iscameragone_timestamp))
+    if(safety.iscameragone && call.safety_ack.iscamerasafetytaskrunning && !safety.goingsafeharbor && safetyHandler.handleSafeHarbor(call.safety_ack.iscameragone_timestamp) && !safety.isbatterygone)
     {
       // in case, we signal it
       safety.goingsafeharbor = 1;
       safety.params[0] = safetyHandler.getParam(0);
       safety.params[1] = safetyHandler.getParam(1);
       safety.params[2] = safetyHandler.getParam(2);
-      safety.safeharbor_coord[0] = safetyHandler.getParam(3);
-      safety.safeharbor_coord[1] = safetyHandler.getParam(4);
-      safety.safeharbor_coord[2] = safetyHandler.getParam(5);
+      safety.safeharbor_coord[0] = safetyHandler.sh_local_coord[0];
+      safety.safeharbor_coord[1] = safetyHandler.sh_local_coord[1];
+      safety.safeharbor_coord[2] = safetyHandler.sh_local_coord[2];
       safety.params[3] = safetyHandler.getParam(6);
       safety.params[4] = safetyHandler.getParam(8);
       safety.params[5] = safetyHandler.getParam(9);
+      safety.params[6] = safetyHandler.computeDesiredYaw(call._vision_pos);
+      safety.params[7] = safetyHandler.deg2rad(safetyHandler.getParam(11));
       handler6.publish("safety", &safety);
-      // std::cout << "CRITIC: Going In Safe Harbor!!!" << std::endl;
+      std::cout << "CRITIC: Going In Safe Harbor!!!" << std::endl;
     }
 
     // checking then if GPS status got updated

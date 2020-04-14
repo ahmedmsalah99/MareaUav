@@ -7,5 +7,5 @@ struct safety
 	boolean iscameragone;
 	boolean goingsafeharbor;
 	double safeharbor_coord[3];
-	double params[6];
+	double params[8];
 }

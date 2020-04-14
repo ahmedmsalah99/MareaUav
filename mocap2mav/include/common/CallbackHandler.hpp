@@ -150,6 +150,8 @@ public:
       safety.params[3] = msg->params[3];
       safety.params[4] = msg->params[4];
       safety.params[5] = msg->params[5];
+      safety.params[6] = msg->params[6];
+      safety.params[7] = msg->params[7];
     }
 
     void safetyAckCallback(const lcm::ReceiveBuffer* rbuf, const std::string& chan, const exec::safety_ack* msg)

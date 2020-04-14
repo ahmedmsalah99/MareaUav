@@ -147,8 +147,6 @@ common/common.h
 ../libs/mocap/include/common/common.h
 deque
 -
-common/MavState.h
-../libs/mocap/include/common/MavState.h
 
 ../libs/mocap/include/Lander.h
 StateMachine/include/Machine.h

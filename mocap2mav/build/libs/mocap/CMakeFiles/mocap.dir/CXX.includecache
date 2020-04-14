@@ -155,8 +155,6 @@ common/common.h
 ../libs/mocap/include/common/common.h
 deque
 -
-common/MavState.h
-../libs/mocap/include/common/MavState.h
 
 ../libs/mocap/include/Lander.h
 StateMachine/include/Machine.h
@@ -191,10 +189,14 @@ lcm_messages/exec/safety_ack.hpp
 ../libs/mocap/include/lcm_messages/exec/safety_ack.hpp
 iostream
 -
+math.h
+-
 poll.h
 -
 common/common.h
 ../libs/mocap/include/common/common.h
+common/MavState.h
+../libs/mocap/include/common/MavState.h
 utils/TimeHelpers.hpp
 ../libs/mocap/include/utils/TimeHelpers.hpp
 map

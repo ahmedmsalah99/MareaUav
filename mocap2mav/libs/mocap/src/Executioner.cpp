@@ -214,7 +214,7 @@ bool Executioner::CheckActions(int a)
             //ROTATE
         case actions::ROTATE:
 
-            return (fabs(fabs(_actualTask.yaw) - fabs(_state.getYawFromQuat())) < _actualTask.params[0]);
+            return (fabs(fabs(_actualTask.yaw) - fabs(_state.getYawFromQuat())) < _actualTask.params[1]);
 
             // return (fabs(fabs(_actualTask.yaw) - fabs(_state.getYawFromQuat())) < PI/10);
 
@@ -370,23 +370,41 @@ void Executioner::moveToSafeHarbor(exec::safety safety)
   // first thing to do is to clear tasks list, so that noone of them gets executed
   clearList();
   // hence, the safety tasks have to be build
+  exec::task tempTask0;
   exec::task tempTask1;
   exec::task tempTask2;
   // resetting the index to access the task list
   _actualNode = 0;
-  // setting the first task to MOVE
+  // starting with rotating the drone in the direction of the safe harbor
+  tempTask0.action = actions::ROTATE;
+  // desired coordinates
+  tempTask0.x = _state.getX();
+  tempTask0.y = _state.getY();
+  tempTask0.z = _state.getZ();
+  // and yaw
+  tempTask0.yaw = safety.params[6];
+  // an id
+  tempTask0.id = 99;
+  // in the rotate task, if this is 0, it computes the desired yaw by using the
+  // passed coordinates.
+  tempTask0.params[0] = 1;
+  // the threshold
+  tempTask0.params[1] = safety.params[7];
+
+  // once it's aligned, the next task is MOVE
   tempTask1.action = actions::MOVE;
   // setting then the params of both tasks, starting from Move
   // filling the coordinates of the desired safe harbor place
   tempTask1.x = safety.safeharbor_coord[0];
   tempTask1.y = safety.safeharbor_coord[1];
   tempTask1.z = safety.params[4];
+  tempTask1.yaw = safety.params[6];
   // the gain to used to reach it
   tempTask1.params[0] = safety.params[5];
   // and the threshold to satisfy the condition
   tempTask1.params[1] = safety.params[3];
 
-  // proceeding with the second task, the Emergency Land
+  // proceeding with the last task, the Emergency Land
   tempTask2.action = actions::EMERG_LAND;
   // with a proper id
   tempTask2.id = 100;
@@ -400,8 +418,10 @@ void Executioner::moveToSafeHarbor(exec::safety safety)
   tempTask2.params[2] = safety.params[2];
   // finally filling it on the execution list, as the last to be executed
   setNextTask(tempTask2);
-  // setting the task first
+  // setting the tasks in order
   setNextTask(tempTask1);
+  // so that the alignment is the first to get executed
+  setNextTask(tempTask0);
 
   // calling init every time there is a new list
   init();

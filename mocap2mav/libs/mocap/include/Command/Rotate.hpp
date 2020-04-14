@@ -7,7 +7,7 @@
 
 #include "Command.hpp"
 #include "common/conversions.h"
-class Rotate : protected Command{
+class Rotate : public Command{
 
 private:
 

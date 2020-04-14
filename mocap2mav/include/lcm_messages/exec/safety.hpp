@@ -28,7 +28,7 @@ class safety
 
         double     safeharbor_coord[3];
 
-        double     params[6];
+        double     params[8];
 
     public:
         /**
@@ -144,7 +144,7 @@ int safety::_encodeNoHash(void *buf, int offset, int maxlen) const
     tlen = __double_encode_array(buf, offset + pos, maxlen - pos, &this->safeharbor_coord[0], 3);
     if(tlen < 0) return tlen; else pos += tlen;
 
-    tlen = __double_encode_array(buf, offset + pos, maxlen - pos, &this->params[0], 6);
+    tlen = __double_encode_array(buf, offset + pos, maxlen - pos, &this->params[0], 8);
     if(tlen < 0) return tlen; else pos += tlen;
 
     return pos;
@@ -172,7 +172,7 @@ int safety::_decodeNoHash(const void *buf, int offset, int maxlen)
     tlen = __double_decode_array(buf, offset + pos, maxlen - pos, &this->safeharbor_coord[0], 3);
     if(tlen < 0) return tlen; else pos += tlen;
 
-    tlen = __double_decode_array(buf, offset + pos, maxlen - pos, &this->params[0], 6);
+    tlen = __double_decode_array(buf, offset + pos, maxlen - pos, &this->params[0], 8);
     if(tlen < 0) return tlen; else pos += tlen;
 
     return pos;
@@ -187,13 +187,13 @@ int safety::_getEncodedSizeNoHash() const
     enc_size += __boolean_encoded_array_size(NULL, 1);
     enc_size += __boolean_encoded_array_size(NULL, 1);
     enc_size += __double_encoded_array_size(NULL, 3);
-    enc_size += __double_encoded_array_size(NULL, 6);
+    enc_size += __double_encoded_array_size(NULL, 8);
     return enc_size;
 }
 
 uint64_t safety::_computeHash(const __lcm_hash_ptr *)
 {
-    uint64_t hash = 0x96fe25db676bfb8bLL;
+    uint64_t hash = 0x96fe25db676bfb8dLL;
     return (hash<<1) + ((hash>>63)&1);
 }
 

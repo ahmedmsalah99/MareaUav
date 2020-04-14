@@ -8,7 +8,6 @@
 #include "common/MavState.h"
 #include "common/common.h"
 #include <deque>
-#include "common/MavState.h"
 
 
 

@@ -31,7 +31,6 @@ private:
             comm.setY((float)target.y);
             comm.setZ((float)target.z);
         }
-
         else if(fabs(dist) > alpha)
         {
 
@@ -50,6 +49,11 @@ private:
             comm.setY(state.getY() + (float)incrementVect[1]);
             comm.setZ(state.getZ() + (float)incrementVect[2]);
         }
+        comm.setYaw((float)target.yaw);
+
+        Eigen::Quaterniond q_interm = yawToQuaternion((float)target.yaw);
+
+        comm.setOrientation(q_interm);
         // std::cout << fabs(dist) << std::endl;
         return comm;
 

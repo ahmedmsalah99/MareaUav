@@ -391,7 +391,7 @@ bool Parser::parseRotate(exec::task& task, int pos) {
           {
             std::cout << "  threshold: " <<value<< " found for action: " << pos << std::endl;
             // and we assign it to task's parameters
-            task.params[0] = value;
+            task.params[1] = value * PI / 180;
           }
           else
           {

@@ -111,8 +111,6 @@ common/common.h
 ../libs/mocap/include/common/common.h
 deque
 -
-common/MavState.h
-../libs/mocap/include/common/MavState.h
 
 ../modules/Executioner/dir/strtk/strtk.hpp
 algorithm
