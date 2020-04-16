@@ -1,1 +1,0 @@
-/usr/bin/c++  -std=c++11 -Wno-all -Wno-deprecated  -g   -rdynamic CMakeFiles/autom.dir/src/main.cpp.o  -o ../../bin/autom -Wl,-rpath,/usr/local/lib ../../lib/libmocap.a -llcm -lgthread-2.0 -lglib-2.0 /usr/local/lib/librudeconfig.so ../../lib/libStateMachine.a ../../lib/libminiPID.a 

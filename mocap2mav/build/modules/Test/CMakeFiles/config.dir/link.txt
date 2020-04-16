@@ -1,1 +1,0 @@
-/usr/bin/c++  -std=c++11 -Wno-all -Wno-deprecated  -g   -rdynamic CMakeFiles/config.dir/src/configtest.cpp.o  -o ../../bin/config -Wl,-rpath,/usr/local/lib /usr/local/lib/librudeconfig.so 

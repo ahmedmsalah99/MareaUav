@@ -1,8 +1,0 @@
-prefix=/home/andrea/Desktop/Marea/VisionSystem/apriltag/catkin_ws/install
-
-Name: rapyuta_msgs
-Description: Description of rapyuta_msgs
-Version: 0.0.0
-Cflags: -I${prefix}/include
-Libs: -L${prefix}/lib 
-Requires: geometry_msgs message_runtime roscpp rospy sensor_msgs std_msgs visualization_msgs

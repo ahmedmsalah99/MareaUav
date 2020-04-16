@@ -1,1 +1,0 @@
-/usr/bin/c++  -std=c++11 -Wno-all -Wno-deprecated  -g   -rdynamic CMakeFiles/dummypose.dir/src/dummyPose.cpp.o  -o ../../bin/dummypose -llcm -lgthread-2.0 -lglib-2.0 

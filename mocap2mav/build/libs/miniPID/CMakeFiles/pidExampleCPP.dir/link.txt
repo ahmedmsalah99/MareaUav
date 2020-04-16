@@ -1,1 +1,0 @@
-/usr/bin/c++  -std=c++11 -Wno-all -Wno-deprecated  -g   -rdynamic CMakeFiles/pidExampleCPP.dir/examples/GeneralCPP/main.cpp.o  -o ../../bin/pidExampleCPP ../../lib/libminiPID.a 
