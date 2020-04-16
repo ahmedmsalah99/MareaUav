@@ -128,34 +128,21 @@ bool SafetyHandler::handleSafeHarbor(double cameragone_timestamp)
 
   float SafetyHandler::computeDesiredYaw(MavState pose)
   {
-    // getting Safe Harbor local coordinates
-    double sh_lon = sh_local_coord[0];
-    double sh_lat = sh_local_coord[1];
-    // and drone ones
-    double drone_lon = pose.getX();
-    double drone_lat = pose.getY();
     // getting the actual yaw angle
     double rapp = (pose.getX() - sh_local_coord[0])/(pose.getY() - sh_local_coord[1]);
-
-    double alfa = atanf(rapp);
-    //
-    // float x = cosf(sh_lat)*sinf(sh_lon - home_lon);
-  	// float y = cosf(home_lat)*sinf(sh_lat) -
-  	// 					sinf(home_lat)*cosf(sh_lat)*cosf(sh_lon - home_lon);
-
+    // as the tangent angle between these two points
+    double alpha = atanf(rapp);
     // converting it wrt the local reference frame (x on EST, y on NORTH)
-    return  deg2rad(90) - alfa;
-
-    // float heading = bearing - euler_angles.psi();
-    // // adjusting the heading wrt NED frame.
-    // if(heading > _PI)
-    // {
-    //   heading = heading - 2.0f*_PI;
-    // }
-    // if(heading < -_PI)
-    // {
-    //   heading = heading + 2.0f*_PI;
-    // }
+    double alpha_local = _PI/2.0 - alpha;
+    // std::cout << 180.0*alpha/_PI << std::endl;
+    // checking its orientation then: if the point to be reached
+    // is below (wrt local reference frame) the drone's position, then we fix the orientation
+    if(sh_local_coord[1] - pose.getY() < 0.0)
+    {
+      alpha_local = alpha_local - _PI;
+    }
+    // returning then the final desired value
+    return  alpha_local;
   }
 
   float SafetyHandler::deg2rad(float angle_degree)

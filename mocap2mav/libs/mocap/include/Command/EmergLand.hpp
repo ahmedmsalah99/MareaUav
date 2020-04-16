@@ -37,7 +37,7 @@ class EmergLand : public Command
       if(dz > _actualTask->params[0])
         return _actualTask->params[2];
       else // else, the rate descreases exponentially wrt the distance error.
-        return exp(-dz);
+        return exp(dz - _actualTask->params[0]);
     }
 
   public:

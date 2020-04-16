@@ -154,12 +154,12 @@ int main(int argc, char** argv)
       // unless we are already going in safe harbor
 
       // TODO: check on the distance to choose to come back in mission???
-      // if(safety.iscameragone && !call.safety_ack.isgoinginsafeharbor)
-      // {
-      //   safety.iscameragone = 0;
-      //   handler6.publish("safety", &safety);
-      //   std::cout << "GOOD NEWS: CAMERA WORKS AGAIN!!! Coming Back To Mission" << std::endl;
-      // }
+      if(safety.iscameragone && !call.safety_ack.isgoinginsafeharbor)
+      {
+        safety.iscameragone = 0;
+        handler6.publish("safety", &safety);
+        std::cout << "GOOD NEWS: CAMERA WORKS AGAIN!!! Coming Back To Mission" << std::endl;
+      }
     }
 
     // FOR TEST CAMERA ONLINE AGAIN
@@ -173,8 +173,8 @@ int main(int argc, char** argv)
     // in this case the camera is used only in the Landing phase, so it makes sense
     // to check its integrity during that phase only. If it would be gone before
     // that phase, at least the drone would move in the proximity of the landing plat.
-//&& first) && safetyHandler.handleCamera(call.camera_timestamp)
-    if(call._task.action == actions::LAND && !safety.iscameragone)
+//&& first)
+    if(call._task.action == actions::LAND && !safety.iscameragone && safetyHandler.handleCamera(call.camera_timestamp))
     {
       // in this case, we signal it.
       safety.iscameragone = 1;

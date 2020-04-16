@@ -15,7 +15,7 @@
 #define DEBUG
 #define PI              3.141592653589
 #define Kland           1
-#define THRE            0.15
+#define THRE            0.25
 #define DRATE_MIN       0.2
 #define DRATE_MAX       0.8
 #define VMAX            1.5
@@ -44,8 +44,8 @@ public:
     bool switchSensor; //used to switch between vision system and ultrasonic sensor.
 
     bool _resetMachine; //used to reset the whole machine state.
-    
-    bool startFromBeginning;	
+
+    bool startFromBeginning;
 
     //perform inspection
     double time;
@@ -147,13 +147,13 @@ private:
     void comp();
     //Aggressive land
     void land();
-    //circular trajectory for inspection. It tries with a circular 
+    //circular trajectory for inspection. It tries with a circular
     //trajectory to find the platform
     void inspection();
     //homing position action
     void homing();
 
-    void initInspection(); //initialise variables to perform inspection 
+    void initInspection(); //initialise variables to perform inspection
 
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 

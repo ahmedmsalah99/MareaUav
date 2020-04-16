@@ -404,18 +404,14 @@ void Executioner::moveToSafeHarbor(exec::safety safety)
   // and the threshold to satisfy the condition
   tempTask1.params[1] = safety.params[3];
 
-  // proceeding with the last task, the Emergency Land
-  tempTask2.action = actions::EMERG_LAND;
+  // proceeding with the last task, the Land
+  tempTask2.action = actions::LAND;
   // with a proper id
   tempTask2.id = 100;
   // this is the desired position on z the drone has to achieve
   tempTask2.z = safety.safeharbor_coord[2];
-  // this one is the first threshold
-  tempTask2.params[0] = safety.params[0];
-  // and this one the corresponding "turn off motors" one
-  tempTask2.params[1] = safety.params[1];
-  // then we have the descendent rate default gain
-  tempTask2.params[2] = safety.params[2];
+  // this one specify that no platform exists, so the drone has to land normally
+  tempTask2.params[0] = 0;
   // finally filling it on the execution list, as the last to be executed
   setNextTask(tempTask2);
   // setting the tasks in order
