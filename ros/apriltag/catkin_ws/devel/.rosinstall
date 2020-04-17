@@ -1,2 +1,2 @@
 - setup-file:
-    local-name: /home/andrea/Desktop/Marea/VisionSystem/apriltag/catkin_ws/devel/setup.sh
+    local-name: /home/andrea/Desktop/Marea/VisionSystem/ros/apriltag/catkin_ws/devel/setup.sh

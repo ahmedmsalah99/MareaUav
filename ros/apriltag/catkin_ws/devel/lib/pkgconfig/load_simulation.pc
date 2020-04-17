@@ -1,4 +1,4 @@
-prefix=/home/andrea/Desktop/Marea/VisionSystem/apriltag/catkin_ws/devel
+prefix=/home/andrea/Desktop/Marea/VisionSystem/ros/apriltag/catkin_ws/devel
 
 Name: load_simulation
 Description: Description of load_simulation

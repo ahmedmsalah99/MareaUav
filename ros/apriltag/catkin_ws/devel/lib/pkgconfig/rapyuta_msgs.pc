@@ -1,8 +1,8 @@
-prefix=/home/andrea/Desktop/Marea/VisionSystem/apriltag/catkin_ws/devel
+prefix=/home/andrea/Desktop/Marea/VisionSystem/ros/apriltag/catkin_ws/devel
 
 Name: rapyuta_msgs
 Description: Description of rapyuta_msgs
 Version: 0.0.0
-Cflags: -I/home/andrea/Desktop/Marea/VisionSystem/apriltag/catkin_ws/devel/include
+Cflags: -I/home/andrea/Desktop/Marea/VisionSystem/ros/apriltag/catkin_ws/devel/include
 Libs: -L${prefix}/lib 
 Requires: geometry_msgs message_runtime roscpp rospy sensor_msgs std_msgs visualization_msgs

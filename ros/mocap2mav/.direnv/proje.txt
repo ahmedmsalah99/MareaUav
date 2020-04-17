@@ -1,1 +1,1 @@
-/home/andrea/Desktop/Marea/VisionSystem/mocap2mav
+/home/andrea/Desktop/Marea/VisionSystem/ros/mocap2mav

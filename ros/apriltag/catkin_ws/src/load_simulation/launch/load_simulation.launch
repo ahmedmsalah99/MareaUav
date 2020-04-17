@@ -4,7 +4,7 @@
 
 <include file="$(find gazebo_ros)/launch/empty_world.launch">
 
-<arg name="world_name" value="/home/andrea/Desktop/Marea/VisionSystem/Firmware/Tools/sitl_gazebo/worlds/iris.world" />
+<arg name="world_name" value="/home/andrea/Desktop/Marea/VisionSystem/ros/Firmware/Tools/sitl_gazebo/worlds/iris.world" />
 
 </include>
 
