@@ -1,0 +1,75 @@
+#pragma once
+
+// ros
+#include "lcm/lcm-cpp.hpp"
+#include <rclcpp/rclcpp.hpp>
+#include <rclcpp/node_options.hpp>
+#include <rclcpp/qos.hpp>
+#include <sensor_msgs/msg/compressed_image.hpp>
+#include <sensor_msgs/msg/camera_info.hpp>
+#include <apriltag_msgs/msg/april_tag_detection.hpp>
+#include <apriltag_msgs/msg/april_tag_detection_array.hpp>
+#include <tf2_msgs/msg/tf_message.hpp>
+#include <lcm_messages/geometry/vision.hpp>
+// apriltag
+#include <apriltag.h>
+#include <apriltag_pose.h>
+
+
+#include <common/pjpeg.h>
+#include "LandingPlatform.h"
+
+#include <vector>
+#include <queue>
+#include <Eigen/Geometry>
+#include <Eigen/Core>
+
+class AprilTag2Node : public rclcpp::Node {
+public:
+	AprilTag2Node();
+	~AprilTag2Node();
+
+private:
+	typedef Eigen::Matrix<double, 3, 3, Eigen::RowMajor> Mat3;
+
+	apriltag_family_t *tf;
+	apriltag_detector_t *td;
+	std::string tag_family;
+	double tag_edge_size;
+	int max_hamming;
+	int n_tags;
+	std::map<int, std::string> tracked_tags;
+	std::map<int, float> platform_tags;
+	lcm::LCM _handler;
+	typedef std::queue<double> queue_t;
+	queue_t _Queue_roll;
+	queue_t _Queue_pitch;
+	queue_t _Queue_yaw;
+	double _integral_roll = 0;
+	double _integral_pitch = 0;
+	double _integral_yaw = 0;
+	double _roll;
+	double _pitch;
+	double _yaw;
+
+	Mat3 K;
+	bool z_up;
+
+	// function pointer for tag family creation / destruction
+	static std::map<std::string, apriltag_family_t *(*)(void)> tag_create;
+	static std::map<std::string, void (*)(apriltag_family_t*)> tag_destroy;
+
+	rclcpp::Subscription<sensor_msgs::msg::CompressedImage>::SharedPtr sub_img;
+	rclcpp::Subscription<sensor_msgs::msg::CameraInfo>::SharedPtr sub_info;
+	rclcpp::Publisher<tf2_msgs::msg::TFMessage>::SharedPtr pub_tf;
+	rclcpp::Publisher<apriltag_msgs::msg::AprilTagDetectionArray>::SharedPtr pub_detections;
+
+	rclcpp::Publisher<geometry_msgs::msg::TransformStamped>::SharedPtr pub_platformCenter;
+
+	void onImage(const sensor_msgs::msg::CompressedImage::SharedPtr msg_img);
+	void getPose(const matd_t& H, geometry_msgs::msg::Transform& t, const int ID, const bool z_up = false);
+	double movingFilter(double raw, std::queue<double> *queue_t, double *integral);
+	void toEulerAngle(double quaternion[], double *Roll, double *Pitch, double *Yaw);
+	void publish_data_center(const apriltag_msgs::msg::AprilTagDetectionArray& Detections, const tf2_msgs::msg::TFMessage& t_f);
+
+};

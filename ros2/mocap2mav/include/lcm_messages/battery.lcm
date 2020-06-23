@@ -1,0 +1,7 @@
+package exec;
+struct battery
+{
+	float voltage;
+	float current;
+	float remaining;
+}

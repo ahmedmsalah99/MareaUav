@@ -1,0 +1,10 @@
+package exec;
+struct safety_ack
+{
+	boolean isbatterysafetytaskrunning;
+	boolean isgpssafetytaskrunning;
+	boolean iscamerasafetytaskrunning;
+	boolean issonarsafetytaskrunning;
+	boolean isgoinginsafeharbor;
+	double iscameragone_timestamp;
+}

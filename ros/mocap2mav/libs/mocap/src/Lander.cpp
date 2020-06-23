@@ -548,7 +548,7 @@ time+=_dt;
 
 _setPoint.setPosition(RadiusInspection * cos((param.inspeLinVel/RadiusInspection)*time) + X0, RadiusInspection * sin((param.inspeLinVel/RadiusInspection)*time) + Y0,param.zMax);
 
-std::cout<<"Circ:  "<<_setPoint.getX()<<std::endl;
+std::cout<<"Circ: "<<_setPoint.getX()<<std::endl;
 std::cout<<"Time: "<<time<<std::endl;
 
 _setPoint.setType(MavState::POSITION);

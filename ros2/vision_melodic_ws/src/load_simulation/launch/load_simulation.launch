@@ -1,0 +1,22 @@
+<launch>
+
+<!-- the first one load the iris world in gazebo  -->
+
+<include file="$(find gazebo_ros)/launch/empty_world.launch">
+
+<arg name="world_name" value="/home/andrea/Marea/mar_frankenrotor_ros/ros2SITL/Firmware/Tools/sitl_gazebo/worlds/iris.world" />
+
+</include>
+
+
+<!-- the second one runs mavros package  -->
+
+<include file="$(find mavros)/launch/px4.launch">
+
+<arg name="fcu_url" value="udp://:14540@192.168.1.36:14557" />
+
+</include>
+
+</launch>
+
+
