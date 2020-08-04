@@ -1,8 +1,0 @@
-prefix=/home/andrea/Marea/mar_frankenrotor_ros/ros2SITL/vision_melodic_ws/devel
-
-Name: load_nodes
-Description: Description of load_nodes
-Version: 0.0.0
-Cflags: 
-Libs: -L${prefix}/lib 
-Requires: 
