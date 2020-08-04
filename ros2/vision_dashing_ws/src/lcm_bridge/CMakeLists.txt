@@ -63,12 +63,8 @@ endif()
 include_directories(
 ${rclcpp_INCLUDE_DIRS}
 ${rmw_implementation_INCLUDE_DIRS}
-${std_msgs_INCLUDE_DIRS}
-${geometry_msgs_INCLUDE_DIRS}
 ${apriltag_msgs_INCLUDE_DIRS}
 ${Eigen_INCLUDE_DIR}
-${px4_msgs_LIBRARIES}
-${sensor_msgs_LIBRARIES}
 ## ${mavros_msgs_INCLUDE_DIR}
 )
 
@@ -83,13 +79,9 @@ ament_target_dependencies(bridge_node rclcpp std_msgs sensor_msgs px4_msgs geome
 target_link_libraries(bridge_node
         ${rclcpp_LIBRARIES}
         ${rmw_implementation_LIBRARIES}
-        ${std_msgs_LIBRARIES}
         ${PROJECT_LINK_LIBS}
         ${LCM_LIBRARIES}
-        ${geometry_msgs_LIBRARIES}
         ${apriltag_msgs_LIBRARIES}
-        ${px4_msgs_LIBRARIES}
-	${sensor_msgs_LIBRARIES}
         ## ${mavros_msgs_LIBRARIES}
 	)
 

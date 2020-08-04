@@ -11,6 +11,7 @@
 #include <tag36h11.h>
 #include <math.h>
 #include <Eigen/Dense>
+#include <cstdlib>
 
 static Platform_tag TAGS;
 
@@ -41,6 +42,9 @@ AprilTag2Node::AprilTag2Node() : Node("apriltag2", "apriltag", rclcpp::NodeOptio
 	K << fx, 0, cx, 0, fy, cy, 0, 0, 1;
 
 	//std::cout<<"K: "<<K<<std::endl;
+
+	char *env_val;
+	env_val = std::getenv("M2M_SIM");
 
 	declare_parameter<std::string>("family", "36h11");
 	declare_parameter<double>("size", 2.0);
@@ -75,7 +79,7 @@ AprilTag2Node::AprilTag2Node() : Node("apriltag2", "apriltag", rclcpp::NodeOptio
 		get_parameter(tag_name, platform_tags[i]);
 	}
 
-	SetMatrix(&TAGS); //load transformation matrices respect to the platform center
+	SetMatrix(&TAGS, (bool)env_val); //load transformation matrices respect to the platform center
 
 
 	if(!tag_create.count(tag_family)) {
@@ -206,7 +210,7 @@ void AprilTag2Node::publish_data_center(const apriltag_msgs::msg::AprilTagDetect
 			areaID(i,0) = i;
 			areaID(i,1) = pow( (l1 + l2 + l3 +l4)/4,2 );
 
-			// RCLCPP_INFO(get_logger(), "Area: %lf %lf", areaID(i,0), areaID(i, 1));
+			RCLCPP_INFO(get_logger(), "Area: %lf %lf", areaID(i,0), areaID(i, 1));
 		}
 
 		double weighTot = 0;
@@ -312,7 +316,6 @@ void AprilTag2Node::getPose(const matd_t& H, geometry_msgs::msg::Transform& t, c
 
 	pose = TAGS.robot_T_cam * pose;
 
-
 	const Eigen::Quaterniond q(R);
 
 	t.translation.x = pose(0, 3);
@@ -346,13 +349,13 @@ double AprilTag2Node::movingFilter(double raw, std::queue<double> *queue_t, doub
 void AprilTag2Node::toEulerAngle(double quaternion[], double *Roll, double *Pitch, double *Yaw){
 
 	//roll (x-axis rotation)
-	double sinr_cosp = 2.0 *( quaternion[3]*quaternion[0] + quaternion[1]*quaternion[2] );
-	double cosr_cosp = 1.0 - 2.0*( quaternion[0]*quaternion[0] + quaternion[1]*quaternion[1] );
+	double sinr_cosp = 2.0 *( quaternion[0]*quaternion[1] + quaternion[2]*quaternion[3] );
+	double cosr_cosp = 1.0 - 2.0*( quaternion[1]*quaternion[1] + quaternion[2]*quaternion[2] );
 
-	*Roll = atan( sinr_cosp/cosr_cosp );
+	*Roll = atan2( sinr_cosp, cosr_cosp );
 
 	//pitch (y-axis rotation)
-	double sinp = 2.0*( quaternion[3]*quaternion[1] + quaternion[2]*quaternion[0] );
+	double sinp = 2.0*( quaternion[0]*quaternion[2] + quaternion[3]*quaternion[1] );
 
 	if( fabs(sinp) >= 1 )
 
@@ -362,8 +365,8 @@ void AprilTag2Node::toEulerAngle(double quaternion[], double *Roll, double *Pitc
 		*Pitch = asin(sinp);
 
 	//yaw (z-axis rotation)
-	double siny_cosp = 2.0 *( quaternion[3]*quaternion[2] + quaternion[0]*quaternion[1] );
-	double cosy_cosp = 1.0 - 2.0*( quaternion[1]*quaternion[1] + quaternion[3]*quaternion[3] );
+	double siny_cosp = 2.0 *( quaternion[0]*quaternion[3] + quaternion[1]*quaternion[2] );
+	double cosy_cosp = 1.0 - 2.0*( quaternion[2]*quaternion[2] + quaternion[3]*quaternion[3] );
 	*Yaw = atan2(siny_cosp,cosy_cosp);
 
 }

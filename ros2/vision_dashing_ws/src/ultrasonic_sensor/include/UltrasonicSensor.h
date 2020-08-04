@@ -20,10 +20,15 @@ public:
 
 	bool GetValidity() const; //It checks if the result is valid(based on the timeout expired )
 
+	void setParameters(int trigger, int echo);
+
 private:
 
-	
+
 	bool isExpired( int timeout, long time ); //it checks if the timeout is expired.
+
+	void TimeOfTravel();
+	//It computes the the amount of time it takes for the pulse to go and come back.
 
 	int trigger; //trigger pin
 
@@ -45,7 +50,7 @@ private:
 
 	TimeManager _tm;
 
-	rclcpp::Subscription<sensor_msgs::msg::Range>::SharedPtr _ultrasonic_sensor_sub; 
+	rclcpp::Subscription<sensor_msgs::msg::Range>::SharedPtr _ultrasonic_sensor_sub;
 };
 
 /*It allows to estimate the velocity based on two measurements.
@@ -96,20 +101,3 @@ void KF(double state, double Pred_P_k_1, double  Zk, double *Xk, double *Pk, dou
 
 
 #endif
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

@@ -6,5 +6,6 @@ struct safety_ack
 	boolean iscamerasafetytaskrunning;
 	boolean issonarsafetytaskrunning;
 	boolean isgoinginsafeharbor;
+	boolean isgoingtoplatform;
 	double iscameragone_timestamp;
 }

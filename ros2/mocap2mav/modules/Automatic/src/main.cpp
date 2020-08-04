@@ -15,23 +15,26 @@ using namespace common;
 
 int main(int argc, char** argv){
 
-	lcm::LCM handler, handler2, handler3, handler4, handler5, handler6;
+	lcm::LCM handler, handler2, handler3, handler4, handler5, handler6, handler7, handler8, handler9;
 
 	//the following timer are used to check if both the vision and Ultrasonic sensor are not available for some reason.
 
 	Duration VisionData(1); //timer of 1 second
 
+	Duration VisionRescueData(1); //timer of 1 second
+
 	Duration UltrasonicData(1); //timer of 1 second
 
 
-	if (!handler.good() && !handler2.good() && !handler3.good() && !handler4.good() && !handler5.good() && !handler6.good())
+	if (!handler.good() && !handler2.good() && !handler3.good() && !handler4.good() &&
+			!handler5.good() && !handler6.good() && !handler7.good() && !handler8.good() && !handler9.good())
 		return 1;
 
 	CallbackHandler call;
 
 	Automatic autom;
 
-	Lander lander;
+	// Lander lander;
 
 	//Subscription to different topics: state of the drone, vision data, ultrasonic sensor, platform pose, current action
 
@@ -40,7 +43,10 @@ int main(int argc, char** argv){
 	lcm::Subscription *sub3  = handler3.subscribe("actual_task", &CallbackHandler::actualTaskCallback, &call);
 	lcm::Subscription *sub4  = handler4.subscribe("apriltag_vision_system", &CallbackHandler::ApriltagCallback, &call); //topic for the vision system.
 	lcm::Subscription *sub5  = handler5.subscribe("UltrasonicSensor/platform", &CallbackHandler::UltrasonicCallback, &call); //topic for the ultrasonic sensor.
-	lcm::Subscription *sub6 = handler6.subscribe("safety_ack", &CallbackHandler::safetyAckCallback, &call);
+	lcm::Subscription *sub6  = handler6.subscribe("safety_ack", &CallbackHandler::safetyAckCallback, &call);
+	lcm::Subscription *sub7  = handler7.subscribe("apriltag_rescue_vision", &CallbackHandler::RescueCallback, &call);
+	lcm::Subscription *sub8  = handler8.subscribe("gps_status", &CallbackHandler::gpsStatusCallback, &call);
+	lcm::Subscription *sub9  = handler9.subscribe("release_payload_feedback", &CallbackHandler::releasePayloadFeedbackCallback, &call);
 
 
 	sub ->setQueueCapacity(1);
@@ -49,9 +55,12 @@ int main(int argc, char** argv){
 	sub4->setQueueCapacity(1);
 	sub5->setQueueCapacity(1);
 	sub6->setQueueCapacity(1);
+	sub7->setQueueCapacity(1);
+	sub8->setQueueCapacity(1);
+	sub9->setQueueCapacity(1);
 
 
-	struct pollfd fds[5];
+	struct pollfd fds[8];
 
 	//the getFileno() function returns a file descriptor that can
 	//be used for asynchronous notification of incoming messages
@@ -72,26 +81,47 @@ int main(int argc, char** argv){
 	fds[4].fd = handler6.getFileno(); // Safety Acknowledgements
 	fds[4].events = POLLIN;
 
+	fds[5].fd = handler7.getFileno();
+	fds[5].events = POLLIN;
+
+	fds[6].fd = handler8.getFileno();
+	fds[6].events = POLLIN;
+
+	fds[7].fd = handler8.getFileno();
+	fds[7].events = POLLIN;
+
   bool waiting = true;
 
   //filled here the information of the platform, vision data and ultrasonic sensor
 
 	MavState platform;
 	MavState visionSystem;
+	MavState visionRescue;
 	MavState UltrasonicPos;
 
 
 	while(0==handler.handle()){
 
 		autom.setState(call._vision_pos);
-    lander.setState(call._vision_pos);
+    // lander.setState(call._vision_pos);
 
     //It waits for one of a set of file descriptors to become ready to perform I/O
-		int ret = poll(fds,5,0);
+		int ret = poll(fds,8,0);
 
 		if(fds[4].revents & POLLIN)
 		{
 			handler6.handle();
+		}
+
+		if(fds[6].revents & POLLIN)
+		{
+			handler8.handle();
+		}
+		// setting then the feedback from the release payload module, needed by the Search task
+		if(fds[7].revents & POLLIN)
+		{
+			handler9.handle();
+			autom.setRelPayFeedback(call.relpay_feedback);
 		}
 
 		//It checks with bitwise AND if the two events are the same
@@ -138,13 +168,81 @@ int main(int argc, char** argv){
 			// std::cout<<"z:"<<visionSystem.getZ()<<std::endl;
 
 		}
-		else {
+		else
+		{
 
-			if( VisionData.isExpired() ) {
+				if( VisionData.isExpired() ) {
+					//the timer is expired, no vision data are available since 1 sec
+
+					visionSystem.VisionDataUpdated = false;
+					autom.setVisionFeedback(visionSystem);
+				}
+		}
+
+		if(fds[5].revents & POLLIN)
+		{
+				//every time I entered here there will be data from vision system (this one is for the rescue search)
+				//it is necessary to reset the duration of the timer (the dt will be zero)
+
+				handler7.handle();
+
+				VisionRescueData.updateTimer(); //it sets the actual time
+				VisionRescueData._start = VisionRescueData._actualTime; //reset timer
+
+				visionRescue = call._rescue_pos;
+				visionRescue.VisionDataUpdated = true;
+	      autom.setVisionRescue(visionRescue);
+				// std::cout<<"x:"<<visionSystem.getX()<<std::endl;
+				// std::cout<<"y:"<<visionSystem.getY()<<std::endl;
+				// std::cout<<"z:"<<visionSystem.getZ()<<std::endl;
+
+				// contacting the platform with the updated position of the drone,
+				// to inform that the target has been found;
+				geometry::pose rescue_coords;
+				// filling the position
+				rescue_coords.position[0] = autom.getState().getX();
+				rescue_coords.position[1] = autom.getState().getY();
+				rescue_coords.position[2] = autom.getState().getZ();
+
+				// and putting platform position into an array. That's done due to computeDesiredYaw arguments  request
+				geometry::pose platform_coords;
+				platform_coords.position[0] = platform.getX();
+				platform_coords.position[1] = platform.getY();
+				platform_coords.position[2] = platform.getZ();
+
+				// getting then the yaw between the drone position and the platform one
+				double yaw_temp = computeDesiredYaw(autom.getState(), platform_coords.position);
+
+				Eigen::Quaterniond orientation_temp;
+				// transforming it in an orientation quaternion
+				orientation_temp = getQuatFromYaw(yaw_temp);
+
+				// and setting it
+				rescue_coords.orientation[0] = orientation_temp.w();
+				rescue_coords.orientation[1] = orientation_temp.x();
+				rescue_coords.orientation[2] = orientation_temp.y();
+				rescue_coords.orientation[3] = orientation_temp.z();
+
+				// after the yaw has been computed, if a real test is running, the coordinates
+				// has to be fixed to the global ones
+				if(!autom.env_sim)
+				{
+					rescue_coords.position[0] = call.gps.lon;
+					rescue_coords.position[1] = call.gps.lat;
+					rescue_coords.position[2] = call.gps.alt;
+				}
+
+				// finally publishing the message
+				handler.publish("Landing_Site/pose_cmd", &rescue_coords);
+		}
+		else
+		{
+
+			if( VisionRescueData.isExpired() ) {
 				//the timer is expired, no vision data are available since 1 sec
 
-				visionSystem.VisionDataUpdated = false;
-				autom.setVisionFeedback(visionSystem);
+				visionRescue.VisionDataUpdated = false;
+				autom.setVisionRescue(visionRescue);
 			}
 
 		}
@@ -186,12 +284,13 @@ int main(int argc, char** argv){
 
 
 
-    if(!waiting) {
+    if(!waiting)
+		{
 
 			//Call commands
-			// if the MOVE action is the current one, we set the target as the platform's position
-			// Handling the case where it rgoes in safe harbor due to failure
-			if(call._task.action == actions::MOVE && !call.safety_ack.isgoinginsafeharbor)
+			// if the MOVE action is the current one, we set the target as the platform's position (if we are on simulation)
+			// Handling the case where it goes in safe harbor due to failure
+			if(call._task.action == actions::MOVE && call._task.target == "platform" && autom.env_sim)
 			{
 				autom._actualTask.x = platform.getX();
 				autom._actualTask.y = platform.getY();
@@ -210,6 +309,7 @@ int main(int argc, char** argv){
       //Prepare LCM stuff
       geometry::pose command = call.mavState2LcmPose(autom._comm);
       geometry::pose platRobPos;
+			// std::cout << "YAW DES: " << command.yaw*180.0/3.14 << std::endl;
 
       platRobPos.position[0] = platform.getX();
       platRobPos.position[1] = platform.getY();

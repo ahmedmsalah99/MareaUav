@@ -1,8 +1,0 @@
-prefix=/home/andrea/Marea/mar_frankenrotor_ros/ros2SITL/vision_melodic_ws/devel
-
-Name: load_simulation
-Description: Description of load_simulation
-Version: 0.0.0
-Cflags: 
-Libs: -L${prefix}/lib 
-Requires: 

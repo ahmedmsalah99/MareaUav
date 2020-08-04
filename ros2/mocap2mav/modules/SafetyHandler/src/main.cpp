@@ -52,11 +52,11 @@ int main(int argc, char** argv)
       std::cout << "Unable to parse the safety parameters file" << std::endl;
       return 1;
   }
-
+  std::cout << "Target dispersed: "<< safetyHandler.target_dispersed << std::endl;
   // defining handlers for topics communication
-  lcm::LCM handler, handler2, handler3, handler4, handler5, handler6;
+  lcm::LCM handler, handler2, handler3, handler4, handler5, handler6, handler7;
 
-  if(!handler.good() || !handler2.good() || !handler3.good() || !handler4.good() || !handler5.good() || !handler6.good())
+  if(!handler.good() || !handler2.good() || !handler3.good() || !handler4.good() || !handler5.good() || !handler6.good() || !handler7.good())
     return 1;
 
   // subscribing to needed lcm topics
@@ -66,13 +66,15 @@ int main(int argc, char** argv)
   lcm::Subscription *sub4 = handler4.subscribe("gps_status", &CallbackHandler::gpsStatusCallback, &call);
   lcm::Subscription *sub5 = handler5.subscribe("safety_ack", &CallbackHandler::safetyAckCallback, &call);
   lcm::Subscription *sub6 = handler6.subscribe("vision_position_estimate", &CallbackHandler::visionEstimateCallback, &call);
-  // and setting the desired queue capacity
+  lcm::Subscription *sub7 = handler7.subscribe("release_payload_feedback", &CallbackHandler::releasePayloadFeedbackCallback, &call);
+// and setting the desired queue capacity
 	sub -> setQueueCapacity(1);
 	sub2 -> setQueueCapacity(1);
 	sub3 -> setQueueCapacity(1);
 	sub4 -> setQueueCapacity(1);
   sub5 -> setQueueCapacity(1);
 	sub6 -> setQueueCapacity(1);
+	sub7 -> setQueueCapacity(1);
   // defining then the structure used to poll from topics
   struct pollfd fds[6];
   // and the interested topics to poll
@@ -94,14 +96,37 @@ int main(int argc, char** argv)
   fds[5].fd = handler6.getFileno(); // Drone state
 	fds[5].events = POLLIN;
 
+  fds[6].fd = handler7.getFileno(); // Payload Releaser Feedback
+	fds[6].events = POLLIN;
+
   // transforming the global Safe Harbor coordinates in local ones, wrt the Home position
-  safetyHandler.globalToLocalCoords();
+  double target_global_coords[3];
+  double home_coords[3];
+  target_global_coords[0] = safetyHandler.getParam(3);
+  target_global_coords[1] = safetyHandler.getParam(4);
+  target_global_coords[2] = safetyHandler.getParam(5);
+  home_coords[0] = safetyHandler.home_longitude;
+  home_coords[1] = safetyHandler.home_latitude;
+  home_coords[2] = safetyHandler.home_altitude;
+  globalToLocalCoords(target_global_coords, home_coords);
+  safetyHandler.sh_local_coord[0] = target_global_coords[0];
+  safetyHandler.sh_local_coord[1] = target_global_coords[1];
+  safetyHandler.sh_local_coord[2] = target_global_coords[2];
+
+  // and then setting platform ones
+  target_global_coords[0] = safetyHandler.platform_rdv_lon;
+  target_global_coords[1] = safetyHandler.platform_rdv_lat;
+  target_global_coords[2] = safetyHandler.platform_rdv_alt;
+  globalToLocalCoords(target_global_coords, home_coords);
+  safetyHandler.plat_local_coord[0] = target_global_coords[0];
+  safetyHandler.plat_local_coord[1] = target_global_coords[1];
+  safetyHandler.plat_local_coord[2] = target_global_coords[2];
 
   // here begins the task, choosen to loop infinitely (safety has priority)
   while(true)
   {
     // updating the struct
-		int ret = poll(fds,6,0);
+		int ret = poll(fds,7,0);
     // if some new tasks came to the topic
     if(fds[0].revents & POLLIN)
     {
@@ -119,6 +144,12 @@ int main(int argc, char** argv)
     {
       handler6.handle();
     }
+
+    if(fds[6].revents & POLLIN)
+    {
+      handler7.handle();
+      safetyHandler.checkRelPayFeedback(call.relpay_feedback);
+    }
     // if the battery status got updated
     if(fds[1].revents & POLLIN)
     {
@@ -130,9 +161,6 @@ int main(int argc, char** argv)
         // if we are in landing state, just land. else, perform emergency land
         if(call._task.action != actions::LAND)
         {
-          // TODO: divide patrolling to reach platfrom; if it patrols, it may
-          // need to come back to the platform, else, it performs and emergency land.
-          // QUEST: should we consider two thresholds?
           // signaling then to Executioner to change modality
           safety.isbatterygone = 1;
           safety.params[0] = safetyHandler.getParam(0);
@@ -141,6 +169,26 @@ int main(int argc, char** argv)
           // and signaling it
           handler6.publish("safety", &safety);
           std::cout << "CRITIC: LOW BATTERY!!! Performing Emergency Land" << std::endl;
+        }
+      }
+      else if((!safetyHandler.target_dispersed || safetyHandler.payload_released) && !safety.isgoingplatform && !safety.isbatterygone)
+      {
+        if(safetyHandler.handleBatteryReturn(call.battery.remaining) && call._task.action != actions::LAND && call._task.target != "platform" && call._task.target != "safe_harbor")
+        {
+          // so many conditions there: briefly, if the drone's mission is not to rescue anyone,
+          // also if the drone is not already landing and is not moving to the platform already (or going in safe harbor as well),
+          // if the level battery is below a prefixed threshold, then we signal to him to come back to the platform
+          safety.isgoingplatform = 1;
+          safety.params[0] = safetyHandler.getParam(9);
+          safety.params[1] = safetyHandler.getParam(12);
+          safety.params[2] = safetyHandler.getParam(13);
+          safety.target_coord[0] = safetyHandler.plat_local_coord[0];
+          safety.target_coord[1] = safetyHandler.plat_local_coord[1];
+          safety.target_coord[2] = safetyHandler.plat_local_coord[2];
+          safety.params[3] = computeDesiredYaw(call._vision_pos, safetyHandler.plat_local_coord);
+          safety.params[4] = safetyHandler.platform;
+          handler6.publish("safety", &safety);
+          std::cout << "BATTERY LIMIT!!! Drone coming back to platform" << std::endl;
         }
       }
     }
@@ -173,8 +221,8 @@ int main(int argc, char** argv)
     // in this case the camera is used only in the Landing phase, so it makes sense
     // to check its integrity during that phase only. If it would be gone before
     // that phase, at least the drone would move in the proximity of the landing plat.
-//&& first)
-    if(call._task.action == actions::LAND && !safety.iscameragone && safetyHandler.handleCamera(call.camera_timestamp))
+    //&& first)
+    if((call._task.action == actions::LAND || call._task.action == actions::SEARCH) && !safety.iscameragone && safetyHandler.handleCamera(call.camera_timestamp))
     {
       // in this case, we signal it.
       safety.iscameragone = 1;
@@ -196,14 +244,14 @@ int main(int argc, char** argv)
       safety.params[0] = safetyHandler.getParam(0);
       safety.params[1] = safetyHandler.getParam(1);
       safety.params[2] = safetyHandler.getParam(2);
-      safety.safeharbor_coord[0] = safetyHandler.sh_local_coord[0];
-      safety.safeharbor_coord[1] = safetyHandler.sh_local_coord[1];
-      safety.safeharbor_coord[2] = safetyHandler.sh_local_coord[2];
+      safety.target_coord[0] = safetyHandler.sh_local_coord[0];
+      safety.target_coord[1] = safetyHandler.sh_local_coord[1];
+      safety.target_coord[2] = safetyHandler.sh_local_coord[2];
       safety.params[3] = safetyHandler.getParam(6);
       safety.params[4] = safetyHandler.getParam(8);
       safety.params[5] = safetyHandler.getParam(9);
-      safety.params[6] = safetyHandler.computeDesiredYaw(call._vision_pos);
-      safety.params[7] = safetyHandler.deg2rad(safetyHandler.getParam(11));
+      safety.params[6] = computeDesiredYaw(call._vision_pos, safetyHandler.sh_local_coord);
+      safety.params[7] = deg2rad(safetyHandler.getParam(11));
       handler6.publish("safety", &safety);
       std::cout << "CRITIC: Going In Safe Harbor!!!" << std::endl;
     }

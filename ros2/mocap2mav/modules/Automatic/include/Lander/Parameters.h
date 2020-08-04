@@ -100,6 +100,14 @@ public:
     //Max total PID output
     double maxOutput;
 
+    // Distance from the center of the platform where to initialize landing
+    
+    double distanceFromCenter;
+
+    // Drone altitude when initializing the landing
+    
+    double prelandAltitude;
+
 };
 
 

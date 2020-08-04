@@ -1,0 +1,16 @@
+#!/bin/bash
+
+echo "setting gazebo stuff, put correct path of Firmware directory"
+source /home/andrea/Marea/mar_frankenrotor_ros/ros2SITL/Firmware/Tools/setup_gazebo.bash /home/andrea/Marea/mar_frankenrotor_ros/ros2SITL/Firmware /home/andrea/Marea/mar_frankenrotor_ros/ros2SITL/Firmware/build/px4_sitl_rtps
+
+echo "link mocap2mav lcm"
+export M2M_INCLUDE=/home/andrea/Marea/mar_frankenrotor_ros/ros2SITL/mocap2mav/include
+
+echo "exporting simulation variable: 1=sim, 0=no-sim"
+export M2M_SIM=1
+
+echo "load gazebo plugin for the platform, put the correct path of the landingPlat directory "
+
+export GAZEBO_PLUGIN_PATH=${GAZEBO_PLUGIN_PATH}:/home/andrea/Marea/mar_frankenrotor_ros/ros2SITL/landingPlat/build
+
+echo "done!!:)"

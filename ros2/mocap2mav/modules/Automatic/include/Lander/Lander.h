@@ -104,12 +104,17 @@ public:
      */
 
     void updateSignals();
+    /**
+     * @brief It sends a set of setpoints to the drone in order to position
+     * @return The actual state of the machine
+     */
 
+    bool setDroneInFront();
     /**
      * @brief It gets the actual state of the machine
      * @return The actual state of the machine
      */
-
+	
     int getActualMachineState();
 
     /**
@@ -182,6 +187,9 @@ public:
   	double desc_velocity;
 
     bool startFromBeginning;
+
+
+    // bool positionedInFront;
 
     // perform inspection
      double time;
@@ -394,7 +402,13 @@ private:
      * It checks if the drone has lost the platform
      */
 
-    bool _lost;
+    bool _lost;    
+
+    /**
+     * It checks if the drone is aligned with the platform and ready to start the landing
+     */
+
+    bool _readyToLand;
 
     /**
      * Integral error of the drone respect to the platform
@@ -419,6 +433,12 @@ private:
      */
 
     Eigen::Vector3d _err_diff;
+
+    /**
+     * direction of the line the drone has to follow to descend
+     */
+
+    Eigen::Vector3d _line_direction;
 
     /**
      * @brief Logic and signals helpers
@@ -510,18 +530,18 @@ private:
 
     void land();
 
-	/**
+    /**
      * @brief Hovering action
-  */
+     */
 
- 	void hovering();
+	void hovering();
 
-  // circular trajectory for inspection. It tries with a circular
-  // trajectory to find the platform
-   void inspection();
-  // //homing position action
-  // void homing();
-   void initInspection(); //initialize variables to perform inspection
+  	// circular trajectory for inspection. It tries with a circular
+  	// trajectory to find the platform
+  	void inspection();
+  	// //homing position action
+  	// void homing();
+   	void initInspection(); //initialize variables to perform inspection
 
 
 

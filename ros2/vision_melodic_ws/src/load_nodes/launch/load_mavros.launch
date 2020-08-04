@@ -1,0 +1,13 @@
+<launch>
+
+<!-- this one runs mavros package, used in real tests  -->
+
+<include file="$(find mavros)/launch/px4.launch">
+
+<arg name="fcu_url" value="udp://:14540@192.168.1.36:14557" />
+
+</include>
+
+</launch>
+
+

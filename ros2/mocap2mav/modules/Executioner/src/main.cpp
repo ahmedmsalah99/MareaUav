@@ -44,10 +44,10 @@ int main(int argc, char** argv){
     }
     // Call init everytime you have a new list.
     e.init();
-    lcm::LCM handler,handler2, handler3, handler4, handler5;
+    lcm::LCM handler,handler2, handler3, handler4, handler5, handler6;
 
 
-    if (!handler.good() || !handler2.good() || !handler3.good() || !handler4.good() || !handler5.good())
+    if (!handler.good() || !handler2.good() || !handler3.good() || !handler4.good() || !handler5.good() || !handler6.good())
         return 1;
 
 
@@ -58,6 +58,7 @@ int main(int argc, char** argv){
     lcm::Subscription *sub2 = handler2.subscribe("state", &CallbackHandler::stateCallback, &call);
     lcm::Subscription *sub3 = handler3.subscribe("Landing_Site/pose", &CallbackHandler::positionSetpointCallback, &call);
     lcm::Subscription *sub4 = handler4.subscribe("safety", &CallbackHandler::safetyCallback, &call);
+    lcm::Subscription *sub5 = handler6.subscribe("release_payload_feedback", &CallbackHandler::releasePayloadFeedbackCallback, &call);
 
     sub ->setQueueCapacity(1);
 
@@ -67,7 +68,9 @@ int main(int argc, char** argv){
 
     sub4->setQueueCapacity(1);
 
-    struct pollfd fds[3];
+    sub5->setQueueCapacity(1);
+
+    struct pollfd fds[4];
 
     fds[0].fd = handler2.getFileno(); // state
     fds[0].events = POLLIN;
@@ -78,6 +81,9 @@ int main(int argc, char** argv){
     fds[2].fd = handler4.getFileno(); // safety conditions
     fds[2].events = POLLIN;
 
+    fds[3].fd = handler6.getFileno(); // release payload feedback
+    fds[3].events = POLLIN;
+
     Spinner sp(5);
     sp.suppressWarnings();
     sp.useMilli();
@@ -85,7 +91,7 @@ int main(int argc, char** argv){
 
         //Fetch land messages from mavros
 
-        int ret = poll(fds,3,0);
+        int ret = poll(fds,4,0);
 
         if(fds[0].revents & POLLIN)
         {
@@ -99,6 +105,14 @@ int main(int argc, char** argv){
           handler3.handle();
           // and if it is, update it.
           e.setPlatformState(call._position_sp);
+        }
+        // checking if we are getting some feedbacks from the releasing payload package
+        if(fds[3].revents & POLLIN)
+        {
+          handler6.handle();
+          // and if it is, update it.
+          e.setRelPayFeedback(call.relpay_feedback);
+          std::cout << "Feedback Received" << std::endl;
         }
         // if there are news on the safety topic
         if(fds[2].revents & POLLIN)
@@ -161,8 +175,18 @@ int main(int argc, char** argv){
               safety_ack.iscameragone_timestamp = (double)tm.getTimeMilliSecond();
               handler5.publish("safety_ack", &safety_ack);
             }
+            else if(call.safety.isgoingplatform && !e.isGPSSafetyTaskRunning &&
+              !e.isCameraSafetyTaskRunning && !e.isGoingInSafeHarbor)
+            {
+              e.isGoingToPlatform = 1;
+              e.batteryLimitHandler(call.safety);
+              std::cout << "Coming To Platform Safety Task Deployed" << std::endl;
+
+              safety_ack.isgoingtoplatform = 1;
+              handler5.publish("safety_ack", &safety_ack);
+            }
             else if(call.safety.issonargone && !e.isSonarSafetyTaskRunning && !e.isGPSSafetyTaskRunning &&
-                    !e.isCameraSafetyTaskRunning && !e.isGoingInSafeHarbor)
+                    !e.isCameraSafetyTaskRunning && !e.isGoingInSafeHarbor && !e.isGoingToPlatform)
             {
               e.isSonarSafetyTaskRunning = 1;
               e.sonarGoneHandler();

@@ -16,12 +16,12 @@ void Parameters::loadConfigFile(const char *config_file) {
 
 void Parameters::loadParamFile(const char *config_file) {
 
-    
+
     std::ifstream cFile (config_file);
     if( cFile.is_open() ){
 
         std::string line;
-        
+
         while( getline(cFile, line) ){
             line.erase( std::remove_if(line.begin(),line.end(), isspace), line.end() );
 
@@ -40,7 +40,7 @@ void Parameters::loadParamFile(const char *config_file) {
 
             else if( !param.compare("VELOCITY_INSPECTION") )
                 inspeLinVel = value;
-        
+
             else if( !param.compare("ROLL_THRESHOLD") )
                 RollThreshold = value;
 
@@ -94,13 +94,19 @@ void Parameters::loadParamFile(const char *config_file) {
 
             else if( !param.compare("MAX_INT_VALUE") )
                 maxIntValue = value;
-                
+
             else if( !param.compare("MIN_INT_VALUE") )
-                minIntValue = value;                    
+                minIntValue = value;
 
             else if( !param.compare("MAX_OUTPUT") )
                 maxOutput = value;
-            
+
+            else if( !param.compare("DISTANCE_FROM_CENTER") )
+                distanceFromCenter = value;
+
+            else if( !param.compare("PRELAND_ALTITUDE") )
+                prelandAltitude = value;
+
         }
 		cFile.close();
 
@@ -114,5 +120,3 @@ void Parameters::loadParamFile(const char *config_file) {
 
 
     }
-
-

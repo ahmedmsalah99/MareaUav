@@ -4,6 +4,7 @@
 #include <memory>
 #include "lcm_messages/geometry/pose.hpp"
 #include "lcm_messages/exec/task.hpp"
+#include "lcm_messages/exec/release_payload.hpp"
 #include "common/MavState.h"
 #include "common/common.h"
 #include "common/conversions.h"
@@ -14,6 +15,7 @@
 #include "Command/Rotate.hpp"
 #include "Command/Idle.hpp"
 #include "Command/EmergLand.hpp"
+#include "Command/Search.hpp"
 
 /** @ingroup Automatic
  *
@@ -54,11 +56,25 @@ public:
   void setVisionFeedback(MavState pose);
 
   /**
+   * @brief Such method sets the actual state of the drone respect to the rescue position using vision system
+   * @param pose MavState Object
+   */
+
+  void setVisionRescue(MavState pose);
+
+  /**
    * @brief Such method sets the actual state of the drone using ultrasonic sensor
    * @param pose MavState Object
    */
 
-	void setUltrasonicInfo(MavState pose);
+  void setUltrasonicInfo(MavState pose);
+
+  /**
+   * @brief Such method sets the feedback coming from the release payload node
+   * @param string feedback
+   */
+
+  void setRelPayFeedback(exec::release_payload feedback);
 
   /**
    * @brief Such method sets the actual task.
@@ -112,6 +128,12 @@ public:
 
   void executeCommand();
 
+  /**
+   * @brief M2M_SIM Environment variable value
+   */
+
+  bool env_sim;
+
 private:
 
     /**
@@ -130,13 +152,25 @@ private:
      * Relative state of the platform respect to the drone using vision system
      */
 
-  MavState _visionFeedbackPose;
+  	MavState _visionFeedbackPose;
+
+    /**
+     * Relative state of the rescue target respect to the drone using vision system
+     */
+
+  	MavState _visionRescuePose;
 
     /**
      * partial state of the drone using ultrasonic sensor
      */
 
 	MavState _UltrasonicInfo;
+
+    /**
+     * feedback values from the release payload node
+     */
+
+	exec::release_payload _relpay_feedback;
 
     /**
      * @brief Template of Command class

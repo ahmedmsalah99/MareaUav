@@ -58,9 +58,18 @@ endif()
 
 include_directories(include)
 
-set(SOURCE FILES source/UltrasonicSensor.cpp include/UltrasonicSensor.h)
+set(M2M_SIM "$ENV{M2M_SIM}")
+if(${M2M_SIM} STREQUAL "1")   
+ set(SOURCE FILES source/UltrasonicSensorSim.cpp include/UltrasonicSensor.h)
+ add_library(UltrasonicSensor source/UltrasonicSensorSim.cpp include/UltrasonicSensor.h)
+elseif(${M2M_SIM} STREQUAL "0")
+ set(SOURCE FILES source/UltrasonicSensorReal.cpp include/UltrasonicSensor.h)
+ add_library(UltrasonicSensor source/UltrasonicSensorReal.cpp include/UltrasonicSensor.h)
+else()
+ message(FATAL_ERROR "Undefined M2M_SIM env var. HINT: export M2M_SIM=1 if running simulation, 0 else")
+endif()
 
-add_library(UltrasonicSensor source/UltrasonicSensor.cpp include/UltrasonicSensor.h)
+
 
 target_link_libraries(UltrasonicSensor ${LCM_LIBRARIES})
 

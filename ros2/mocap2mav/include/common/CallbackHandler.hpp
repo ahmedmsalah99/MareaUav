@@ -14,6 +14,8 @@
 #include "lcm_messages/exec/safety.hpp"
 #include "lcm_messages/exec/safety_ack.hpp"
 #include "lcm_messages/exec/camera_info.hpp"
+#include "lcm_messages/exec/release_payload.hpp"
+
 #include <iostream>
 
 /** @ingroup Automatic
@@ -42,11 +44,19 @@ public:
     exec::safety_ack safety_ack;
     exec::battery battery;
     exec::gps_status gps;
+    exec::release_payload release_payload;
+    exec::release_payload relpay_feedback;
     /**
      *  State of the drone respect to the platform obtained by vision system
      */
 
 	  MavState _relative_pos;
+
+    /**
+     *  State of the drone respect to the rescue target obtained by vision system
+     */
+
+	  MavState _rescue_pos;
 
     /**
      *  State of the drone obtained by ultrasonic sensor
@@ -73,12 +83,15 @@ public:
     bool _estimate_ready;
 
     /**
-     *  Bool variable to check if there is a position setPoinf
+     *  Bool variable to check if there is a position setPoint
      */
 
     bool _position_sp_ready;
 
-    // camera timestamp from message
+    /**
+     *  Camera timestamp for lcm message
+     */
+
     double camera_timestamp;
 
     /**
@@ -105,6 +118,7 @@ public:
         safety_ack.iscamerasafetytaskrunning = 0;
         safety_ack.issonarsafetytaskrunning = 0;
         safety_ack.isgoinginsafeharbor = 0;
+        safety_ack.isgoingtoplatform = 0;
         safety_ack.iscameragone_timestamp = 0.0;
 
         safety.isbatterygone = 0;
@@ -112,6 +126,7 @@ public:
         safety.iscameragone = 0;
         safety.issonargone = 0;
         safety.goingsafeharbor = 0;
+        safety.isgoingplatform = 0;
 
         _armed = false;
         _landed = true;
@@ -187,6 +202,9 @@ public:
     // the one for gps
     void gpsStatusCallback(const lcm::ReceiveBuffer* rbuf, const std::string& chan, const exec::gps_status* msg)
     {
+      gps.lon = msg->lon;
+      gps.lat = msg->lat;
+      gps.alt = msg->alt;
       gps.status = msg->status;
       gps.timestamp = msg->timestamp;
     }
@@ -205,9 +223,10 @@ public:
       safety.issonargone = msg->issonargone;
       safety.iscameragone = msg->iscameragone;
       safety.goingsafeharbor = msg->goingsafeharbor;
-      safety.safeharbor_coord[0] = msg->safeharbor_coord[0];
-      safety.safeharbor_coord[1] = msg->safeharbor_coord[1];
-      safety.safeharbor_coord[2] = msg->safeharbor_coord[2];
+      safety.isgoingplatform = msg->isgoingplatform;
+      safety.target_coord[0] = msg->target_coord[0];
+      safety.target_coord[1] = msg->target_coord[1];
+      safety.target_coord[2] = msg->target_coord[2];
       safety.params[0] = msg->params[0];
       safety.params[1] = msg->params[1];
       safety.params[2] = msg->params[2];
@@ -226,7 +245,28 @@ public:
       safety_ack.iscamerasafetytaskrunning = msg->iscamerasafetytaskrunning;
       safety_ack.issonarsafetytaskrunning = msg->issonarsafetytaskrunning;
       safety_ack.isgoinginsafeharbor = msg->isgoinginsafeharbor;
+      safety_ack.isgoingtoplatform = msg->isgoingtoplatform;
       safety_ack.iscameragone_timestamp = msg->iscameragone_timestamp;
+    }
+
+    /**
+     * @brief Callback used to take the messages coming from release payload topic
+     * @details It sets a boolean.
+     */
+
+    void releasePayloadCallback(const lcm::ReceiveBuffer* rbuf, const std::string& chan, const exec::release_payload* msg)
+    {
+      release_payload.data = msg->data;
+    }
+
+    /**
+     * @brief Callback used to take the messages coming from release payload topic
+     * @details It sets a boolean.
+     */
+
+    void releasePayloadFeedbackCallback(const lcm::ReceiveBuffer* rbuf, const std::string& chan, const exec::release_payload* msg)
+    {
+      relpay_feedback.data = msg->data;
     }
 
     /**
@@ -234,7 +274,8 @@ public:
      * @details It sets the position, velocity, orientation
      */
 
-	void ApriltagCallback(const lcm::ReceiveBuffer* rbuf, const std::string& chan, const geometry::vision* msg){
+	void ApriltagCallback(const lcm::ReceiveBuffer* rbuf, const std::string& chan, const geometry::vision* msg)
+  {
 	   //callback of the vision system.
 
 		_relative_pos.setPosition((float)msg->position[0],(float)msg->position[1],(float)msg->position[2]);
@@ -252,6 +293,28 @@ public:
 
 	}
 
+  /**
+   * @brief Callback used to take the messages coming from the vision system
+   * @details It sets the position, velocity, orientation
+   */
+
+  void RescueCallback(const lcm::ReceiveBuffer* rbuf, const std::string& chan, const geometry::vision* msg){
+     //callback of the vision system.
+
+    _rescue_pos.setPosition((float)msg->position[0],(float)msg->position[1],(float)msg->position[2]);
+
+    _rescue_pos.setV((float)msg->velocity[0],(float)msg->velocity[1],(float)msg->velocity[2]);
+
+    _rescue_pos.setOrientation((float)msg->orientation[0],(float)msg->orientation[1],(float)msg->orientation[2],(float)msg->orientation[3]);
+
+    _rescue_pos.setRoll( (float)msg->roll );
+
+    _rescue_pos.setPitch( (float)msg->pitch );
+
+    _rescue_pos.setYaw( (float)msg->yaw );
+
+
+  }
     /**
      * @brief Callback used to take the messages coming from the ultrasonic sensor
      * @details It sets the Z position, the estimated Z velocity and set the validity of the message
@@ -282,12 +345,15 @@ public:
         _task.params[1] = msg->params[1];
         _task.params[2] = msg->params[2];
         _task.params[3] = msg->params[3];
+        _task.params[4] = msg->params[4];
 
         _task.x = msg->x;
         _task.y = msg->y;
         _task.z = msg->z;
 
         _task.yaw = msg->yaw;
+
+        _task.target = msg->target;
 
 
     }

@@ -1,7 +1,9 @@
-#include <include/Command/Idle.hpp>
 #include "Automatic.h"
 using namespace common;
-Automatic::Automatic()  {}
+Automatic::Automatic()
+{
+  env_sim = (bool)std::getenv("M2M_SIM");
+}
 
 MavState Automatic::getState()
 {
@@ -23,6 +25,11 @@ void Automatic::setState(MavState rState)
     _state = rState;
 }
 
+void Automatic::setRelPayFeedback(exec::release_payload feedback)
+{
+    _relpay_feedback.data = feedback.data;
+}
+
 void Automatic::setTask(exec::task rTask)
 {
     _actualTask.x=rTask.x;
@@ -30,10 +37,12 @@ void Automatic::setTask(exec::task rTask)
     _actualTask.z=rTask.z;
     _actualTask.yaw=rTask.yaw;
     _actualTask.action=rTask.action;
+    _actualTask.target=rTask.target;
     _actualTask.params[0]=rTask.params[0];
     _actualTask.params[1]=rTask.params[1];
     _actualTask.params[2]=rTask.params[2];
     _actualTask.params[3]=rTask.params[3];
+    _actualTask.params[4]=rTask.params[4];
 }
 
 void Automatic::handleCommands() {
@@ -57,6 +66,10 @@ void Automatic::handleCommands() {
 
         case actions::MOVE:
             _actualCommand = std::unique_ptr<Command>(new Move(&_state,&_comm,&_actualTask));
+            break;
+
+        case actions::SEARCH:
+            _actualCommand = std::unique_ptr<Command>(new Search(&_state,&_comm,&_actualTask,&_visionRescuePose,&_relpay_feedback));
             break;
 
         case actions::TAKE_OFF:
@@ -122,6 +135,10 @@ void Automatic::setPlatformState(MavState pose) {
 
 void Automatic::setVisionFeedback(MavState pose) {
 	_visionFeedbackPose = pose;
+}
+
+void Automatic::setVisionRescue(MavState pose) {
+	_visionRescuePose = pose;
 }
 
 void Automatic::setUltrasonicInfo(MavState pose) {

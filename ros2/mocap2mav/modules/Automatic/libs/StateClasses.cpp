@@ -14,12 +14,12 @@ void InitState::handle(){
     static int wait = 0;
 
     //Wait 50 iterations
-    if( wait++ > 20 && _VisionPose.VisionDataUpdated ) {
+    if( wait++ > 20 && _VisionPose.VisionDataUpdated && _readyToLand) {
         this->_contextL->setStatePtr(_nextState);
         printStateTransition(); //print the actual state
         wait=0;
     }
-	else if( !_VisionPose.VisionDataUpdated ) {
+	else if(wait++ > 20 && !_VisionPose.VisionDataUpdated) {
 
     if(param.search){
         this->_contextL->setStatePtr(_nextInspeState);

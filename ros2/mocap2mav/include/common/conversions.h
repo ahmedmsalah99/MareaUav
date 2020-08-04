@@ -3,7 +3,10 @@
 #include <cmath>
 #include <cstdint>
 #include <Eigen/Geometry>
+#include "MavState.h"
 
+
+#define PI 3.141592653589
 
 inline static void quaternion_to_dcm(const float quaternion[4], float dcm[3][3])
 {
@@ -99,6 +102,56 @@ inline Eigen::Quaterniond getQuatFromYaw(double yaw){
     return quaterniond;
 
 }
+
+inline float deg2rad(float angle_degree)
+{
+  return (angle_degree*PI)/180.0f;
+}
+
+inline void globalToLocalCoords(double coords[3], double start_ref[3])
+{
+  // getting target global coordinates
+  double target_lon = coords[0];
+  double target_lat = coords[1];
+  double target_alt = coords[2];
+  // and defining a common constant
+  double earth_radius = 6371000; // (meters)
+  double polar_radius = 6356752; // (meters)
+
+
+  double cap_radius_sh = earth_radius*cosf(deg2rad(target_lat));
+  double cap_radius_h = earth_radius*cosf(deg2rad(start_ref[1]));
+  double mean_cap_radius = (cap_radius_h + cap_radius_sh)/2.0;
+
+  // converting it
+  coords[0] = mean_cap_radius * deg2rad(target_lon - start_ref[0]);
+
+  coords[1] = polar_radius * deg2rad(target_lat - start_ref[1]);
+
+  coords[2] = target_alt - start_ref[2];
+
+  // std::cout << "Longitude: " << _actualTask.x << std::endl;
+  // std::cout << "Latitude: " <<_actualTask.y << std::endl;
+
+}
+
+inline float computeDesiredYaw(MavState pose, double coords[3])
+{
+  // getting the actual yaw angle
+  double rapp = (pose.getX() - coords[0])/(pose.getY() - coords[1]);
+  // as the tangent angle between these two points
+  double alpha = atanf(rapp);
+  // converting it wrt the local reference frame (x on EST, y on NORTH)
+  double alpha_local = PI/2.0 - alpha;
+  // std::cout << 180.0*alpha/_PI << std::endl;
+  // checking its orientation then: if the point to be reached
+  // is below (wrt local reference frame) the drone's position, then we fix the orientation
+  if(coords[1] - pose.getY() < 0.0)
+  {
+    alpha_local = alpha_local - PI;
+  }
+  // returning then the final desired value
+  return  alpha_local;
+}
+
 #endif
-
-

@@ -59,6 +59,8 @@ int main(int argc, char **argv) {
 	// UltrasonicSensor Sonar1; //it sets the sensor
   auto Sonar1 = std::make_shared<UltrasonicSensor>();
 
+  Sonar1->setParameters(trigger, echo);
+
   auto ultrasonic_sensor_sub = node->create_subscription<sensor_msgs::msg::Range>("/ultrasonic/sonar", 1, std::bind(&UltrasonicSensor::setSensorData, Sonar1, std::placeholders::_1));
 
 	// auto PubSensorData = node->create_publisher<ultrasonic_sensor::msg::UltrasonicMsg>("/UltrasonicSensor_filtr", 1);
@@ -78,7 +80,7 @@ int main(int argc, char **argv) {
 	dt = 1/RATE;
 
 	//tm.updateTimer();
-  
+
 	while(rclcpp::ok())
   {
 

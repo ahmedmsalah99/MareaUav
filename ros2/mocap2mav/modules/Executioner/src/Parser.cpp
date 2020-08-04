@@ -108,6 +108,11 @@ bool Parser::parseAction(int pos) {
         res = parseMove(task,pos);
         return  res;
     }
+    else if(a == "search"){
+
+        res = parseSearch(task,pos);
+        return  res;
+    }
     else if (a == "rotate") {
 
         res = parseRotate(task,pos);
@@ -138,7 +143,9 @@ std::deque<exec::task> Parser::getTaskListParsed() {
 bool Parser::parseTakeOff(exec::task& task,int pos) {
 
     std::cout << "Takeoff found" << std::endl;
-    bool zFound = false;
+    const unsigned char zFound = 0b01; //
+    const unsigned char trFound = 0b10; //
+    unsigned char mask = 0b00;
     task.action = common::actions::TAKE_OFF;
 
     for (int i = pos+1; i < _tokens.size() && _tokens[i][0] != "type" ; ++i) {
@@ -152,7 +159,7 @@ bool Parser::parseTakeOff(exec::task& task,int pos) {
             double value = getValue(value_str);
 
             if(std::isfinite(value)){
-                zFound = true;
+                mask |= zFound;
                 task.params[0] = value;
                 std::cout << "  Z: " << value << std::endl;
 
@@ -175,9 +182,10 @@ bool Parser::parseTakeOff(exec::task& task,int pos) {
           // we check its validity
           if(std::isfinite(value) && value >= 0)
           {
-            std::cout << "  threshold: " <<value<< " found for action: " << pos << std::endl;
+            mask |= trFound;
             // and we assign it to task's parameters
             task.params[1] = value;
+            std::cout << "  threshold: " <<value<< " found for action: " << pos << std::endl;
           }
           else
           {
@@ -194,17 +202,29 @@ bool Parser::parseTakeOff(exec::task& task,int pos) {
         }
 
     }
-    if(zFound) _taskListParsed.push_back(task);
+    if(mask & (zFound | trFound) == (zFound | trFound)) _taskListParsed.push_back(task);
+    else
+    {
+        std::cout << "field missing in action: " << pos << std::endl;
+        return false;
+    }
     return true;
 }
 
 bool Parser::parseMove(exec::task& task,int pos) {
     std::cout << "Move found" << std::endl;
-    const unsigned char xFound = 0b0001; //
-    const unsigned char yFound = 0b0010; //
-    const unsigned char zFound = 0b0100; //
-    const unsigned char aFound = 0b1000; //
-    unsigned char mask = 0b0000;
+    const unsigned char xFound = 0b00000001; //
+    const unsigned char yFound = 0b00000010; //
+    const unsigned char zFound = 0b00000100; //
+    const unsigned char aFound = 0b00001000; //
+    const unsigned char tFound = 0b00010000; //
+    const unsigned char hlonFound = 0b00100000; //
+    const unsigned char hlatFound = 0b01000000; //
+    const unsigned char haltFound = 0b10000000; //
+    unsigned char mask = 0b00000000;
+
+    bool trFound = false;
+
     task.action = common::actions::MOVE;
 
     for (int i = pos+1; i < _tokens.size() && _tokens[i][0] != "type" ; ++i) {
@@ -212,7 +232,21 @@ bool Parser::parseMove(exec::task& task,int pos) {
         std::string field = _tokens[i][0];
         std::string value_str = _tokens[i][1];
 
-        if(field == "x") {
+        if(field == "target")
+        {
+          if (value_str == "rescue" || value_str == "platform")
+          {
+            mask |= tFound;
+            task.target=value_str;
+          }
+          else
+          {
+            std::cout << "unknown target, please fix" << std::endl;
+            return false;
+          }
+
+        }
+        else if(field == "x") {
 
             //atof Helper, cast string into double
 
@@ -267,6 +301,51 @@ bool Parser::parseMove(exec::task& task,int pos) {
             }
 
         }
+        else if(field == "home_lon")
+        {
+          //atof Helper, cast string into double
+          double value = getValue(value_str);
+
+          if (std::isfinite(value)) {
+              mask |= hlonFound;
+              task.params[2] = value;
+              std::cout << "  Home_lon: " <<value<< " found for action: " << pos << std::endl;
+
+          } else {
+              std::cout << "value is not finite" << std::endl;
+              return false;
+          }
+        }
+        else if(field == "home_lat")
+        {
+          //atof Helper, cast string into double
+          double value = getValue(value_str);
+
+          if (std::isfinite(value)) {
+              mask |= hlatFound;
+              task.params[3] = value;
+              std::cout << "  Home_lat: " <<value<< " found for action: " << pos << std::endl;
+
+          } else {
+              std::cout << "value is not finite" << std::endl;
+              return false;
+          }
+        }
+        else if(field == "home_alt")
+        {
+          //atof Helper, cast string into double
+          double value = getValue(value_str);
+
+          if (std::isfinite(value)) {
+              mask |= haltFound;
+              task.params[4] = value;
+              std::cout << "  Home_alt: " <<value<< " found for action: " << pos << std::endl;
+
+          } else {
+              std::cout << "value is not finite" << std::endl;
+              return false;
+          }
+        }
         else if(field == "alpha"){
 
             //atof Helper, cast string into double
@@ -290,9 +369,10 @@ bool Parser::parseMove(exec::task& task,int pos) {
           // we check its validity
           if(std::isfinite(value) && value >= 0)
           {
-            std::cout << "  threshold: " <<value<< " found for action: " << pos << std::endl;
+            trFound = true;
             // and we assign it to task's parameters
             task.params[1] = value;
+            std::cout << "  threshold: " <<value<< " found for action: " << pos << std::endl;
           }
           else
           {
@@ -308,8 +388,117 @@ bool Parser::parseMove(exec::task& task,int pos) {
         }
 
     }
-    if((mask & (xFound | yFound | zFound | aFound)) == (xFound | yFound | zFound | aFound)) _taskListParsed.push_back(task);
-    else {
+    if((mask & (xFound | yFound | zFound | aFound | tFound | hlonFound | hlatFound | haltFound) == (xFound | yFound | zFound | aFound | tFound | hlonFound | hlatFound | haltFound)) && trFound) _taskListParsed.push_back(task);
+    else
+    {
+        std::cout << "field missing in action: " << pos << std::endl;
+        return false;
+    }
+    return true;
+}
+
+bool Parser::parseSearch(exec::task& task, int pos) {
+
+    std::cout << "Search found" << std::endl;
+    const unsigned char rFound = 0b0001; // hex for 0000 0001
+    const unsigned char vFound = 0b0010; // hex for 0000 0010
+    const unsigned char zFound = 0b0100; // hex for 0000 0100
+    const unsigned char pFound = 0b1000; // hex for 0000 1000
+    unsigned char mask = 0b0000;
+    task.action = common::actions::SEARCH;
+
+    for (int i = pos+1; i < _tokens.size() && _tokens[i][0] != "type" ; ++i)
+    {
+
+        std::string field = _tokens[i][0];
+        std::string value_str = _tokens[i][1];
+
+        if (field == "radius")
+        {
+
+            //atof Helper, cast string into double
+            double value = getValue(value_str);
+
+            if (std::isfinite(value))
+            {
+                mask |= rFound;
+                task.params[0] = value;
+                std::cout << "Radius: " << value << " found for action: " << pos << std::endl;
+
+            } else {
+                std::cout << "value is not finite" << std::endl;
+                return false;
+            }
+
+        }
+        else if (field == "velocity")
+        {
+
+            //atof Helper, cast string into double
+            double value = getValue(value_str);
+
+            if (std::isfinite(value)) {
+                mask |= vFound;
+                task.params[1] = value;
+                std::cout << "Velocity: " << value << " found for action: " << pos << std::endl;
+
+            } else {
+                std::cout << "value is not finite" << std::endl;
+                return false;
+            }
+
+        }
+        else if (field == "plat_dist")
+        {
+
+            //atof Helper, cast string into double
+            double value = getValue(value_str);
+
+            if (std::isfinite(value)) {
+                mask |= pFound;
+                task.params[2] = value;
+                std::cout << "Platform Distancee Threshold: " << value << " found for action: " << pos << std::endl;
+
+            } else {
+                std::cout << "value is not finite" << std::endl;
+                return false;
+            }
+
+        }
+        else if (field == "id")
+        {
+
+            double value = getValue(value_str);
+            task.id = (int) value;
+
+        }
+        else if(field == "z")
+        {
+
+            //atof Helper, cast string into double
+            double value = getValue(value_str);
+
+            if (std::isfinite(value)) {
+                mask |= zFound;
+                task.z = value;
+                std::cout << "  Z: " <<value<< " found for action: " << pos << std::endl;
+
+            } else {
+                std::cout << "value is not finite" << std::endl;
+                return false;
+            }
+
+        }
+        else
+        {
+
+            std::cout << "unrecognized field" << std::endl;
+
+        }
+    }
+    if((mask & (rFound | vFound | zFound | pFound) == (rFound | vFound | zFound | pFound))) _taskListParsed.push_back(task);
+    else
+    {
         std::cout << "field missing in action: " << pos << std::endl;
         return false;
     }
@@ -319,11 +508,12 @@ bool Parser::parseMove(exec::task& task,int pos) {
 bool Parser::parseRotate(exec::task& task, int pos) {
 
     std::cout << "Rotate found" << std::endl;
-    const unsigned char xFound = 0b0001; // hex for 0000 0001
-    const unsigned char yFound = 0b0010; // hex for 0000 0010
-    const unsigned char aFound = 0b0100; // hex for 0000 0100
-    const unsigned char yawFound = 0b1000; // hex for 0000 0100
-    unsigned char mask = 0b0000;
+    const unsigned char xFound = 0b00001; // hex for 0000 0001
+    const unsigned char yFound = 0b00010; // hex for 0000 0010
+    const unsigned char aFound = 0b00100; // hex for 0000 0100
+    const unsigned char yawFound = 0b01000; // hex for 0000 1000
+    const unsigned char trFound = 0b10000; // hex for 0001 0000
+    unsigned char mask = 0b00000;
     task.action = common::actions::ROTATE;
 
     for (int i = pos+1; i < _tokens.size() && _tokens[i][0] != "type" ; ++i) {
@@ -389,9 +579,10 @@ bool Parser::parseRotate(exec::task& task, int pos) {
           // we check its validity
           if(std::isfinite(value) && value >= 0)
           {
-            std::cout << "  threshold: " <<value<< " found for action: " << pos << std::endl;
+            mask |= trFound;
             // and we assign it to task's parameters
             task.params[1] = value * PI / 180;
+            std::cout << "  threshold: " <<value<< " found for action: " << pos << std::endl;
           }
           else
           {
@@ -406,12 +597,22 @@ bool Parser::parseRotate(exec::task& task, int pos) {
 
         }
     }
+    if((mask & (xFound | yFound | aFound | yawFound | trFound) == (xFound | yFound | aFound | yawFound | trFound))) _taskListParsed.push_back(task);
+    else
+    {
+        std::cout << "field missing in action: " << pos << std::endl;
+        return false;
+    }
+    return true;
     _taskListParsed.push_back(task);
     return true;
 }
 
-bool Parser::parseLand(exec::task& task, int pos) {
+bool Parser::parseLand(exec::task& task, int pos)
+{
     std::cout << "Land found" << std::endl;
+    const unsigned char pFound = 0b1; // hex for 0000 0010
+    unsigned char mask = 0b0;
     task.action = common::actions::LAND;
     task.z = 0; //Assume that landing is normal, not on a platform. We'll see later
     task.params[0] = 0;
@@ -426,7 +627,7 @@ bool Parser::parseLand(exec::task& task, int pos) {
             task.id = (int)value;
 
         }
-        if(field == "z"){
+        else if(field == "z"){
             value_str = _tokens[i][1];
             double value = getValue(value_str);
             task.z = value;
@@ -434,7 +635,10 @@ bool Parser::parseLand(exec::task& task, int pos) {
         }
         else if(field == "platform"){
 
-            task.params[0] = 1;
+            value_str = _tokens[i][1];
+            mask |= pFound;
+            task.params[0] = getValue(value_str);
+            std::cout << "  platform: 1 found for action: " << pos << std::endl;
 
         }
         else{
@@ -445,7 +649,12 @@ bool Parser::parseLand(exec::task& task, int pos) {
         }
 
     }
-    _taskListParsed.push_back(task);
+    if((mask & (pFound) == (pFound))) _taskListParsed.push_back(task);
+    else
+    {
+        std::cout << "field missing in action: " << pos << std::endl;
+        return false;
+    }
     return true;
 }
 

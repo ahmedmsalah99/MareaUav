@@ -18,6 +18,8 @@ class safety
     public:
         int8_t     isbatterygone;
 
+        int8_t     isgoingplatform;
+
         int8_t     isgpsgone;
 
         int8_t     issonargone;
@@ -26,7 +28,7 @@ class safety
 
         int8_t     goingsafeharbor;
 
-        double     safeharbor_coord[3];
+        double     target_coord[3];
 
         double     params[8];
 
@@ -129,6 +131,9 @@ int safety::_encodeNoHash(void *buf, int offset, int maxlen) const
     tlen = __boolean_encode_array(buf, offset + pos, maxlen - pos, &this->isbatterygone, 1);
     if(tlen < 0) return tlen; else pos += tlen;
 
+    tlen = __boolean_encode_array(buf, offset + pos, maxlen - pos, &this->isgoingplatform, 1);
+    if(tlen < 0) return tlen; else pos += tlen;
+
     tlen = __boolean_encode_array(buf, offset + pos, maxlen - pos, &this->isgpsgone, 1);
     if(tlen < 0) return tlen; else pos += tlen;
 
@@ -141,7 +146,7 @@ int safety::_encodeNoHash(void *buf, int offset, int maxlen) const
     tlen = __boolean_encode_array(buf, offset + pos, maxlen - pos, &this->goingsafeharbor, 1);
     if(tlen < 0) return tlen; else pos += tlen;
 
-    tlen = __double_encode_array(buf, offset + pos, maxlen - pos, &this->safeharbor_coord[0], 3);
+    tlen = __double_encode_array(buf, offset + pos, maxlen - pos, &this->target_coord[0], 3);
     if(tlen < 0) return tlen; else pos += tlen;
 
     tlen = __double_encode_array(buf, offset + pos, maxlen - pos, &this->params[0], 8);
@@ -157,6 +162,9 @@ int safety::_decodeNoHash(const void *buf, int offset, int maxlen)
     tlen = __boolean_decode_array(buf, offset + pos, maxlen - pos, &this->isbatterygone, 1);
     if(tlen < 0) return tlen; else pos += tlen;
 
+    tlen = __boolean_decode_array(buf, offset + pos, maxlen - pos, &this->isgoingplatform, 1);
+    if(tlen < 0) return tlen; else pos += tlen;
+
     tlen = __boolean_decode_array(buf, offset + pos, maxlen - pos, &this->isgpsgone, 1);
     if(tlen < 0) return tlen; else pos += tlen;
 
@@ -169,7 +177,7 @@ int safety::_decodeNoHash(const void *buf, int offset, int maxlen)
     tlen = __boolean_decode_array(buf, offset + pos, maxlen - pos, &this->goingsafeharbor, 1);
     if(tlen < 0) return tlen; else pos += tlen;
 
-    tlen = __double_decode_array(buf, offset + pos, maxlen - pos, &this->safeharbor_coord[0], 3);
+    tlen = __double_decode_array(buf, offset + pos, maxlen - pos, &this->target_coord[0], 3);
     if(tlen < 0) return tlen; else pos += tlen;
 
     tlen = __double_decode_array(buf, offset + pos, maxlen - pos, &this->params[0], 8);
@@ -186,6 +194,7 @@ int safety::_getEncodedSizeNoHash() const
     enc_size += __boolean_encoded_array_size(NULL, 1);
     enc_size += __boolean_encoded_array_size(NULL, 1);
     enc_size += __boolean_encoded_array_size(NULL, 1);
+    enc_size += __boolean_encoded_array_size(NULL, 1);
     enc_size += __double_encoded_array_size(NULL, 3);
     enc_size += __double_encoded_array_size(NULL, 8);
     return enc_size;
@@ -193,7 +202,7 @@ int safety::_getEncodedSizeNoHash() const
 
 uint64_t safety::_computeHash(const __lcm_hash_ptr *)
 {
-    uint64_t hash = 0x96fe25db676bfb8dLL;
+    uint64_t hash = 0x6ccff14f866061caLL;
     return (hash<<1) + ((hash>>63)&1);
 }
 

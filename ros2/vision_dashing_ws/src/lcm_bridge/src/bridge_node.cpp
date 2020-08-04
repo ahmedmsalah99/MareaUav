@@ -141,13 +141,13 @@ void odometryCallback(const px4_msgs::msg::VehicleOdometry::SharedPtr pose){
 // void toEulerAngle(double quaternion[], double *Roll, double *Pitch, double *Yaw){
 //
 // 	//roll (x-axis rotation)
-// 	double sinr_cosp = 2.0 *( quaternion[3]*quaternion[0] + quaternion[1]*quaternion[2] );
-// 	double cosr_cosp = 1.0 - 2.0*( quaternion[0]*quaternion[0] + quaternion[1]*quaternion[1] );
+// 	double sinr_cosp = 2.0 *( quaternion[0]*quaternion[1] + quaternion[2]*quaternion[3] );
+// 	double cosr_cosp = 1.0 - 2.0*( quaternion[1]*quaternion[1] + quaternion[2]*quaternion[2] );
 //
-// 	*Roll = atan( sinr_cosp/cosr_cosp );
+// 	*Roll = atan2( sinr_cosp, cosr_cosp );
 //
 // 	//pitch (y-axis rotation)
-// 	double sinp = 2.0*( quaternion[3]*quaternion[1] + quaternion[2]*quaternion[0] );
+// 	double sinp = 2.0*( quaternion[0]*quaternion[2] + quaternion[3]*quaternion[1] );
 //
 // 	if( fabs(sinp) >= 1 )
 //
@@ -157,8 +157,8 @@ void odometryCallback(const px4_msgs::msg::VehicleOdometry::SharedPtr pose){
 // 		*Pitch = asin(sinp);
 //
 // 	//yaw (z-axis rotation)
-// 	double siny_cosp = 2.0 *( quaternion[3]*quaternion[2] + quaternion[0]*quaternion[1] );
-// 	double cosy_cosp = 1.0 - 2.0*( quaternion[1]*quaternion[1] + quaternion[3]*quaternion[3] );
+// 	double siny_cosp = 2.0 *( quaternion[0]*quaternion[3] + quaternion[1]*quaternion[2] );
+// 	double cosy_cosp = 1.0 - 2.0*( quaternion[2]*quaternion[2] + quaternion[3]*quaternion[3] );
 // 	*Yaw = atan2(siny_cosp,cosy_cosp);
 //
 // }
@@ -175,6 +175,10 @@ void batteryStatusCallback(const px4_msgs::msg::BatteryStatus::SharedPtr bs)
 
 void gpsStatusCallback(const px4_msgs::msg::VehicleGpsPosition::SharedPtr vgp)
 {
+  // scaling the position to the conventional one (the topic gives it in integers)
+  gps_status_lcm.lon = 0.0000001 * vgp->lon;
+  gps_status_lcm.lat = 0.0000001 * vgp->lat;
+  gps_status_lcm.alt = 0.001 * vgp->alt;
   gps_status_lcm.status = vgp->fix_type;
   gps_status_lcm.timestamp = (double)(std::chrono::system_clock::now().time_since_epoch() / std::chrono::milliseconds(1));
   handler6.publish("gps_status", &gps_status_lcm);
@@ -303,6 +307,7 @@ int main(int argc, char **argv)
     // fds[1].fd = handler3.getFileno(); // Platform position
     // fds[1].events = POLLIN;
 
+
     robot_state.landed = 1;
     robot_state.armed  = 0;
 
@@ -346,7 +351,6 @@ int main(int argc, char **argv)
 	      //     pub1->publish(*platPos);
         //
         // }
-
 
         //Position Command POLLIN
         if(*robotDataRec){
@@ -397,7 +401,9 @@ int main(int argc, char **argv)
                 commandPose->pose.orientation.y = call._position_sp.getOrientation().y();
                 commandPose->pose.orientation.z = call._position_sp.getOrientation().z();
                 commandPose->pose.orientation.w = call._position_sp.getOrientation().w();
-
+                //
+                // std::cout << "YAW DES " << call._position_sp.getYaw()*180.0/3.14 << std::endl;
+                //
                 // geometry::pose pose;
                 // pose.orientation[0] = commandPose->pose.orientation.w;
                 // pose.orientation[1] = commandPose->pose.orientation.x;
@@ -407,7 +413,6 @@ int main(int argc, char **argv)
                 //
                 // double pitch, roll, yaw;
                 // toEulerAngle(pose.orientation, &roll, &pitch, &yaw);
-                // std::cout << yaw*180.0/3.14 << std::endl;
                 // std::cout << "command: " << commandPose->pose.position.x << " " << commandPose->pose.position.y << " " <<commandPose->pose.position.z << std::endl;
                 pub->publish(*commandPose);
             }

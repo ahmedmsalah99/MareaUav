@@ -268,7 +268,7 @@ if __name__ == '__main__':
 
         if not args.local:
             # environment at generation time
-            CMAKE_PREFIX_PATH = '/home/andrea/Marea/mar_frankenrotor_ros/ros2SITL/vision_melodic_ws/devel;/opt/ros/melodic'.split(';')
+            CMAKE_PREFIX_PATH = '/home/andrea/Marea/mar_frankenrotor_ros/ros2SITL/vision_melodic_ws/devel;/opt/ros/melodic;/home/andrea/Marea/mar_frankenrotor_ros/ros2SITL/vision_dashing_ws/install/ultrasonic_sensor;/home/andrea/Marea/mar_frankenrotor_ros/ros2SITL/vision_dashing_ws/install/px4_ros_com;/home/andrea/Marea/mar_frankenrotor_ros/ros2SITL/vision_dashing_ws/install/lcm_bridge;/home/andrea/Marea/mar_frankenrotor_ros/ros2SITL/vision_dashing_ws/install/px4_msgs;/home/andrea/Marea/mar_frankenrotor_ros/ros2SITL/vision_dashing_ws/install/load_simulation;/home/andrea/Marea/mar_frankenrotor_ros/ros2SITL/vision_dashing_ws/install/apriltag2_rescue_node;/home/andrea/Marea/mar_frankenrotor_ros/ros2SITL/vision_dashing_ws/install/apriltag2_node;/home/andrea/Marea/mar_frankenrotor_ros/ros2SITL/vision_dashing_ws/install/apriltag_msgs'.split(';')
         else:
             # don't consider any other prefix path than this one
             CMAKE_PREFIX_PATH = []

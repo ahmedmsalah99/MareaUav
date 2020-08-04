@@ -1,7 +1,7 @@
 #include "SafetyParser.h"
 
 
-SafetyParser::SafetyParser() {}
+SafetyParser::SafetyParser(): _num_params(0) {}
 
 bool SafetyParser::loadFile(std::string file)
 {
@@ -50,6 +50,16 @@ bool SafetyParser::parse()
             //Parse single parameters
             if(!parseParameter(j)) return false;
         }
+        if(_num_params>28)
+        {
+          std::cout << "There are some parameters not matching, please check" << std::endl;
+          return false;
+        }
+        else if(_num_params<28)
+        {
+          std::cout << "Some safety parameters are missing, please check" << std::endl;
+          return false;
+        }
     }
     else
     {
@@ -75,7 +85,7 @@ bool SafetyParser::parseParameter(int pos)
     std::string a = _tokens[pos][0];
     float value = getValue(_tokens[pos][1]);
     //Select the right parameter and parse it
-    if(a.compare("battery_threshold") == 0 || a.compare("emergland_threshold1") == 0 ||
+    if(a.compare("battery_threshold1") == 0 || a.compare("emergland_threshold1") == 0 ||
       a.compare("emergland_threshold2") == 0 || a.compare("emergland_gain") == 0 ||
       a.compare("gpsgone_threshold1") == 0 || a.compare("gpsgone_threshold2") == 0 ||
       a.compare("cameragone_threshold") == 0 || a.compare("safeharbor_lat") == 0 ||
@@ -84,7 +94,11 @@ bool SafetyParser::parseParameter(int pos)
       a.compare("cameragone_altitude") == 0 || a.compare("movetosafeharbor_altitude") == 0 ||
       a.compare("move_alpha") == 0 || a.compare("cameraonline_threshold") == 0 ||
       a.compare("home_longitude") == 0 || a.compare("home_latitude") == 0 ||
-      a.compare("home_altitude") == 0 || a.compare("rotation_threshold") == 0)
+      a.compare("home_altitude") == 0 || a.compare("rotation_threshold") == 0 ||
+      a.compare("battery_threshold2") == 0 || a.compare("target_dispersed") == 0 ||
+      a.compare("reachplatform_threshold") == 0 || a.compare("reachplatfrom_altitude") == 0 ||
+      a.compare("platform_rdv_lon") == 0 || a.compare("platform_rdv_lat") == 0 ||
+      a.compare("platform_rdv_alt") == 0 || a.compare("platform") == 0)
     {
       return insertValue(a,value);
     }
@@ -100,6 +114,8 @@ bool SafetyParser::insertValue(std::string a, float value)
   {
     // inserting it in parameters Map
     _paramsMapParsed.insert({a, value});
+    // counting it
+    _num_params++;
     // and returning success
     return  true;
   }

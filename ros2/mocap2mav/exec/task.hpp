@@ -9,6 +9,7 @@
 #ifndef __exec_task_hpp__
 #define __exec_task_hpp__
 
+#include <string>
 
 namespace exec
 {
@@ -23,6 +24,8 @@ class task
         double     z;
 
         double     yaw;
+
+        std::string target;
 
         int8_t     action;
 
@@ -138,6 +141,10 @@ int task::_encodeNoHash(void *buf, int offset, int maxlen) const
     tlen = __double_encode_array(buf, offset + pos, maxlen - pos, &this->yaw, 1);
     if(tlen < 0) return tlen; else pos += tlen;
 
+    char* target_cstr = (char*) this->target.c_str();
+    tlen = __string_encode_array(buf, offset + pos, maxlen - pos, &target_cstr, 1);
+    if(tlen < 0) return tlen; else pos += tlen;
+
     tlen = __int8_t_encode_array(buf, offset + pos, maxlen - pos, &this->action, 1);
     if(tlen < 0) return tlen; else pos += tlen;
 
@@ -166,6 +173,13 @@ int task::_decodeNoHash(const void *buf, int offset, int maxlen)
     tlen = __double_decode_array(buf, offset + pos, maxlen - pos, &this->yaw, 1);
     if(tlen < 0) return tlen; else pos += tlen;
 
+    int32_t __target_len__;
+    tlen = __int32_t_decode_array(buf, offset + pos, maxlen - pos, &__target_len__, 1);
+    if(tlen < 0) return tlen; else pos += tlen;
+    if(__target_len__ > maxlen - pos) return -1;
+    this->target.assign(((const char*)buf) + offset + pos, __target_len__ - 1);
+    pos += __target_len__;
+
     tlen = __int8_t_decode_array(buf, offset + pos, maxlen - pos, &this->action, 1);
     if(tlen < 0) return tlen; else pos += tlen;
 
@@ -185,6 +199,7 @@ int task::_getEncodedSizeNoHash() const
     enc_size += __double_encoded_array_size(NULL, 1);
     enc_size += __double_encoded_array_size(NULL, 1);
     enc_size += __double_encoded_array_size(NULL, 1);
+    enc_size += this->target.size() + 4 + 1;
     enc_size += __int8_t_encoded_array_size(NULL, 1);
     enc_size += __double_encoded_array_size(NULL, 4);
     enc_size += __int8_t_encoded_array_size(NULL, 1);
@@ -193,7 +208,7 @@ int task::_getEncodedSizeNoHash() const
 
 uint64_t task::_computeHash(const __lcm_hash_ptr *)
 {
-    uint64_t hash = 0x24e2f8b659034524LL;
+    uint64_t hash = 0x3d91bb7972ce1ed3LL;
     return (hash<<1) + ((hash>>63)&1);
 }
 

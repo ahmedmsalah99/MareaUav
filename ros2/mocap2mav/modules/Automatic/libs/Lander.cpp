@@ -8,7 +8,7 @@
 #include "common/conversions.h"
 #include "param.h"
 
-Lander::Lander() //_inspeS(&_machine),_homingS(&_machine),
+Lander::Lander()
         : _horizontaErr((double)0)    , _tauHold((double)0), _tauLost((double)0), _tauErr((double)0), _NHold(0),
           _NLost(0),_NComp(0) , _initS(&_machine) , _inspeS(&_machine) , _hoveringS(&_machine) , _holdS(&_machine)  , _asceS(&_machine)  , _descS(&_machine),_compS(&_machine),
           _rtolS(&_machine),_landS(&_machine), _err(0,0,0), _err_int(0,0,0), _err_diff(0,0,0), _dt(0), _prevTime(0), _actualTime(0),
@@ -20,7 +20,7 @@ Lander::Lander() //_inspeS(&_machine),_homingS(&_machine),
   ////Load parameters
 	param.loadConfigFile("Landing_params.txt");
 
-	//std::cout<<"Params: "<<param.zMax<<std::endl;
+	// std::cout<<"Params: "<<param.zMax<<std::endl;
 
 	desc_velocity = 0;
 
@@ -57,7 +57,6 @@ Lander::Lander() //_inspeS(&_machine),_homingS(&_machine),
 
 	_actualState = _machine.getActualNodeId();
   //set the actual state of the machine, intially is is INIT
-
 
   _err_prev = _err;
 
@@ -152,11 +151,13 @@ void Lander::initStateMachine() {
   _machine._setPoint     =  &_setPoint;
   _machine._VisionPose   =  &_VisionPose;
   _machine._UltraInfo    =  &_UltraInfo;
-	_machine.param		   =  &param;
+	_machine.param		     =  &param;
 	//New signals
   _machine._holding      =  &_holding;
   _machine._centered     =  &_centered;
   _machine._lost         =  &_lost;
+  _machine._Inspection   =  &Inspection;
+  _machine._readyToLand  = &_readyToLand;
 
 
   //Link states
@@ -225,7 +226,7 @@ void Lander::updateSignals() {
 	double dz;
 
 
-	switchSensor = (fabs( _VisionPose.getZ() ) > 0.6); //with 0.1 always vision:)
+	switchSensor = (fabs( _VisionPose.getZ() ) > 0.83); //with 0.1 always vision:)
   //above half meters use vision system for altitude value
   //otherwise, ultrasonic sensors.
 
@@ -354,7 +355,6 @@ void Lander::handleMachine() {
     --if the UAV is centered the variable NComp is incremented.
     */
 
-
     _machine.handle();
 	 //Being such function vrtual, will be defined by its derived classes.
     //Depending on the actual state a different function is called.
@@ -388,7 +388,6 @@ void Lander::run() {
   }
 
   managetime();
-
   static bool initDone = false;
   switch (_actualState){
 
@@ -397,7 +396,7 @@ void Lander::run() {
       if(!initDone)
       {
 
-				std::cout<<"INIT"<<std::endl;
+				if (print > 30) std::cout<<"INIT"<<std::endl;
 
 				init();
         align(); //controlling the yaw
@@ -408,17 +407,32 @@ void Lander::run() {
 				*/
 
                 //initDone = true;
-				initDone = _VisionPose.VisionDataUpdated;
+        // positioning the drone in front of the platform
+        _readyToLand = setDroneInFront();
+				initDone = _VisionPose.VisionDataUpdated && _readyToLand;
+        // once the drone is ready to land, the altitude setpoint changes
+        if(initDone)
+        {
+           _setPoint.setZ(param.zMax);
+        }
 
       }
 
       if(startFromBeginning)
       {
-        std::cout<<"INIT2"<<std::endl;
+        if (print > 30) std::cout<<"INIT2"<<std::endl;
 
         init();
         align(); //controlling the yaw
-        startFromBeginning = false;
+
+        // positioning the drone in front of the platform
+        _readyToLand = setDroneInFront();
+        startFromBeginning = !_readyToLand;
+        // once the drone is ready to land, the altitude setpoint changes
+        if(!startFromBeginning)
+        {
+           _setPoint.setZ(param.zMax);
+        }
       }
       break;
     case (AbstractLandState::states::INSPE):
@@ -552,23 +566,79 @@ void Lander::resetIntegrals() {
 void Lander::init() {
 
     //Set point to my position
-    resetSetPoint();
+    // resetSetPoint();
 
     _NHold=0;
     _NComp=0;
     _NLost=0;
 
     //Go to max tracking height
-    _setPoint.setZ(param.zMax);
+    // _setPoint.setZ(param.zMax);
 
 }
 
+bool Lander::setDroneInFront()
+{
+  // this function computes the desired position the drone has to reach before
+  // attempting the landing. That position is computed to be in front of the platform.
+  double x_des_drone = 0;
+  double y_des_drone = 0;
+  double xTarget = 0;
+  double yTarget = 0;
+  // getting the yaw of the platform to know how it's oriented.
+  double yaw_plat = _platformState.getYaw();
+  // getting also the distance from the center the drone has to keep once positioned,
+  // passed from file; it also must be not less than 0.
+  double gain = fabs(param.distanceFromCenter);
+  // then, depending on how the platform is oriented, the desired position changes;
+  // more precisely, the values of sin and cos (sin acting on x cause North in NED == Y in Local Frame)
+  // determinate the position around the platform, with a certain distance from the center;
+  // adding then the error wrt the platform , so that the drone is in the correct position.
+  if(yaw_plat >= -180.0 && yaw_plat < 180.0)
+  {
+    _holdPIDX.setDt(_dt);
+    _holdPIDY.setDt(_dt);
 
-void Lander::initInspection() {
+    x_des_drone = _VisionPose.getX() + gain*sinf(yaw_plat);
+    y_des_drone = _VisionPose.getY() + gain*cosf(yaw_plat);
+
+    xTarget = _holdPIDX.getOutput(0, x_des_drone) + _state.getX();
+    yTarget = _holdPIDY.getOutput(0, y_des_drone) + _state.getY();
+
+    updateIntegrals();
+  }
+  else
+  {
+    std::cout << "YAW NOT VALID, CANNOT GENERATE DESIRED POSITION";
+    return false;
+  }
+  // std::cout << "xTarget: " << xTarget << std::endl;
+  // std::cout << "yTarget: " << yTarget << std::endl;
+  // std::cout << "**********************************" << std::endl;
+  // setting the setpoint finally
+  _setPoint.setPosition(xTarget, yTarget, param.prelandAltitude);
+  _setPoint.setType(MavState::type::POSITION);
+
+  // returning the error condition
+  if(fabs(xTarget - _state.getX()) < 0.10 && fabs(yTarget - _state.getY()) < 0.10)
+  {
+    // setting the slope vector for the next step, simplifying the computations
+    // _platformState.getX() - (_platformState.getX() + gain*sinf(yaw_plat))
+    _line_direction[0] = -gain*sinf(yaw_plat);
+    _line_direction[1] = -gain*cosf(yaw_plat);
+    _line_direction[2] = _state.getZ() - param.zMax;
+    // and returning
+    return true;
+  }
+  return false;
+}
+
+void Lander::initInspection()
+{
 
 	time = 0;
-	X0 = _state.getX();
-	Y0 = _state.getY();
+  X0 = _state.getX() + _err_prev[0];
+  Y0 = _state.getY() + _err_prev[1];
 	Inspection = true;
 
   RadiusInspection = param.inspeRadius; // radius of 1 meter
@@ -615,7 +685,7 @@ void Lander::hovering() {
 
 	if(!_hovering) {
 		_setPoint.setX(starting_x);
-		_setPoint.setX(starting_x);
+		_setPoint.setY(starting_y);
 		_setPoint.setType(MavState::POSITION);
 		_hovering = true;
 	}
@@ -649,10 +719,23 @@ void Lander::hold() {
   _holdPIDX.setDt(_dt);
   _holdPIDY.setDt(_dt);
 
+  if(_prevState == AbstractLandState::states::INIT)
+  {
+    // adjusting the target to follow a line depending on the current altitude
+    double z_adj = _line_direction[2]*_VisionPose.getX()/_line_direction[0];
+    // with a lower bound
+    if (z_adj < param.zMax)
+      z_adj = param.zMax;
+
+    // std::cout << "z_adj: " << z_adj << std::endl;
+    _setPoint.setZ(z_adj);
+  }
+
+
   double xTarget = _holdPIDX.getOutput(0, _VisionPose.getX()); //0 cause VisionPose is already a relative position.
   double yTarget = _holdPIDY.getOutput(0, _VisionPose.getY());
 
-	Eigen::Vector2d targetVect( _state.getX() + xTarget , _state.getY() + yTarget );
+	Eigen::Vector2d targetVect(_state.getX() + xTarget , _state.getY() + yTarget);
 
 
   updateIntegrals();
@@ -685,7 +768,7 @@ void Lander::comp() {
 	double dz;
 
 	if(switchSensor)
-    	dz = _VisionPose.getZ() + PLATFORM_OFFSET;
+  	dz = _VisionPose.getZ() + PLATFORM_OFFSET;
 	else{
 
 		dz = (_UltraInfo.getZ() - params_automatic::OffsetUltraSensor);

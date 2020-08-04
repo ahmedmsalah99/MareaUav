@@ -26,6 +26,8 @@ class safety_ack
 
         int8_t     isgoinginsafeharbor;
 
+        int8_t     isgoingtoplatform;
+
         double     iscameragone_timestamp;
 
     public:
@@ -139,6 +141,9 @@ int safety_ack::_encodeNoHash(void *buf, int offset, int maxlen) const
     tlen = __boolean_encode_array(buf, offset + pos, maxlen - pos, &this->isgoinginsafeharbor, 1);
     if(tlen < 0) return tlen; else pos += tlen;
 
+    tlen = __boolean_encode_array(buf, offset + pos, maxlen - pos, &this->isgoingtoplatform, 1);
+    if(tlen < 0) return tlen; else pos += tlen;
+
     tlen = __double_encode_array(buf, offset + pos, maxlen - pos, &this->iscameragone_timestamp, 1);
     if(tlen < 0) return tlen; else pos += tlen;
 
@@ -164,6 +169,9 @@ int safety_ack::_decodeNoHash(const void *buf, int offset, int maxlen)
     tlen = __boolean_decode_array(buf, offset + pos, maxlen - pos, &this->isgoinginsafeharbor, 1);
     if(tlen < 0) return tlen; else pos += tlen;
 
+    tlen = __boolean_decode_array(buf, offset + pos, maxlen - pos, &this->isgoingtoplatform, 1);
+    if(tlen < 0) return tlen; else pos += tlen;
+
     tlen = __double_decode_array(buf, offset + pos, maxlen - pos, &this->iscameragone_timestamp, 1);
     if(tlen < 0) return tlen; else pos += tlen;
 
@@ -178,13 +186,14 @@ int safety_ack::_getEncodedSizeNoHash() const
     enc_size += __boolean_encoded_array_size(NULL, 1);
     enc_size += __boolean_encoded_array_size(NULL, 1);
     enc_size += __boolean_encoded_array_size(NULL, 1);
+    enc_size += __boolean_encoded_array_size(NULL, 1);
     enc_size += __double_encoded_array_size(NULL, 1);
     return enc_size;
 }
 
 uint64_t safety_ack::_computeHash(const __lcm_hash_ptr *)
 {
-    uint64_t hash = 0x481ba47a2971eafaLL;
+    uint64_t hash = 0x2048933f19436957LL;
     return (hash<<1) + ((hash>>63)&1);
 }
 

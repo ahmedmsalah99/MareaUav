@@ -108,6 +108,18 @@ namespace params_automatic {
 
     static const double maxOutput       = 1.5;
 
+    /**
+     * Distance from the center of the platform where to initialize landing
+     */
+    
+    static const double distanceFromCenter	= 1.0;
+
+    /**
+     * Drone altitude when initializing the landing
+     */
+    
+    static const double prelandAltitude	= 6.0;
+
 }
 
 #endif //MOCAP2MAV_PARAMETERS_H

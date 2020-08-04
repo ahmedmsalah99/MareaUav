@@ -120,6 +120,13 @@ public:
 
     bool *_Inspection;
 
+    /**
+     * It checks if the drone is aligned with the platform and ready to start the landing
+     */
+
+    bool *_readyToLand;
+
+
 	Parameters *param;
 
 };
@@ -197,6 +204,8 @@ public:
          _holding       = *(_contextL->_holding);
          _centered      = *(_contextL->_centered);
          _lost          = *(_contextL->_lost);
+         _Inspection    = *(_contextL->_Inspection);
+         _readyToLand = *(_contextL->_readyToLand);
 
     }
 
@@ -275,13 +284,13 @@ protected:
      * Relative pose between drone and platform using vision system
      */
 
-	MavState _VisionPose;
+	  MavState _VisionPose;
 
     /**
      * Relative z position and velocity of the drone respect to the platform
      */
 
-	MavState _UltraInfo;
+	  MavState _UltraInfo;
 
     /**
      * Pointer to the LandMachine class.
@@ -306,6 +315,19 @@ protected:
      */
 
     bool _lost;
+
+    /**
+     * It checks if the drone needs to perform an Inspection to find the platform
+     */
+
+    bool _Inspection;
+
+    /**
+     * It checks if the drone is aligned with the platform and ready to start the landing
+     */
+
+    bool _readyToLand;
+
 
 	Parameters param;
 

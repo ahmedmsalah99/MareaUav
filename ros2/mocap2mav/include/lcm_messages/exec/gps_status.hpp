@@ -16,6 +16,12 @@ namespace exec
 class gps_status
 {
     public:
+        double     lon;
+
+        double     lat;
+
+        double     alt;
+
         int8_t     status;
 
         double     timestamp;
@@ -116,6 +122,15 @@ int gps_status::_encodeNoHash(void *buf, int offset, int maxlen) const
 {
     int pos = 0, tlen;
 
+    tlen = __double_encode_array(buf, offset + pos, maxlen - pos, &this->lon, 1);
+    if(tlen < 0) return tlen; else pos += tlen;
+
+    tlen = __double_encode_array(buf, offset + pos, maxlen - pos, &this->lat, 1);
+    if(tlen < 0) return tlen; else pos += tlen;
+
+    tlen = __double_encode_array(buf, offset + pos, maxlen - pos, &this->alt, 1);
+    if(tlen < 0) return tlen; else pos += tlen;
+
     tlen = __int8_t_encode_array(buf, offset + pos, maxlen - pos, &this->status, 1);
     if(tlen < 0) return tlen; else pos += tlen;
 
@@ -129,6 +144,15 @@ int gps_status::_decodeNoHash(const void *buf, int offset, int maxlen)
 {
     int pos = 0, tlen;
 
+    tlen = __double_decode_array(buf, offset + pos, maxlen - pos, &this->lon, 1);
+    if(tlen < 0) return tlen; else pos += tlen;
+
+    tlen = __double_decode_array(buf, offset + pos, maxlen - pos, &this->lat, 1);
+    if(tlen < 0) return tlen; else pos += tlen;
+
+    tlen = __double_decode_array(buf, offset + pos, maxlen - pos, &this->alt, 1);
+    if(tlen < 0) return tlen; else pos += tlen;
+
     tlen = __int8_t_decode_array(buf, offset + pos, maxlen - pos, &this->status, 1);
     if(tlen < 0) return tlen; else pos += tlen;
 
@@ -141,6 +165,9 @@ int gps_status::_decodeNoHash(const void *buf, int offset, int maxlen)
 int gps_status::_getEncodedSizeNoHash() const
 {
     int enc_size = 0;
+    enc_size += __double_encoded_array_size(NULL, 1);
+    enc_size += __double_encoded_array_size(NULL, 1);
+    enc_size += __double_encoded_array_size(NULL, 1);
     enc_size += __int8_t_encoded_array_size(NULL, 1);
     enc_size += __double_encoded_array_size(NULL, 1);
     return enc_size;
@@ -148,7 +175,7 @@ int gps_status::_getEncodedSizeNoHash() const
 
 uint64_t gps_status::_computeHash(const __lcm_hash_ptr *)
 {
-    uint64_t hash = 0xddaf46b657ab13ffLL;
+    uint64_t hash = 0xb566e6a6d6fd0f19LL;
     return (hash<<1) + ((hash>>63)&1);
 }
 

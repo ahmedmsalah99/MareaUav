@@ -32,6 +32,7 @@ namespace common {
 
         TAKE_OFF,
         MOVE,
+	SEARCH,
         ROTATE,
         LAND,
         IDLE, //helper
@@ -47,6 +48,7 @@ namespace common {
 
            actionMap[actions::LAND]     = "Land";
            actionMap[actions::MOVE]     = "Move";
+           actionMap[actions::SEARCH]     = "Search";
            actionMap[actions::TAKE_OFF] = "Take off";
            actionMap[actions::ROTATE]   = "Rotate";
            actionMap[actions::IDLE]     = "Idle";

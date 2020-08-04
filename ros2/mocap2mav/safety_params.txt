@@ -1,4 +1,5 @@
-battery_threshold=0.20
+battery_threshold1=0.20
+battery_threshold2=0.70
 emergland_threshold1=2
 emergland_threshold2=0.25
 emergland_gain=2.0
@@ -18,4 +19,11 @@ home_latitude=47.3977510
 home_altitude=488.2
 movetosafeharbor_altitude=10.0
 rotation_threshold=3.0
+reachplatform_threshold=0.25
+reachplatfrom_altitude=6.0
+platform=1.0
+platform_rdv_lon=8.5456099
+platform_rdv_lat=47.3987971
+platform_rdv_alt=488.2
+target_dispersed=1.0
 #

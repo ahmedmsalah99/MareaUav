@@ -161,7 +161,7 @@ private:
         } else {
 
             // this is used to reset the lander if needed
-            if(_actualTask->params[3] == 127.0 && first)
+            if(_actualTask->target == "reset_land" && first)
             {
               first = false;
               _lander.startFromBeginning = true;

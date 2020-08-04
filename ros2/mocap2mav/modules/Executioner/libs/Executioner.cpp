@@ -13,10 +13,12 @@ using namespace common;
 Executioner::Executioner(){
 
     _actualNode = 0;
+    _defaultYaw = 0;
     _idle = false;
     _can_run = false;
     _newTask = true;
     _publish_task = false;
+    _payloadReleased = false;
     _nodeList.clear();
     _nodeList.shrink_to_fit();
     isBatterySafetyTaskRunning = 0;
@@ -24,6 +26,7 @@ Executioner::Executioner(){
     isCameraSafetyTaskRunning = 0;
     isSonarSafetyTaskRunning = 0;
     isGoingInSafeHarbor = 0;
+    env_sim = (bool)std::getenv("M2M_SIM");
 
 }
 
@@ -59,9 +62,15 @@ void Executioner::setPlatformState(MavState ps){
 
 }
 
-void::Executioner::setList(std::deque<exec::task> list) {
+void Executioner::setList(std::deque<exec::task> list) {
 
     _nodeList = list;
+
+}
+
+void Executioner::setRelPayFeedback(exec::release_payload feedback) {
+
+    _relpay_feedback.data = feedback.data;
 
 }
 
@@ -158,10 +167,19 @@ void Executioner::run(){
     while(!done);
   }
 
-  if(!isGoingInSafeHarbor)
+  if(_actualTask.target == "platform" && env_sim)
   {
-    _nodeList[_actualNode].x = _platState.getX();
-    _nodeList[_actualNode].y = _platState.getY();
+    // if we are on simulation, setting at every iteration the platform state
+    // as the desired one
+    _actualTask.x = _platState.getX();
+    _actualTask.y = _platState.getY();
+    // and adjusting the yaw as well, to be more precise on orientation
+    double coords[3];
+    coords[0] = _actualTask.x;
+    coords[1] = _actualTask.y;
+    coords[2] = _actualTask.z;
+
+    _actualTask.yaw = computeDesiredYaw(_state, coords);
   }
     // Check for next task
     if((CheckActions(_actualTask.action) || skip) && _can_run) {
@@ -201,15 +219,32 @@ bool Executioner::CheckActions(int a)
           if(isCameraSafetyTaskRunning)
             return false;
           else  // returns the distance condition wrt the platform coordinates and the prefixed desired altitude
-            return (fabs(_state.getX() - _nodeList[_actualNode].x) < _actualTask.params[1] &&
-                    fabs(_state.getY() - _nodeList[_actualNode].y) < _actualTask.params[1] &&
-                    fabs(_state.getZ() - _nodeList[_actualNode].z) < _actualTask.params[1] );
+            return (fabs(_state.getX() - _actualTask.x) < _actualTask.params[1] &&
+                    fabs(_state.getY() - _actualTask.y) < _actualTask.params[1] &&
+                    fabs(_state.getZ() - _actualTask.z) < _actualTask.params[1] );
           break;
 
         //TAKE_OFF
         case actions::TAKE_OFF:
 
           return (fabs(_state.getZ()) >= (fabs(_actualTask.params[0]) - _actualTask.params[1]));
+          break;
+
+        //SEARCH
+        case actions::SEARCH:
+          if(_relpay_feedback.data == "R" && !_payloadReleased)
+          {
+            std::cout << "PAYLOAD RELEASED, HOLDING ON TARGET" << std::endl;
+            _payloadReleased = true;
+            // return true;
+          }
+          // computing then the distance between the platform and the drone,
+          // and if it is under a certain threshold AND the payload got released, then the drone can come back.
+          if(_payloadReleased && sqrt(pow((_platState.getX() - _state.getX()),2) + pow((_platState.getY() - _state.getY()),2)) < _actualTask.params[2])
+          {
+            return true;
+          }
+          return false;
           break;
 
         //ROTATE
@@ -288,12 +323,51 @@ void Executioner::loadTask() {
     _actualTask.y         = _nodeList[_actualNode].y;
     _actualTask.z         = _nodeList[_actualNode].z;
     _actualTask.yaw       = _nodeList[_actualNode].yaw;
+    _actualTask.target    = _nodeList[_actualNode].target;
     _actualTask.action    = _nodeList[_actualNode].action;
     _actualTask.id        = _nodeList[_actualNode].id;
     _actualTask.params[0] = _nodeList[_actualNode].params[0];
     _actualTask.params[1] = _nodeList[_actualNode].params[1];
     _actualTask.params[2] = _nodeList[_actualNode].params[2];
     _actualTask.params[3] = _nodeList[_actualNode].params[3];
+    _actualTask.params[4] = _nodeList[_actualNode].params[4];
+
+
+    if(_actualTask.action == actions::MOVE) // || _actualTask.target == "platform"
+    {
+      double coords[3];
+      coords[0] = _actualTask.x;
+      coords[1] = _actualTask.y;
+      coords[2] = _actualTask.z;
+      double home_coords[3];
+      home_coords[0] = _actualTask.params[2];
+      home_coords[1] = _actualTask.params[3];
+      home_coords[2] = _actualTask.params[4];
+      if(_actualTask.target == "rescue")
+      {
+        globalToLocalCoords(coords, home_coords);
+        _actualTask.x = coords[0];
+        _actualTask.y = coords[1];
+        _actualTask.z = coords[2];
+        _actualTask.yaw = computeDesiredYaw(_state, coords);
+      }
+      else if(_actualTask.target == "platform")
+      {
+        if(!env_sim)
+        {
+          globalToLocalCoords(coords, home_coords);
+          _actualTask.x = coords[0];
+          _actualTask.y = coords[1];
+          _actualTask.z = coords[2];
+        }
+        _actualTask.yaw = computeDesiredYaw(_state, coords);
+      }
+      _defaultYaw = _actualTask.yaw;
+    }
+    else if(_actualTask.action == actions::SEARCH || _actualTask.action == actions::LAND) // || _actualTask.action == actions::LAND
+    {
+      _actualTask.yaw = _defaultYaw;
+    }
 
 }
 
@@ -327,6 +401,8 @@ void Executioner::batteryGoneHandler(exec::safety safety)
   else
   {
     //TODO: handle this case.
+    tempTask.x = _state.getX();
+    tempTask.y = _state.getY();
   }
   // this is the desired position on z the drone has to achieve
   tempTask.z = 0;
@@ -346,6 +422,50 @@ void Executioner::batteryGoneHandler(exec::safety safety)
   loadTask();
 }
 
+void Executioner::batteryLimitHandler(exec::safety safety)
+{
+  // defining the tasks to be filled (MOVE to platform and LAND on it)
+  exec::task tempTask1;
+  exec::task tempTask2;
+  // QUEST: Checking for already existing tasks to copy or filling directly?
+  // checking if in the list of the tasks to be executed there exist MOVE to platform
+  // and LAND already, starting from the current executed task
+  // for(int i = _actualNode; i < _nodeList.size(); i++)
+  // {
+  //   if(_nodeList[i].action == actions::MOVE && _nodeList[i].target == "platform")
+  //   {
+  //   }
+  // }
+  // APPROACH: filling directly; hence, as first step, the task list wil be cleared
+  clearList();
+  // starting then with first task
+  tempTask1.action = actions::MOVE;
+  tempTask1.target = "platform";
+  // we fill the coordinates
+  tempTask1.x = safety.target_coord[0];
+  tempTask1.y = safety.target_coord[1];
+  tempTask1.z = safety.params[2];
+  // the desired yaw
+  tempTask1.yaw = safety.params[3];
+  // the alpha
+  tempTask1.params[0] = safety.params[0];
+  // and the threshold
+  tempTask1.params[1] = safety.params[1];
+
+  // filling then the LAND task
+  tempTask2.action = actions::LAND;
+  tempTask2.params[0] = safety.params[4];
+  // setting the task list then
+  setNextTask(tempTask2);
+  setNextTask(tempTask1);
+  // calling init every time there is a new list
+  init();
+  // and loading the task
+  loadTask();
+}
+
+
+
 void Executioner::cameraGoneHandler(exec::safety safety)
 {
   // we create the object for the task
@@ -353,10 +473,21 @@ void Executioner::cameraGoneHandler(exec::safety safety)
   // this time we don't clear the task list, cause the camera may come back online,
   // hence the mission could continue
   tempTask.action = actions::MOVE;
-  // filling the coordinates to follow, which correspond to platform position
-  tempTask.x = _platState.getX();
-  tempTask.y = _platState.getY();
+  if(_actualTask.action == actions::LAND)
+  {
+    // filling the coordinates to follow, which correspond to platform position
+    tempTask.x = _platState.getX();
+    tempTask.y = _platState.getY();
+  }
+  else
+  {
+    // in any other case, we keep the current position
+    tempTask.x = _state.getX();
+    tempTask.y = _state.getY();
+  }
   tempTask.z = safety.params[0];
+  tempTask.yaw = _state.getYaw();
+  tempTask.target = "platform";
   // setting the alpha as well
   tempTask.params[0] = safety.params[1];
   // and the threshold to satisfy the condition, in case camera would come back online
@@ -399,10 +530,12 @@ void Executioner::moveToSafeHarbor(exec::safety safety)
   tempTask1.action = actions::MOVE;
   // setting then the params of both tasks, starting from Move
   // filling the coordinates of the desired safe harbor place
-  tempTask1.x = safety.safeharbor_coord[0];
-  tempTask1.y = safety.safeharbor_coord[1];
+  tempTask1.x = safety.target_coord[0];
+  tempTask1.y = safety.target_coord[1];
   tempTask1.z = safety.params[4];
   tempTask1.yaw = safety.params[6];
+  // setting the right target as well
+  tempTask1.target = "safe_harbor";
   // the gain to used to reach it
   tempTask1.params[0] = safety.params[5];
   // and the threshold to satisfy the condition
@@ -413,7 +546,7 @@ void Executioner::moveToSafeHarbor(exec::safety safety)
   // with a proper id
   tempTask2.id = 100;
   // this is the desired position on z the drone has to achieve
-  tempTask2.z = safety.safeharbor_coord[2];
+  tempTask2.z = safety.target_coord[2];
   // this one specify that no platform exists, so the drone has to land normally
   tempTask2.params[0] = 0;
   // finally filling it on the execution list, as the last to be executed
@@ -452,7 +585,64 @@ void Executioner::resetLanding()
   {
     if(_nodeList[i].action == actions::LAND)
     {
-      _nodeList[i].params[3] = 127.0;
+      _nodeList[i].target = "reset_land";
     }
   }
 }
+
+// float Executioner::deg2rad(float angle_degree)
+// {
+//   return (angle_degree*_PI)/180.0f;
+// }
+//
+// void Executioner::globalToLocalCoords(exec::task actualTask)
+// {
+//   // getting target global coordinates
+//   double target_lon = actualTask.x;
+//   double target_lat = actualTask.y;
+//   double target_alt = actualTask.z;
+//   // and defining a common constant
+//   double earth_radius = 6371000; // (meters)
+//   double polar_radius = 6356752; // (meters)
+//
+//   // computing the distance between home position and safe harbor one using Haversine formula
+//   // float a = sinf((sh_lat - _safety_params.home_latitude)/2)*sinf((sh_lat - _safety_params.home_latitude)/2) +
+//   //  					cosf(_safety_params.home_latitude)*cosf(sh_lat)*sinf((sh_lon - _safety_params.home_longitude)/2)*sinf((sh_lon - _safety_params.home_longitude)/2);
+//   //
+//   // float c = 2.0f*atan2f(sqrtf(a), sqrtf(1.0f-a));
+//   //
+//   // d = earth_radius * c;
+//   double cap_radius_sh = earth_radius*cosf(deg2rad(target_lat));
+//   double cap_radius_h = earth_radius*cosf(deg2rad(actualTask.params[3]));
+//   double mean_cap_radius = (cap_radius_h + cap_radius_sh)/2.0;
+//
+//   // converting it
+//   _actualTask.x = mean_cap_radius * deg2rad(target_lon - actualTask.params[2]);
+//
+//   _actualTask.y = polar_radius * deg2rad(target_lat - actualTask.params[3]);
+//
+//   _actualTask.z = target_alt - actualTask.params[4];
+//
+//   // std::cout << "Longitude: " << _actualTask.x << std::endl;
+//   // std::cout << "Latitude: " <<_actualTask.y << std::endl;
+//
+// }
+//
+// float Executioner::computeDesiredYaw(MavState pose, exec::task actualTask)
+// {
+//   // getting the actual yaw angle
+//   double rapp = (pose.getX() - actualTask.x)/(pose.getY() - actualTask.y);
+//   // as the tangent angle between these two points
+//   double alpha = atanf(rapp);
+//   // converting it wrt the local reference frame (x on EST, y on NORTH)
+//   double alpha_local = _PI/2.0 - alpha;
+//   // std::cout << 180.0*alpha/_PI << std::endl;
+//   // checking its orientation then: if the point to be reached
+//   // is below (wrt local reference frame) the drone's position, then we fix the orientation
+//   if(actualTask.y - pose.getY() < 0.0)
+//   {
+//     alpha_local = alpha_local - _PI;
+//   }
+//   // returning then the final desired value
+//   return  alpha_local;
+// }

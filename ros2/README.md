@@ -41,7 +41,7 @@ The last instruction will wait to connect to the simulator
 
 ### To set the vision system:
 ```
-cd ~/aprilTag
+cd ~/vision_dashing_ws
 source environment.sh
 ```
 
@@ -49,14 +49,23 @@ source environment.sh
 ```
 cd ~/landingPlat
 ```
-Compile it and put the .so file in the build folder.
+Compile it and put the .so file in the build folder (if not already there).
+Compilation being done by these commands:
+
+```
+mkdir build
+cd build
+cmake ..
+make
+```
 
 ### To set the simulation with the vision system:
 ```
-cd ~/aprilTag/catkin_ws/src/load_simulation
+cd ~/vision_dashing_ws/src/load_nodes
 source setup_variable.sh
 ```
-It links Gazebo with Firmware, the bridge with Guidance controller, it includes the plugin for the platform. Remember to set the correct paths
+It links Gazebo with Firmware, the bridge with Guidance controller, it includes the plugin for the platform. Remember to set the correct paths.
+This step needs to be done for every terminal requiring the M2M_INCLUDE variable.
 
 ### To compile the guidance controller:
 ```
@@ -69,36 +78,67 @@ Then load the action list called list.txt following the form of "list_example.tx
 
 ## How to run:
 
-1. Firmware module:
+1. Firmware module (Firmware directory):
 ```
-no_sim=1 make px4_sitl_default gazebo
+no_sim=1 make px4_sitl_rtps gazebo
 ```
 
-2. tb3_aprilTag module:
+2. roscore (on any directory):
 ```
-source devel/setup.bash
-roslaunch load_simulation load_simulation.launch
+. /opt/ros/melodic/setup.bash
+roscore
 ```
-It runs MAVROS package and aprilTag vision system.
 
-3. mocap2mav module:
+3. ros1_bridge (vision_dashing_ws directory):
+```
+. /opt/ros/dashing/setup.bash
+. install/local_setup.bash
+export ROS_MASTER_URI=http://localhost:11311
+ros2 run ros1_bridge dynamic_bridge --bridge-all-2to1-topics
+```
+
+4. Mavros (vision_melodic_ws):
+
+NEEDS M2M_INCLUDE => source environment.sh and setup_variable.sh first
+
+```
+. devel/setup.bash
+roslaunch load_nodes load_simulation.launch
+```
+
+5. RTPS Agent (vision_dashing_ws):
+```
+. install/setup.bash
+micrortps_agent -t UDP
+```
+
+6. RTPS Client (on the first terminal (Firmware NuttShell))
+
+```
+micrortps_client start -t UDP
+```
+
+7. apriltag + lcm_bridge + ultrasonic_sensor + payload_releaser modules:
+
+NEEDS M2M_INCLUDE => source environment.sh and setup_variable.sh first
+
+```
+. install/setup.bash
+ros2 launch load_nodes ros2_sim.launch.py
+```
+
+8. mocap2mav module:
 ```
 cd ~/mocap2mav
+source setting_test.sh
 source build_package.sh
 ./app_start.sh
 sim
 ```
-The actions will be parsed
 
-4. the bridge module:
-```
-source devel/setup.bash
-rosrun lcm_bridge bridge_node
-```
-In the catkin workspace
+on the spawned terminals, allow the takeoff if you need to perform it.
 
-
-Coming back to the first terminal and write:
+9. Coming back to the first terminal and write:
 ```
 commander mode arm
 commander mode offboard
@@ -106,7 +146,7 @@ commander mode offboard
 or do it in QGroundControl.
 That's done to allow the mocap2mav module to communicate with the firmware.
  
-Besides rostopic to see the vision data.
+Besides ros2 topic to see the vision data.
 
 
 

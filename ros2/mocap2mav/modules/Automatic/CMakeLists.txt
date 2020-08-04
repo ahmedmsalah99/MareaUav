@@ -11,6 +11,11 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 ##find_package(Qt5Widgets REQUIRED)
 #find_package(Qt5Network)
 
+set(M2M_SIM "$ENV{M2M_SIM}")
+if(NOT M2M_SIM)
+ message(FATAL_ERROR "Undefined M2M_SIM env var. HINT: export M2M_SIM=1 if running simulation, 0 else")
+endif()
+
 set(PROJECT_SRCS src/main.cpp ${PROJECT_SRC_DIR}/MavState.cpp include/param.h)
 
 set(PROJECT_SRCS src/main.cpp ${PROJECT_SRC_DIR}/MavState.cpp include/Lander/Parameters.h)
@@ -37,11 +42,15 @@ pkg_search_module(LCM REQUIRED lcm)
 		 ${PROJECT_SRC_DIR}/MavState.cpp
 		 ${PROJECT_INCLUDE_DIR}/common/MavState.h
 		 libs/Lander.cpp
+		 libs/Searcher.cpp
 		 libs/Parameters.cpp
 		 include/Lander/Parameters.h
 		 include/Lander/Lander.h
 		 include/Lander/StatesClasses.hpp
-		 libs/StateClasses.cpp)
+		 include/Searcher/Searcher.h
+		 include/Searcher/SearchStateClasses.hpp
+		 libs/StateClasses.cpp
+		 libs/SearchStateClasses.cpp)
 		 #${PROJECT_LIB_DIR}/StateMachine/include/Machine.h
 		 #${PROJECT_LIB_DIR}/StateMachine/include/AbstractState.h
 		 #${PROJECT_LIB_DIR}/StateMachine/src/Machine.cpp)

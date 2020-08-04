@@ -2,10 +2,11 @@ package exec;
 struct safety
 {
 	boolean isbatterygone;
+	boolean isgoingplatform;
 	boolean isgpsgone;
 	boolean issonargone;
 	boolean iscameragone;
 	boolean goingsafeharbor;
-	double safeharbor_coord[3];
+	double target_coord[3];
 	double params[8];
 }
