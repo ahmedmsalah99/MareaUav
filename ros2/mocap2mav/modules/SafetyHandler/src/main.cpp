@@ -15,14 +15,6 @@ int main(int argc, char** argv)
   SafetyParser sp;
   CallbackHandler call;
 
-  // initializing safety msg.
-  exec::safety safety;
-  safety.isbatterygone = 0;
-  safety.iscameragone = 0;
-  safety.isgpsgone = 0;
-  safety.issonargone = 0;
-  safety.goingsafeharbor = 0;
-
   // bool first = true;
 
   //Fetch list path
@@ -76,7 +68,7 @@ int main(int argc, char** argv)
 	sub6 -> setQueueCapacity(1);
 	sub7 -> setQueueCapacity(1);
   // defining then the structure used to poll from topics
-  struct pollfd fds[6];
+  struct pollfd fds[7];
   // and the interested topics to poll
 	fds[0].fd = handler3.getFileno(); // Actual Task
 	fds[0].events = POLLIN;
@@ -122,8 +114,22 @@ int main(int argc, char** argv)
   safetyHandler.plat_local_coord[1] = target_global_coords[1];
   safetyHandler.plat_local_coord[2] = target_global_coords[2];
 
+  Spinner spin(5);
+  spin.suppressWarnings();
+  spin.useMilli();
+
+
+  // initializing safety msg.
+  exec::safety safety;
+  safety.isbatterygone = 0;
+  safety.iscameragone = 0;
+  safety.isgpsgone = 0;
+  safety.issonargone = 0;
+  safety.goingsafeharbor = 0;
+  safety.isgoingplatform = 0;
+
   // here begins the task, choosen to loop infinitely (safety has priority)
-  while(true)
+  while(spin.ok())
   {
     // updating the struct
 		int ret = poll(fds,7,0);
@@ -175,7 +181,7 @@ int main(int argc, char** argv)
       {
         if(safetyHandler.handleBatteryReturn(call.battery.remaining) && call._task.action != actions::LAND && call._task.target != "platform" && call._task.target != "safe_harbor")
         {
-          // so many conditions there: briefly, if the drone's mission is not to rescue anyone,
+          // so many conditions there: briefly, if the drone's mission is not to rescue anyone (or if the payload has been released already on the target to be rescued),
           // also if the drone is not already landing and is not moving to the platform already (or going in safe harbor as well),
           // if the level battery is below a prefixed threshold, then we signal to him to come back to the platform
           safety.isgoingplatform = 1;
@@ -204,6 +210,7 @@ int main(int argc, char** argv)
       // TODO: check on the distance to choose to come back in mission???
       if(safety.iscameragone && !call.safety_ack.isgoinginsafeharbor)
       {
+        std::cout << "PD: "<< (bool)safety.iscameragone << std::endl;
         safety.iscameragone = 0;
         handler6.publish("safety", &safety);
         std::cout << "GOOD NEWS: CAMERA WORKS AGAIN!!! Coming Back To Mission" << std::endl;

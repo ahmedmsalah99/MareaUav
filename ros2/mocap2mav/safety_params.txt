@@ -1,5 +1,5 @@
-battery_threshold1=0.20
-battery_threshold2=0.70
+battery_threshold1=0.15
+battery_threshold2=0.40
 emergland_threshold1=2
 emergland_threshold2=0.25
 emergland_gain=2.0

@@ -111,6 +111,8 @@ int main(int argc, char** argv){
         {
           handler6.handle();
           // and if it is, update it.
+          std::cout << call.relpay_feedback.data << std::endl;
+
           e.setRelPayFeedback(call.relpay_feedback);
           std::cout << "Feedback Received" << std::endl;
         }

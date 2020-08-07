@@ -100,7 +100,7 @@ class Searcher
      		bool _inspection;
 
 		/**
-		 * payload released check
+		 * payload released feedback check
 		 */
 
      		bool _payloadReleased;

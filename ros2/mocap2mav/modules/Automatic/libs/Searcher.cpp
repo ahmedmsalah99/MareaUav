@@ -5,7 +5,7 @@
 
 Searcher::Searcher():_horizontaErr((double)0), _tauHold((double)0), _tauLost((double)0),  _NHold(0),_dt(0), _prevTime(0), _actualTime(0),
                     _NLost(0), _initS(&_machine), _inspeS(&_machine), _holdS(&_machine), _relS(&_machine), _err(0,0,0), _err_int(0,0,0),
-                    _actualState(0),_prevState(0), _verticalErr(0), _holdPIDX(0,0,0), _holdPIDY(0,0,0)
+                    _actualState(0),_prevState(0), _verticalErr(0), _holdPIDX(0,0,0), _holdPIDY(0,0,0), _payloadReleased(false), _releasePayload(false)
 {
 
     //set the state machine
@@ -47,6 +47,7 @@ void Searcher::initStateMachine()
 
   _inspection = false;
   _payloadReleased = false;
+  _releasePayload = false;
 	resetMachine = false;
   //reset variables
 	_horizontaErr = (double)0;
@@ -152,7 +153,7 @@ MavState Searcher::getCommand()
 
 bool Searcher::getPayloadCommand()
 {
-    return _payloadReleased;
+    return _releasePayload;
 }
 
 void Searcher::setRelPayFeedback(exec::release_payload  feedback)
@@ -401,7 +402,8 @@ void Searcher::hold() {
 
   updateIntegrals();
 
-  if(_holding && !_payloadReleased)
+  // std::cout << _payloadReleased << std::endl;
+  if(!_payloadReleased && _holding)
     _setPoint.setZ(param.zMax);
   else
     _setPoint.setZ(_Z0);
@@ -459,16 +461,16 @@ void Searcher::inspection()
 
 void Searcher::releasePayload()
 {
-  _payloadReleased = true;
+  _releasePayload = true;
 }
 
 void Searcher::align()
 {
-
-    _setPoint.setYaw(_yaw_des);
-    Eigen::Quaterniond q_interm = yawToQuaternion(_yaw_des);
-    // std::cout << _yaw_des*180.0/3.14 << std::endl;
-    _setPoint.setOrientation(q_interm);
+    //
+    // _setPoint.setYaw(_yaw_des);
+    // Eigen::Quaterniond q_interm = yawToQuaternion(_yaw_des);
+    // // std::cout << _yaw_des*180.0/3.14 << std::endl;
+    // _setPoint.setOrientation(q_interm);
 
 }
 

@@ -457,7 +457,7 @@ bool Parser::parseSearch(exec::task& task, int pos) {
             if (std::isfinite(value)) {
                 mask |= pFound;
                 task.params[2] = value;
-                std::cout << "Platform Distancee Threshold: " << value << " found for action: " << pos << std::endl;
+                std::cout << "Platform Distance Threshold: " << value << " found for action: " << pos << std::endl;
 
             } else {
                 std::cout << "value is not finite" << std::endl;

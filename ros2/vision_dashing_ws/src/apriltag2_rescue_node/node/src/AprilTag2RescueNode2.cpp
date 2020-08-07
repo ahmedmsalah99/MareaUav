@@ -273,20 +273,20 @@ void AprilTag2RescueNode::getPose(const matd_t& H, geometry_msgs::msg::Transform
 		R.col(2) *= -1;
 	}
 
-	double angle = (120.0)*3.14/180.0;
-
-	Mat3 R2_z;
-
-	R2_z << cos(angle), -sin(angle), 0,
-				sin(angle),  cos(angle), 0,
-					0,               0, 1;
-	if(z_up)
-	{
-		// rotate by half rotation about x-axis
-		R2_z.col(1) *= -1;
-		R2_z.col(2) *= -1;
-	}
-	R = R2_z * R;
+	// double angle = (120.0)*3.14/180.0;
+	//
+	// Mat3 R2_z;
+	//
+	// R2_z << cos(angle), -sin(angle), 0,
+	// 			sin(angle),  cos(angle), 0,
+	// 				0,               0, 1;
+	// if(z_up)
+	// {
+	// 	// rotate by half rotation about x-axis
+	// 	R2_z.col(1) *= -1;
+	// 	R2_z.col(2) *= -1;
+	// }
+	// R = R2_z * R;
 
 	// the corner coordinates of the tag in the canonical frame are (+/-1, +/-1)
 	// hence the scale is half of the edge size

@@ -87,7 +87,7 @@ int main(int argc, char** argv){
 	fds[6].fd = handler8.getFileno();
 	fds[6].events = POLLIN;
 
-	fds[7].fd = handler8.getFileno();
+	fds[7].fd = handler9.getFileno();
 	fds[7].events = POLLIN;
 
   bool waiting = true;
@@ -196,44 +196,51 @@ int main(int argc, char** argv){
 				// std::cout<<"y:"<<visionSystem.getY()<<std::endl;
 				// std::cout<<"z:"<<visionSystem.getZ()<<std::endl;
 
-				// contacting the platform with the updated position of the drone,
-				// to inform that the target has been found;
-				geometry::pose rescue_coords;
-				// filling the position
-				rescue_coords.position[0] = autom.getState().getX();
-				rescue_coords.position[1] = autom.getState().getY();
-				rescue_coords.position[2] = autom.getState().getZ();
-
-				// and putting platform position into an array. That's done due to computeDesiredYaw arguments  request
-				geometry::pose platform_coords;
-				platform_coords.position[0] = platform.getX();
-				platform_coords.position[1] = platform.getY();
-				platform_coords.position[2] = platform.getZ();
-
-				// getting then the yaw between the drone position and the platform one
-				double yaw_temp = computeDesiredYaw(autom.getState(), platform_coords.position);
-
-				Eigen::Quaterniond orientation_temp;
-				// transforming it in an orientation quaternion
-				orientation_temp = getQuatFromYaw(yaw_temp);
-
-				// and setting it
-				rescue_coords.orientation[0] = orientation_temp.w();
-				rescue_coords.orientation[1] = orientation_temp.x();
-				rescue_coords.orientation[2] = orientation_temp.y();
-				rescue_coords.orientation[3] = orientation_temp.z();
-
-				// after the yaw has been computed, if a real test is running, the coordinates
-				// has to be fixed to the global ones
-				if(!autom.env_sim)
+				// iff we are in searching state
+				if(call._task.action == actions::SEARCH)
 				{
-					rescue_coords.position[0] = call.gps.lon;
-					rescue_coords.position[1] = call.gps.lat;
-					rescue_coords.position[2] = call.gps.alt;
-				}
+					// contacting the platform with the updated position of the drone,
+					// to inform that the target has been found;
+					geometry::pose rescue_coords;
+					// filling the position
+					rescue_coords.position[0] = autom.getState().getX();
+					rescue_coords.position[1] = autom.getState().getY();
+					rescue_coords.position[2] = autom.getState().getZ();
 
-				// finally publishing the message
-				handler.publish("Landing_Site/pose_cmd", &rescue_coords);
+					// and putting platform position into an array. That's done due to computeDesiredYaw arguments  request
+					geometry::pose platform_coords;
+					platform_coords.position[0] = platform.getX();
+					platform_coords.position[1] = platform.getY();
+					platform_coords.position[2] = platform.getZ();
+
+					// getting then the yaw between the drone position and the platform one
+					double yaw_temp = computeDesiredYaw(autom.getState(), platform_coords.position);
+
+					Eigen::Quaterniond orientation_temp;
+					// transforming it in an orientation quaternion
+					orientation_temp = getQuatFromYaw(yaw_temp);
+
+					// and setting it
+					rescue_coords.orientation[0] = orientation_temp.w();
+					rescue_coords.orientation[1] = orientation_temp.x();
+					rescue_coords.orientation[2] = orientation_temp.y();
+					rescue_coords.orientation[3] = orientation_temp.z();
+
+					// after the yaw has been computed, if a real test is running, the coordinates
+					// has to be fixed to the global ones
+					if(!autom.env_sim)
+					{
+						rescue_coords.position[0] = call.gps.lon;
+						rescue_coords.position[1] = call.gps.lat;
+						rescue_coords.position[2] = call.gps.alt;
+					}
+
+					// finally publishing the message
+					handler.publish("Landing_Site/pose_cmd", &rescue_coords);
+
+					// the check on the actual task it's done in order to update not the position
+					// of the target to rescue when the drone is coming back to the platform
+				}
 		}
 		else
 		{
