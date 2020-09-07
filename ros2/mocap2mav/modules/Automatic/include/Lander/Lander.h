@@ -78,6 +78,13 @@ public:
 
     void setState(MavState pose);
 
+	/**
+	 * @brief It allows to set the desired yaw during seaching phase
+	 * @param desired yaw coming from task struct
+	 */
+
+	void setYaw(float yaw);
+
     /**
      * @brief It controls the actual state of the machine and of the drone
      * @details It calls updateSignals() and handle() methods
@@ -177,6 +184,13 @@ public:
        */
 
   	bool _resetMachine;
+	
+	/**
+	 * desired yaw
+	 */
+
+	float _yaw_des;
+
 
   	/**
        * To print signals every seconds

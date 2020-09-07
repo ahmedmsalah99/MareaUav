@@ -227,6 +227,8 @@ void Searcher::run()
 			if (print > 30) std::cout<<"RELEASING PAYLOAD"<<std::endl;
 
       releasePayload();
+			hold(); //control the position
+      align(); //controlling the yaw
       break;
 
     default:
@@ -403,7 +405,7 @@ void Searcher::hold() {
   updateIntegrals();
 
   // std::cout << _payloadReleased << std::endl;
-  if(!_payloadReleased && _holding)
+  if(_releasePayload && !_payloadReleased)
     _setPoint.setZ(param.zMax);
   else
     _setPoint.setZ(_Z0);
@@ -467,10 +469,10 @@ void Searcher::releasePayload()
 void Searcher::align()
 {
     //
-    // _setPoint.setYaw(_yaw_des);
-    // Eigen::Quaterniond q_interm = yawToQuaternion(_yaw_des);
-    // // std::cout << _yaw_des*180.0/3.14 << std::endl;
-    // _setPoint.setOrientation(q_interm);
+    _setPoint.setYaw(_yaw_des);
+    Eigen::Quaterniond q_interm = yawToQuaternion(_yaw_des);
+    // std::cout << _yaw_des*180.0/3.14 << std::endl;
+    _setPoint.setOrientation(q_interm);
 
 }
 

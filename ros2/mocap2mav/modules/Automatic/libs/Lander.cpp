@@ -66,6 +66,11 @@ void Lander::setState(MavState pose) {
     _state = pose;
 }
 
+void Lander::setYaw(float yaw)
+{
+    _yaw_des = yaw;
+}
+
 MavState Lander::getState() {
     return _state;
 }
@@ -440,6 +445,7 @@ void Lander::run() {
       	if (print > 30) std::cout<<"INSPE"<<std::endl;
 
         inspection();
+        align(); //controlling the yaw
 
         break;
 
@@ -466,7 +472,7 @@ void Lander::run() {
 			if (print > 30) std::cout<<"DESC"<<std::endl;
 
       desc();
-      // align(); //controlling the yaw
+      align(); //controlling the yaw
       //decrease the z position to 0.1 meters.
       clampZSP();
       break;
@@ -476,7 +482,7 @@ void Lander::run() {
 			if (print > 30) std::cout<<"ASCE"<<std::endl;
 
       asce();
-      // align(); //controlling the yaw
+      align(); //controlling the yaw
       //increase the z position to 0.1 meters.
       clampZSP();
       break;
@@ -494,7 +500,7 @@ void Lander::run() {
 
 			if (print > 30) std::cout<<"COMP"<<std::endl;
 
-      // align(); //controlling the yaw
+      align(); //controlling the yaw
       hold();
       comp();
       //compensation of the altitude
@@ -504,7 +510,7 @@ void Lander::run() {
 
 			if (print > 30) std::cout<<"LAND"<<std::endl;
 
-      // align(); //controlling the yaw
+      align(); //controlling the yaw
       // initDone = false;
       land();
       //landing phase.
@@ -834,9 +840,9 @@ void Lander::align() {
     //we keep the yaw value the platform had in the init state
     // Eigen::Quaterniond q_interm = yawToQuaternion(_VisionPose.getYawFromQuat());
     // Eigen::Quaterniond q_interm = yawToQuaternion(_VisionPose.getYaw());
-    // Eigen::Quaterniond q_interm = yawToQuaternion(_state.getYawFromQuat());
-    Eigen::Quaterniond q_interm = yawToQuaternion(0);
-
+    _setPoint.setYaw(_yaw_des);
+    Eigen::Quaterniond q_interm = yawToQuaternion(_yaw_des);
+    // std::cout << _yaw_des*180.0/3.14 << std::endl;
     _setPoint.setOrientation(q_interm);
 
 }

@@ -11,21 +11,28 @@ Firstly, load its sub-modules
 
 Then:
 
-	1. Firmware module: branch stable.
+	1. Firmware module: branch master.
 	Move to sitl_gazebo folder to load its the submodules, then set the branch VisionSystem.
 	It allows to run the PX4 simulator.
 
-	2. mocap2mav module: branch VisionSystem or VisionSystemBeta.
+	2. mocap2mav module: branch master.
 	Load the submodules.
 	This module is the guidance controller.
 
 	3. landingPlat module: branch master.
 	It's allows to move the platform in Gazebo simulation.
 
-	4. tb3_aprilTag module: branch VisionSystem.
+	4. vision_dashing_ws module: branch master.
 	Then, load sub-module "lcm_bridge".
-	It's a ROS workspace in which there are the vision system and the bridge for communicating
+	It's a ROS2 workspace in which there are the vision system and the bridge for communicating
 	with the guidance controller and a package to set the simulation.
+
+	5. vision_melodic_ws module: branch master.
+	This module is needed for the ros1bridge between ros2 and px4.
+
+	6. fsm_raspicam moduel: branch master.
+	This module is needed when using the raspicamera in real tests; it should be put inside
+	vision_dashing_ws in real tests, while kept outside in simulations.
 
 ## Initial setup:
 

@@ -182,6 +182,9 @@ private:
                 //passing the information coming from the ultrasonic sensor to the LanderStateMachine.
 
       			_lander.setUltrasonicInfo(*_UltrasonicInfo);
+
+            // passing the desired yaw before landing
+            _lander.setYaw(_actualTask->yaw);
       			//here, we can divide the function run() to obtain the actual state of the machine
 
             _lander.run();

@@ -1,1 +1,0 @@
-/home/andrea/Marea/mar_utils/mocap2mav/devel/.private/catkin_tools_prebuild/local_setup.sh

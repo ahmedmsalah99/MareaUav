@@ -364,7 +364,7 @@ void Executioner::loadTask() {
       }
       _defaultYaw = _actualTask.yaw;
     }
-    else if(_actualTask.action == actions::SEARCH || _actualTask.action == actions::LAND) // || _actualTask.action == actions::LAND
+    else if(_actualTask.action == actions::SEARCH || _actualTask.action == actions::LAND)
     {
       _actualTask.yaw = _defaultYaw;
     }

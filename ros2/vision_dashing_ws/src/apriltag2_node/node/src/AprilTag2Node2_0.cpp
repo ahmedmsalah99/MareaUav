@@ -23,6 +23,10 @@ AprilTag2Node::AprilTag2Node() : Node("apriltag2", "apriltag", rclcpp::NodeOptio
 	rmw_qos_profile_t tf_qos_profile = rmw_qos_profile_default;
 	tf_qos_profile.depth = 1;
 
+
+	odometry_sub = this->create_subscription<px4_msgs::msg::VehicleOdometry>("/VehicleOdometry_PubSubTopic",
+		rclcpp::QoS(rclcpp::QoSInitialization(rmw_qos_profile_sensor_data.history,rmw_qos_profile_sensor_data.depth),rmw_qos_profile_sensor_data),
+		std::bind(&AprilTag2Node::getDroneOdometry, this, std::placeholders::_1));
 	//tf of each tags in the scene
 	//pub_tf = this->create_publisher<tf2_msgs::msg::TFMessage>("/tf", tf_qos_profile);
 
@@ -210,7 +214,7 @@ void AprilTag2Node::publish_data_center(const apriltag_msgs::msg::AprilTagDetect
 			areaID(i,0) = i;
 			areaID(i,1) = pow( (l1 + l2 + l3 +l4)/4,2 );
 
-			RCLCPP_INFO(get_logger(), "Area: %lf %lf", areaID(i,0), areaID(i, 1));
+			// RCLCPP_INFO(get_logger(), "Area: %lf %lf", areaID(i,0), areaID(i, 1));
 		}
 
 		double weighTot = 0;
@@ -257,6 +261,26 @@ void AprilTag2Node::publish_data_center(const apriltag_msgs::msg::AprilTagDetect
 		vision_pose.yaw = movingFilter(_yaw,&_Queue_yaw,&_integral_yaw);
 
 		// std::cout << "Z: " << vision_pose.position[2] << std::endl;
+		// std::cout << "YAW: " << _drone_pose.yaw*180.0/3.14 << std::endl;
+
+		// preparing for last rotation: the computed position is wrt drone frame: the whole should be
+		// rotated in global frame.
+		// creating then a temporary store
+		geometry::vision vision_temp;
+		// the rotation sign depends on the choosen direction of z as well
+		int sign = 1;
+		if(z_up)
+			sign = -1;
+
+		// performing a scalar product with a rotation matrix on drone's z-axis: this one
+		// rotates the error in the world frame, so that it corresponds to real working environment
+		vision_temp.position[0] = sign * (cosf(_drone_pose.yaw) * vision_pose.position[0] - sinf(_drone_pose.yaw) * vision_pose.position[1]);
+		vision_temp.position[1] = sign * (sinf(_drone_pose.yaw) * vision_pose.position[0] + cosf(_drone_pose.yaw) * vision_pose.position[1]);
+
+		// finally, assigning the computed rotation
+		vision_pose.position[0] = vision_temp.position[0];
+		vision_pose.position[1] = vision_temp.position[1];
+
 		//lcm publication.
 		_handler.publish("apriltag_vision_system",&vision_pose);
 
@@ -369,6 +393,24 @@ void AprilTag2Node::toEulerAngle(double quaternion[], double *Roll, double *Pitc
 	double cosy_cosp = 1.0 - 2.0*( quaternion[2]*quaternion[2] + quaternion[3]*quaternion[3] );
 	*Yaw = atan2(siny_cosp,cosy_cosp);
 
+}
+
+void AprilTag2Node::getDroneOdometry(const px4_msgs::msg::VehicleOdometry::SharedPtr msg_odom)
+{
+	_drone_pose.position[0] =  msg_odom->y;
+	_drone_pose.position[1] =  msg_odom->x;
+	_drone_pose.position[2] =  -msg_odom->z;
+
+	_drone_pose.velocity[0] = msg_odom->vy;
+	_drone_pose.velocity[1] = msg_odom->vx;
+	_drone_pose.velocity[2] = -msg_odom->vz;
+
+	_drone_pose.orientation[0] = msg_odom->q[0];
+	_drone_pose.orientation[1] = msg_odom->q[1];
+	_drone_pose.orientation[2] = msg_odom->q[2];
+	_drone_pose.orientation[3] = msg_odom->q[3];
+
+	_drone_pose.yaw = atan2(2.0 * (msg_odom->q[0]*msg_odom->q[3] + msg_odom->q[0]*msg_odom->q[2]), 1.0 - 2.0 * (msg_odom->q[2]*msg_odom->q[2] + msg_odom->q[3]*msg_odom->q[3]));
 }
 
 std::map<std::string, apriltag_family_t *(*)(void)> AprilTag2Node::tag_create =
