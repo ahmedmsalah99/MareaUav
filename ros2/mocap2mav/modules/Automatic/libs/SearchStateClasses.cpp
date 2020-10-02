@@ -9,16 +9,17 @@ void InitSearchState::handle()
   static int wait = 0;
 
   //Wait 20 iterations
-  if( wait++ > 20 && _VisionPose.VisionDataUpdated)
+  if( wait++ > 10 && _VisionPose.VisionDataUpdated)
   {
       this->_contextL->setStatePtr(_nextState);
       printStateTransition(); //print the actual state
       wait=0;
   }
-	else if(wait++ > 20 && !_VisionPose.VisionDataUpdated)
+	else if(wait++ > 10 && !_VisionPose.VisionDataUpdated)
   {
     this->_contextL->setStatePtr(_nextInspeState);
     printStateTransition(); //print the actual state
+    wait=0;
 	}
 }
 
@@ -27,14 +28,16 @@ void InspectionSearchState::handle()
     getSignals();
 
     if(_VisionPose.VisionDataUpdated)
+    {
         this->_contextL->setStatePtr(_nextState); //set next state (InitState)
-
-    printStateTransition();
+        printStateTransition();
+    }
 }
 
 void HoldSearchState::handle()
 {
 
+  static int wait = 0;
   // copy the values of the SearchMachine class into the ones of the AbstractSearchMachine class.
 
   getSignals();
@@ -57,9 +60,10 @@ void HoldSearchState::handle()
   }
 
 
-  if(InitValid){
+  if(InitValid && wait++ > 20){
     this->_contextL->setStatePtr(_nextInitState); //set the next state(InitState)
     printStateTransition();
+    wait=0;
     return;
   }
 }
@@ -87,6 +91,6 @@ void ReleaseState::handle()
       return;
     }
 
-    printStateTransition();
+    // printStateTransition();
 
 }

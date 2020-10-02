@@ -203,7 +203,7 @@ void AprilTag2RescueNode::publish_data_center(const apriltag_msgs::msg::AprilTag
 			areaID(i,0) = i;
 			areaID(i,1) = pow( (l1 + l2 + l3 +l4)/4,2 );
 
-			RCLCPP_INFO(get_logger(), "Area: %lf %lf", areaID(i,0), areaID(i, 1));
+			// RCLCPP_INFO(get_logger(), "Area: %lf %lf", areaID(i,0), areaID(i, 1));
 		}
 
 		double weighTot = 0;
@@ -262,15 +262,26 @@ void AprilTag2RescueNode::publish_data_center(const apriltag_msgs::msg::AprilTag
 		if(z_up)
 			sign = -1;
 
+		double rotation_yaw = sign*_drone_pose.yaw;
 		// performing a scalar product with a rotation matrix on drone's z-axis: this one
 		// rotates the error in the world frame, so that it corresponds to real working environment
-		vision_temp.position[0] = sign * (cosf(_drone_pose.yaw) * vision_pose.position[0] - sinf(_drone_pose.yaw) * vision_pose.position[1]);
-		vision_temp.position[1] = sign * (sinf(_drone_pose.yaw) * vision_pose.position[0] + cosf(_drone_pose.yaw) * vision_pose.position[1]);
+		vision_temp.position[0] = (cosf(rotation_yaw) * vision_pose.position[0] - sinf(rotation_yaw) * vision_pose.position[1]);
+		vision_temp.position[1] = (sinf(rotation_yaw) * vision_pose.position[0] + cosf(rotation_yaw) * vision_pose.position[1]);
 
-		// finally, assigning the computed rotation
-		vision_pose.position[0] = vision_temp.position[0];
-		vision_pose.position[1] = vision_temp.position[1];
-
+		// finally, assigning the computed rotation, adapting it to NED framework
+		// (rotations along Z by 90 degrees counterclockwise and X by 180 degrees for z_up)
+		// (rotation along Z by 180 degrees for z_down)
+		// this is due to the sign of rotation angle
+		if(z_up)
+		{
+			vision_pose.position[0] = -vision_temp.position[1];
+			vision_pose.position[1] = vision_temp.position[0];
+		}
+		else
+		{
+			vision_pose.position[0] = -vision_temp.position[0];
+			vision_pose.position[1] = -vision_temp.position[1];
+		}
 		//lcm publication.
 		_handler.publish("apriltag_rescue_vision",&vision_pose);
 

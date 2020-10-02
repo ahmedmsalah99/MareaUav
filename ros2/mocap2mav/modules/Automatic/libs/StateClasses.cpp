@@ -29,6 +29,7 @@ void InitState::handle(){
 		    this->_contextL->setStatePtr(_nextHoveringState);
         printStateTransition(); //print the actual state
     }
+    wait=0;
 	}
 
 
@@ -38,18 +39,21 @@ void InspectionState::handle() {
     getSignals();
 
     if(_VisionPose.VisionDataUpdated)
-        this->_contextL->setStatePtr(_nextState); //set next state (InitState)
-        printStateTransition();
+    {
+      this->_contextL->setStatePtr(_nextState); //set next state (InitState)
+      printStateTransition();
+    }
 }
 
 void HoveringState::handle() {
 
 	getSignals();
 
-	if( _VisionPose.VisionDataUpdated ) {
-        this->_contextL->setStatePtr(_nextState);
-        printStateTransition(); //print the actual state
-    }
+	if( _VisionPose.VisionDataUpdated )
+  {
+    this->_contextL->setStatePtr(_nextState);
+    printStateTransition(); //print the actual state
+  }
 
 }
 
@@ -57,6 +61,7 @@ void HoveringState::handle() {
 
 void HoldState::handle(){
 
+    static int waitComp = 0;
     //copy the values of the LandMachine class into the ones of the AbstractLandState class.
 
     getSignals();
@@ -79,8 +84,9 @@ void HoldState::handle(){
     //if the UAV is holding ad is centered on the platform and is close to the platform(20 cm), will be accomplish.
 
     // bool compValid = _holding && (fabs( _UltraInfo.getZ()) + param.zMin < 0.2 ) && _centered;
-    // bool compValid = _holding && (fabs(fabs( _UltraInfo.getZ()) - param.zMin)  < 0.2 ) && _centered;
-    bool compValid = _holding && (fabs( _UltraInfo.getZ()) < 0.80 ) && _centered;
+    bool compValid = _holding && (fabs(param.zMin - fabs( _UltraInfo.getZ())) > 0.1 ) && _centered;
+    // bool compValid = _holding && (fabs( _UltraInfo.getZ()) < 0.80 ) && _centered;
+    // std::cout << compValid << std::endl;
 
 
     if(descValid){
@@ -94,9 +100,10 @@ void HoldState::handle(){
         return;
     }
 
-    if(compValid){
+    if(compValid && waitComp++ > 10){
         this->_contextL->setStatePtr(_nextState); //set the next state(RToLandState)
         printStateTransition();
+        waitComp = 0;
         return;
     }
 

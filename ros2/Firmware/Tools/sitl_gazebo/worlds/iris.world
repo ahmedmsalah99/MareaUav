@@ -15,7 +15,8 @@
       <uri>model://asphalt_plane</uri>
     </include>
       <uri>model://iris</uri>
-      <pose>1 1 0.83 0 0 1.14</pose>
+      <!-- <pose>1 1 0.83 0 0 1.14</pose> -->
+      <pose>0 0 2.83 0 0 1.14</pose>
     </include>
 
     <!--Load Landing Platform  --> 
@@ -27,7 +28,7 @@
     <!--Load Rescue Target  --> 
     <include>
       <uri>model://Rescue_target</uri>
-      <pose>-24.0 45.6 0.05 0 0 0</pose>
+      <pose>-24.0 45.8 0.05 0 0 0</pose>
    </include>
 
     <physics name='default_physics' default='0' type='ode'>

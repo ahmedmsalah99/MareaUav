@@ -71,8 +71,6 @@ private:
 
    	double _PI = 3.141592653589;
 
-	float _defaultYaw;
-
 	exec::release_payload _relpay_feedback;
 
 };

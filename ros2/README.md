@@ -145,7 +145,7 @@ sim
 
 on the spawned terminals, allow the takeoff if you need to perform it.
 
-9. Coming back to the first terminal and write:
+9. Coming back to the first terminal (Firmware) and write:
 ```
 commander mode arm
 commander mode offboard
@@ -155,6 +155,13 @@ That's done to allow the mocap2mav module to communicate with the firmware.
  
 Besides ros2 topic to see the vision data.
 
+
+10. On another terminal (vision_melodic_ws):
+```
+. devel/setup.bash
+rosrun image_view image_view image:=/apriltag/image/compressed
+```
+this node allows to see the images coming from the camera
 
 
 

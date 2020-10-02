@@ -13,7 +13,6 @@ using namespace common;
 Executioner::Executioner(){
 
     _actualNode = 0;
-    _defaultYaw = 0;
     _idle = false;
     _can_run = false;
     _newTask = true;
@@ -333,7 +332,7 @@ void Executioner::loadTask() {
     _actualTask.params[4] = _nodeList[_actualNode].params[4];
 
 
-    if(_actualTask.action == actions::MOVE) // || _actualTask.target == "platform"
+    if(_actualTask.action == actions::MOVE)
     {
       double coords[3];
       coords[0] = _actualTask.x;
@@ -362,12 +361,13 @@ void Executioner::loadTask() {
         }
         _actualTask.yaw = computeDesiredYaw(_state, coords);
       }
-      _defaultYaw = _actualTask.yaw;
+      // _defaultYaw = _actualTask.yaw;
+      // std::cout << _defaultYaw*180.0/3.14 << std::endl;
     }
-    else if(_actualTask.action == actions::SEARCH || _actualTask.action == actions::LAND)
-    {
-      _actualTask.yaw = _defaultYaw;
-    }
+    // else if(_actualTask.action == actions::SEARCH || _actualTask.action == actions::LAND)
+    // {
+    //   _actualTask.yaw = _defaultYaw;
+    // }
 
 }
 

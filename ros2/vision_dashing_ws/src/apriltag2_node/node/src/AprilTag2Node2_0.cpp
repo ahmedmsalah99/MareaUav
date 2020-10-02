@@ -59,7 +59,6 @@ AprilTag2Node::AprilTag2Node() : Node("apriltag2", "apriltag", rclcpp::NodeOptio
 	get_parameter("max_hamming", max_hamming);
 	get_parameter("z_up", z_up);
 
-	// std::cout<<"EDGE SIZE: "<<z_up<<std::endl;
 
 	// get tag names and IDs
 	// static const std::string tag_list_prefix = "tag_lists";
@@ -78,9 +77,10 @@ AprilTag2Node::AprilTag2Node() : Node("apriltag2", "apriltag", rclcpp::NodeOptio
 
 	for(int i=0; i<n_tags; i++)
 	{
-		std::string tag_name = tag_prefix+std::to_string(i+1);
+		std::string tag_name = tag_prefix+std::to_string(i);
 		declare_parameter<double>(tag_name, 2.0);
 		get_parameter(tag_name, platform_tags[i]);
+		// tracked_tags[i+1]=i+1;
 	}
 
 	SetMatrix(&TAGS, (bool)env_val); //load transformation matrices respect to the platform center
@@ -147,7 +147,8 @@ void AprilTag2Node::onImage(const sensor_msgs::msg::CompressedImage::SharedPtr m
 
 	tf2_msgs::msg::TFMessage tfs;
 
-	for (int i = 0; i < zarray_size(detections); i++) {
+	for (int i = 0; i < zarray_size(detections); i++)
+	{
 		apriltag_detection_t *det;
 		zarray_get(detections, i, &det);
 
@@ -180,6 +181,8 @@ void AprilTag2Node::onImage(const sensor_msgs::msg::CompressedImage::SharedPtr m
 		getPose(*(det->H), tf.transform, det->id, z_up);
 
 		tfs.transforms.push_back(tf);
+		// RCLCPP_INFO(get_logger(), "ID: %li ", i);
+
 	}
 
 	if(zarray_size(detections) > 0) {
@@ -215,6 +218,7 @@ void AprilTag2Node::publish_data_center(const apriltag_msgs::msg::AprilTagDetect
 			areaID(i,1) = pow( (l1 + l2 + l3 +l4)/4,2 );
 
 			// RCLCPP_INFO(get_logger(), "Area: %lf %lf", areaID(i,0), areaID(i, 1));
+			// RCLCPP_INFO(get_logger(), "DETECTED TAG: %lf", areaID(i,0));
 		}
 
 		double weighTot = 0;
@@ -272,14 +276,26 @@ void AprilTag2Node::publish_data_center(const apriltag_msgs::msg::AprilTagDetect
 		if(z_up)
 			sign = -1;
 
+		double rotation_yaw = sign*_drone_pose.yaw;
 		// performing a scalar product with a rotation matrix on drone's z-axis: this one
 		// rotates the error in the world frame, so that it corresponds to real working environment
-		vision_temp.position[0] = sign * (cosf(_drone_pose.yaw) * vision_pose.position[0] - sinf(_drone_pose.yaw) * vision_pose.position[1]);
-		vision_temp.position[1] = sign * (sinf(_drone_pose.yaw) * vision_pose.position[0] + cosf(_drone_pose.yaw) * vision_pose.position[1]);
+		vision_temp.position[0] = (cosf(rotation_yaw) * vision_pose.position[0] - sinf(rotation_yaw) * vision_pose.position[1]);
+		vision_temp.position[1] = (sinf(rotation_yaw) * vision_pose.position[0] + cosf(rotation_yaw) * vision_pose.position[1]);
 
-		// finally, assigning the computed rotation
-		vision_pose.position[0] = vision_temp.position[0];
-		vision_pose.position[1] = vision_temp.position[1];
+		// finally, assigning the computed rotation, adapting it to NED framework
+		// (rotations along Z by 90 degrees counterclockwise and X by 180 degrees for z_up)
+		// (rotation along Z by 180 degrees for z_down)
+		// this is due to the sign of rotation angle
+		if(z_up)
+		{
+			vision_pose.position[0] = -vision_temp.position[1];
+			vision_pose.position[1] = vision_temp.position[0];
+		}
+		else
+		{
+			vision_pose.position[0] = -vision_temp.position[0];
+			vision_pose.position[1] = -vision_temp.position[1];
+		}
 
 		//lcm publication.
 		_handler.publish("apriltag_vision_system",&vision_pose);
@@ -320,14 +336,19 @@ void AprilTag2Node::getPose(const matd_t& H, geometry_msgs::msg::Transform& t, c
 				R(2,0), R(2,1), R(2,2), tt[2],
 					 0,      0,      0,     1;
 
-	if (ID == 1) {
+	RCLCPP_INFO(get_logger(), "TAG RECOGNIZED, ID: %li ", ID);
+
+
+	if (ID == 0) {
+		pose = pose * TAGS.TAG0_T_TAG5;
+	} else if (ID == 1) {
 		pose = pose * TAGS.TAG1_T_TAG5;
 	} else if (ID == 2) {
 		pose = pose * TAGS.TAG2_T_TAG5;
 	} else if (ID == 3) {
 		pose = pose * TAGS.TAG3_T_TAG5;
-	} else if (ID == 4) {
-		pose = pose * TAGS.TAG4_T_TAG5;
+	} else if (ID == 5) {
+		pose = pose * TAGS.TAG5_T_TAG5;
 	} else if (ID == 6) {
 		pose = pose * TAGS.TAG6_T_TAG5;
 	} else if (ID == 7) {
@@ -336,6 +357,12 @@ void AprilTag2Node::getPose(const matd_t& H, geometry_msgs::msg::Transform& t, c
 		pose = pose * TAGS.TAG8_T_TAG5;
 	} else if (ID == 9) {
 		pose = pose * TAGS.TAG9_T_TAG5;
+	} else if (ID == 10) {
+		pose = pose * TAGS.TAG10_T_TAG5;
+	} else if (ID == 11) {
+		pose = pose * TAGS.TAG11_T_TAG5;
+	} else if (ID == 12) {
+		pose = pose * TAGS.TAG12_T_TAG5;
 	}
 
 	pose = TAGS.robot_T_cam * pose;

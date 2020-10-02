@@ -19,16 +19,16 @@
       <collision name="collision_1">
         <geometry>
           <box>
-            <size>0.7 0.7 0.05</size>
+            <size>1.215 1.215 0.05</size>
           </box>
         </geometry>
 	<surface>
         <friction>
           <ode>
-            <mu>1.5</mu>
-            <mu2>1.5</mu2>
-	    <slip1>100</slip1>
-	    <slip2>100</slip2>
+            <mu>1</mu>
+            <mu2>1</mu2>
+	    <slip1>0</slip1>
+	    <slip2>0</slip2>
           </ode>
         </friction>
       </surface>
@@ -38,16 +38,17 @@
       <visual name="visual_1">
         <geometry>
           <box>
-            <size>0.7 0.7 0.05</size>
+            <size>1.215 1.215 0.05</size>
           </box>
         </geometry>
       </visual>
     </link>
 
-<!--0.26 relative distance from the center of the box's rectangle   -->
-
+<!--0.2875 relative distance from the center of the box's rectangle   -->
+	
     <model name="Tag0">
-      <pose>0.24925 0.24925 0.026 0 0 0</pose> 
+      <!-- <pose>0.24925 0 0.026 0 0 0</pose> -->
+      <pose>0.2875 0 0.026 0 0 0</pose> 
       <static>true</static>
       <link name="link_Tag0">
       <pose>0 0 0 1.57 0 0</pose>
@@ -78,7 +79,7 @@
 
 
     <model name="Tag1">
-      <pose>-0.24925 0.24925 0.026 0 0 0</pose> 
+      <pose>0 0.2875 0.026 0 0 0</pose> 
       <static>true</static>
       <link name="link_Tag1">
       <pose>0 0 0 1.57 0 0</pose>
@@ -108,7 +109,7 @@
     </model>
 
     <model name="Tag2">
-      <pose>-0.24925 -0.24925 0.026 0 0 0</pose>
+      <pose>-0.2875 0 0.026 0 0 0</pose>
       <static>true</static>
       <link name="link_Tag2">
       <pose>0 0 0 1.57 0 0</pose>
@@ -138,7 +139,7 @@
     </model>
 
     <model name="Tag3">
-      <pose>0.24925 -0.24925 0.026 0 0 0</pose> 
+      <pose>0 -0.2875 0.026 0 0 0</pose> 
       <static>true</static>
       <link name="link_Tag3">
       <pose>0 0 0 1.57 0 0</pose>
@@ -201,7 +202,7 @@
 
 
     <model name="Tag5">
-      <pose>0.1705 0 0.026 0 0 0</pose> 
+      <pose>0.0953 0 0.026 0 0 0</pose> 
       <static>true</static>
       <link name="link_Tag5">
       <pose>0 0 0 1.57 0 0</pose>
@@ -231,7 +232,7 @@
     </model>
 
     <model name="Tag6">
-      <pose>0 0.1705 0.026 0 0 0</pose> 
+      <pose>0 0.0953 0.026 0 0 0</pose> 
       <static>true</static>
       <link name="link_Tag6">
       <pose>0 0 0 1.57 0 0</pose>
@@ -261,7 +262,7 @@
     </model>
 
     <model name="Tag7">
-      <pose>-0.1705 0 0.026 0 0 0</pose> 
+      <pose>-0.0953 0 0.026 0 0 0</pose> 
       <static>true</static>
       <link name="link_Tag7">
       <pose>0 0 0 1.57 0 0</pose>
@@ -291,7 +292,7 @@
     </model>
 
     <model name="Tag8">
-      <pose>0 -0.1705 0.026 0 0 0</pose> 
+      <pose>0 -0.0953 0.026 0 0 0</pose> 
       <static>true</static>
       <link name="link_Tag8">
       <pose>0 0 0 1.57 0 0</pose>
@@ -314,6 +315,127 @@
             <uri>model://Landing_Site/Tag8/materials/scripts</uri>
             <uri>model://Landing_Site/Tag8/materials/textures</uri>
             <name>vrc/Tag8</name>
+          </script>
+        </material>
+        </visual>
+      </link>
+    </model>
+
+	<model name="Tag9">
+      <pose>0.43 0.43 0.026 0 0 0</pose> 
+      <static>true</static>
+      <link name="link_Tag9">
+      <pose>0 0 0 1.57 0 0</pose>
+        <collision name="collision_09">
+          <geometry>
+            <box>
+            <size>.3526 0.001 .3526</size>
+            </box>
+          </geometry>
+        </collision>
+        <visual name="visual_09">
+        <cast_shadows>false</cast_shadows>
+        <geometry>
+          <box>
+            <size>.3526 0.001 .3526</size>
+          </box>
+        </geometry>
+        <material>
+          <script>
+            <uri>model://Landing_Site/Tag9/materials/scripts</uri>
+            <uri>model://Landing_Site/Tag9/materials/textures</uri>
+            <name>vrc/Tag9</name>
+          </script>
+        </material>
+        </visual>
+      </link>
+    </model>
+
+	<model name="Tag10">
+      <pose>0.43 -0.43 0.026 0 0 0</pose> 
+      <static>true</static>
+      <link name="link_Tag10">
+      <pose>0 0 0 1.57 0 0</pose>
+        <collision name="collision_10">
+          <geometry>
+            <box>
+            <size>.3526 0.001 .3526</size>
+            </box>
+          </geometry>
+        </collision>
+        <visual name="visual_10">
+        <cast_shadows>false</cast_shadows>
+        <geometry>
+          <box>
+            <size>.3526 0.001 .3526</size>
+          </box>
+        </geometry>
+        <material>
+          <script>
+            <uri>model://Landing_Site/Tag10/materials/scripts</uri>
+            <uri>model://Landing_Site/Tag10/materials/textures</uri>
+            <name>vrc/Tag10</name>
+          </script>
+        </material>
+        </visual>
+      </link>
+    </model>
+
+	<model name="Tag11">
+      <!-- <pose>0.24925 0 0.026 0 0 0</pose> -->
+      <pose>-0.43 -0.43 0.026 0 0 0</pose> 
+      <static>true</static>
+      <link name="link_Tag11">
+      <pose>0 0 0 1.57 0 0</pose>
+        <collision name="collision_11">
+          <geometry>
+            <box>
+            <size>.3526 0.001 .3526</size>
+            </box>
+          </geometry>
+        </collision>
+        <visual name="visual_11">
+        <cast_shadows>false</cast_shadows>
+        <geometry>
+          <box>
+            <size>.3526 0.001 .3526</size>
+          </box>
+        </geometry>
+        <material>
+          <script>
+            <uri>model://Landing_Site/Tag11/materials/scripts</uri>
+            <uri>model://Landing_Site/Tag11/materials/textures</uri>
+            <name>vrc/Tag11</name>
+          </script>
+        </material>
+        </visual>
+      </link>
+    </model>
+
+	<model name="Tag12">
+      <pose>-0.43 0.43 0.026 0 0 0</pose> 
+      <static>true</static>
+      <link name="link_Tag12">
+      <pose>0 0 0 1.57 0 0</pose>
+        <collision name="collision_12">
+          <geometry>
+            <box>
+            <size>.3526 0.001 .3526</size>
+            </box>
+          </geometry>
+        </collision>
+        <visual name="visual_12">
+        <cast_shadows>false</cast_shadows>
+        <geometry>
+          <box>
+            <size>.3526 0.001 .3526</size>
+          </box>
+        </geometry>
+        <material>
+          <script>
+            <uri>model://Landing_Site/Tag12/materials/scripts</uri>
+            <uri>model://Landing_Site/Tag12/materials/textures</uri>
+            <name>vrc/Tag12</name>
           </script>
         </material>
         </visual>
@@ -400,6 +522,42 @@
     <joint name="joint_tag8" type="fixed">
       <parent>base_link</parent>
       <child>Tag8::link_Tag8</child>
+      <pose>0.0 0.0 0.0 0.0 0.0 0.0</pose>
+      <axis>
+        <xyz>1.0 0.0 0.0</xyz>
+      </axis>
+    </joint>
+
+    <joint name="joint_tag9" type="fixed">
+      <parent>base_link</parent>
+      <child>Tag9::link_Tag9</child>
+      <pose>0.0 0.0 0.0 0.0 0.0 0.0</pose>
+      <axis>
+        <xyz>1.0 0.0 0.0</xyz>
+      </axis>
+    </joint>
+
+    <joint name="joint_tag10" type="fixed">
+      <parent>base_link</parent>
+      <child>Tag10::link_Tag10</child>
+      <pose>0.0 0.0 0.0 0.0 0.0 0.0</pose>
+      <axis>
+        <xyz>1.0 0.0 0.0</xyz>
+      </axis>
+    </joint>
+
+    <joint name="joint_tag11" type="fixed">
+      <parent>base_link</parent>
+      <child>Tag11::link_Tag11</child>
+      <pose>0.0 0.0 0.0 0.0 0.0 0.0</pose>
+      <axis>
+        <xyz>1.0 0.0 0.0</xyz>
+      </axis>
+    </joint>
+
+    <joint name="joint_tag12" type="fixed">
+      <parent>base_link</parent>
+      <child>Tag12::link_Tag12</child>
       <pose>0.0 0.0 0.0 0.0 0.0 0.0</pose>
       <axis>
         <xyz>1.0 0.0 0.0</xyz>

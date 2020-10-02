@@ -2,6 +2,7 @@
 using namespace common;
 Automatic::Automatic()
 {
+  _defaultYaw = 0;
   env_sim = (bool)std::getenv("M2M_SIM");
 }
 
@@ -43,6 +44,17 @@ void Automatic::setTask(exec::task rTask)
     _actualTask.params[2]=rTask.params[2];
     _actualTask.params[3]=rTask.params[3];
     _actualTask.params[4]=rTask.params[4];
+
+
+
+    if(_actualTask.action == actions::MOVE)
+    {
+      _defaultYaw = _actualTask.yaw;
+    }
+    else if(_actualTask.action == actions::SEARCH || _actualTask.action == actions::LAND)
+    {
+      _actualTask.yaw = _defaultYaw;
+    }
 }
 
 void Automatic::handleCommands() {

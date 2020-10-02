@@ -128,9 +128,8 @@ int main(int argc, char** argv){
 		if(fds[0].revents & POLLIN){
 
 			handler3.handle();
-
 			autom.setTask(call._task);
-			std::cout<<  "New task arrived with action: " << printAction(autom._actualTask.action) << std::endl;
+			std::cout <<  "New task arrived with action: " << printAction(autom._actualTask.action) << std::endl;
 			// used just to wait for the first task coming
       waiting = false;
 			// calling the function that parses the coming command
@@ -196,43 +195,54 @@ int main(int argc, char** argv){
 				// std::cout<<"y:"<<visionSystem.getY()<<std::endl;
 				// std::cout<<"z:"<<visionSystem.getZ()<<std::endl;
 
-				// iff we are in searching state
+				// if we are in searching state
 				if(call._task.action == actions::SEARCH)
 				{
 					// contacting the platform with the updated position of the drone,
 					// to inform that the target has been found;
 					geometry::pose rescue_coords;
-					// filling the position
-					rescue_coords.position[0] = autom.getState().getX();
-					rescue_coords.position[1] = autom.getState().getY();
-					rescue_coords.position[2] = autom.getState().getZ();
 
-					// and putting platform position into an array. That's done due to computeDesiredYaw arguments  request
-					geometry::pose platform_coords;
-					platform_coords.position[0] = platform.getX();
-					platform_coords.position[1] = platform.getY();
-					platform_coords.position[2] = platform.getZ();
-
-					// getting then the yaw between the drone position and the platform one
-					double yaw_temp = computeDesiredYaw(autom.getState(), platform_coords.position);
-
-					Eigen::Quaterniond orientation_temp;
-					// transforming it in an orientation quaternion
-					orientation_temp = getQuatFromYaw(yaw_temp);
-
-					// and setting it
-					rescue_coords.orientation[0] = orientation_temp.w();
-					rescue_coords.orientation[1] = orientation_temp.x();
-					rescue_coords.orientation[2] = orientation_temp.y();
-					rescue_coords.orientation[3] = orientation_temp.z();
-
-					// after the yaw has been computed, if a real test is running, the coordinates
-					// has to be fixed to the global ones
-					if(!autom.env_sim)
+					if(autom.env_sim)
 					{
+						// filling the position
+						rescue_coords.position[0] = autom.getState().getX();
+						rescue_coords.position[1] = autom.getState().getY();
+						rescue_coords.position[2] = autom.getState().getZ();
+
+						// and putting platform position into an array. That's done due to computeDesiredYaw arguments  request
+						geometry::pose platform_coords;
+						platform_coords.position[0] = platform.getX();
+						platform_coords.position[1] = platform.getY();
+						platform_coords.position[2] = platform.getZ();
+
+						// getting then the yaw between the drone position and the platform one
+						double yaw_temp = computeDesiredYaw(autom.getState(), platform_coords.position) + 1.57;
+
+						// platform local frame is rotated by 90 degrees wrt NED one,
+						// and this needs to be taken into consideration
+						rescue_coords.yaw = yaw_temp;
+
+						Eigen::Quaterniond orientation_temp;
+						// transforming it in an orientation quaternion
+						orientation_temp = getQuatFromYaw(yaw_temp);
+
+						// and setting it
+						rescue_coords.orientation[0] = orientation_temp.w();
+						rescue_coords.orientation[1] = orientation_temp.x();
+						rescue_coords.orientation[2] = orientation_temp.y();
+						rescue_coords.orientation[3] = orientation_temp.z();
+
+
+					}
+					else
+					{
+						// if a real test is running, the coordinates
+						// has to be fixed to the global ones
 						rescue_coords.position[0] = call.gps.lon;
 						rescue_coords.position[1] = call.gps.lat;
 						rescue_coords.position[2] = call.gps.alt;
+
+						// it will be then up to the ship to compute the desired orientation
 					}
 
 					// finally publishing the message
@@ -245,9 +255,9 @@ int main(int argc, char** argv){
 		else
 		{
 
-			if( VisionRescueData.isExpired() ) {
+			if( VisionRescueData.isExpired() )
+			{
 				//the timer is expired, no vision data are available since 1 sec
-
 				visionRescue.VisionDataUpdated = false;
 				autom.setVisionRescue(visionRescue);
 			}

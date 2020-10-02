@@ -9,14 +9,18 @@
 #define PI 3.14159265
 
 struct Platform_tag {
+	Eigen::Matrix4d TAG0_T_TAG5;
 	Eigen::Matrix4d TAG1_T_TAG5;
 	Eigen::Matrix4d TAG2_T_TAG5;
 	Eigen::Matrix4d TAG3_T_TAG5;
-	Eigen::Matrix4d TAG4_T_TAG5;
+	Eigen::Matrix4d TAG5_T_TAG5;
 	Eigen::Matrix4d TAG6_T_TAG5;
 	Eigen::Matrix4d TAG7_T_TAG5;
 	Eigen::Matrix4d TAG8_T_TAG5;
 	Eigen::Matrix4d TAG9_T_TAG5;
+	Eigen::Matrix4d TAG10_T_TAG5;
+	Eigen::Matrix4d TAG11_T_TAG5;
+	Eigen::Matrix4d TAG12_T_TAG5;
 	Eigen::Matrix4d robot_T_cam; //transformation matrix between camera and robot.
 	Eigen::Matrix3d R_z;         //rotation around z axis
 	Eigen::Matrix3d R_y;         //rotation around y axis
@@ -39,71 +43,87 @@ void SetMatrix(struct Platform_tag *TAGS, bool sim)
 	{
 
 
-		TAGS->TAG1_T_TAG5 << 1,0,0,0.24925,
-				     0,1,0,0.24925,
+		TAGS->TAG0_T_TAG5 << 1,0,0,0.2875,
+				     0,1,0,0,
 				     0,0,1,0,
 				     0,0,0,1;
-		TAGS->TAG2_T_TAG5 << 1,0,0,-0.24925,
-				     0,1,0,0.24925,
+		TAGS->TAG1_T_TAG5 << 1,0,0,0,
+				     0,1,0,0.2875,
 				     0,0,1,0,
 				     0,0,0,1; 
-		TAGS->TAG3_T_TAG5 << 1,0,0,-0.24925,
-				     0,1,0,-0.24925,
+		TAGS->TAG2_T_TAG5 << 1,0,0,-0.2875,
+				     0,1,0,0,
 				     0,0,1,0,
 				     0,0,0,1;  
-		TAGS->TAG4_T_TAG5 << 1,0,0,0.24925,
-				     0,1,0,-0.24925,
+		TAGS->TAG3_T_TAG5 << 1,0,0,0,
+				     0,1,0,-0.2875,
 				     0,0,1,0,
 				     0,0,0,1;
-		TAGS->TAG6_T_TAG5 << 1,0,0,0.1705,
+		TAGS->TAG5_T_TAG5 << 1,0,0,0.0953,
 					0,1,0,0.000,
 					0,0,1,0,
 					0,0,0,1; 
-		TAGS->TAG7_T_TAG5 << 1,0,0,0,
-					0,1,0,0.1705,
+		TAGS->TAG6_T_TAG5 << 1,0,0,0,
+					0,1,0,0.0953,
 					0,0,1,0,
 					0,0,0,1; 
-		TAGS->TAG8_T_TAG5 << 1,0,0,-0.1705,
+		TAGS->TAG7_T_TAG5 << 1,0,0,-0.0953,
 					0,1,0,0,
 					0,0,1,0,
 					0,0,0,1; 
-		TAGS->TAG9_T_TAG5 << 1,0,0,0,
-					0,1,0,-0.1705,
+		TAGS->TAG8_T_TAG5 << 1,0,0,0,
+					0,1,0,-0.0953,
+					0,0,1,0,
+					0,0,0,1;
+		TAGS->TAG9_T_TAG5 << 1,0,0,0.43,
+					0,1,0,0.43,
+					0,0,1,0,
+					0,0,0,1;
+		TAGS->TAG10_T_TAG5 << 1,0,0,0.43,
+					0,1,0,-0.43,
+					0,0,1,0,
+					0,0,0,1;
+		TAGS->TAG11_T_TAG5 << 1,0,0,-0.43,
+					0,1,0,-0.43,
+					0,0,1,0,
+					0,0,0,1;
+		TAGS->TAG12_T_TAG5 << 1,0,0,-0.43,
+					0,1,0,0.43,
 					0,0,1,0,
 					0,0,0,1;
 	}
 	else
 	{
 
-	 	TAGS->TAG1_T_TAG5 << 1,0,0,0.243182,
+	 	TAGS->TAG0_T_TAG5 << 1,0,0,0.243182,
 					0,1,0,0.245111,
 					0,0,1,0,
 					0,0,0,1;
-		TAGS->TAG2_T_TAG5 << 1,0,0,-0.242693,
+		TAGS->TAG1_T_TAG5 << 1,0,0,-0.242693,
 					0,1,0,0.244019,
 					0,0,1,0,
 					0,0,0,1;   
-		TAGS->TAG3_T_TAG5 << 1,0,0,-0.240737,
+		TAGS->TAG2_T_TAG5 << 1,0,0,-0.240737,
 					0,1,0,-0.248717,
 					0,0,1,0,
 					0,0,0,1;  
-		TAGS->TAG4_T_TAG5 << 1,0,0,0.24212,
+		TAGS->TAG3_T_TAG5 << 1,0,0,0.24212,
 					0,1,0,-0.248299,
 					0,0,1,0,
 					0,0,0,1;
-		TAGS->TAG6_T_TAG5 << 1,0,0,0.163,
+		TAGS->TAG5_T_TAG5 << 1,0,0,0.163,
 					0,1,0,0.004,
 					0,0,1,0,
 					0,0,0,1; 
-		TAGS->TAG7_T_TAG5 << 1,0,0,-0.009,
+		TAGS->TAG6_T_TAG5 << 1,0,0,-0.009,
 					0,1,0,0.165,
 					0,0,1,0,
 					0,0,0,1; 
-		TAGS->TAG8_T_TAG5 << 1,0,0,-0.165,
+		TAGS->TAG7_T_TAG5 << 1,0,0,-0.165,
 					0,1,0,0.0045,
 					0,0,1,0,
 					0,0,0,1; 
-		TAGS->TAG9_T_TAG5 << 1,0,0,-0.017,
+		TAGS->TAG8_T_TAG5 << 1,0,0,-0.017,
 					0,1,0,-0.174,
 					0,0,1,0,
 					0,0,0,1;

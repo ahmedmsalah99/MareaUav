@@ -70,6 +70,11 @@ namespace gazebo
 
         }
 
+        double yawFromQuaternion(ignition::math::Quaterniond& q)
+        {
+            return atan2(2.0 * (q.W() * q.Z() + q.X() * q.Y()), 1.0 - 2.0 * (q.Y() * q.Y() + q.Z() * q.Z()));
+        }
+
     public:
 
             void Load(physics::ModelPtr _parent, sdf::ElementPtr _sdf) {
@@ -97,7 +102,7 @@ namespace gazebo
                 _fds[1].fd = _handler3.getFileno();
                 _fds[1].events = POLLIN;
 
-                wave.init(10,3.5,0.5,7.0);
+                wave.init(10,2.0,0.5,7.0);
 
                 _pose = _model.get()->WorldPose();
                 _prev_pose  = _pose;
@@ -152,6 +157,10 @@ namespace gazebo
 
                 if(_rescueTarget)
                 {
+                  std::cout << "Target Identified!" << std::endl;
+                  std::cout << "LONGITUDE: " << _position_sp.position[0] << std::endl;
+                  std::cout << "LATITUDE: " << _position_sp.position[1] << std::endl;
+
                   double dist = sqrt(pow((_pose.Pos()[0] - _drone_pos.position[0]),2) + pow((_pose.Pos()[1] - _drone_pos.position[1]),2));
 
                   if(dist < DIST_VEL_THRE)
@@ -181,6 +190,8 @@ namespace gazebo
                   _pose.Set(ignition::math::Vector3<double>(newX, newY, wave.generateWaveHeightAtPoint(_pose.Pos()[0],_pose.Pos()[1],_actual_sim_time,0) + 2), orientation);
 
                   yaw_des = _position_sp.yaw;
+
+                  // std::cout << "YAW: " << yaw_des << std::endl;
                 }
                 else
                 {
@@ -190,7 +201,7 @@ namespace gazebo
 
                   //_pose.pos.x = newX;
 
-                  _pose.Set(ignition::math::Vector3<double>(newX, 0, wave.generateWaveHeightAtPoint(_pose.Pos()[0],_pose.Pos()[1],_actual_sim_time,0) + 2), ignition::math::Quaternion<double>(1,0,0,0));
+                  _pose.Set(ignition::math::Vector3<double>(0, 0, wave.generateWaveHeightAtPoint(_pose.Pos()[0],_pose.Pos()[1],_actual_sim_time,0) + 2), ignition::math::Quaternion<double>(1,0,0,0));
                   // _pose.Set(ignition::math::Vector3<double>(0, 0, wave.generateWaveHeightAtPoint(_pose.Pos()[0],_pose.Pos()[1],_actual_sim_time,0) + 2), ignition::math::Quaternion<double>(1,0,0,0));
 
                   yaw_des = 1.57;
@@ -214,7 +225,7 @@ namespace gazebo
                 plat_pose.velocity[1] = vy;
                 plat_pose.velocity[2] = vz;
 
-                plat_pose.yaw = yaw_des;
+                plat_pose.yaw = yawFromQuaternion(_pose.Rot()) ;
 
                 plat_pose.isValid = 1;
                 plat_pose.orientation[0] = _pose.Rot().W(); // w

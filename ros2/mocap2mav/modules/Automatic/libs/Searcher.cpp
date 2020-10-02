@@ -432,7 +432,6 @@ void Searcher::initInspection()
   _Y0 = _state.getY() + _err[1];
 
 	_inspection = true;
-
   _inspectionPeriod = (2*PI*_inspectionRadius)/_inspectionLinearVel;
 }
 
@@ -454,7 +453,7 @@ void Searcher::inspection()
 
   _setPoint.setPosition(_inspectionRadius * cos((_inspectionLinearVel/_inspectionRadius)*_time) + _X0, _inspectionRadius * sin((_inspectionLinearVel/_inspectionRadius)*_time) + _Y0, _Z0);
 
-  // std::cout<<"Circ: "<<_setPoint.getX()<<std::endl;
+  // std::cout<<"Circ: "<<_inspectionRadius<<std::endl;
   // std::cout<<"Time: "<<_time<<std::endl;
 
   _setPoint.setType(MavState::POSITION);

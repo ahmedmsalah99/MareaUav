@@ -38,6 +38,10 @@ private:
 
     exec::release_payload* _relpay_feedback;
 
+    // to set inspection parameters only once
+
+    bool _inspectionInit = false;
+
     // ignited function
 
     void search()
@@ -49,8 +53,11 @@ private:
 
         //set vision info
         _searcher.setVisionPose(*_visionRescuePose);
-
-        _searcher.initInspectionParams(_actualTask->params[0], _actualTask->params[1], _actualTask->z);
+        if(!_inspectionInit)
+        {
+          _searcher.initInspectionParams(_actualTask->params[0], _actualTask->params[1], _actualTask->z);
+          _inspectionInit = true;
+        }
 
         _searcher.setYaw(_actualTask->yaw);
 

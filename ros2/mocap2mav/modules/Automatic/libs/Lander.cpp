@@ -311,7 +311,7 @@ void Lander::printSignals() {
 
 	std::cout<<"Vision_Z:"<<_VisionPose.getZ()<<std::endl;
 	std::cout<<"Ultrasonic_Z:"<<(_UltraInfo.getZ() - params_automatic::OffsetUltraSensor)<<std::endl;
-	std::cout<<"Valid? "<<_UltraInfo.IsValid<<std::endl;
+	std::cout<<"UltrasonicValid? "<<_UltraInfo.IsValid<<std::endl;
 
 	std::cout << "switchSensor: " << switchSensor << std::endl;
 	std::cout << "VisionDataAvailable: " << _VisionPose.VisionDataUpdated << std::endl;
@@ -445,7 +445,7 @@ void Lander::run() {
       	if (print > 30) std::cout<<"INSPE"<<std::endl;
 
         inspection();
-        align(); //controlling the yaw
+        // align(); //controlling the yaw
 
         break;
 
@@ -464,7 +464,7 @@ void Lander::run() {
       clampZSP(); //It keeps the Z of the UAV in a interval specified.
 
 			hold(); //control the x and y position
-      align(); //controlling the yaw
+      // align(); //controlling the yaw
       break;
 
     case (AbstractLandState::states::DESC):
@@ -472,7 +472,7 @@ void Lander::run() {
 			if (print > 30) std::cout<<"DESC"<<std::endl;
 
       desc();
-      align(); //controlling the yaw
+      // align(); //controlling the yaw
       //decrease the z position to 0.1 meters.
       clampZSP();
       break;
@@ -482,7 +482,7 @@ void Lander::run() {
 			if (print > 30) std::cout<<"ASCE"<<std::endl;
 
       asce();
-      align(); //controlling the yaw
+      // align(); //controlling the yaw
       //increase the z position to 0.1 meters.
       clampZSP();
       break;
@@ -500,7 +500,7 @@ void Lander::run() {
 
 			if (print > 30) std::cout<<"COMP"<<std::endl;
 
-      align(); //controlling the yaw
+      // align(); //controlling the yaw
       hold();
       comp();
       //compensation of the altitude
@@ -510,7 +510,7 @@ void Lander::run() {
 
 			if (print > 30) std::cout<<"LAND"<<std::endl;
 
-      align(); //controlling the yaw
+      // align(); //controlling the yaw
       // initDone = false;
       land();
       //landing phase.
@@ -593,6 +593,8 @@ bool Lander::setDroneInFront()
   double yTarget = 0;
   // getting the yaw of the platform to know how it's oriented.
   double yaw_plat = _platformState.getYaw();
+  // std::cout << "YAW: " << yaw_plat << std::endl;
+
   // getting also the distance from the center the drone has to keep once positioned,
   // passed from file; it also must be not less than 0.
   double gain = fabs(param.distanceFromCenter);
@@ -600,7 +602,7 @@ bool Lander::setDroneInFront()
   // more precisely, the values of sin and cos (sin acting on x cause North in NED == Y in Local Frame)
   // determinate the position around the platform, with a certain distance from the center;
   // adding then the error wrt the platform , so that the drone is in the correct position.
-  if(yaw_plat >= -180.0 && yaw_plat < 180.0)
+  if(yaw_plat >= -PI && yaw_plat < PI)
   {
     _holdPIDX.setDt(_dt);
     _holdPIDY.setDt(_dt);
@@ -618,15 +620,17 @@ bool Lander::setDroneInFront()
     std::cout << "YAW NOT VALID, CANNOT GENERATE DESIRED POSITION";
     return false;
   }
-  // std::cout << "xTarget: " << xTarget << std::endl;
-  // std::cout << "yTarget: " << yTarget << std::endl;
+  // std::cout << "xTarget: " << x_des_drone << std::endl;
+  // std::cout << "yTarget: " << y_des_drone << std::endl;
+  // std::cout << "_VisionPose.getX(): " << _VisionPose.getX() << std::endl;
+  // std::cout << "_VisionPose.getY(): " << _VisionPose.getY() << std::endl;
   // std::cout << "**********************************" << std::endl;
   // setting the setpoint finally
   _setPoint.setPosition(xTarget, yTarget, param.prelandAltitude);
   _setPoint.setType(MavState::type::POSITION);
 
   // returning the error condition
-  if(fabs(xTarget - _state.getX()) < 0.10 && fabs(yTarget - _state.getY()) < 0.10)
+  if(fabs(xTarget - _state.getX()) < 0.15 && fabs(yTarget - _state.getY()) < 0.15)
   {
     // setting the slope vector for the next step, simplifying the computations
     // _platformState.getX() - (_platformState.getX() + gain*sinf(yaw_plat))
@@ -669,8 +673,8 @@ void Lander::inspection() {
 
   _setPoint.setPosition(RadiusInspection * cos((param.inspeLinVel/RadiusInspection)*time) + X0, RadiusInspection * sin((param.inspeLinVel/RadiusInspection)*time) + Y0, param.zMax + param.zMin);
 
-  std::cout<<"Circ:  "<<_setPoint.getX()<<std::endl;
-  std::cout<<"Time: "<<time<<std::endl;
+  // std::cout<<"Circ:  "<<_setPoint.getX()<<std::endl;
+  // std::cout<<"Time: "<<time<<std::endl;
 
   _setPoint.setType(MavState::POSITION);
 
@@ -730,11 +734,11 @@ void Lander::hold() {
     // adjusting the target to follow a line depending on the current altitude
     double z_adj = _line_direction[2]*_VisionPose.getX()/_line_direction[0];
     // with a lower bound
-    if (z_adj < param.zMax)
-      z_adj = param.zMax;
-
     // std::cout << "z_adj: " << z_adj << std::endl;
     _setPoint.setZ(z_adj);
+
+    if (z_adj < param.zMax)
+      clampZSP();
   }
 
 
@@ -795,11 +799,15 @@ void Lander::comp() {
 	//double Err_v = Z_target_v - _state.getVz();
 	//Z_target_v += params_automatic::KPCompV * (Err_v);
 
-	//std::cout<<"Target: "<< z_target_v << std::endl;
+	// std::cout<<"Target: "<< _UltraInfo.getVz() << std::endl;
 	//std::cout<<"MyTarget: "<< Z_target_v << std::endl;
 
-	double Err_v = desc_velocity - _UltraInfo.getVz();
-	double Z_target_v = param.KPCompV * (Err_v);
+	// double Err_v = desc_velocity - _UltraInfo.getVz();
+	// double Z_target_v = param.KPCompV * (Err_v);
+
+  double Z_target_v = _UltraInfo.getVz() - desc_velocity;
+  double Err_v = Z_target_v - _state.getVz();
+  Z_target_v += param.KPCompV * (Err_v);
 
   // std::cout<<"MyTarget: "<< Z_target_v << std::endl;
 
@@ -817,7 +825,7 @@ void Lander::comp() {
 
   }
 
-
+  // std::cout << _setPoint.getZ() << std::endl;
 }
 
 void Lander::clampZSP() {

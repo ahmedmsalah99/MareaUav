@@ -180,6 +180,12 @@ private:
 
 	std::unique_ptr<Command> _actualCommand;
 
+    /**
+     * yaw used during land and search tasks (must be the same as move one)
+     */
+
+	float _defaultYaw;
+
 };
 
 #endif // AUTOMATIC_H
