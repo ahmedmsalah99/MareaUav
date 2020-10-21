@@ -48,16 +48,21 @@ class PayloadReleaser(Node):
 					time.sleep(1.5)
 					print ("Opening")
 					#p.ChangeDutyCycle(0.08)
-					time.sleep(5)
+					time.sleep(4)
+					msg1 = release_payload()
+					msg1.data = "W"
+					lc = lcm.LCM()
+					lc.publish("release_payload_feedback", msg1.encode())
+					time.sleep(1)
 					print ("Disarm")
 					#p.stop()
 					#GPIO.cleanup()
 					self.payloadReleased = True
 
-					msg = release_payload()
-					msg.data = "R"
+					msg2 = release_payload()
+					msg2.data = "R"
 					lc = lcm.LCM()
-					lc.publish("release_payload_feedback", msg.encode())
+					lc.publish("release_payload_feedback", msg2.encode())
 
 				except KeyboardInterrupt:
 					#p.stop()

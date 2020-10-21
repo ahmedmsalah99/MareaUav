@@ -13,4 +13,8 @@ echo "load gazebo plugin for the platform, put the correct path of the landingPl
 
 export GAZEBO_PLUGIN_PATH=${GAZEBO_PLUGIN_PATH}:/home/andrea/Marea/mar_frankenrotor_ros/ros2SITL/landingPlat/build
 
+echo "do the same for the Payload directory"
+
+export GAZEBO_PLUGIN_PATH=${GAZEBO_PLUGIN_PATH}:/home/andrea/Marea/mar_frankenrotor_ros/ros2SITL/Payload/build
+
 echo "done!!:)"

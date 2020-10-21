@@ -52,9 +52,23 @@ cd ~/vision_dashing_ws
 source environment.sh
 ```
 
-### Link Gazebo plugin:
+### Link Gazebo plugin (Landing Platform):
 ```
 cd ~/landingPlat
+```
+Compile it and put the .so file in the build folder (if not already there).
+Compilation being done by these commands:
+
+```
+mkdir build
+cd build
+cmake ..
+make
+```
+
+### Link Gazebo plugin (Payload):
+```
+cd ~/Payload
 ```
 Compile it and put the .so file in the build folder (if not already there).
 Compilation being done by these commands:
