@@ -51,7 +51,7 @@ Remember to change the paths in environment.sh and setup_variable.sh files (both
 ### To compile Firmware module:
 ```
 cd ~/Firmware
-make px4_sitl_default
+make px4_sitl_rtps
 ```
 
 The last instruction will wait to connect to the simulator
