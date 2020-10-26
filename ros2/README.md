@@ -1,7 +1,7 @@
 # VisionSystem with Gazebo simulator and PX4 SITL simulation
 
 ## Objective:
-Landing action using vision system
+Research of a shipwrecked person, releasing payload and Landing on a platform using vision system and ultrasonic sensor
 
 ## Download phase:
 
@@ -22,21 +22,31 @@ Then:
 	3. landingPlat module: branch master.
 	It's allows to move the platform in Gazebo simulation.
 
+	4. Payload module: branch master.
+	It's allows to spawn and move the payload in Gazebo simulation.
+
 	4. vision_dashing_ws module: branch master.
 	Then, load sub-module "lcm_bridge".
 	It's a ROS2 workspace in which there are the vision system and the bridge for communicating
 	with the guidance controller and a package to set the simulation.
+	Before compiling every package, it's highly recommended to configure and compile some of them (such as 
+	px4_msgs and px4_ros_com). References can be found at https://dev.px4.io/master/en/middleware/micrortps.html
+	NOTE: it's recommended to download the px4_ros_com version on this repository, cause during compilation it was
+	giving some errors that got fixed in the CMAKE file, and that may be not present in the most current versions
+	online.
 
 	5. vision_melodic_ws module: branch master.
 	This module is needed for the ros1bridge between ros2 and px4.
 
-	6. fsm_raspicam moduel: branch master.
+	6. fsm_raspicam module: branch master.
 	This module is needed when using the raspicamera in real tests; it should be put inside
 	vision_dashing_ws in real tests, while kept outside in simulations.
 
 ## Initial setup:
 
 Remember to export the variable M2M_INCLUDE to link the lcm_bridge and the guidance controller.
+References to set up the PX4-FastRTPS Bridge can be found at https://dev.px4.io/master/en/middleware/micrortps.html
+Remember to change the paths in environment.sh and setup_variable.sh files (both in vision_dashing_ws and vision_melodic_ws) to make them fit to yours.
 
 ### To compile Firmware module:
 ```
@@ -66,7 +76,7 @@ cmake ..
 make
 ```
 
-### Link Gazebo plugin (Payload):
+### Link Gazebo plugin (Payload), same as Landing Platform one:
 ```
 cd ~/Payload
 ```

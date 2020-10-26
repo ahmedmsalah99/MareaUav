@@ -7,18 +7,15 @@ with each other through Lightweight Communications and Marshalling middleware (L
 and its custom messages can be compiled via:
 
 ```
-	lcm-gen -x message.lcm
+	lcm-gen -x /path/to/message.lcm
 ```
 
-Here the commands to inject:
-```
-	lcm-gen -x include/lcm_messages/apriltag.lcm
-	lcm-gen -x include/lcm_messages/pose.lcm
-	lcm-gen -x include/lcm_messages/state.lcm
-	lcm-gen -x include/lcm_messages/task.lcm
-	lcm-gen -x include/lcm_messages/UltrasonicPosition.lcm
+or, if dealing with Python messages, inject:
 
 ```
+	lcm-gen -p /path/to/message.lcm
+```
+For other programming languages, check the references online.
 To see pre-compiled messages, please check in `mocap2mav/include/lcm_messages`.
 
 ## How to Compile
@@ -33,6 +30,7 @@ To Get eigen, deps and lcm software
 Then
 
 ```
+	source setting_test.sh
 	source build_package.sh
 ```
 
