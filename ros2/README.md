@@ -12,7 +12,7 @@ Firstly, load its sub-modules
 Then:
 
 	1. Firmware module: branch master.
-	Move to sitl_gazebo folder to load its the submodules, then set the branch VisionSystem.
+	Move to sitl_gazebo folder to load its the submodules.
 	It allows to run the PX4 simulator.
 
 	2. mocap2mav module: branch master.
