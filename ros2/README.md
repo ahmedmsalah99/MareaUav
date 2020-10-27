@@ -11,9 +11,11 @@ Firstly, load its sub-modules
 
 Then:
 
-	1. Firmware module: branch master.
-	Move to sitl_gazebo folder to load its the submodules.
-	It allows to run the PX4 simulator.
+	1. Firmware module: branch v1.9.2, download it from the official PX4 github.
+	inject this command: git clone --recursive https://github.com/PX4/Firmware.git -b v1.9.2
+	Move to Tools and substitute sitl_gazebo with the one contained in this git folder.
+	Move to msg/tools and substitute the uorb configuration file for rtps with the one in this git folder
+	It allows to run the PX4 simulator with RTPS support.
 
 	2. mocap2mav module: branch master.
 	Load the submodules.
