@@ -44,6 +44,9 @@ Then:
 	This module is needed when using the raspicamera in real tests; it should be put inside
 	vision_dashing_ws in real tests, while kept outside in simulations.
 
+NOTE: if running a real test and not a simulation (SITL/HITL), landingPlat, Payload directories are not necessary.
+Firmware will be instead uploaded on the Pixhawk.
+
 ## Initial setup:
 
 Remember to export the variable M2M_INCLUDE to link the lcm_bridge and the guidance controller.
@@ -97,7 +100,11 @@ make
 cd ~/vision_dashing_ws/src/load_nodes
 source setup_variable.sh
 ```
-It links Gazebo with Firmware, the bridge with Guidance controller, it includes the plugin for the platform. Remember to set the correct paths.
+
+If you are running a real test, run instead setup_variable_real.sh.
+
+It links Gazebo with Firmware, the bridge with Guidance controller, it includes the plugin for the platform.
+REMEMBER TO SET THE CORRECT PATHS.
 This step needs to be done for every terminal requiring the M2M_INCLUDE variable.
 
 ### To compile the guidance controller:
@@ -132,7 +139,7 @@ ros2 run ros1_bridge dynamic_bridge --bridge-all-2to1-topics
 
 4. Mavros (vision_melodic_ws):
 
-NEEDS M2M_INCLUDE => source environment.sh and setup_variable.sh first
+NEEDS M2M_INCLUDE => source environment.sh and setup_variable(_real).sh first
 
 ```
 . devel/setup.bash
@@ -153,7 +160,7 @@ micrortps_client start -t UDP
 
 7. apriltag + lcm_bridge + ultrasonic_sensor + payload_releaser modules:
 
-NEEDS M2M_INCLUDE => source environment.sh and setup_variable.sh first
+NEEDS M2M_INCLUDE => source environment.sh and setup_variable(_real).sh first
 
 ```
 . install/setup.bash
