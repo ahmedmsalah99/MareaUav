@@ -1,4 +1,4 @@
-#000000#000000/**********************************************************
+/**********************************************************
  Software developed by AVA ( Ava Group of the University of Cordoba, ava  at uco dot es)
  Main author Rafael Munoz Salinas (rmsalinas at uco dot es)
  This software is released under BSD license as expressed below

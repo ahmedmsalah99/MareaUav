@@ -45,7 +45,7 @@ namespace raspicam {
     RaspiCam_Cv::RaspiCam_Cv() {
         _impl=new _private::Private_Impl();
 	set(cv::CAP_PROP_FORMAT,CV_8UC3);
- 
+
     }
     RaspiCam_Cv::~RaspiCam_Cv() {
         delete _impl;
@@ -95,7 +95,7 @@ namespace raspicam {
         switch ( propId ) {
         case cv::CAP_PROP_MODE:
             return _impl->getSensorMode();
-        case cv2::CAP_PROP_FRAME_WIDTH :
+        case cv::CAP_PROP_FRAME_WIDTH :
             return _impl->getWidth();
         case cv::CAP_PROP_FRAME_HEIGHT :
             return _impl->getHeight();
@@ -106,7 +106,7 @@ namespace raspicam {
         case cv::CAP_PROP_BRIGHTNESS :
             return _impl->getBrightness();
         case cv::CAP_PROP_CONTRAST :
-            return Scaler::scale ( -100,100,0,100,  _impl->getContrast() ); 
+            return Scaler::scale ( -100,100,0,100,  _impl->getContrast() );
         case cv::CAP_PROP_SATURATION :
             return  Scaler::scale ( -100,100,0,100, _impl->getSaturation() );;
 //     case cv::CAP_PROP_HUE : return _cam_impl->getSharpness();
@@ -131,7 +131,7 @@ namespace raspicam {
         case cv::CAP_PROP_MODE:
             _impl->setSensorMode(value);
             break;
-            
+
         case cv::CAP_PROP_FRAME_WIDTH :
             _impl->setWidth ( value );
             break;
@@ -154,7 +154,7 @@ namespace raspicam {
         case cv::CAP_PROP_BRIGHTNESS :
             _impl->setBrightness ( value );
             break;
-        case cv::CAP_PROP_CONTRAST : 
+        case cv::CAP_PROP_CONTRAST :
             _impl->setContrast ( Scaler::scale ( 0,100,-100,100, value ) );
             break;
         case cv::CAP_PROP_SATURATION :
@@ -165,7 +165,7 @@ namespace raspicam {
             _impl->setISO ( Scaler::scale ( 0,100,0,800, value ) );
             break;
         case cv::CAP_PROP_EXPOSURE :
-            if ( value>0 && value<=100 ) { 
+            if ( value>0 && value<=100 ) {
                 _impl->setShutterSpeed ( Scaler::scale ( 0,100,0,330000, value ) );
             } else {
                 _impl->setExposure ( RASPICAM_EXPOSURE_AUTO );
@@ -182,54 +182,52 @@ namespace raspicam {
         };
         return true;
     }
-	
+
 	void RaspiCam_Cv::setRotation ( int nRotation ) {
 		// input is [0;3], map to [0; 360]
 		int clamped = std::max(0, std::min(nRotation, 3));
 		int degrees = clamped * 90;
 		_impl->setRotation ( degrees );
 	}
-	
+
 	void RaspiCam_Cv::setImageEffect ( int nEffect ) {
 		// Clamp to enum
 		int clamped = std::max((int)RASPICAM_IMAGE_EFFECT::RASPICAM_IMAGE_EFFECT_NONE, std::min(nEffect, (int)RASPICAM_IMAGE_EFFECT::RASPICAM_IMAGE_EFFECT_CARTOON));
 		_impl->setImageEffect ( (RASPICAM_IMAGE_EFFECT)clamped );
 	}
-	
+
 	void RaspiCam_Cv::setVideoStabilization ( bool enable ) {
 		_impl->setVideoStabilization ( enable );
 	}
-	
+
 	void RaspiCam_Cv::setHorizontalFlip ( bool enable ) {
 		_impl->setHorizontalFlip ( enable );
 	}
-	
+
 	void RaspiCam_Cv::setVerticalFlip ( bool enable ) {
 		_impl->setVerticalFlip ( enable );
 	}
-	
+
 	void RaspiCam_Cv::setExposureCompensation ( int value ) {
 		// clamp to [-10; 10]
 		int clamped = std::max(-10, std::min(value, 10));
 		_impl->setExposureCompensation ( clamped );
 	}
-	
+
 	void RaspiCam_Cv::setAWB ( int nEnumValue ) {
 		// Clamp to enum
 		int clamped = std::max((int)RASPICAM_AWB::RASPICAM_AWB_OFF, std::min(nEnumValue, (int)RASPICAM_AWB::RASPICAM_AWB_HORIZON));
 		_impl->setAWB ( (RASPICAM_AWB)clamped );
 	}
-	
+
 	void RaspiCam_Cv::setMetering ( int nEnumValue ) {
 		// Clamp to enum
 		int clamped = std::max((int)RASPICAM_METERING::RASPICAM_METERING_AVERAGE, std::min(nEnumValue, (int)RASPICAM_METERING::RASPICAM_METERING_MATRIX));
 		_impl->setMetering ( (RASPICAM_METERING)clamped );
 	}
-	
+
     std::string RaspiCam_Cv::getId() const{
         return _impl->getId();
     }
 
 }
-
-
