@@ -35,7 +35,8 @@ Then:
 	px4_msgs and px4_ros_com). References can be found at https://dev.px4.io/master/en/middleware/micrortps.html
 	NOTE: it's recommended to download the px4_ros_com version on this repository, cause during compilation it was
 	giving some errors that got fixed in the CMAKE file, and that may be not present in the most current versions
-	online.
+	online. To set it up, also look at the code included in scripts/setup_system.bash, to know which dependencies
+	you should download in order to make it work.
 
 	5. vision_melodic_ws module: branch master.
 	This module is needed for the ros1bridge between ros2 and px4.
@@ -43,6 +44,9 @@ Then:
 	6. fsm_raspicam module: branch master.
 	This module is needed when using the raspicamera in real tests; it should be put inside
 	vision_dashing_ws in real tests, while kept outside in simulations.
+	
+	7. RaspiCam module: branch master.
+	Needed to handle the camera images as a suupport for fsm_raspicam. To be compiled apart. Read the instructions.
 
 NOTE: if running a real test and not a simulation (SITL/HITL), landingPlat, Payload directories are not necessary.
 Firmware will be instead uploaded on the Pixhawk.

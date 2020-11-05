@@ -10,7 +10,7 @@ and its custom messages can be compiled via:
 	lcm-gen -x /path/to/message.lcm
 ```
 
-or, if dealing with Python messages, inject:
+or, if dealing with Python messages (release_payload needs both c++ and py), inject:
 
 ```
 	lcm-gen -p /path/to/message.lcm
