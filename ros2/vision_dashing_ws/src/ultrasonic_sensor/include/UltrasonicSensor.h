@@ -20,7 +20,7 @@ public:
 
 	bool GetValidity() const; //It checks if the result is valid(based on the timeout expired )
 
-	void setParameters(int trigger, int echo);
+	void setParameters(int trigger, int echo, int timeout);
 
 private:
 
@@ -33,6 +33,8 @@ private:
 	int trigger; //trigger pin
 
 	int echo; //echo pin
+
+	int timeout;
 
 	volatile long startTimeUsec;
 

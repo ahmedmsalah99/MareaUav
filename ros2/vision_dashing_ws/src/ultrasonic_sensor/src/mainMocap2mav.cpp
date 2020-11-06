@@ -59,7 +59,7 @@ int main(int argc, char **argv) {
 	// UltrasonicSensor Sonar1; //it sets the sensor
   auto Sonar1 = std::make_shared<UltrasonicSensor>();
 
-  Sonar1->setParameters(trigger, echo);
+  Sonar1->setParameters(trigger, echo, timeout);
 
   auto ultrasonic_sensor_sub = node->create_subscription<sensor_msgs::msg::Range>("/ultrasonic/sonar", 1, std::bind(&UltrasonicSensor::setSensorData, Sonar1, std::placeholders::_1));
 

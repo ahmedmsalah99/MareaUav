@@ -1,5 +1,8 @@
 #include <iostream>
-#include <wiringPi.h>
+extern "C"
+{
+	#include <wiringPi.h>
+}
 #include "UltrasonicSensor.h"
 #define SpeedOfSound 343.00
 
@@ -8,7 +11,7 @@ UltrasonicSensor::UltrasonicSensor() : Node("ultrasonic_sensor", rclcpp::NodeOpt
 	// _ultrasonic_sensor_sub = this->create_subscription<sensor_msgs::msg::Range>("/ultrasonic/sonar", 1, std::bind(&UltrasonicSensor::setSensorData, this, std::placeholders::_1));
 }
 
-void UltrasonicSensor::setParameters(int trigger, int echo)
+void UltrasonicSensor::setParameters(int trigger, int echo , int timeout)
 {
 	wiringPiSetupGpio();
 	//it allows the calling program to use broadcom GPIO pins numbers directly
@@ -17,6 +20,8 @@ void UltrasonicSensor::setParameters(int trigger, int echo)
 	this->trigger = trigger; //set TRIG pin
 
 	this->echo = echo; // set ECHO pin
+
+	this->timeout = timeout; // set Timeout
 
 	pinMode( trigger, OUTPUT ); //set TRIG pin as output
 

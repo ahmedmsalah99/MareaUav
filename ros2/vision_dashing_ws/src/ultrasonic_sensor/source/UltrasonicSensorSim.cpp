@@ -7,10 +7,11 @@ UltrasonicSensor::UltrasonicSensor() : Node("ultrasonic_sensor", rclcpp::NodeOpt
 	// _ultrasonic_sensor_sub = this->create_subscription<sensor_msgs::msg::Range>("/ultrasonic/sonar", 1, std::bind(&UltrasonicSensor::setSensorData, this, std::placeholders::_1));
 }
 
-void UltrasonicSensor::setParameters(int trigger, int echo)
+void UltrasonicSensor::setParameters(int trigger, int echo, int timeout)
 {
 		this->trigger = trigger;
 		this->echo = echo;
+		this->timeout = timeout;
 }
 
 bool UltrasonicSensor::isExpired( int timeout, long time ) {
