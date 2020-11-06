@@ -37,6 +37,7 @@ Then:
 	giving some errors that got fixed in the CMAKE file, and that may be not present in the most current versions
 	online. To set it up, also look at the code included in scripts/setup_system.bash, to know which dependencies
 	you should download in order to make it work.
+	Last, remember to change the path of apriltag_msgs on lcm_bridge's CMakeLists.txt.
 
 	5. vision_melodic_ws module: branch master.
 	This module is needed for the ros1bridge between ros2 and px4.

@@ -29,9 +29,6 @@ else()
 endif()
 
 set(M2M_SIM "$ENV{M2M_SIM}")
-if(NOT M2M_SIM)
- message(FATAL_ERROR "Undefined M2M_SIM env var. HINT: export M2M_SIM=1 if running simulation, 0 else")
-endif()
 
 include_directories(${apriltag_INCLUDE_DIRS})
 link_directories(${apriltag_LIBDIR})

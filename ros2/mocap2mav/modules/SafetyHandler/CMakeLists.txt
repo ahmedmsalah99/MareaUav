@@ -12,9 +12,6 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 #find_package(Qt5Network)
 
 set(M2M_SIM "$ENV{M2M_SIM}")
-if(NOT M2M_SIM)
- message(FATAL_ERROR "Undefined M2M_SIM env var. HINT: export M2M_SIM=1 if running simulation, 0 else")
-endif()
 
 set(PROJECT_SRCS ${PROJECT_SOURCE_DIR}/main.cpp ${PROJECT_SOURCE_DIR}/SafetyParser.cpp)
 
