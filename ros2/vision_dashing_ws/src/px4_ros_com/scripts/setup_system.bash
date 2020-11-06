@@ -52,7 +52,7 @@ fi
 git clone https://github.com/eProsima/Fast-CDR.git \
   && mkdir Fast-CDR/build && cd Fast-CDR/build \
   && cmake .. \
-  && cmake --build . --target install \
+  && sudo cmake --build . --target install \
   && cd $PWD
 
 if [ $ROS2_DISTRO == "ardent" ]; then
@@ -70,14 +70,14 @@ else
     && cd foonathan_memory_vendor \
     && mkdir build && cd build
     && cmake ..
-    && cmake --build . --target install
+    && sudo cmake --build . --target install
 
   # Install Gradle (Required to build Fast-RTPS-Gen)
-  wget -q "https://services.gradle.org/distributions/gradle-6.2-rc-3-bin.zip" -O /tmp/gradle-6.2-rc-3-bin.zip \
+  wget -q "https://services.gradle.org/distributions/gradle-6.6.1-bin.zip" -O /tmp/gradle-6.6.1-bin.zip \
     && mkdir /opt/gradle \
     && cd /tmp \
-    && unzip -d /opt/gradle gradle-6.2-rc-3-bin.zip \
-    && echo "export PATH=$PATH:/opt/gradle/gradle-6.2-rc-3/bin" >> ~/.bashrc \
+    && unzip -d /opt/gradle gradle-6.6.1-bin.zip \
+    && echo "export PATH=$PATH:/opt/gradle/gradle-6.6.1/bin" >> ~/.bashrc \
     && source ~/.bashrc \
     && cd $PWD
 
@@ -86,24 +86,24 @@ else
     git clone --recursive https://github.com/eProsima/Fast-RTPS.git -b v1.9.3 /tmp/FastRTPS-1.9.3 \
       && cd /tmp/FastRTPS-1.9.3 \
       && mkdir build && cd build \
-      && cmake -DTHIRDPARTY=ON -DSECURITY=ON .. \
-      && make --build . --target install \
+      && cmake -DTHIRDPARTY=ON -DBUILD_JAVA=ON .. \
+      && sudo cmake --build . --target install \
       && cd $PWD
   else
-    # Install Fast-RTPS 1.8.3
-    git clone --recursive https://github.com/eProsima/Fast-RTPS.git -b v1.8.3 /tmp/FastRTPS-1.8.3 \
-      && cd /tmp/FastRTPS-1.8.3 \
+    # Install Fast-RTPS 1.8.2
+    git clone --recursive https://github.com/eProsima/Fast-RTPS.git -b v1.8.2 /tmp/FastRTPS-1.8.2 \
+      && cd /tmp/FastRTPS-1.8.2 \
       && mkdir build && cd build \
-      && cmake -DTHIRDPARTY=ON -DSECURITY=ON .. \
-      && make --build . --target install \
+      && cmake -DTHIRDPARTY=ON -DBUILD_JAVA=ON .. \
+      && sudo cmake --build . --target install \
       && cd $PWD
   fi
 
-  # Install Fast-RTPS-Gen 1.0.3
-  git clone --recursive https://github.com/eProsima/Fast-RTPS-Gen.git -b v1.0.3 /tmp/Fast-RTPS-Gen \
+  # Install Fast-RTPS-Gen 1.0.4
+  git clone --recursive https://github.com/eProsima/Fast-RTPS-Gen.git -b v1.0.4 /tmp/Fast-RTPS-Gen \
     && cd /tmp/Fast-RTPS-Gen \
     && gradle assemble \
-    && sudo cp share/fastrtps/fastrtpsgen.jar /usr/local/share/fastrtps/ \
+    && sudo cp share/fastrtpsgen/java/fastrtpsgen.jar /usr/local/share/fastrtpsgen/java \
     && sudo cp scripts/fastrtpsgen /usr/local/bin/ \
     && cd $PWD
 fi
@@ -154,6 +154,21 @@ sudo sh -c "echo deb [arch=amd64,arm64] http://repo.ros2.org/ubuntu/main $(lsb_r
 sudo apt-get -qq update
 sudo apt-get -qq dist-upgrade
 echo "Installing ROS2 $ROS2_DISTRO and some dependencies..."
+
+sudo apt-get install -y --quiet python3-genmsg
+  || sudo wget http://mirrors.kernel.org/ubuntu/pool/universe/r/ros-genmsg/python3-genmsg_0.5.11-2_all.deb -P /tmp/
+    && sudo dpkg -i /tmp/python3-genmsg_0.5.11-2_all.deb
+    && sudo apt-get -y autoremove
+    && sudo apt-get clean autoclean
+    && sudo rm /tmp/python3-genmsg_0.5.11-2_all.deb
+
+# Install python3-gencpp or download and install from deb source (currently only available in Ubuntu 18.10 and above)
+sudo apt-get install -y --quiet python3-gencpp
+  || wget http://mirrors.kernel.org/ubuntu/pool/universe/r/ros-gencpp/python3-gencpp_0.6.0-4_all.deb -P /tmp/
+    && sudo dpkg -i /tmp/python3-gencpp_0.6.0-4_all.deb
+    && sudo apt-get -y autoremove
+    && sudo apt-get clean autoclean
+    && sudo rm /tmp/python3-gencpp_0.6.0-4_all.deb
 
 sudo apt-get install -y \
   dirmngr \
