@@ -37,6 +37,9 @@ Then:
 	giving some errors that got fixed in the CMAKE file, and that may be not present in the most current versions
 	online. To set it up, also look at the code included in scripts/setup_system.bash, to know which dependencies
 	you should download in order to make it work.
+	If you want to run the RTPS protocol on a RPi with limited hardware, remember to generate the topics with the
+	dedicated file in "vision_dashing_ws/src/px4_ros_com/templates/uorb_rtps_message_ids_RPi.yaml", which provides a 
+	limited number of topics (the ones needed) to be compiled.
 	Last, remember to change the path of apriltag_msgs on lcm_bridge's CMakeLists.txt.
 
 	5. vision_melodic_ws module: branch master.
@@ -144,7 +147,7 @@ ros2 run ros1_bridge dynamic_bridge --bridge-all-2to1-topics
 
 4. Mavros (vision_melodic_ws):
 
-NEEDS M2M_INCLUDE => source environment.sh and setup_variable(_real).sh first
+NEEDS M2M_INCLUDE => source environment.sh and setup_variable.sh first
 
 ```
 . devel/setup.bash
@@ -165,7 +168,7 @@ micrortps_client start -t UDP
 
 7. apriltag + lcm_bridge + ultrasonic_sensor + payload_releaser modules:
 
-NEEDS M2M_INCLUDE => source environment.sh and setup_variable(_real).sh first
+NEEDS M2M_INCLUDE => source environment.sh and setup_variable.sh first
 
 ```
 . install/setup.bash
@@ -201,5 +204,37 @@ rosrun image_view image_view image:=/apriltag/image/compressed
 ```
 this node allows to see the images coming from the camera
 
+## HITL TEST:
 
+1. Firmware module (Firmware directory):
+```
+DONT_RUN=1 make px4_sitl_rtps gazebo
+source Tools/setup_gazebo.bash $(pwd) $(pwd)/build/px4_sitl_rtps
+```
 
+plug in the Pixhawk, go to vision_melodic_ws and issue:
+
+NEEDS M2M_INCLUDE => source environment.sh and setup_variable.sh first
+
+```
+. devel/setup.bash
+roslaunch load_nodes load_simulation.launch
+```
+
+5. RTPS Agent (vision_dashing_ws):
+
+Remember to set rtps parameter on TELEM1 in QGC first (no rtps+mavlink)
+and to set TELEM1 baudrate to 460800.
+
+```
+. install/setup.bash
+micrortps_agent -d /dev/ttyUSB0
+```
+
+6. RTPS Client (on Firmware NuttShell)
+
+```
+micrortps_client start -d /dev/ttyS1
+```
+
+The other terminals don't change wrt SITL
