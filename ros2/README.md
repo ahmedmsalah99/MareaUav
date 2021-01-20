@@ -16,6 +16,7 @@ Then:
 	Move to Tools and substitute sitl_gazebo with the one contained in this git folder.
 	Move to msg/tools and substitute the uorb configuration file for rtps with the one in this git folder
 	It allows to run the PX4 simulator with RTPS support.
+	IF you are planning to use a real Pixhawk, download instead the version v1.11.3, to match RTPS constraints (px4_msgs)
 
 	2. mocap2mav module: branch master.
 	Load the submodules.
@@ -223,18 +224,17 @@ roslaunch load_nodes load_simulation.launch
 
 5. RTPS Agent (vision_dashing_ws):
 
-Remember to set rtps parameter on TELEM1 in QGC first (no rtps+mavlink)
-and to set TELEM1 baudrate to 460800.
-
 ```
 . install/setup.bash
-micrortps_agent -d /dev/ttyUSB0
+micrortps_agent -d /dev/ttyUSB0 -p 1ms
 ```
 
 6. RTPS Client (on Firmware NuttShell)
 
+Disable Mavlink instance 0 in QGC parameters (we don't want RTPS and Mavlink to run in the same channel)
+
 ```
-micrortps_client start -d /dev/ttyS1
+micrortps_client start -d /dev/ttyS1 -b 460800
 ```
 
 The other terminals don't change wrt SITL
