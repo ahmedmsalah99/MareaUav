@@ -18,12 +18,14 @@
 #include "px4_msgs/msg/vehicle_land_detected.hpp"
 // #include "mavros_msgs/msg/param_set.h"
 #include "px4_msgs/msg/vehicle_odometry.hpp"
+#include "std_msgs/msg/string.hpp"
 #include "lcm_messages/geometry/pose.hpp"
 // #include "lcm_messages/geometry/vision.hpp"
 #include "lcm_messages/exec/state.hpp"
 #include "lcm_messages/exec/battery.hpp"
 #include "lcm_messages/exec/gps_status.hpp"
 #include "lcm_messages/exec/camera_info.hpp"
+#include "lcm_messages/exec/release_payload.hpp"
 #include "common/MavState.h"
 #include "common/CallbackHandler.hpp"
 #include <poll.h>
@@ -43,12 +45,13 @@
 
 using namespace std::chrono_literals;
 
-lcm::LCM handler, handler2, handler3, handler5, handler6, handler7;
+lcm::LCM handler, handler2, handler3, handler5, handler6, handler7, handler8;
 geometry::pose lcm_pose;
 exec::state robot_state;
 exec::battery battery_lcm;
 exec::camera_info camera_info_lcm;
 exec::gps_status gps_status_lcm;
+exec::release_payload rel_pay_fb_lcm;
 
 //nav_msgs::Odometry platPos;
 auto platPos = std::make_shared<px4_msgs::msg::VehicleOdometry>();
@@ -192,6 +195,12 @@ void CameraInfoCallback(const sensor_msgs::msg::CameraInfo::SharedPtr ci)
     handler7.publish("camera_info", &camera_info_lcm);
 }
 
+void ReleasePayloadFbCallback(const std_msgs::msg::String::SharedPtr s)
+{
+    rel_pay_fb_lcm.data = s->data;
+    handler8.publish("release_payload_feedback", &rel_pay_fb_lcm);
+}
+
 void EStateCallback(const px4_msgs::msg::VehicleLandDetected::SharedPtr es){
 
     if (firstEState) {
@@ -277,6 +286,7 @@ int main(int argc, char **argv)
     auto gps_status_sub = node->create_subscription<px4_msgs::msg::VehicleGpsPosition>("/VehicleGpsPosition_PubSubTopic", 1, &gpsStatusCallback);
     auto camera_info_sub = node->create_subscription<sensor_msgs::msg::CameraInfo>("/apriltag/image/camera_info", 1, &CameraInfoCallback);
 
+    auto pay_rel_fb_sub = node->create_subscription<std_msgs::msg::String>("release_payload_feedback", 1, &ReleasePayloadFbCallback);
     //publishers
     // auto pub = node->create_publisher<px4_msgs::msg::VehicleLocalPositionSetpoint>("/VehicleLocalPositionSetpoint_PubSubTopic",1);
     //
@@ -288,7 +298,7 @@ int main(int argc, char **argv)
 
     auto pub = node->create_publisher<geometry_msgs::msg::PoseStamped>("/mavros/setpoint_position/local",1);
 
-    //auto pub1 = node->create_publisher<nav_msgs::msg::Odometry>("/global_platform_position",1);
+    auto pub1 = node->create_publisher<std_msgs::msg::String>("/release_payload",1);
 
     auto pub2 = node->create_publisher<geometry_msgs::msg::TwistStamped>("/mavros/setpoint_velocity/cmd_vel",1);
 
@@ -296,7 +306,8 @@ int main(int argc, char **argv)
 
     //LCM stuff
     lcm::Subscription *sub2 = handler2.subscribe("local_position_sp", &CallbackHandler::positionSetpointCallback, &call);
-    // lcm::Subscription *sub3 = handler3.subscribe("Landing_site/pose", &CallbackHandler::visionEstimateCallback, &call);
+    // lcm::Subscription *sub4 = handler3.subscribe("Landing_site/pose", &CallbackHandler::visionEstimateCallback, &call);
+    lcm::Subscription *sub3 = handler3.subscribe("release_payload", &CallbackHandler::releasePayloadCallback, &call);
     sub2->setQueueCapacity(1);
     // sub3->setQueueCapacity(1);
 
@@ -304,8 +315,8 @@ int main(int argc, char **argv)
     fds[0].fd = handler2.getFileno(); // Robot position
     fds[0].events = POLLIN;
 
-    // fds[1].fd = handler3.getFileno(); // Platform position
-    // fds[1].events = POLLIN;
+    fds[1].fd = handler3.getFileno(); // Release Payload
+    fds[1].events = POLLIN;
 
 
     robot_state.landed = 1;
@@ -316,7 +327,7 @@ int main(int argc, char **argv)
 
 
     int stateRate = 0;
-    // int*  platformDataRec = new int(0);
+    int*  payloadDataRec = new int(0);
     int*  robotDataRec    = new int(0);
 
     struct timeval time_;
@@ -327,30 +338,22 @@ int main(int argc, char **argv)
         //Poll file descriptors
         int ret = poll(fds,2,0);
 
-        *robotDataRec    = fds[0].revents & POLLIN;
+        *robotDataRec = fds[0].revents & POLLIN;
 
-        // *platformDataRec = fds[1].revents & POLLIN;
+        *payloadDataRec = fds[1].revents & POLLIN;
 
-	       //Platform position POLLIN
+	      //Release Payload POLLIN
 
-	      // if(*platformDataRec)
-        // {
-        //
-        //     handler3.handle();
-        //     platPos->x = call._vision_pos.getX();
-        //     platPos->y = call._vision_pos.getY();
-        //     platPos->z = call._vision_pos.getZ();
-        //
-        //     platPos->vx = call._vision_pos.getVx();
-        //     platPos->vy = call._vision_pos.getVy();
-        //     platPos->vz = call._vision_pos.getVz();
-        //
-        //     gettimeofday(&time_,NULL);
- 	      //     platPos->timestamp = time_.tv_usec;
-        //
-	      //     pub1->publish(*platPos);
-        //
-        // }
+	      if(*payloadDataRec)
+        {
+
+            handler3.handle();
+
+            auto relPayData = std::make_shared<std_msgs::msg::String>();
+            relPayData->data = call.release_payload.data;
+	          pub1->publish(*relPayData);
+
+        }
 
         //Position Command POLLIN
         if(*robotDataRec){

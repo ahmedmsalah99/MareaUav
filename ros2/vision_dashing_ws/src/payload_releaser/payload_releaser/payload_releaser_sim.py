@@ -1,16 +1,8 @@
 import rclpy
 
-import lcm
-
 import os
 
-m2m_include = os.environ['M2M_INCLUDE']
-
 import sys
-
-sys.path.insert(1, m2m_include)
-
-from lcm_messages.exec import release_payload
 
 from rclpy.node import Node
 
@@ -26,14 +18,17 @@ class PayloadReleaser(Node):
 
 	def __init__(self):
 		super().__init__('payload_releaser')
+		self.subscription = self.create_subscription(String, 'release_payload', self.listener_callback, 1)
+		self.subscription # prevent unused variable warning
+
+		self.publisher = self.create_publisher(String, "release_payload_feedback", 1)
 		self.payloadReleased = False
 
-	def listener_callback(self, channel, data):
+	def listener_callback(self, msg):
 		#self.get_logger().info('I heard: "%s"' % msg.data)
-		msg = release_payload.decode(data)
 		if msg.data == 'T':
-			print ("Received payload release cmd.")
 			if self.payloadReleased == False:
+				print ("Received payload release cmd.")
 				# GPIO 24 is the one that controls the PWM signal given to the servo
 				#servoPIN = 24
 				#GPIO.setmode(GPIO.BCM)
@@ -49,20 +44,18 @@ class PayloadReleaser(Node):
 					print ("Opening")
 					#p.ChangeDutyCycle(0.08)
 					time.sleep(4)
-					msg1 = release_payload()
+					msg1 = String()
 					msg1.data = "W"
-					lc = lcm.LCM()
-					lc.publish("release_payload_feedback", msg1.encode())
+					self.publisher.publish(msg1)
 					time.sleep(1)
 					print ("Disarm")
 					#p.stop()
 					#GPIO.cleanup()
 					self.payloadReleased = True
 
-					msg2 = release_payload()
+					msg2 = String()
 					msg2.data = "R"
-					lc = lcm.LCM()
-					lc.publish("release_payload_feedback", msg2.encode())
+					self.publisher.publish(msg2)
 
 				except KeyboardInterrupt:
 					#p.stop()
@@ -80,13 +73,8 @@ def main(args=None):
 	payload_releaser = PayloadReleaser()
 	print("Payload releaser waiting for command")
 
-	lc=lcm.LCM()
-	subscription = lc.subscribe('release_payload', payload_releaser.listener_callback)
-	subscription  # prevent unused variable warning
-
 	try:
 		while True:
-			lc.handle()
 			rclpy.spin(payload_releaser)
 	except KeyboardInterrupt:
 	    pass
