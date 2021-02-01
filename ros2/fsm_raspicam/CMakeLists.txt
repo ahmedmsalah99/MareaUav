@@ -10,6 +10,7 @@ set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_FLAGS "-Wall -ffunction-sections  -fomit-frame-pointer -O2 -ffast-math -DNDEBUG -mfpu=vfp -mfloat-abi=hard -ftree-vectorize")
 
 set(CMAKE_MODULE_PATH "/usr/local/lib/cmake/;${CMAKE_MODULE_PATH}")
+set(raspicam_DIR "/usr/local/lib/cmake")
 
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)

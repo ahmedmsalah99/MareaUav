@@ -19,6 +19,7 @@
 // #include "mavros_msgs/msg/param_set.h"
 #include "px4_msgs/msg/vehicle_odometry.hpp"
 #include "std_msgs/msg/string.hpp"
+#include <std_msgs/msg/float32.hpp>
 #include "lcm_messages/geometry/pose.hpp"
 // #include "lcm_messages/geometry/vision.hpp"
 #include "lcm_messages/exec/state.hpp"
@@ -26,6 +27,7 @@
 #include "lcm_messages/exec/gps_status.hpp"
 #include "lcm_messages/exec/camera_info.hpp"
 #include "lcm_messages/exec/release_payload.hpp"
+#include "common/common.h"
 #include "common/MavState.h"
 #include "common/CallbackHandler.hpp"
 #include <poll.h>
@@ -45,7 +47,7 @@
 
 using namespace std::chrono_literals;
 
-lcm::LCM handler, handler2, handler3, handler5, handler6, handler7, handler8;
+lcm::LCM handler, handler2, handler3, handler5, handler6, handler7, handler8, handler9;
 geometry::pose lcm_pose;
 exec::state robot_state;
 exec::battery battery_lcm;
@@ -302,21 +304,31 @@ int main(int argc, char **argv)
 
     auto pub2 = node->create_publisher<geometry_msgs::msg::TwistStamped>("/mavros/setpoint_velocity/cmd_vel",1);
 
+    auto pub3 = node->create_publisher<std_msgs::msg::Float32>("/drone_state",1);
+
 
 
     //LCM stuff
     lcm::Subscription *sub2 = handler2.subscribe("local_position_sp", &CallbackHandler::positionSetpointCallback, &call);
-    // lcm::Subscription *sub4 = handler3.subscribe("Landing_site/pose", &CallbackHandler::visionEstimateCallback, &call);
-    lcm::Subscription *sub3 = handler3.subscribe("release_payload", &CallbackHandler::releasePayloadCallback, &call);
-    sub2->setQueueCapacity(1);
-    // sub3->setQueueCapacity(1);
 
-    struct pollfd fds[2];
+    lcm::Subscription *sub3 = handler3.subscribe("release_payload", &CallbackHandler::releasePayloadCallback, &call);
+
+    lcm::Subscription *sub4 = handler9.subscribe("actual_task", &CallbackHandler::actualTaskCallback, &call);
+
+    sub2->setQueueCapacity(1);
+    sub3->setQueueCapacity(1);
+    sub4->setQueueCapacity(1);
+
+    struct pollfd fds[3];
+
     fds[0].fd = handler2.getFileno(); // Robot position
     fds[0].events = POLLIN;
 
     fds[1].fd = handler3.getFileno(); // Release Payload
     fds[1].events = POLLIN;
+
+    fds[2].fd = handler9.getFileno(); // Actual Task
+    fds[2].events = POLLIN;
 
 
     robot_state.landed = 1;
@@ -329,6 +341,7 @@ int main(int argc, char **argv)
     int stateRate = 0;
     int*  payloadDataRec = new int(0);
     int*  robotDataRec    = new int(0);
+    int*  actualTaskRec    = new int(0);
 
     struct timeval time_;
 
@@ -336,14 +349,15 @@ int main(int argc, char **argv)
     {
 
         //Poll file descriptors
-        int ret = poll(fds,2,0);
+        int ret = poll(fds,3,0);
 
         *robotDataRec = fds[0].revents & POLLIN;
 
         *payloadDataRec = fds[1].revents & POLLIN;
 
-	      //Release Payload POLLIN
+        *actualTaskRec = fds[2].revents & POLLIN;
 
+	      //Release Payload POLLIN
 	      if(*payloadDataRec)
         {
 
@@ -353,6 +367,34 @@ int main(int argc, char **argv)
             relPayData->data = call.release_payload.data;
 	          pub1->publish(*relPayData);
 
+        }
+
+        // Actual Task POLLIN
+        if(*actualTaskRec)
+        {
+            handler9.handle();
+            // this pub is needed for the fsm_raspicam package, that runs on RPi
+            auto droneStateData = std::make_shared<std_msgs::msg::Float32>();
+            // depending on the actual drone state, the camera state needs to be updated
+            if(call._task.action == common::actions::LAND)
+            {
+                droneStateData->data = 0;
+            }
+            else if(call._task.action == common::actions::SEARCH)
+            {
+                droneStateData->data = 1;
+            }
+            else if(call._task.action == common::actions::EMERG_LAND || robot_state.landed == 1)
+            {
+                // STOP state: when the camera is not needed
+                droneStateData->data = 2;
+            }
+            else
+            {
+                // IDLE state
+                droneStateData->data = 3;
+            }
+            pub3->publish(*droneStateData);
         }
 
         //Position Command POLLIN

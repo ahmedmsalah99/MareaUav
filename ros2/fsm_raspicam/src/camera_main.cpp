@@ -68,7 +68,7 @@ int main ( int argc,char **argv )
 
 		actualState = CameraMachine.getActualID();
 
-		if (status == 1 || status == 0 || status == 2) {
+		if (status == 1 || status == 0 || status == 2 || status == 3) {
 			switch(actualState) {
 			case(State::states::IDLE):
 				if(printStateMachine >= 10){
@@ -81,8 +81,8 @@ int main ( int argc,char **argv )
 
 			case(State::states::LANDING):
 				 if(printStateMachine >= 10){
-                                 	 std::cout<<"LANDING"<<std::endl;
-                                       	 printStateMachine = 0;
+           	std::cout<<"LANDING"<<std::endl;
+         	 	printStateMachine = 0;
                                 }
 				LandS.setMode(status);
 				LandS.setParameters();
@@ -90,8 +90,8 @@ int main ( int argc,char **argv )
 
 			case(State::states::SEARCH):
 				if(printStateMachine >= 10){
-                                        std::cout<<"SEARCH"<<std::endl;
-                                        printStateMachine = 0;
+            std::cout<<"SEARCH"<<std::endl;
+            printStateMachine = 0;
                                 }
 				SearchS.setMode(status);
 				SearchS.setParameters();
@@ -99,8 +99,8 @@ int main ( int argc,char **argv )
 
 			case(State::states::STOP):
 				if(printStateMachine >= 10){
-                                        std::cout<<"STOP"<<std::endl;
-                                        printStateMachine = 0;
+            std::cout<<"STOP"<<std::endl;
+          	printStateMachine = 0;
 				}
 				StopS.setMode(status);
 				StopS.setParameters();
@@ -114,9 +114,9 @@ int main ( int argc,char **argv )
 		loop_rate.sleep();
 		gettimeofday(&end,NULL);
 
-		if(printRate == 10){
-			std::cout<<"rate: "<< 1000000.0 / (double) ((end.tv_sec - timer.tv_sec) * 1000000 + (end.tv_usec - timer.tv_usec))<<std::endl;
-			printRate = 0;
+		// if(printRate == 10){
+		// 	std::cout<<"rate: "<< 1000000.0 / (double) ((end.tv_sec - timer.tv_sec) * 1000000 + (end.tv_usec - timer.tv_usec))<<std::endl;
+		// 	printRate = 0;
 		}
 		printRate++;
 		printStateMachine++;

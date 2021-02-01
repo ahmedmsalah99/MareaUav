@@ -32,8 +32,8 @@ ros2 run fsm_raspicam camera_main_node
 The package publishes camera parameters and image compressed data through ros2 topics.
 
 ## Ros2 Topics:
-- `/raspi/camera_info` (type: `sensor_msgs/CameraInfo`)
-- `/raspi/compressed_image` (type: `sensor_msgs/CompressedImage`)
+- `/apriltag/image/camera_info` (type: `sensor_msgs/CameraInfo`)
+- `/apriltag/image/compressed_image/compressed_image` (type: `sensor_msgs/CompressedImage`)
 
 
 To change the state of the machine, publish on /drone_state 0 or 1 or 2.
