@@ -140,8 +140,8 @@ roscore
 
 3. ros1_bridge (vision_dashing_ws directory):
 ```
+. /opt/ros/melodic/setup.bash
 . /opt/ros/dashing/setup.bash
-. install/local_setup.bash
 export ROS_MASTER_URI=http://localhost:11311
 ros2 run ros1_bridge dynamic_bridge --bridge-all-2to1-topics
 ```
@@ -222,11 +222,38 @@ NEEDS M2M_INCLUDE => source environment.sh and setup_variable.sh first
 roslaunch load_nodes load_simulation.launch
 ```
 
+The other terminals don't change wrt SITL
+
+## REAL TEST:
+
+2. roscore (ros_melodic_ws):
+```
+. install_isolated/setup.bash
+roscore
+```
+
+3. ros1_bridge (vision_dashing_ws directory):
+```
+. ../ros_melodic_ws/install_isolated/setup.bash
+. ../ros2_dashing_ws/install/setup.bash
+export ROS_MASTER_URI=http://localhost:11311
+ros2 run ros1_bridge dynamic_bridge --bridge-all-2to1-topics
+```
+
+4. Mavros (vision_melodic_ws):
+
+NEEDS M2M_INCLUDE => source environment.sh and setup_variable_real.sh first
+
+```
+. devel/setup.bash
+roslaunch load_nodes load_mavros.launch
+```
+
 5. RTPS Agent (vision_dashing_ws):
 
 ```
 . install/setup.bash
-micrortps_agent -d /dev/ttyUSB0 -p 1ms
+micrortps_agent -d /dev/ttyUSB0
 ```
 
 6. RTPS Client (on Firmware NuttShell)
@@ -237,4 +264,23 @@ Disable Mavlink instance 0 in QGC parameters (we don't want RTPS and Mavlink to 
 micrortps_client start -d /dev/ttyS1 -b 460800
 ```
 
-The other terminals don't change wrt SITL
+7. apriltag + lcm_bridge + ultrasonic_sensor + payload_releaser + fsm_raspicam modules:
+
+NEEDS M2M_INCLUDE => source environment.sh and setup_variable_real.sh first
+
+```
+. install/setup.bash
+ros2 launch load_nodes ros2_real.launch.py
+```
+
+8. mocap2mav module:
+```
+cd ~/mocap2mav
+source setting_test.sh
+source build_package.sh
+./app_start.sh
+real
+```
+
+
+The other terminals don't change wrt SITL (1. does not exist in this kind of tests)
