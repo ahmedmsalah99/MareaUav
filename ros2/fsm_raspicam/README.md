@@ -14,9 +14,9 @@ frame rate: 20 Hz.
 
 During the SEARCH state the camera has the following parameters:
 
-resolution: 1280x960 
+resolution: 640x480 
 
-frame rate: 2 Hz.
+frame rate: 20 Hz.
 
 During the STOP state the camera is closed and there are no publications.
 
@@ -36,7 +36,7 @@ The package publishes camera parameters and image compressed data through ros2 t
 - `/apriltag/image/compressed_image/compressed_image` (type: `sensor_msgs/CompressedImage`)
 
 
-To change the state of the machine, publish on /drone_state 0 or 1 or 2.
+To change the state of the machine (for testing purposes), publish on /drone_state 0, 1, 2 or 3.
 
 ```
 ros2 topic pub /drone_state std_msgs/Float32 "data: 1"
@@ -48,5 +48,6 @@ SEARCH state: 1
 
 STOP state: 2
 
+IDLE state: 3
 
 

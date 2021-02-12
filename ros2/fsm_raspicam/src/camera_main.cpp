@@ -36,7 +36,7 @@ int main ( int argc,char **argv )
 
 	IdleState IdleS(&CameraMachine);
 	LandingState LandS(&CameraMachine, 640, 480, 20);
-	SearchState SearchS(&CameraMachine, 1280, 960, 2);
+	SearchState SearchS(&CameraMachine, 640, 480, 20);
 	StopState StopS(&CameraMachine);
 
 	IdleS.nextStopState_ = &StopS;

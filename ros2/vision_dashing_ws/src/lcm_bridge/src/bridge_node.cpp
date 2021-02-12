@@ -270,6 +270,7 @@ int main(int argc, char **argv)
 
     rclcpp::init(argc, argv);
     auto node = rclcpp::Node::make_shared("ros2lcm_bridge");
+    
 
     //topic with position and velocity of the robot
     auto odometry_sub = node->create_subscription<px4_msgs::msg::VehicleOdometry>("/VehicleOdometry_PubSubTopic", 1, &odometryCallback);

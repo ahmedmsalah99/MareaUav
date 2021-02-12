@@ -46,8 +46,13 @@ AprilTag2RescueNode::AprilTag2RescueNode() : Node("apriltag2rescue", "apriltagre
 	K << fx, 0, cx, 0, fy, cy, 0, 0, 1;
 
 	//std::cout<<"K: "<<K<<std::endlrescue_tags;
+
+	// getting the value of the environment variable, to check whenever we are running in SITL or in a RPi
 	char *env_val;
 	env_val = std::getenv("M2M_SIM");
+	std::stringstream ss(env_val);
+	bool env_bool;
+	ss >> std::boolalpha >> env_bool;
 
 	declare_parameter<std::string>("family", "36h11");
 	declare_parameter<double>("size", 2.0);
@@ -86,11 +91,21 @@ AprilTag2RescueNode::AprilTag2RescueNode() : Node("apriltag2rescue", "apriltagre
 	declare_parameter<int>("threads", 1);
 	declare_parameter<int>("debug", 0);
 	declare_parameter<int>("refine", 1);
+	declare_parameter<double>("x_err_thld", 100.0);
+	declare_parameter<double>("y_err_thld", 100.0);
+	declare_parameter<double>("z_err_thld", 100.0);
+	declare_parameter<double>("z_std_alt", -6.0);
+
 	get_parameter("decimate", td->quad_decimate);
 	get_parameter("blur", td->quad_sigma);
 	get_parameter("threads", td->nthreads);
 	get_parameter("debug", td->debug);
 	get_parameter("refine-edges", td->refine_edges);
+	get_parameter("x_err_thld", _x_err_thld);
+	get_parameter("y_err_thld", _y_err_thld);
+	get_parameter("z_err_thld", _z_err_thld);
+	get_parameter("z_std_alt", _previous_z_err); // initializing the previous z error to a specific desired altitude value
+
 	apriltag_detector_add_family(td, tf);
 
 }
@@ -282,6 +297,43 @@ void AprilTag2RescueNode::publish_data_center(const apriltag_msgs::msg::AprilTag
 			vision_pose.position[0] = -vision_temp.position[0];
 			vision_pose.position[1] = -vision_temp.position[1];
 		}
+
+
+
+		// checking whenever we would have anomalies in the computed errors
+		if(vision_pose.position[0] > _x_err_thld)
+		{
+			vision_pose.position[0] = _previous_x_err;
+			RCLCPP_WARN(get_logger(), "X error is too high, selecting previous one!");
+		}
+		else
+		{
+			// if it's good instead, saving it for the next iteration
+			_previous_x_err = vision_pose.position[0];
+		}
+
+		// doing the same for Y and Z
+		if(vision_pose.position[1] > _y_err_thld)
+		{
+			vision_pose.position[1] = _previous_y_err;
+			RCLCPP_WARN(get_logger(), "Y error is too high, selecting previous one!");
+		}
+		else
+		{
+			_previous_y_err = vision_pose.position[1];
+		}
+
+		if(vision_pose.position[2] > _z_err_thld)
+		{
+			vision_pose.position[2] = _previous_z_err;
+			RCLCPP_WARN(get_logger(), "Z error is too high, selecting previous one!");
+		}
+		else
+		{
+			_previous_z_err = vision_pose.position[2];
+		}
+
+
 		//lcm publication.
 		_handler.publish("apriltag_rescue_vision",&vision_pose);
 
@@ -331,9 +383,9 @@ void AprilTag2RescueNode::getPose(const matd_t& H, geometry_msgs::msg::Transform
 				R(2,0), R(2,1), R(2,2), tt[2],
 					 0,      0,      0,     1;
 
-	if (ID == 1) {
+	/*if (ID == 0) {
 		pose = pose * TAGS.TAG1;
-	}
+	}*/
 
 	pose = TAGS.robot_T_cam * pose;
 

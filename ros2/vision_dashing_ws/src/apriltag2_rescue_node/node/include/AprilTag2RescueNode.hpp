@@ -54,6 +54,14 @@ private:
 	double _pitch;
 	double _yaw;
 
+	double _x_err_thld;
+	double _y_err_thld;
+	double _z_err_thld;
+
+	double _previous_x_err = 0;
+	double _previous_y_err = 0;
+	double _previous_z_err = 0;
+
 	Mat3 K;
 	bool z_up;
 

@@ -16,4 +16,9 @@ apriltagrescue:
             refine-pose: 0          # increase the accuracy of the extracted pose
             debug: 0                # write additional debugging images to current working directory
             n_tags: 1
-            tag_1: 0.195
+            tag_1: 0.195	    
+
+            x_err_thld: 50.0
+            y_err_thld: 50.0
+            z_err_thld: 50.0
+            z_std_alt: -6.0

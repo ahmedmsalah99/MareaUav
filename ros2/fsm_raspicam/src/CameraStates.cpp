@@ -175,6 +175,11 @@ void LandingState::setParameters()
 						free(mem);
 									mem = NULL;
 					}
+			if(dataRaw_ != NULL)
+			{
+						delete dataRaw_;
+						dataRaw_ = NULL;
+			}
 
 			// CAMERA INFO DATA
 			gettimeofday(&time_, NULL);
@@ -329,6 +334,11 @@ void SearchState::setParameters()
 		if (mem != NULL) {
 			free(mem);
 			mem = NULL;
+		}
+		if(dataRaw_ != NULL)
+		{
+					delete dataRaw_;
+					dataRaw_ = NULL;
 		}
 
 		// CAMERA INFO DATA
