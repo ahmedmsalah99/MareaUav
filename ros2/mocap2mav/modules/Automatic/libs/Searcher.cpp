@@ -4,7 +4,7 @@
 #include "param.h"
 
 Searcher::Searcher():_horizontaErr((double)0), _tauHold((double)0), _tauLost((double)0),  _NHold(0),_dt(0), _prevTime(0), _actualTime(0),
-                    _NLost(0), _initS(&_machine), _inspeS(&_machine), _holdS(&_machine), _relS(&_machine), _err(0,0,0), _err_int(0,0,0),
+                    _NLost(0), _initS(&_machine), _inspeS(&_machine), _hoveringS(&_machine), _holdS(&_machine), _relS(&_machine), _err(0,0,0), _err_int(0,0,0),
                     _actualState(0),_prevState(0), _verticalErr(0), _holdPIDX(0,0,0), _holdPIDY(0,0,0), _payloadReleased(false), _releasePayload(false)
 {
 
@@ -34,9 +34,15 @@ Searcher::Searcher():_horizontaErr((double)0), _tauHold((double)0), _tauLost((do
   	_tauHold = param.hold_threshold;
   	_tauLost = param.lost_threshold;
 
+    //stored starting hovering position
+    starting_x = _state.getX();
+    starting_y = _state.getY();
+    starting_z = _state.getZ();
+
+    _hovering = false;
+
     //set the actual state of the machine, intially is is INIT
     _actualState = _machine.getActualNodeId();
-
 
     _err_prev = _err;
 }
@@ -49,6 +55,7 @@ void Searcher::initStateMachine()
   _payloadReleased = false;
   _releasePayload = false;
 	resetMachine = false;
+  _hovering = false;
   //reset variables
 	_horizontaErr = (double)0;
 	_tauHold      = (double)0;
@@ -94,8 +101,11 @@ void Searcher::initStateMachine()
 
   _inspeS._nextState     = &_initS;
 
+  _hoveringS._nextState = &_initS;
+
   _holdS._nextState      = &_relS;
   _holdS._nextInitState  = &_initS;
+	_holdS._nextHoveringState = &_hoveringS;
 
   _relS._nextState       = &_holdS;
 
@@ -129,6 +139,12 @@ void Searcher::loadMachine()
 
 	_tauHold = param.hold_threshold;
 	_tauLost = param.lost_threshold;
+  //stored starting hovering position
+  starting_x = _state.getX();
+  starting_y = _state.getY();
+  starting_z = _state.getZ();
+
+  _hovering = false;
 }
 
 void Searcher::setVisionPose(const MavState VisionPose)
@@ -202,6 +218,13 @@ void Searcher::run()
 
       }
       break;
+
+    case (AbstractSearchState::states::HOVERING):
+
+			if (print > 30) std::cout<<"HOVERING"<<std::endl;
+
+			hovering();
+			break;
 
     case (AbstractSearchState::states::INSPE):
 
@@ -287,10 +310,10 @@ void Searcher::updateSignals()
 {
 
 	if( _VisionPose.VisionDataUpdated )
-  {
     _inspection = false;
-	}
 
+  if(_VisionPose.IsValid)
+    _hovering = false;
 
 	double dx;
 	double dy;
@@ -458,6 +481,21 @@ void Searcher::inspection()
 
   _setPoint.setType(MavState::POSITION);
 
+}
+
+void Searcher::hovering()
+{
+
+	if(!_hovering) {
+    starting_x = _state.getX();
+    starting_y = _state.getY();
+		starting_z = _state.getZ();
+		_hovering = true;
+	}
+
+  _setPoint.setType(MavState::POSITION);
+  _setPoint.setPosition(starting_x, starting_y, starting_z);
+  
 }
 
 void Searcher::releasePayload()

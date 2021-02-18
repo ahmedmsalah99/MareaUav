@@ -53,10 +53,16 @@ private:
 	double _roll;
 	double _pitch;
 	double _yaw;
-
+	// counter threshold when computing the errors between drone and tags
+	double _iter_err_thld = 0;
+	// threshold for each computed error, loaded from configurations file
 	double _x_err_thld;
 	double _y_err_thld;
 	double _z_err_thld;
+	// counter for each computed error
+	double _x_err_count = 0;
+	double _y_err_count = 0;
+	double _z_err_count = 0;
 
 	double _previous_x_err = 0;
 	double _previous_y_err = 0;

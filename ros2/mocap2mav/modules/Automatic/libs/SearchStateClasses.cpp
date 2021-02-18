@@ -8,7 +8,7 @@ void InitSearchState::handle()
   getSignals();
   static int wait = 0;
 
-  //Wait 20 iterations
+  //Wait 10 iterations
   if( wait++ > 10 && _VisionPose.VisionDataUpdated)
   {
       this->_contextL->setStatePtr(_nextState);
@@ -26,12 +26,23 @@ void InitSearchState::handle()
 void InspectionSearchState::handle()
 {
     getSignals();
-
     if(_VisionPose.VisionDataUpdated)
     {
         this->_contextL->setStatePtr(_nextState); //set next state (InitState)
         printStateTransition();
     }
+}
+
+void HoveringSearchState::handle() {
+
+	getSignals();
+
+	if(_VisionPose.VisionDataUpdated && _VisionPose.IsValid)
+  {
+    this->_contextL->setStatePtr(_nextState);
+    printStateTransition(); //print the actual state
+  }
+
 }
 
 void HoldSearchState::handle()
@@ -51,17 +62,22 @@ void HoldSearchState::handle()
   // a certain time and is positioned wrt the target), change to ReleaseState
   bool ReleaseValid = _holding && _positioned && !_payloadReleased;
 
+  if(!_VisionPose.IsValid){
+    this->_contextL->setStatePtr(_nextHoveringState); //set the next state (HoveringState)
+    printStateTransition();
+    return;
+  }
 
   if(ReleaseValid)
   {
-    this->_contextL->setStatePtr(_nextState); //set the next state(ReleaseState)
+    this->_contextL->setStatePtr(_nextState); //set the next state (ReleaseState)
     printStateTransition();
     return;
   }
 
 
   if(InitValid && wait++ > 20){
-    this->_contextL->setStatePtr(_nextInitState); //set the next state(InitState)
+    this->_contextL->setStatePtr(_nextInitState); //set the next state (InitState)
     printStateTransition();
     wait=0;
     return;

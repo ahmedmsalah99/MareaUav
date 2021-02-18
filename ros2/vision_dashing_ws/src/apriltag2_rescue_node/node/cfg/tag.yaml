@@ -18,7 +18,7 @@ apriltagrescue:
             n_tags: 1
             tag_1: 0.195	    
 
-            x_err_thld: 50.0
-            y_err_thld: 50.0
-            z_err_thld: 50.0
-            z_std_alt: -6.0
+            x_err_thld: 500.0
+            y_err_thld: 500.0
+            z_err_thld: 500.0
+            iter_err_thld: 20.0

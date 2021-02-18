@@ -13,23 +13,23 @@ void InitState::handle(){
     getSignals();
     static int wait = 0;
 
-    //Wait 50 iterations
+    //Wait 20 iterations
     if( wait++ > 20 && _VisionPose.VisionDataUpdated && _readyToLand) {
         this->_contextL->setStatePtr(_nextState);
         printStateTransition(); //print the actual state
         wait=0;
     }
-	else if(wait++ > 20 && !_VisionPose.VisionDataUpdated) {
+	  else if(wait++ > 20 && !_VisionPose.VisionDataUpdated) {
 
-    if(param.search){
-        this->_contextL->setStatePtr(_nextInspeState);
-        printStateTransition(); //print the actual state.
-    }
-    else{
-		    this->_contextL->setStatePtr(_nextHoveringState);
-        printStateTransition(); //print the actual state
-    }
-    wait=0;
+      if(param.search){
+          this->_contextL->setStatePtr(_nextInspeState);
+          printStateTransition(); //print the actual state.
+      }
+      else{
+  		    this->_contextL->setStatePtr(_nextHoveringState);
+          printStateTransition(); //print the actual state
+      }
+      wait=0;
 	}
 
 
@@ -49,15 +49,13 @@ void HoveringState::handle() {
 
 	getSignals();
 
-	if( _VisionPose.VisionDataUpdated )
+	if(_VisionPose.IsValid && _VisionPose.VisionDataUpdated )
   {
     this->_contextL->setStatePtr(_nextState);
     printStateTransition(); //print the actual state
   }
 
 }
-
-
 
 void HoldState::handle(){
 
@@ -88,28 +86,33 @@ void HoldState::handle(){
     // bool compValid = _holding && (fabs( _UltraInfo.getZ()) < 0.80 ) && _centered;
     // std::cout << compValid << std::endl;
 
+    if(!_VisionPose.IsValid){
+      this->_contextL->setStatePtr(_nextHoveringState); //set the next state (InitState)
+      printStateTransition();
+      return;
+    }
 
     if(descValid){
-        this->_contextL->setStatePtr(_nextDesState); //set the next state(DescState)
+        this->_contextL->setStatePtr(_nextDesState); //set the next state (DescState)
         printStateTransition();
         return;
     }
+
     if (asceValid){
-        this->_contextL->setStatePtr(_nextAscState); //set the next state(AsceState)
+        this->_contextL->setStatePtr(_nextAscState); //set the next state (AsceState)
         printStateTransition();
         return;
     }
 
     if(compValid && waitComp++ > 10){
-        this->_contextL->setStatePtr(_nextState); //set the next state(RToLandState)
+        this->_contextL->setStatePtr(_nextState); //set the next state (RToLandState)
         printStateTransition();
         waitComp = 0;
         return;
     }
 
-
     if(InitValid){
-	      this->_contextL->setStatePtr(_nextInitState); //set the next state(InitState)
+	      this->_contextL->setStatePtr(_nextInitState); //set the next state (InitState)
         printStateTransition();
         return;
     }
@@ -117,14 +120,16 @@ void HoldState::handle(){
 
 
 }
+
 void DescState::handle() {
     getSignals();
-    this->_contextL->setStatePtr(_nextState); //set the next state(HoldState)
+    this->_contextL->setStatePtr(_nextState); //set the next state (HoldState)
     printStateTransition();
 }
+
 void AsceState::handle() {
     getSignals();
-    this->_contextL->setStatePtr(_nextState); //set the next state(HoldState)
+    this->_contextL->setStatePtr(_nextState); //set the next state (HoldState)
     printStateTransition();
 }
 
@@ -140,7 +145,11 @@ void CompState::handle() {
 
     bool onTarget = _NComp > param.NFramesComp;
 
-    if (!onTarget || !_centered){
+    if(!_VisionPose.IsValid){
+      this->_contextL->setStatePtr(_nextHoveringState); //set the next state (InitState)
+      printStateTransition();
+    }
+    else if (!onTarget || !_centered){
         //if is not on the target or if is not centered..coming back!
 
         this->_contextL->setStatePtr(_nextState); //set the next state(AsceState)

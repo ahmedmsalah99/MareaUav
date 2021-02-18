@@ -51,9 +51,12 @@ AprilTag2Node::AprilTag2Node() : Node("apriltag2", "apriltag", rclcpp::NodeOptio
 	// getting the value of the environment variable, to check whenever we are running in SITL or in a RPi
 	char *env_val;
 	env_val = std::getenv("M2M_SIM");
-	std::stringstream ss(env_val);
 	bool env_bool;
-	ss >> std::boolalpha >> env_bool;
+
+	if(atoi(env_val) >= 1)
+		env_bool = 1;
+	else
+		env_bool = 0;
 
 	declare_parameter<std::string>("family", "36h11");
 	declare_parameter<double>("size", 2.0);
@@ -105,7 +108,7 @@ AprilTag2Node::AprilTag2Node() : Node("apriltag2", "apriltag", rclcpp::NodeOptio
 	declare_parameter<double>("x_err_thld", 100.0);
 	declare_parameter<double>("y_err_thld", 100.0);
 	declare_parameter<double>("z_err_thld", 100.0);
-	declare_parameter<double>("z_std_alt", -6.0);
+	declare_parameter<double>("iter_err_thld", 10.0);
 
 	get_parameter("decimate", td->quad_decimate);
 	get_parameter("blur", td->quad_sigma);
@@ -115,7 +118,7 @@ AprilTag2Node::AprilTag2Node() : Node("apriltag2", "apriltag", rclcpp::NodeOptio
 	get_parameter("x_err_thld", _x_err_thld);
 	get_parameter("y_err_thld", _y_err_thld);
 	get_parameter("z_err_thld", _z_err_thld);
-	get_parameter("z_std_alt", _previous_z_err); // initializing the previous z error to a specific desired altitude value
+	get_parameter("iter_err_thld", _iter_err_thld);
 
 	apriltag_detector_add_family(td, tf);
 
@@ -313,37 +316,57 @@ void AprilTag2Node::publish_data_center(const apriltag_msgs::msg::AprilTagDetect
 		}
 
 		// checking whenever we would have anomalies in the computed errors
-		if(vision_pose.position[0] > _x_err_thld)
+		if(abs(vision_pose.position[0]) > _x_err_thld)
 		{
 			vision_pose.position[0] = _previous_x_err;
 			RCLCPP_WARN(get_logger(), "X error is too high, selecting previous one!");
+			_x_err_count++;
 		}
 		else
 		{
 			// if it's good instead, saving it for the next iteration
 			_previous_x_err = vision_pose.position[0];
+			_x_err_count = 0;
 		}
 
 		// doing the same for Y and Z
-		if(vision_pose.position[1] > _y_err_thld)
+		if(abs(vision_pose.position[1]) > _y_err_thld)
 		{
 			vision_pose.position[1] = _previous_y_err;
 			RCLCPP_WARN(get_logger(), "Y error is too high, selecting previous one!");
+			_y_err_count++;
 		}
 		else
 		{
 			_previous_y_err = vision_pose.position[1];
+			_y_err_count = 0;
 		}
 
-		if(vision_pose.position[2] > _z_err_thld)
+		if(abs(vision_pose.position[2]) > _z_err_thld)
 		{
 			vision_pose.position[2] = _previous_z_err;
 			RCLCPP_WARN(get_logger(), "Z error is too high, selecting previous one!");
+			_z_err_count++;
 		}
 		else
 		{
 			_previous_z_err = vision_pose.position[2];
+			_z_err_count = 0;
 		}
+
+		// check on the errors: if it's already some iterations they pass the threshold
+		// then we signal the data to be inconsistent; on the other side, the drone will keep the positon.
+		// otherwise, everything is ok
+		if(_x_err_count > _iter_err_thld || _y_err_count > _iter_err_thld || _z_err_count > _iter_err_thld)
+		{
+			vision_pose.isValid = false;
+		}
+		else
+		{
+			vision_pose.isValid = true;
+		}
+
+		// std::cout << "IS DATA VALID: "<< (bool)vision_pose.isValid << std::endl;
 
 		//lcm publication.
 		_handler.publish("apriltag_vision_system",&vision_pose);

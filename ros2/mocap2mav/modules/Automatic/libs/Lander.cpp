@@ -121,6 +121,8 @@ void Lander::initStateMachine() {
 
 	print = 0;
 
+  _hovering = false;
+
 	_resetMachine = false;
   //reset variables
 	_horizontaErr = (double)0;
@@ -170,18 +172,18 @@ void Lander::initStateMachine() {
   //the following instructions set the machine state.
   _initS._nextState    = &_holdS;
   _initS._nextInspeState  = &_inspeS;
+  _initS._nextHoveringState = &_hoveringS;
   // _initS._nextHomingState = &_homingS;
-	_initS._nextHoveringState = &_hoveringS;
 
   _inspeS._nextState      = &_initS;
 
-	_hoveringS._nextState = &_initS;
+  _hoveringS._nextState = &_initS;
 
   _holdS._nextAscState = &_asceS;
   _holdS._nextDesState = &_descS;
   _holdS._nextState    = &_rtolS;
   _holdS._nextInitState = &_initS;
-
+	_holdS._nextHoveringState = &_hoveringS;
 
   _asceS._nextState    = &_holdS;
 
@@ -192,6 +194,7 @@ void Lander::initStateMachine() {
 
   _compS._nextState    = &_asceS;
   _compS._nextLanState = &_landS;
+	_compS._nextHoveringState = &_hoveringS;
 
   _landS._nextState    = &_asceS;
   _landS._restartState = &_initS;
@@ -219,11 +222,11 @@ void Lander::setUltrasonicInfo(const MavState UltraInfo) {
 
 void Lander::updateSignals() {
 
-	if( _VisionPose.VisionDataUpdated ){
+	if( _VisionPose.VisionDataUpdated )
     Inspection = false;
-		_hovering = false;
-    // _home = false;
-	}
+
+  if(_VisionPose.IsValid)
+    _hovering = false;
 
 
 	double dx;
@@ -303,7 +306,6 @@ void Lander::printSignals() {
 
 	#ifdef DEBUG
   std::cout<<"Descending velocity: "<<desc_velocity<<std::endl;
-  std::cout<<"Altezza: "<<param.zMax<<std::endl;
   std::cout << "**********************************" << std::endl;
   std::cout << "STATE: " << _actualState<< std::endl;
   std::cout << "HERRO: " << _horizontaErr<< std::endl;
@@ -442,18 +444,18 @@ void Lander::run() {
       break;
     case (AbstractLandState::states::INSPE):
 
-      	if (print > 30) std::cout<<"INSPE"<<std::endl;
+      if (print > 30) std::cout<<"INSPE"<<std::endl;
 
-        inspection();
-        // align(); //controlling the yaw
+      inspection();
+      // align(); //controlling the yaw
 
-        break;
+      break;
 
 		case ( AbstractLandState::states::HOVERING):
 
 			if (print > 30) std::cout<<"HOVERING"<<std::endl;
 
-			//hovering();
+			hovering();
 			break;
 
     case (AbstractLandState::states::HOLD):
@@ -693,17 +695,17 @@ void Lander::inspection() {
 
 void Lander::hovering() {
 
-	if(!_hovering) {
-		_setPoint.setX(starting_x);
-		_setPoint.setY(starting_y);
-		_setPoint.setType(MavState::POSITION);
+  if(!_hovering) {
+    starting_x = _state.getX();
+    starting_y = _state.getY();
+		starting_z = param.prelandAltitude;
 		_hovering = true;
 	}
 
+  _setPoint.setType(MavState::POSITION);
+  _setPoint.setPosition(starting_x, starting_y, starting_z);
 
 }
-
-
 
 
 void Lander::hold() {

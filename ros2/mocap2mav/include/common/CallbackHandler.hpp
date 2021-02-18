@@ -134,7 +134,7 @@ public:
     }
 
     /**
-     * @brief Callback used to take the messages of the aboslute state od the drone(motion capture or GPS)
+     * @brief Callback used to take the messages of the aboslute state of the drone (motion capture or GPS)
      * @details It sets the position, velocity, orientation and the type of command
      */
 
@@ -290,6 +290,7 @@ public:
 
 		_relative_pos.setYaw( (float)msg->yaw );
 
+    _relative_pos.IsValid = (bool)msg->isValid;
 
 	}
 
@@ -298,7 +299,8 @@ public:
    * @details It sets the position, velocity, orientation
    */
 
-  void RescueCallback(const lcm::ReceiveBuffer* rbuf, const std::string& chan, const geometry::vision* msg){
+  void RescueCallback(const lcm::ReceiveBuffer* rbuf, const std::string& chan, const geometry::vision* msg)
+  {
      //callback of the vision system.
 
     _rescue_pos.setPosition((float)msg->position[0],(float)msg->position[1],(float)msg->position[2]);
@@ -313,6 +315,7 @@ public:
 
     _rescue_pos.setYaw( (float)msg->yaw );
 
+    _rescue_pos.IsValid = (bool)msg->isValid;
 
   }
     /**

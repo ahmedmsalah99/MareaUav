@@ -51,9 +51,15 @@ class Searcher
 		HoldSearchState       _holdS;
 
 		/**
+       		* state for hovering action
+      		*/
+
+  		HoveringSearchState _hoveringS;
+
+		/**
 		 * Inspection state
 		 */
-
+	
 		InspectionSearchState _inspeS;
 
 		/**
@@ -98,6 +104,30 @@ class Searcher
 		 */
 
      		bool _inspection;
+		
+		/*
+		 * X hovering coordinate.
+       		*/
+
+  		double starting_x;
+
+  		/**
+       		 * Y hovering coordinate.
+       		 */
+
+  		double starting_y;
+
+  		/**
+       		 * Z hovering coordinate.
+       		 */
+
+  		double starting_z;
+
+		/**
+		 * bool variable for Hovering
+		 */
+
+		bool _hovering;
 
 		/**
 		 * payload released feedback check
@@ -259,6 +289,12 @@ class Searcher
 		 */
 
 		bool _releasePayload;
+		
+    		/**
+     		* @brief Hovering action
+     		*/
+
+		void hovering();
 
 		/**
 		 * @brief circular trajectory for inspection. It tries with a circular trajectory to find the target to

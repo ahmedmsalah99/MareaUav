@@ -27,7 +27,7 @@ apriltag:
             tag_8: 0.035
             tag_9: 0.035
 
-            x_err_thld: 50.0
-            y_err_thld: 50.0
-            z_err_thld: 50.0
-            z_std_alt: -6.0
+            x_err_thld: 500.0
+            y_err_thld: 500.0
+            z_err_thld: 500.0
+            iter_err_thld: 30.0

@@ -135,6 +135,7 @@
       {
           INIT,
           INSPE,
+          HOVERING,
           HOLD,
           RELEASE
       };
@@ -354,6 +355,44 @@ class InspectionSearchState : public AbstractSearchState
     void handle();
 };
 
+
+/** @ingroup Automatic
+ * @brief Derived class of the AbstractSearchState
+ * Such class represents the hovering state.
+ * This state will be linked with the SearchMachine class via
+ * the protected member of the AbstractSearchState class(_contextL)
+ */
+
+class HoveringSearchState : public AbstractSearchState {
+
+public:
+
+	HoveringSearchState(SearchMachine *context) : AbstractSearchState(context) {
+        setId();
+    }
+
+	/**
+     * @brief It sets the ID to the HOVERING one
+     */
+
+    void setId() override {
+
+        _id = HOVERING;
+    }
+
+    /**
+     * @brief Such method allows to check the current state of the drone
+     * and it allows to set the next state of the land state machine.
+     * @details In this case, the handle() method for Hovering sets the next
+     * state of the machine to the init one; the hovering() method has been performed.
+     */
+
+    void handle();
+
+
+};
+
+
 /** @ingroup Automatic
  * @brief Derived class of the AbstractSearchState
  * Such class represents the hold state.
@@ -373,6 +412,11 @@ class HoldSearchState : public AbstractSearchState
 
 	  AbstractSearchState* _nextInitState;
 
+    /**
+     * The hold state is linked with the hovering state
+     */
+
+    AbstractSearchState* _nextHoveringState;
 
     /**
      * @brief Constructor of the derived class

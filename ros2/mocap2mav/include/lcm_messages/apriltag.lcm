@@ -8,6 +8,6 @@ struct vision
 	double roll;
 	double pitch;
 	double yaw;
-    int8_t isValid;
+    boolean isValid;
     int8_t type;
 }

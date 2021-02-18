@@ -345,7 +345,7 @@ class InitState : public AbstractLandState {
 public:
 
   AbstractLandState* _nextInspeState;
-	AbstractLandState* _nextHoveringState;
+  AbstractLandState* _nextHoveringState;
 
     /**
      * @brief Constructor of the derived class
@@ -460,7 +460,13 @@ public:
      * The hold state is linked with the init state
      */
 
-	AbstractLandState* _nextInitState;
+	  AbstractLandState* _nextInitState;
+
+    /**
+     * The hold state is linked with the hovering state
+     */
+
+  	AbstractLandState* _nextHoveringState;
 
     /**
      * @brief Constructor of the derived class
@@ -631,6 +637,13 @@ public:
      */
 
     AbstractLandState* _nextLanState;
+
+
+    /**
+     * The hold state is linked with the hovering state
+     */
+
+  	AbstractLandState* _nextHoveringState;
 
     /**
      * @brief Constructor of the derived class
