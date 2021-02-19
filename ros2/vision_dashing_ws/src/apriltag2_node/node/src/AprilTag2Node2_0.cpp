@@ -230,7 +230,7 @@ void AprilTag2Node::publish_data_center(const apriltag_msgs::msg::AprilTagDetect
 			double l3 = sqrt( pow(Detections.detections.at(i).corners.at(3).y - Detections.detections.at(i).corners.at(2).y,2) + pow(Detections.detections.at(i).corners.at(3).x - Detections.detections.at(i).corners.at(2).x,2));
 			double l4 = sqrt( pow(Detections.detections.at(i).corners.at(0).y - Detections.detections.at(i).corners.at(3).y,2) + pow(Detections.detections.at(i).corners.at(0).x - Detections.detections.at(i).corners.at(3).x,2));
 
-			// RCLCPP_INFO(get_logger(), "Lati: %lf %lf %lf %lf", l1, l2, l3, l4);
+			RCLCPP_INFO(get_logger(), "Lati: %lf %lf %lf %lf", l1, l2, l3, l4);
 
 			areaID(i,0) = i;
 			areaID(i,1) = pow( (l1 + l2 + l3 +l4)/4,2 );
@@ -354,6 +354,10 @@ void AprilTag2Node::publish_data_center(const apriltag_msgs::msg::AprilTagDetect
 			_z_err_count = 0;
 		}
 
+    std::cout << "X err: " << vision_pose.position[0] << std::endl;
+    std::cout << "Y err: " << vision_pose.position[1] << std::endl;
+    std::cout << "Z err: " << vision_pose.position[2] << std::endl;
+
 		// check on the errors: if it's already some iterations they pass the threshold
 		// then we signal the data to be inconsistent; on the other side, the drone will keep the positon.
 		// otherwise, everything is ok
@@ -366,7 +370,7 @@ void AprilTag2Node::publish_data_center(const apriltag_msgs::msg::AprilTagDetect
 			vision_pose.isValid = true;
 		}
 
-		// std::cout << "IS DATA VALID: "<< (bool)vision_pose.isValid << std::endl;
+		std::cout << "IS DATA VALID: "<< (bool)vision_pose.isValid << std::endl;
 
 		//lcm publication.
 		_handler.publish("apriltag_vision_system",&vision_pose);
