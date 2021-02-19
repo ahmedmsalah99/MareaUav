@@ -1,0 +1,43 @@
+1) to get the core/base ros2 version from source on RPi, use rosinstall_generator, instead of wget:
+
+	rosinstall_generator ros_base --rosdistro dashing --deps > ros2_base.repos
+	vcs-import src < ros2_base.repos
+
+
+2) if it gives problems related to "atomic" library, try to add:
+
+	set(CMAKE_CXX_LINK_FLAGS "${CMAKE_CXX_LINK_FLAGS} -latomic")
+
+	and, occasionally, if generating test_atomics_executable, add also (both after executable generation):
+
+	target_link_libraries(test_atomics_executable ${PROJECT_NAME} -latomic)
+
+ - special fix (rclpy); there may be some other problems related to "atomic" library when executing nodes dependent from rclpy.
+   The solution there is to add:
+
+	add_link_options(-latomic)
+
+	to the following sequence, like this:
+
+	if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+		add_compile_options(-Wall -Wextra -Wpedantic)
+		add_link_options(-latomic)
+	endif()
+
+   generally, the involved packets are (in bare-bones version):
+	
+	- rcutils (both fixes)
+	- rcl (all packets) (first fix)
+	- rclcpp (all packets) (first fix)
+	- rclpy (special fix)
+	- rcpputils (first fix)
+	- rcl_interfaces/rcl_interfaces (first fix)
+	- rcl_logging/rcl_logging_noop (first fix)
+	- message_filters (first fix)
+	- geometry2/tf2_ros (first_fix)
+	- geometry2/tf2_geometry_msgs (first fix)
+	- geometry2/tf2_eigen (first fix)
+	- geometry2/tf2_kdl (first fix)
+	- robot_state_publisher (first fix)
+
+
