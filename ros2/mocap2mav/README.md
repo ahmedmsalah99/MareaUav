@@ -7,13 +7,14 @@ with each other through Lightweight Communications and Marshalling middleware (L
 and its custom messages can be compiled via:
 
 ```
-	lcm-gen -x /path/to/message.lcm
+	cd include/lcm_messages/
+	lcm-gen -x message.lcm
 ```
 
 or, if dealing with Python messages (release_payload needs both c++ and py), inject:
 
 ```
-	lcm-gen -p /path/to/message.lcm
+	lcm-gen -p message.lcm
 ```
 For other programming languages, check the references online.
 To see pre-compiled messages, please check in `mocap2mav/include/lcm_messages`.

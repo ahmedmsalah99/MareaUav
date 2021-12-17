@@ -116,7 +116,7 @@ void Lander::loadMachine() {
 void Lander::initStateMachine() {
 
   Inspection = false;
-
+  First_insp = true;
   switchSensor = false;
 
 	print = 0;
@@ -649,8 +649,18 @@ void Lander::initInspection()
 {
 
 	time = 0;
-  X0 = _state.getX() + _err_prev[0];
-  Y0 = _state.getY() + _err_prev[1];
+  // if it's the first time we inspect, there should be no previous error
+  if(First_insp)
+  {
+    X0 = _state.getX();
+    Y0 = _state.getY();
+    First_insp = false;
+  }
+  else
+  {
+    X0 = _state.getX() + _err_prev[0];
+    Y0 = _state.getY() + _err_prev[1];
+  }
 	Inspection = true;
 
   RadiusInspection = param.inspeRadius; // radius of 1 meter
@@ -673,7 +683,7 @@ void Lander::inspection() {
 
   time+=_dt;
 
-  _setPoint.setPosition(RadiusInspection * cos((param.inspeLinVel/RadiusInspection)*time) + X0, RadiusInspection * sin((param.inspeLinVel/RadiusInspection)*time) + Y0, param.zMax + param.zMin);
+  _setPoint.setPosition(RadiusInspection * cos((param.inspeLinVel/RadiusInspection)*time) + X0, RadiusInspection * sin((param.inspeLinVel/RadiusInspection)*time) + Y0, param.prelandAltitude);
 
   // std::cout<<"Circ:  "<<_setPoint.getX()<<std::endl;
   // std::cout<<"Time: "<<time<<std::endl;

@@ -210,6 +210,7 @@ public:
      double X0;
      double Y0;
      bool Inspection;
+     bool First_insp;
      double RadiusInspection;
      double Period;
     //

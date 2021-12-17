@@ -52,6 +52,7 @@ void Searcher::initStateMachine()
   print = 0;
 
   _inspection = false;
+  First_insp = true;
   _payloadReleased = false;
   _releasePayload = false;
 	resetMachine = false;
@@ -451,8 +452,18 @@ void Searcher::initInspection()
   // loosing the target and initializing the research from the last known position
   // if it's the first time we approach the target and its location is not defined,
   // the previous error is 0, so it has no influence on the starting position
-  _X0 = _state.getX() + _err[0];
-  _Y0 = _state.getY() + _err[1];
+  // if it's the first time we inspect, there should be no previous error
+  if(First_insp)
+  {
+    _X0 = _state.getX();
+    _Y0 = _state.getY();
+    First_insp = false;
+  }
+  else
+  {
+    _X0 = _state.getX() + _err_prev[0];
+    _Y0 = _state.getY() + _err_prev[1];
+  }
 
 	_inspection = true;
   _inspectionPeriod = (2*PI*_inspectionRadius)/_inspectionLinearVel;
@@ -495,7 +506,7 @@ void Searcher::hovering()
 
   _setPoint.setType(MavState::POSITION);
   _setPoint.setPosition(starting_x, starting_y, starting_z);
-  
+
 }
 
 void Searcher::releasePayload()

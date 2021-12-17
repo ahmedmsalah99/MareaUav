@@ -11,9 +11,9 @@ Firstly, load its sub-modules
 
 Then:
 
-	1. Firmware module: branch v1.9.2, download it from the official PX4 github.
-	inject this command: git clone --recursive https://github.com/PX4/Firmware.git -b v1.9.2
-	Move to Tools and substitute sitl_gazebo with the one contained in this git folder.
+	1. Firmware module: branch v1.11.0, download it from the official PX4 github.
+	inject this command: git clone --recursive https://github.com/PX4/Firmware.git -b v1.11.0
+	Move to Tools and substitute sitl_gazebo models and world files with the one contained in this git folder.
 	Move to msg/tools and substitute the uorb configuration file for rtps with the one in this git folder
 	It allows to run the PX4 simulator with RTPS support.
 	IF you are planning to use a real Pixhawk, download instead the version v1.11.3, to match RTPS constraints (px4_msgs)
@@ -68,7 +68,7 @@ cd ~/Firmware
 make px4_sitl_rtps
 ```
 
-The last instruction will wait to connect to the simulator
+The last instruction will wait to connect to the simulator.
 
 ### To set the vision system:
 ```
@@ -106,8 +106,7 @@ make
 
 ### To set the simulation with the vision system:
 ```
-cd ~/vision_dashing_ws/src/load_nodes
-source setup_variable.sh
+source src/load_nodes/setup_variable.sh
 ```
 
 If you are running a real test, run instead setup_variable_real.sh.
@@ -189,7 +188,7 @@ on the spawned terminals, allow the takeoff if you need to perform it.
 
 9. Coming back to the first terminal (Firmware) and write:
 ```
-commander mode arm
+commander arm
 commander mode offboard
 ```
 or do it in QGroundControl.

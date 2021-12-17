@@ -37,7 +37,7 @@ class Searcher
 		 */
 
 		MavState _VisionPose;
-		
+
 		/**
 		 *  Init state of the machine linked to the hold state
 		 */
@@ -59,7 +59,7 @@ class Searcher
 		/**
 		 * Inspection state
 		 */
-	
+
 		InspectionSearchState _inspeS;
 
 		/**
@@ -71,40 +71,40 @@ class Searcher
 		/**
 		 * Starting position on x for Inspection
 		 */
-		
+
 		double _X0;
 
 		/**
 		 * Starting position on y for Inspection
 		 */
-		
+
 		double _Y0;
 
 		/**
 		 * Starting position on z for Inspection
 		 */
-		
+
 		double _Z0;
 
 		/**
 		 * Inspection Radius
 		 */
-		
+
 		double _inspectionRadius;
 
 
 		/**
 		 * Inspection Desired Linear Velocity
 		 */
-		
+
 		double _inspectionLinearVel;
-		
+
 		/**
 		 * Inspection task running bool
 		 */
 
      		bool _inspection;
-		
+
 		/*
 		 * X hovering coordinate.
        		*/
@@ -144,13 +144,13 @@ class Searcher
 		/**
 		 * Inspection radius change time
 		 */
-		
+
      		double _time;
 
 		/**
 		 * Inspection Period
 		 */
-		
+
 		double _inspectionPeriod;
 
 		/**
@@ -206,7 +206,7 @@ class Searcher
 		 */
 
 		double _tauLost;
-			
+
 		/**
 		 * It keeps how many times the _horizontaErr is under a given threshold (_tauLost)
 		 */
@@ -236,8 +236,8 @@ class Searcher
 		 * It checks if the drone has lost the target
 		 */
 
-		bool _lost;    
-		
+		bool _lost;
+
 		/**
 		 * Integral error of the drone respect to the platform
 		 */
@@ -289,7 +289,7 @@ class Searcher
 		 */
 
 		bool _releasePayload;
-		
+
     		/**
      		* @brief Hovering action
      		*/
@@ -300,7 +300,7 @@ class Searcher
 		 * @brief circular trajectory for inspection. It tries with a circular trajectory to find the target to
 		 * rescue
 		 */
- 
+
  		void inspection();
 
 		/**
@@ -334,7 +334,7 @@ class Searcher
 		  */
 
 		void hold();
-		
+
     		/**
 		  * @brief It computes the horizontal and vertical error of the drone,
 		  * incrementing properly some boolean members
@@ -356,8 +356,8 @@ class Searcher
 		void releasePayload();
 
 	public:
-		
-		
+
+
 		Searcher();
 
 		/**
@@ -408,7 +408,7 @@ class Searcher
 		  */
 
 	  	void loadMachine();
-		
+
 		/**
 		 * @brief initializes parameters to perform inspection, passed throught the task object
 		 */
@@ -439,6 +439,7 @@ class Searcher
 	   	  */
 
 		bool resetMachine;
+		bool First_insp;
 
 	  	/**
 		  * To print signals
