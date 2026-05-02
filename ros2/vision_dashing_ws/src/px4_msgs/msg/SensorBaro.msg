@@ -1,8 +1,12 @@
-uint64 timestamp	# time since system start (microseconds)
-uint32 device_id	# Sensor ID that must be unique for each baro sensor and must not change
+uint64 timestamp          # time since system start (microseconds)
+uint64 timestamp_sample
 
-uint64 error_count
+uint32 device_id          # unique device ID for the sensor that does not change between power cycles
 
-float32 pressure	# static pressure measurement in millibar
+float32 pressure          # static pressure measurement in Pascals
 
-float32 temperature	# static temperature measurement in deg C
+float32 temperature       # temperature in degrees Celsius
+
+uint32 error_count
+
+uint8 ORB_QUEUE_LENGTH = 4

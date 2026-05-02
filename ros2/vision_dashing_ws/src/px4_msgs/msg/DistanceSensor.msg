@@ -2,6 +2,8 @@
 
 uint64 timestamp		# time since system start (microseconds)
 
+uint32 device_id		# unique device ID for the sensor that does not change between power cycles
+
 float32 min_distance		# Minimum distance the sensor can measure (in m)
 float32 max_distance		# Maximum distance the sensor can measure (in m)
 float32 current_distance	# Current distance reading (in m)
@@ -13,8 +15,6 @@ uint8 MAV_DISTANCE_SENSOR_LASER = 0
 uint8 MAV_DISTANCE_SENSOR_ULTRASOUND = 1
 uint8 MAV_DISTANCE_SENSOR_INFRARED = 2
 uint8 MAV_DISTANCE_SENSOR_RADAR = 3
-
-uint8 id			# Onboard ID of the sensor
 
 float32 h_fov # Sensor horizontal field of view (rad)
 float32 v_fov # Sensor vertical field of view (rad)
@@ -40,3 +40,8 @@ uint8 ROTATION_UPWARD_FACING   = 24 # MAV_SENSOR_ROTATION_PITCH_90
 uint8 ROTATION_DOWNWARD_FACING = 25 # MAV_SENSOR_ROTATION_PITCH_270
 
 uint8 ROTATION_CUSTOM          = 100 # MAV_SENSOR_ROTATION_CUSTOM
+
+uint8 mode
+uint8 MODE_UNKNOWN  = 0
+uint8 MODE_ENABLED  = 1
+uint8 MODE_DISABLED = 2

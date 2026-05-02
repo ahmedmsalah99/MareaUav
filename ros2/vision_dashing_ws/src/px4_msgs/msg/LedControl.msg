@@ -24,7 +24,7 @@ uint8 MODE_BLINK_FAST = 5
 uint8 MODE_BREATHE = 6 # continuously increase & decrease brightness (solid color if driver does not support it)
 uint8 MODE_FLASH = 7 # two fast blinks (on/off) with timing as in MODE_BLINK_FAST and then off for a while
 
-uint8 MAX_PRIORITY = 2 # maxium priority (minimum is 0)
+uint8 MAX_PRIORITY = 2 # maximum priority (minimum is 0)
 
 
 uint8 led_mask # bitmask which LED(s) to control, set to 0xff for all
@@ -34,4 +34,4 @@ uint8 num_blinks # how many times to blink (number of on-off cycles if mode is o
                  # in MODE_FLASH it is the number of cycles. Max number of blinks: 122 and max number of flash cycles: 20
 uint8 priority # priority: higher priority events will override current lower priority events (see MAX_PRIORITY)
 
-uint8 ORB_QUEUE_LENGTH = 4      # needs to match BOARD_MAX_LEDS
+uint8 ORB_QUEUE_LENGTH = 8      # needs to match BOARD_MAX_LEDS
