@@ -1,45 +1,92 @@
-import launch
-import launch.actions
-import launch.events
+import os
+
 from launch import LaunchDescription
 from launch.actions import IncludeLaunchDescription
 from launch.launch_description_sources import PythonLaunchDescriptionSource
-from launch.actions import DeclareLaunchArgument
-from launch.substitutions import EnvironmentVariable
-import launch_ros.actions
-import os
- 
+
+from launch_ros.actions import Node
+from ament_index_python.packages import get_package_share_directory
+from launch.actions import SetEnvironmentVariable
+
+
 def generate_launch_description():
-    parameters_file_path = "/home/andrea/Marea/mar_frankenrotor_ros/ros2SITL/vision_dashing_ws/src/apriltag2_node/node/cfg/platform.yaml"
-    parameters_file_path2 = "/home/andrea/Marea/mar_frankenrotor_ros/ros2SITL/vision_dashing_ws/src/apriltag2_rescue_node/node/cfg/tag.yaml"
-    test_config="/home/andrea/Marea/mar_frankenrotor_ros/ros2SITL/vision_dashing_ws/test_config.yaml"
+
+    # ---------- Paths (portable) ----------
+    apriltag_pkg = get_package_share_directory('apriltag2_node')
+    rescue_pkg = get_package_share_directory('apriltag2_rescue_node')
+
+    parameters_file_path = os.path.join(
+        apriltag_pkg,
+         'cfg', 'platform.yaml'
+    )
+
+    parameters_file_path2 = os.path.join(
+        rescue_pkg,
+         'cfg', 'tag.yaml'
+    )
+
+    # ---------- Included launch ----------
+    bridge_launch = IncludeLaunchDescription(
+        PythonLaunchDescriptionSource(
+            os.path.join(
+                get_package_share_directory('load_nodes'),
+                'launch',
+                'bridge.launch.py'
+            )
+        )
+    )
+
+    # ---------- Nodes ----------
+    lcm_bridge_node = Node(
+        package='lcm_bridge',
+        executable='bridge_node',
+        output='screen'
+    )
+
+    ultrasonic_node = Node(
+        package='ultrasonic_sensor',
+        executable='ultrasonic_sensor_node_Mocap2mav',
+        output='screen'
+    	# ,prefix='xterm -e gdb -ex run --args'
+    )
+
+    payload_node = Node(
+        package='payload_releaser',
+        executable='payload_releaser',
+        output='screen'
+    )
+
+    # apriltag_node = Node(
+    #     package='apriltag2_node',
+    #     executable='apriltag2_node',
+    #     output='screen',
+    #     parameters=[parameters_file_path]
+    # )
+    apriltag_node = Node(
+    package='apriltag2_node',
+    executable='apriltag2_node',
+    output='screen',
+    parameters=[parameters_file_path]
+    # ,prefix='xterm -e gdb -ex run --args'
+)
+
+    rescue_node = Node(
+        package='apriltag2_rescue_node',
+        executable='apriltag2_rescue_node',
+        output='screen',
+        parameters=[parameters_file_path2]
+    	# ,prefix='xterm -e gdb -ex run --args'
+    )
+
     return LaunchDescription([
-        launch_ros.actions.Node(
-            # the name of the executable is set in CMakeLists.txt, towards the end of
-            # the file, in add_executable(...) and the directives following it
-           package='lcm_bridge', node_executable='bridge_node', output='screen'),
-	launch_ros.actions.Node(package='ultrasonic_sensor', node_executable='ultrasonic_sensor_node_Mocap2mav', output='screen'),
-
-	launch_ros.actions.Node(package='payload_releaser', node_executable='payload_releaser', output='screen'),
-
-	launch_ros.actions.Node(package='apriltag2_node', node_executable='apriltag2_node', output='screen',
-            parameters=[
-                parameters_file_path
-      		],
-	),
-
-	launch_ros.actions.Node(package='apriltag2_rescue_node', node_executable='apriltag2_rescue_node', output='screen',
-            parameters=[
-                parameters_file_path2
-      		],
-	),
-	# DeclareLaunchArgument(
-		# 'world_name',
-		# default_value = argument_path,
-		# description = 'Argument for Gazebo launch file'),
-
-	# IncludeLaunchDescription( 
-	# PythonLaunchDescriptionSource(['/opt/ros/dashing/share/gazebo_ros/launch/empty_world.launch.py']),
-	# launch_arguments={'world_name': argument_path}.items()
-       #  ),
+        SetEnvironmentVariable(
+			name='M2M_SIM',
+			value='1'
+		),
+        bridge_launch,
+        lcm_bridge_node,
+        ultrasonic_node,
+        payload_node,
+        apriltag_node,
+        rescue_node,
     ])
