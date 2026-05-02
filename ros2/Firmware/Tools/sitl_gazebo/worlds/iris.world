@@ -9,14 +9,15 @@
     <include>
       <uri>model://ground_plane</uri>
     </include>
-    <include>
+    
    <!-- An asphalt plane -->
     <include>
       <uri>model://asphalt_plane</uri>
     </include>
+    <include>
       <uri>model://iris</uri>
-      <!-- <pose>2 2 0.05 0 0 1.57</pose> -->
-      <pose>0 0 2.83 0 0 1.14</pose>
+      <pose>2 2 0.05 0 0 1.57</pose>
+      <!-- <pose>0 0 2.83 0 0 1.14</pose> -->
     </include>
 
     <!--Load Landing Platform  --> 
@@ -64,8 +65,17 @@
       <real_time_update_rate>250</real_time_update_rate>
       <magnetic_field>6.0e-6 2.3e-5 -4.2e-5</magnetic_field>
     </physics>
-    <!--
+
     <gui fullscreen='0'>
+      <camera name='user_camera'>
+        <pose>5.46 -5.46 2.17 0 0.27 2.35</pose>
+        <view_controller>orbit</view_controller>
+        <projection_type>perspective</projection_type>
+        <!-- Ensure track_visual is REMOVED or name is empty to release the lock -->
+      </camera>
+    </gui>
+    
+    <!-- <gui fullscreen='0'>
       <camera name='user_camera'>
         <pose>5.4634 -5.46339 2.17586 0 0.275643 2.35619</pose>
         <view_controller>orbit</view_controller>
@@ -75,8 +85,8 @@
           <use_model_frame>1</use_model_frame>
         </track_visual>
       </camera>
-    </gui>
-  -->
+    </gui> -->
+ 
     <!--<scene>
       <ambient>0.0 0.0 0.0 1.0</ambient>
       <shadows>0</shadows>
