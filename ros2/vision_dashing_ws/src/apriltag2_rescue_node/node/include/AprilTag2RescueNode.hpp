@@ -13,6 +13,7 @@
 #include <tf2_msgs/msg/tf_message.hpp>
 #include <lcm_messages/geometry/vision.hpp>
 // apriltag
+// #include <apriltag.h>
 #include <apriltag.h>
 #include <apriltag_pose.h>
 

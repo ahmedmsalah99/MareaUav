@@ -36,6 +36,8 @@ link_directories(${apriltag_LIBDIR})
 include_directories(include)
 
 add_library(AprilTag2Node SHARED src/AprilTag2Node2_0.cpp)
+# target_include_directories(AprilTag2Node PUBLIC ${apriltag_INCLUDE_DIRS})
+
 ament_target_dependencies(AprilTag2Node rclcpp sensor_msgs rclcpp_components apriltag_msgs px4_msgs class_loader tf2_msgs)
 target_link_libraries(AprilTag2Node ${apriltag_LIBRARIES} ${LCM_LIBRARIES})
 rclcpp_components_register_nodes(AprilTag2Node "AprilTag2Node")

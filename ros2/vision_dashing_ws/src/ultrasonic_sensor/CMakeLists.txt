@@ -2,8 +2,7 @@ cmake_minimum_required(VERSION 3.5)
 project(ultrasonic_sensor)
 
 
-set(CMAKE_CXX_STANDARD 14)
-
+set(CMAKE_CXX_STANDARD 17) # Change 14 to 17
 #add_definitions(-std=c++11)
 ## Compile as C++11, supported in ROS Kinetic and newer
 # add_compile_options(-std=c++11)
@@ -20,6 +19,7 @@ find_package(geometry_msgs REQUIRED)
 find_package(rosidl_default_generators REQUIRED)
 
 find_package(PkgConfig REQUIRED)
+find_package(rcl_interfaces REQUIRED)
 pkg_search_module(LCM REQUIRED lcm)
 
 ################################################
@@ -74,20 +74,34 @@ endif()
 
 
 
-
+ament_target_dependencies(UltrasonicSensor rclcpp std_msgs sensor_msgs geometry_msgs rcl_interfaces)
 
 ## Declare a C++ executable
 ## With catkin_make all packages are built within a single CMake context
 ## The recommended prefix ensures that target names across packages don't collide
 
 add_executable(${PROJECT_NAME}_node_Mocap2mav src/mainMocap2mav.cpp)
+target_link_libraries(${PROJECT_NAME}_node_Mocap2mav UltrasonicSensor)
+ament_target_dependencies(${PROJECT_NAME}_node_Mocap2mav 
+    rclcpp 
+    std_msgs 
+    sensor_msgs 
+    geometry_msgs 
+    rcl_interfaces
+)
+# rosidl_target_interfaces(${PROJECT_NAME}_node_Mocap2mav ${PROJECT_NAME} "rosidl_typesupport_cpp" )
 
-target_link_libraries(${PROJECT_NAME}_node_Mocap2mav UltrasonicSensor ${rclcpp_LIBRARIES} ${rmw_implementation_LIBRARIES} ${std_msgs_LIBRARIES} ${geometry_msgs_LIBRARIES}  )
+# 1. Get the specific typesupport target for your message package
+rosidl_get_typesupport_target(typesupport_target "${PROJECT_NAME}" "rosidl_typesupport_cpp")
 
-rosidl_target_interfaces(${PROJECT_NAME}_node_Mocap2mav ${PROJECT_NAME} "rosidl_typesupport_cpp" )
+# 2. Link that target directly to your node
+target_link_libraries(${PROJECT_NAME}_node_Mocap2mav "${typesupport_target}")
 
-ament_target_dependencies(${PROJECT_NAME}_node_Mocap2mav rclcpp std_msgs sensor_msgs geometry_msgs)
+ament_target_dependencies(${PROJECT_NAME}_node_Mocap2mav rclcpp std_msgs sensor_msgs geometry_msgs rcl_interfaces)
 
 install(TARGETS ${PROJECT_NAME}_node_Mocap2mav DESTINATION lib/${PROJECT_NAME})
-
+install(
+  TARGETS UltrasonicSensor
+  DESTINATION lib
+)
 ament_package()

@@ -26,7 +26,7 @@ AprilTag2Node::AprilTag2Node() : Node("apriltag2", "apriltag", rclcpp::NodeOptio
 	tf_qos_profile.depth = 1;
 
 
-	odometry_sub = this->create_subscription<px4_msgs::msg::VehicleOdometry>("/VehicleOdometry_PubSubTopic",
+	odometry_sub = this->create_subscription<px4_msgs::msg::VehicleOdometry>("/fmu/out/vehicle_odometry",
 		rclcpp::QoS(rclcpp::QoSInitialization(rmw_qos_profile_sensor_data.history,rmw_qos_profile_sensor_data.depth),rmw_qos_profile_sensor_data),
 		std::bind(&AprilTag2Node::getDroneOdometry, this, std::placeholders::_1));
 	//tf of each tags in the scene
@@ -241,10 +241,15 @@ void AprilTag2Node::publish_data_center(const apriltag_msgs::msg::AprilTagDetect
 
 		double weighTot = 0;
 
-		//std::cout<<"detection_size: "<<Detections.detections.size()<< " Rows: "<<areaID.rows()<<std::endl;
+		std::cout<<"detection_size: "<<Detections.detections.size()<< " Rows: "<<areaID.rows()<<std::endl;
 
 
 		for( int i = 0; i< areaID.rows(); i++ ) {
+			if(std::isnan(t_f.transforms.at( areaID(i, 0) ).transform.translation.x) || 
+			std::isnan(t_f.transforms.at( areaID(i, 0) ).transform.translation.y) || 
+			std::isnan(t_f.transforms.at( areaID(i, 0) ).transform.translation.z))
+				continue;
+			std::cout << "t_f.transforms.at( areaID(i, 0) ).transform.translation.x * areaID(i, 1) " << t_f.transforms.at( areaID(i, 0) ).transform.translation.x * areaID(i, 1) << std::endl;
 			vision_pose.position[0] += t_f.transforms.at( areaID(i, 0) ).transform.translation.x * areaID(i, 1);
 			vision_pose.position[1] += t_f.transforms.at( areaID(i, 0) ).transform.translation.y * areaID(i, 1);
 			vision_pose.position[2] += t_f.transforms.at( areaID(i, 0) ).transform.translation.z * areaID(i, 1);
@@ -259,12 +264,12 @@ void AprilTag2Node::publish_data_center(const apriltag_msgs::msg::AprilTagDetect
 		// std::cout<<"weighTot: "<<weighTot<<std::endl;
 
 
-
+		std::cout << "before weight tot vision_pose.position[0] " << vision_pose.position[0]<< std::endl;
 
 		vision_pose.position[0] = vision_pose.position[0] / weighTot;
 		vision_pose.position[1] = vision_pose.position[1] / weighTot;
 		vision_pose.position[2] = vision_pose.position[2] / weighTot;
-
+		std::cout << "weight tot vision_pose.position[0] " << vision_pose.position[0] << " weighTot " << weighTot << std::endl;
 		vision_pose.velocity[0] = 0;
 		vision_pose.velocity[1] = 0;
 		vision_pose.velocity[2] = 0;
@@ -299,7 +304,7 @@ void AprilTag2Node::publish_data_center(const apriltag_msgs::msg::AprilTagDetect
 		// rotates the error in the world frame, so that it corresponds to real working environment
 		vision_temp.position[0] = (cosf(rotation_yaw) * vision_pose.position[0] - sinf(rotation_yaw) * vision_pose.position[1]);
 		vision_temp.position[1] = (sinf(rotation_yaw) * vision_pose.position[0] + cosf(rotation_yaw) * vision_pose.position[1]);
-
+		std::cout << "cos sin vision_temp.position[0] " << vision_temp.position[0]<< std::endl;
 		// finally, assigning the computed rotation, adapting it to NED framework
 		// (rotations along Z by 90 degrees counterclockwise and X by 180 degrees for z_up)
 		// (rotation along Z by 180 degrees for z_down)
@@ -316,7 +321,7 @@ void AprilTag2Node::publish_data_center(const apriltag_msgs::msg::AprilTagDetect
 		}
 
 		// checking whenever we would have anomalies in the computed errors
-		if(abs(vision_pose.position[0]) > _x_err_thld)
+		if(abs(vision_pose.position[0]) > _x_err_thld || std::isnan(vision_pose.position[0]))
 		{
 			vision_pose.position[0] = _previous_x_err;
 			RCLCPP_WARN(get_logger(), "X error is too high, selecting previous one!");
@@ -330,7 +335,7 @@ void AprilTag2Node::publish_data_center(const apriltag_msgs::msg::AprilTagDetect
 		}
 
 		// doing the same for Y and Z
-		if(abs(vision_pose.position[1]) > _y_err_thld)
+		if(abs(vision_pose.position[1]) > _y_err_thld || std::isnan(vision_pose.position[1]))
 		{
 			vision_pose.position[1] = _previous_y_err;
 			RCLCPP_WARN(get_logger(), "Y error is too high, selecting previous one!");
@@ -342,7 +347,7 @@ void AprilTag2Node::publish_data_center(const apriltag_msgs::msg::AprilTagDetect
 			_y_err_count = 0;
 		}
 
-		if(abs(vision_pose.position[2]) > _z_err_thld)
+		if(abs(vision_pose.position[2]) > _z_err_thld || std::isnan(vision_pose.position[2]))
 		{
 			vision_pose.position[2] = _previous_z_err;
 			RCLCPP_WARN(get_logger(), "Z error is too high, selecting previous one!");
@@ -501,13 +506,13 @@ void AprilTag2Node::toEulerAngle(double quaternion[], double *Roll, double *Pitc
 
 void AprilTag2Node::getDroneOdometry(const px4_msgs::msg::VehicleOdometry::SharedPtr msg_odom)
 {
-	_drone_pose.position[0] =  msg_odom->y;
-	_drone_pose.position[1] =  msg_odom->x;
-	_drone_pose.position[2] =  -msg_odom->z;
+	_drone_pose.position[0] =  msg_odom->position[1];
+	_drone_pose.position[1] =  msg_odom->position[0];
+	_drone_pose.position[2] =  -msg_odom->position[2];
 
-	_drone_pose.velocity[0] = msg_odom->vy;
-	_drone_pose.velocity[1] = msg_odom->vx;
-	_drone_pose.velocity[2] = -msg_odom->vz;
+	_drone_pose.velocity[0] = msg_odom->velocity[1];
+	_drone_pose.velocity[1] = msg_odom->velocity[0];
+	_drone_pose.velocity[2] = -msg_odom->velocity[2];
 
 	_drone_pose.orientation[0] = msg_odom->q[0];
 	_drone_pose.orientation[1] = msg_odom->q[1];

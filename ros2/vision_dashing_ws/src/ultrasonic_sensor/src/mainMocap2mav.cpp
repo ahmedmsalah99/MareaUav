@@ -60,8 +60,8 @@ int main(int argc, char **argv) {
   auto Sonar1 = std::make_shared<UltrasonicSensor>();
 
   Sonar1->setParameters(trigger, echo, timeout);
-
-  auto ultrasonic_sensor_sub = node->create_subscription<sensor_msgs::msg::Range>("/ultrasonic/sonar", 1, std::bind(&UltrasonicSensor::setSensorData, Sonar1, std::placeholders::_1));
+	auto best_effort_qos = rclcpp::QoS(rclcpp::KeepLast(1)).best_effort();
+  auto ultrasonic_sensor_sub = node->create_subscription<sensor_msgs::msg::Range>("/ultrasonic/sonar", best_effort_qos, std::bind(&UltrasonicSensor::setSensorData, Sonar1, std::placeholders::_1));
 
 	// auto PubSensorData = node->create_publisher<ultrasonic_sensor::msg::UltrasonicMsg>("/UltrasonicSensor_filtr", 1);
 

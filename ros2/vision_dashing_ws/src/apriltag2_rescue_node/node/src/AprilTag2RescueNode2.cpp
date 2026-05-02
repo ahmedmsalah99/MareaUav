@@ -26,7 +26,7 @@ AprilTag2RescueNode::AprilTag2RescueNode() : Node("apriltag2rescue", "apriltagre
 
 
 
-	odometry_sub = this->create_subscription<px4_msgs::msg::VehicleOdometry>("/VehicleOdometry_PubSubTopic",
+	odometry_sub = this->create_subscription<px4_msgs::msg::VehicleOdometry>("/fmu/out/vehicle_odometry",
 		rclcpp::QoS(rclcpp::QoSInitialization(rmw_qos_profile_sensor_data.history,rmw_qos_profile_sensor_data.depth),rmw_qos_profile_sensor_data),
 	 	std::bind(&AprilTag2RescueNode::getDroneOdometry, this, std::placeholders::_1));
 	//tf of each tags in the scene
@@ -231,6 +231,10 @@ void AprilTag2RescueNode::publish_data_center(const apriltag_msgs::msg::AprilTag
 
 
 		for( int i = 0; i< areaID.rows(); i++ ) {
+			if(std::isnan(t_f.transforms.at( areaID(i, 0) ).transform.translation.x) || 
+			std::isnan(t_f.transforms.at( areaID(i, 0) ).transform.translation.y) || 
+			std::isnan(t_f.transforms.at( areaID(i, 0) ).transform.translation.z))
+				continue;
 			vision_pose.position[0] += t_f.transforms.at( areaID(i, 0) ).transform.translation.x * areaID(i, 1);
 			vision_pose.position[1] += t_f.transforms.at( areaID(i, 0) ).transform.translation.y * areaID(i, 1);
 			vision_pose.position[2] += t_f.transforms.at( areaID(i, 0) ).transform.translation.z * areaID(i, 1);
@@ -474,13 +478,13 @@ void AprilTag2RescueNode::toEulerAngle(double quaternion[], double *Roll, double
 
 void AprilTag2RescueNode::getDroneOdometry(const px4_msgs::msg::VehicleOdometry::SharedPtr msg_odom)
 {
-	_drone_pose.position[0] =  msg_odom->y;
-	_drone_pose.position[1] =  msg_odom->x;
-	_drone_pose.position[2] =  -msg_odom->z;
+	_drone_pose.position[0] =  msg_odom->position[1];
+	_drone_pose.position[1] =  msg_odom->position[0];
+	_drone_pose.position[2] =  -msg_odom->position[2];
 
-	_drone_pose.velocity[0] = msg_odom->vy;
-	_drone_pose.velocity[1] = msg_odom->vx;
-	_drone_pose.velocity[2] = -msg_odom->vz;
+	_drone_pose.velocity[0] = msg_odom->velocity[1];
+	_drone_pose.velocity[1] = msg_odom->velocity[0];
+	_drone_pose.velocity[2] = -msg_odom->velocity[2];
 
 	_drone_pose.orientation[0] = msg_odom->q[0];
 	_drone_pose.orientation[1] = msg_odom->q[1];
