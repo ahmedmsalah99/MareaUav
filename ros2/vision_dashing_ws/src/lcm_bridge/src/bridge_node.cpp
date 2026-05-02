@@ -4,12 +4,13 @@
 #include "geometry_msgs/msg/pose_stamped.hpp"
 #include "geometry_msgs/msg/twist_stamped.hpp"
 // #include "px4_msgs/msg/vehicle_local_position_setpoint.hpp"
-// #include "px4_msgs/msg/trajectory_setpoint.hpp"
+#include "px4_msgs/msg/trajectory_setpoint.hpp"
 #include "px4_msgs/msg/vehicle_attitude_setpoint.hpp"
 // #include "sensor_msgs/msg/battery_state.hpp"
 #include "px4_msgs/msg/battery_status.hpp"
 // #include "sensor_msgs/msg/nav_sat_fix.hpp"
-#include "px4_msgs/msg/vehicle_gps_position.hpp"
+#include <px4_msgs/msg/offboard_control_mode.hpp>
+#include "px4_msgs/msg/sensor_gps.hpp"
 #include "sensor_msgs/msg/camera_info.hpp"
 // #include "mavros_msgs/msg/state.hpp"
 // #include "px4_msgs/msg/actuator_armed.hpp"
@@ -28,6 +29,7 @@
 #include "lcm_messages/exec/camera_info.hpp"
 #include "lcm_messages/exec/release_payload.hpp"
 #include "common/common.h"
+#include "common/conversions.h"
 #include "common/MavState.h"
 #include "common/CallbackHandler.hpp"
 #include <poll.h>
@@ -105,13 +107,13 @@ bool offboard_enabled = 0;
 
 void odometryCallback(const px4_msgs::msg::VehicleOdometry::SharedPtr pose){
 
-    lcm_pose.position[0] =  pose->y;
-    lcm_pose.position[1] =  pose->x;
-    lcm_pose.position[2] =  -pose->z;
+    lcm_pose.position[0] =  pose->position[1];
+    lcm_pose.position[1] =  pose->position[0];
+    lcm_pose.position[2] =  -pose->position[2];
 
-    lcm_pose.velocity[0] = pose->vy;
-    lcm_pose.velocity[1] = pose->vx;
-    lcm_pose.velocity[2] = -pose->vz;
+    lcm_pose.velocity[0] = pose->velocity[1];
+    lcm_pose.velocity[1] = pose->velocity[0];
+    lcm_pose.velocity[2] = -pose->velocity[2];
 
     lcm_pose.orientation[0] = pose->q[0];
     lcm_pose.orientation[1] = pose->q[1];
@@ -178,12 +180,13 @@ void batteryStatusCallback(const px4_msgs::msg::BatteryStatus::SharedPtr bs)
   handler5.publish("battery", &battery_lcm);
 }
 
-void gpsStatusCallback(const px4_msgs::msg::VehicleGpsPosition::SharedPtr vgp)
+void gpsStatusCallback(const px4_msgs::msg::SensorGps::SharedPtr vgp)
 {
   // scaling the position to the conventional one (the topic gives it in integers)
-  gps_status_lcm.lon = 0.0000001 * vgp->lon;
-  gps_status_lcm.lat = 0.0000001 * vgp->lat;
-  gps_status_lcm.alt = 0.001 * vgp->alt;
+  // TODO: Make it work on VehicleGlobalPosition for more reliable estimation ?
+  gps_status_lcm.lon = 0.0000001 * vgp->longitude_deg;
+  gps_status_lcm.lat = 0.0000001 * vgp->latitude_deg;
+  gps_status_lcm.alt = 0.001 * vgp->altitude_msl_m;
   gps_status_lcm.status = vgp->fix_type;
   gps_status_lcm.timestamp = (double)(std::chrono::system_clock::now().time_since_epoch() / std::chrono::milliseconds(1));
   handler6.publish("gps_status", &gps_status_lcm);
@@ -269,24 +272,46 @@ int main(int argc, char **argv)
 {
 
     rclcpp::init(argc, argv);
+    auto best_effort_qos = rclcpp::QoS(rclcpp::KeepLast(1)).best_effort();
+    bool position_enabled = true;
+    bool velocity_enabled = false;
     auto node = rclcpp::Node::make_shared("ros2lcm_bridge");
-    
+    auto offboard_control_mode_pub = node->create_publisher<px4_msgs::msg::OffboardControlMode>(
+    "/fmu/in/offboard_control_mode",1);
+
+    auto offboard_timer_ = node->create_wall_timer(
+    std::chrono::milliseconds(50),
+    [&]() {
+        px4_msgs::msg::OffboardControlMode msg;
+        msg.timestamp = node->now().nanoseconds() / 1000;
+
+        msg.position = position_enabled;
+        msg.velocity = velocity_enabled;
+        msg.acceleration = false;
+        msg.attitude = false;
+        msg.body_rate = false;
+
+        offboard_control_mode_pub->publish(msg);
+    }
+);
+
+    auto trajectory_setpoint_pub = node->create_publisher<px4_msgs::msg::TrajectorySetpoint>("/fmu/in/trajectory_setpoint",1);
 
     //topic with position and velocity of the robot
-    auto odometry_sub = node->create_subscription<px4_msgs::msg::VehicleOdometry>("/VehicleOdometry_PubSubTopic", 1, &odometryCallback);
+    auto odometry_sub = node->create_subscription<px4_msgs::msg::VehicleOdometry>("/fmu/out/vehicle_odometry", best_effort_qos, &odometryCallback);
     // another one to know the actual control mode
-    auto control_mode_sub = node->create_subscription<px4_msgs::msg::VehicleControlMode>("/VehicleControlMode_PubSubTopic", 1, &controlModeCallback);
+    auto control_mode_sub = node->create_subscription<px4_msgs::msg::VehicleControlMode>("/fmu/out/vehicle_control_mode", best_effort_qos, &controlModeCallback);
 
     // auto state_sub = node->create_subscription<px4_msgs::msg::ActuatorArmed>("/ActuatorArmed_PubSubTopic", 1, &stateCallback);
 
-    auto land_detected_sub = node->create_subscription<px4_msgs::msg::VehicleLandDetected>("/VehicleLandDetected_PubSubTopic", 1, &EStateCallback);
+    auto land_detected_sub = node->create_subscription<px4_msgs::msg::VehicleLandDetected>("/fmu/out/vehicle_land_detected", best_effort_qos, &EStateCallback);
 
     //vision system
     // auto relative_pose_sub = node->create_subscription<geometry_msgs::msg::TransformStamped>("/platform_center", 1, &ApriltagCallback);
 
 
-    auto battery_status_sub = node->create_subscription<px4_msgs::msg::BatteryStatus>("/BatteryStatus_PubSubTopic", 1, &batteryStatusCallback);
-    auto gps_status_sub = node->create_subscription<px4_msgs::msg::VehicleGpsPosition>("/VehicleGpsPosition_PubSubTopic", 1, &gpsStatusCallback);
+    auto battery_status_sub = node->create_subscription<px4_msgs::msg::BatteryStatus>("/fmu/out/battery_status", best_effort_qos, &batteryStatusCallback);
+    auto gps_status_sub = node->create_subscription<px4_msgs::msg::SensorGps>("/fmu/out/vehicle_gps_position", best_effort_qos, &gpsStatusCallback);
     auto camera_info_sub = node->create_subscription<sensor_msgs::msg::CameraInfo>("/apriltag/image/camera_info", 1, &CameraInfoCallback);
 
     auto pay_rel_fb_sub = node->create_subscription<std_msgs::msg::String>("release_payload_feedback", 1, &ReleasePayloadFbCallback);
@@ -299,11 +324,11 @@ int main(int argc, char **argv)
     //
     // auto pub2 = node->create_publisher<px4_msgs::msg::VehicleAttitudeSetpoint>("/VehicleAttitudeSetpoint_PubSubTopic",1);
 
-    auto pub = node->create_publisher<geometry_msgs::msg::PoseStamped>("/mavros/setpoint_position/local",1);
+    // auto pub = node->create_publisher<geometry_msgs::msg::PoseStamped>("/mavros/setpoint_position/local",1);
 
     auto pub1 = node->create_publisher<std_msgs::msg::String>("/release_payload",1);
 
-    auto pub2 = node->create_publisher<geometry_msgs::msg::TwistStamped>("/mavros/setpoint_velocity/cmd_vel",1);
+    // auto pub2 = node->create_publisher<geometry_msgs::msg::TwistStamped>("/mavros/setpoint_velocity/cmd_vel",1);
 
     auto pub3 = node->create_publisher<std_msgs::msg::Float32>("/drone_state",1);
 
@@ -435,18 +460,28 @@ int main(int argc, char **argv)
                 // pub->publish(*commandPose);
                 // // pub1->publish(*commandPose1);
                 // pub2->publish(*commandPose2);
-                auto commandPose = std::make_shared<geometry_msgs::msg::PoseStamped>();
 
+                // auto commandPose = std::make_shared<geometry_msgs::msg::PoseStamped>();
+                px4_msgs::msg::TrajectorySetpoint setpoint;
                 handler2.handle();
+                setpoint.timestamp = node->now().nanoseconds() / 1000;
+                setpoint.position[0] = call._position_sp.getY();
+                setpoint.position[1] = call._position_sp.getX();
+                setpoint.position[2] = -call._position_sp.getZ();
 
-                commandPose->pose.position.x = call._position_sp.getX();
-                commandPose->pose.position.y = call._position_sp.getY();
-                commandPose->pose.position.z = call._position_sp.getZ();
+                setpoint.yaw = yawFromQuaternion(call._position_sp.getOrientation());
+                setpoint.velocity = {NAN,NAN,NAN};
+                position_enabled = true;
+                velocity_enabled = false;
+                // commandPose->pose.position.x = call._position_sp.getX();
+                // commandPose->pose.position.y = call._position_sp.getY();
+                // commandPose->pose.position.z = call._position_sp.getZ();
 
-                commandPose->pose.orientation.x = call._position_sp.getOrientation().x();
-                commandPose->pose.orientation.y = call._position_sp.getOrientation().y();
-                commandPose->pose.orientation.z = call._position_sp.getOrientation().z();
-                commandPose->pose.orientation.w = call._position_sp.getOrientation().w();
+                // commandPose->pose.orientation.x = call._position_sp.getOrientation().x();
+                // commandPose->pose.orientation.y = call._position_sp.getOrientation().y();
+                // commandPose->pose.orientation.z = call._position_sp.getOrientation().z();
+                // commandPose->pose.orientation.w = call._position_sp.getOrientation().w();
+
                 //
                 // std::cout << "YAW DES " << call._position_sp.getYaw()*180.0/3.14 << std::endl;
                 //
@@ -460,7 +495,10 @@ int main(int argc, char **argv)
                 // double pitch, roll, yaw;
                 // toEulerAngle(pose.orientation, &roll, &pitch, &yaw);
                 // std::cout << "command: " << commandPose->pose.position.x << " " << commandPose->pose.position.y << " " <<commandPose->pose.position.z << std::endl;
-                pub->publish(*commandPose);
+                // pub->publish(*commandPose);
+
+
+                trajectory_setpoint_pub->publish(setpoint);
             }
             else if(call._position_sp.getType() == MavState::type::VELOCITY) {
 
@@ -486,16 +524,25 @@ int main(int argc, char **argv)
                 // std::cout << "commandV: " << commandPose->vx << " " << commandPose->vy << " " <<commandPose->vz << std::endl;
                 // pub->publish(*commandPose);
                 // pub1->publish(*commandPose1);
-                auto commandPose = std::make_shared<geometry_msgs::msg::TwistStamped>();
 
+                // auto commandPose = std::make_shared<geometry_msgs::msg::TwistStamped>();
+                px4_msgs::msg::TrajectorySetpoint setpoint;
                 handler2.handle();
+                setpoint.timestamp = node->now().nanoseconds() / 1000;
+                setpoint.velocity[0] = call._position_sp.getVy();
+                setpoint.velocity[1] = call._position_sp.getVx();
+                setpoint.velocity[2] = -call._position_sp.getVz();
+                setpoint.position = {NAN,NAN,NAN};
 
-                commandPose->twist.linear.x =  call._position_sp.getVx();
-                commandPose->twist.linear.y =  call._position_sp.getVy();
-                commandPose->twist.linear.z =  call._position_sp.getVz();
+                position_enabled = false;
+                velocity_enabled = true;
+
+                // commandPose->twist.linear.x =  call._position_sp.getVx();
+                // commandPose->twist.linear.y =  call._position_sp.getVy();
+                // commandPose->twist.linear.z =  call._position_sp.getVz();
 
                 // std::cout << "commandV: " << commandPose->twist.linear.x << " " << commandPose->twist.linear.y << " " <<commandPose->twist.linear.z << std::endl;
-                pub2->publish(*commandPose);
+                trajectory_setpoint_pub->publish(setpoint);
 
             }
 
