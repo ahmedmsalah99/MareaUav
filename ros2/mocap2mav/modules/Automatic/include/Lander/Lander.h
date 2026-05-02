@@ -12,7 +12,7 @@
 #include "miniPID/MiniPID.h"
 #include "Parameters.h"
 
-#define DEBUG
+// #define DEBUG
 #define PI              3.141592653589
 #define Kland           1
 #define THRE            0.25

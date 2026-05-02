@@ -217,10 +217,15 @@ bool Executioner::CheckActions(int a)
           // the platform for a while, waiting the system to come back online
           if(isCameraSafetyTaskRunning)
             return false;
-          else  // returns the distance condition wrt the platform coordinates and the prefixed desired altitude
+          else  {// returns the distance condition wrt the platform coordinates and the prefixed desired altitude
+            std::cout << "executioner moving current state x " << _state.getX() << " actualTask.x " << _actualTask.x << std::endl;
+            std::cout << "executioner moving current state y " << _state.getY() << " actualTask.y " << _actualTask.y << std::endl;
+            std::cout << "executioner moving current state z " << _state.getZ() << " actualTask.z " << _actualTask.z << std::endl;
+            std::cout << "_actualTask.params[1] " << _actualTask.params[1] << std::endl;
             return (fabs(_state.getX() - _actualTask.x) < _actualTask.params[1] &&
                     fabs(_state.getY() - _actualTask.y) < _actualTask.params[1] &&
                     fabs(_state.getZ() - _actualTask.z) < _actualTask.params[1] );
+                    }
           break;
 
         //TAKE_OFF

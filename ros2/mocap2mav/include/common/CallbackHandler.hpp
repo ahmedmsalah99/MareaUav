@@ -325,7 +325,6 @@ public:
 
 	void UltrasonicCallback(const lcm::ReceiveBuffer* rbuf, const std::string& chan, const geometry::UltrasonicPosition* msg){
 	//callback of the vision system.
-
 		_Ultrasonic_pos.setZ((float)msg->Z_Position);
 
 		_Ultrasonic_pos.setVz((float)msg->Z_Velocity);

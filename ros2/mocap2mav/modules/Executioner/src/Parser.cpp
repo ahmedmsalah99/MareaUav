@@ -391,6 +391,7 @@ bool Parser::parseMove(exec::task& task,int pos) {
     if((mask & (xFound | yFound | zFound | aFound | tFound | hlonFound | hlatFound | haltFound) == (xFound | yFound | zFound | aFound | tFound | hlonFound | hlatFound | haltFound)) && trFound) _taskListParsed.push_back(task);
     else
     {
+        std::cout << "mask " << mask << std::endl;
         std::cout << "field missing in action: " << pos << std::endl;
         return false;
     }

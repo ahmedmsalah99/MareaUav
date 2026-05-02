@@ -227,6 +227,8 @@ void Lander::updateSignals() {
 
   if(_VisionPose.IsValid)
     _hovering = false;
+  // else
+  //   return;
 
 
 	double dx;
@@ -297,8 +299,13 @@ void Lander::updateSignals() {
       _NHold = 0;
   }
 
+  if (std::isfinite(_err[0]) &&
+    std::isfinite(_err[1]) &&
+    std::isfinite(_err[2]))
+  {
+    _err_prev = _err;
+  }
 
-  _err_prev = _err;
 
 }
 
@@ -399,7 +406,6 @@ void Lander::run() {
   switch (_actualState){
 
     case (AbstractLandState::states::INIT):
-
       if(!initDone)
       {
 
@@ -622,13 +628,15 @@ bool Lander::setDroneInFront()
     std::cout << "YAW NOT VALID, CANNOT GENERATE DESIRED POSITION";
     return false;
   }
-  // std::cout << "xTarget: " << x_des_drone << std::endl;
-  // std::cout << "yTarget: " << y_des_drone << std::endl;
-  // std::cout << "_VisionPose.getX(): " << _VisionPose.getX() << std::endl;
-  // std::cout << "_VisionPose.getY(): " << _VisionPose.getY() << std::endl;
-  // std::cout << "**********************************" << std::endl;
+  std::cout << "xTarget: " << x_des_drone << std::endl;
+  std::cout << "yTarget: " << y_des_drone << std::endl;
+  std::cout << "_VisionPose.getX(): " << _VisionPose.getX() << std::endl;
+  std::cout << "_VisionPose.getY(): " << _VisionPose.getY() << std::endl;
+  std::cout << "_setPoint._yaw: " << _yaw_des << std::endl;
+  std::cout << "**********************************" << std::endl;
   // setting the setpoint finally
   _setPoint.setPosition(xTarget, yTarget, param.prelandAltitude);
+
   _setPoint.setType(MavState::type::POSITION);
 
   // returning the error condition
@@ -655,11 +663,15 @@ void Lander::initInspection()
     X0 = _state.getX();
     Y0 = _state.getY();
     First_insp = false;
+    std::cout << "first inspection X0 " << X0 << " Y0 " << Y0 << std::endl;
   }
   else
   {
     X0 = _state.getX() + _err_prev[0];
     Y0 = _state.getY() + _err_prev[1];
+    std::cout << "X0 " << X0 << " Y0 " << Y0 << std::endl;
+    std::cout << "later inspection _state.getX() " << _state.getX() << " _state.getY() " << _state.getY() << std::endl;
+    std::cout << "later inspection err_x " << _err_prev[0] << " _err_prev[1] " << _err_prev[1] << std::endl;
   }
 	Inspection = true;
 
@@ -684,7 +696,13 @@ void Lander::inspection() {
   time+=_dt;
 
   _setPoint.setPosition(RadiusInspection * cos((param.inspeLinVel/RadiusInspection)*time) + X0, RadiusInspection * sin((param.inspeLinVel/RadiusInspection)*time) + Y0, param.prelandAltitude);
-
+  
+  // std::cout<<"RadiusInspection  "<<RadiusInspection<<std::endl;
+  // std::cout<<"param.inspeLinVel:  "<<param.inspeLinVel<<std::endl;
+  // std::cout<<"X0  "<<X0<<std::endl;
+  // std::cout<<"Y0  "<<Y0<<std::endl;
+  // std::cout<<" param.prelandAltitude "<<param.prelandAltitude<<std::endl;
+  // std::cout << "(param.inspeLinVel/RadiusInspection) " << (param.inspeLinVel/RadiusInspection) << std::endl;
   // std::cout<<"Circ:  "<<_setPoint.getX()<<std::endl;
   // std::cout<<"Time: "<<time<<std::endl;
 
@@ -860,6 +878,7 @@ void Lander::align() {
     //we keep the yaw value the platform had in the init state
     // Eigen::Quaterniond q_interm = yawToQuaternion(_VisionPose.getYawFromQuat());
     // Eigen::Quaterniond q_interm = yawToQuaternion(_VisionPose.getYaw());
+    // _yaw_des = std::atan2(_VisionPose.getY(), _VisionPose.getX());
     _setPoint.setYaw(_yaw_des);
     Eigen::Quaterniond q_interm = yawToQuaternion(_yaw_des);
     // std::cout << _yaw_des*180.0/3.14 << std::endl;
