@@ -2,7 +2,7 @@
 #include <class_loader/register_macro.hpp>
 #include "LandingPlatform.h"
 // #include <apriltag_pose.h>
-// #include <apriltag.h>
+#include <apriltag.h>
 #include <sstream>
 
 
@@ -33,17 +33,22 @@ AprilTag2Node::AprilTag2Node() : Node("apriltag2", "apriltag", rclcpp::NodeOptio
 	//pub_tf = this->create_publisher<tf2_msgs::msg::TFMessage>("/tf", tf_qos_profile);
 
 	//information from the vision system(hamming, goodness, corners..)
-	//pub_detections = this->create_publisher<apriltag_msgs::msg::AprilTagDetectionArray>("detections");
+	pub_detections = this->create_publisher<apriltag_msgs::msg::AprilTagDetectionArray>("detections",10);
 
 	//platform center pose
 	// pub_platformCenter = this->create_publisher<geometry_msgs::msg::TransformStamped>("/platform_center",1);
 	pub_platformCenter = this->create_publisher<geometry_msgs::msg::TransformStamped>("/platform_center",1);
 
 	// set camera info message, these values are obtained after calibration and they are good for 640x480.
-	const double fx = 508.624627;
-  const double cx = 323.83127;
-  const double fy = 508.77675;
-  const double cy = 248.651286;
+// 	const double fx = 508.624627;
+//   const double cx = 323.83127;
+//   const double fy = 508.77675;
+//   const double cy = 248.651286;
+
+  const double fx = 381.36246688113556;
+  const double cx = 320.5;
+  const double fy = 381.36246688113556;
+  const double cy = 240.5;
 
 	K << fx, 0, cx, 0, fy, cy, 0, 0, 1;
 
@@ -207,7 +212,7 @@ void AprilTag2Node::onImage(const sensor_msgs::msg::CompressedImage::SharedPtr m
 		publish_data_center( msg_detections,tfs );
 	}
 
-	//pub_detections->publish(msg_detections);
+	pub_detections->publish(msg_detections);
 	//pub_tf->publish(tfs);
 
 	apriltag_detections_destroy(detections);

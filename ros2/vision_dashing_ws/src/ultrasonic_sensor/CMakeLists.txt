@@ -72,7 +72,10 @@ else()
  message(FATAL_ERROR "Undefined M2M_SIM env var. HINT: export M2M_SIM=1 if running simulation, 0 else")
 endif()
 
-
+target_include_directories(UltrasonicSensor PUBLIC
+    ${M2M_INCLUDE}
+    ${CMAKE_CURRENT_SOURCE_DIR}/include
+)
 
 ament_target_dependencies(UltrasonicSensor rclcpp std_msgs sensor_msgs geometry_msgs rcl_interfaces)
 
