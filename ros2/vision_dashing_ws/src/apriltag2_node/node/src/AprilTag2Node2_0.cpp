@@ -12,6 +12,7 @@
 #include <tag36h11.h>
 #include <math.h>
 #include <Eigen/Dense>
+#include <Eigen/Geometry>
 #include <cstdlib>
 
 static Platform_tag TAGS;
@@ -38,7 +39,18 @@ AprilTag2Node::AprilTag2Node() : Node("apriltag2", "apriltag", rclcpp::NodeOptio
 	//platform center pose
 	// pub_platformCenter = this->create_publisher<geometry_msgs::msg::TransformStamped>("/platform_center",1);
 	pub_platformCenter = this->create_publisher<geometry_msgs::msg::TransformStamped>("/platform_center",1);
+	
+	// Publisher: Matches the "pose0" topic name and queue size from your config
+    pose_pub_ = this->create_publisher<geometry_msgs::msg::PoseWithCovarianceStamped>(
+        "/pad_pose", 
+        5
+    );
 
+	filtered_pad_pose_sub = this->create_subscription<nav_msgs::msg::Odometry>(
+		"/odometry/filtered",
+		10,  // History depth
+		std::bind(&AprilTag2Node::filteredOdometryCallback, this, std::placeholders::_1)
+	);
 	// set camera info message, these values are obtained after calibration and they are good for 640x480.
 // 	const double fx = 508.624627;
 //   const double cx = 323.83127;
@@ -220,7 +232,10 @@ void AprilTag2Node::onImage(const sensor_msgs::msg::CompressedImage::SharedPtr m
 	image_u8_destroy(im);
 }
 
-
+void AprilTag2Node::filteredOdometryCallback(const nav_msgs::msg::Odometry::SharedPtr msg)
+{
+	filtered_pad_pose = *msg;
+}
 void AprilTag2Node::publish_data_center(const apriltag_msgs::msg::AprilTagDetectionArray& Detections, const tf2_msgs::msg::TFMessage& t_f)
 {
 	if(Detections.detections.size()>0)
@@ -377,18 +392,111 @@ void AprilTag2Node::publish_data_center(const apriltag_msgs::msg::AprilTagDetect
 		}
 		else
 		{
+			publishGlobalPosition(vision_pose);
 			vision_pose.isValid = true;
 		}
-
+		
 		std::cout << "IS DATA VALID: "<< (bool)vision_pose.isValid << std::endl;
-
+		
 		//lcm publication.
-		_handler.publish("apriltag_vision_system",&vision_pose);
+		updateAndPublishVision();
+		// _handler.publish("apriltag_vision_system",&vision_pose);
 
 		// pub_platformCenter->publish(msg_relative_pose);
 	}
 }
+void AprilTag2Node::updateAndPublishVision() {
+	if (filtered_pad_pose.pose.covariance[0] > 0.1 || filtered_pad_pose.pose.covariance[7] > 0.1 || filtered_pad_pose.pose.covariance[14] > 0.1)
+		return;
+	geometry::vision vision_pose;
+    // 1. Calculate raw translation (Global/Map Frame)
+    double dx = filtered_pad_pose.pose.pose.position.x - _drone_pose.position[0];
+    double dy = filtered_pad_pose.pose.pose.position.y - _drone_pose.position[1];
+    double dz = filtered_pad_pose.pose.pose.position.z - _drone_pose.position[2];
 
+    // 3. Fill the vision_pose message type
+    
+    vision_pose.position[0] = dx;
+    vision_pose.position[1] = dy;
+    vision_pose.position[2] = dz;
+
+	Eigen::Quaterniond q_drone(
+        _drone_pose.orientation[0], 
+        _drone_pose.orientation[1], 
+        _drone_pose.orientation[2], 
+        _drone_pose.orientation[3]
+    );
+
+    Eigen::Quaterniond q_tag_global(
+        filtered_pad_pose.pose.pose.orientation.w,
+        filtered_pad_pose.pose.pose.orientation.x,
+        filtered_pad_pose.pose.pose.orientation.y,
+        filtered_pad_pose.pose.pose.orientation.z
+    );
+
+    // Q_rel = Q_drone.inverse() * Q_tag_global
+    Eigen::Quaterniond q_tag_rel = q_drone.inverse() * q_tag_global;
+    q_tag_rel.normalize();
+
+    vision_pose.orientation[0] = q_tag_rel.w();
+    vision_pose.orientation[1] = q_tag_rel.x();
+    vision_pose.orientation[2] = q_tag_rel.y();
+    vision_pose.orientation[3] = q_tag_rel.z();
+
+    // 4. Publish
+    _handler.publish("apriltag_vision_system", &vision_pose);
+}
+void AprilTag2Node::publishGlobalPosition(const geometry::vision& vision_pose)
+{
+	// 1. Create the ROS2 message
+	auto ros_pose_msg = geometry_msgs::msg::PoseWithCovarianceStamped();
+
+	// 2. Set Header
+	ros_pose_msg.header.stamp = this->get_clock()->now();
+	ros_pose_msg.header.frame_id = "odom"; // Or your specific global frame
+
+	// 3. Set Position (using your processed vision_pose)
+	ros_pose_msg.pose.pose.position.x = _drone_pose.position[0] + vision_pose.position[0];
+    ros_pose_msg.pose.pose.position.y = _drone_pose.position[1] + vision_pose.position[1];
+    ros_pose_msg.pose.pose.position.z = _drone_pose.position[2] + vision_pose.position[2];
+	if(std::isnan(ros_pose_msg.pose.pose.position.x) || std::isnan(ros_pose_msg.pose.pose.position.y) || std::isnan(ros_pose_msg.pose.pose.position.z))
+		return;
+	// 4. Orientation Calculation
+    // Convert Drone Orientation to tf2 Quaternion
+    Eigen::Quaterniond q_drone(
+        _drone_pose.orientation[0], // w
+        _drone_pose.orientation[1], // x
+        _drone_pose.orientation[2], // y
+        _drone_pose.orientation[3]  // z
+    );
+
+    Eigen::Quaterniond q_tag_rel(
+        vision_pose.orientation[0], // w
+        vision_pose.orientation[1], // x
+        vision_pose.orientation[2], // y
+        vision_pose.orientation[3]  // z
+    );
+
+    // Combine rotations
+    Eigen::Quaterniond q_tag_global = q_drone * q_tag_rel;
+    q_tag_global.normalize();
+
+    // 3. Map Eigen back to ROS Message
+    ros_pose_msg.pose.pose.orientation.w = q_tag_global.w();
+    ros_pose_msg.pose.pose.orientation.x = q_tag_global.x();
+    ros_pose_msg.pose.pose.orientation.y = q_tag_global.y();
+    ros_pose_msg.pose.pose.orientation.z = q_tag_global.z();
+	if(std::isnan(ros_pose_msg.pose.pose.orientation.w) || std::isnan(ros_pose_msg.pose.pose.orientation.x) || std::isnan(ros_pose_msg.pose.pose.orientation.y) || std::isnan(ros_pose_msg.pose.pose.orientation.z))
+		return;
+	double var_p = 0.5;
+	ros_pose_msg.pose.covariance[0]  = var_p;  // X
+	ros_pose_msg.pose.covariance[7]  = var_p;  // Y
+	ros_pose_msg.pose.covariance[14] = var_p;  // Z
+	ros_pose_msg.pose.covariance[21] = 0.5;   // Roll (small fixed uncertainty)
+	ros_pose_msg.pose.covariance[28] = 0.5;   // Pitch
+	ros_pose_msg.pose.covariance[35] = 0.5;   // Yaw
+	pose_pub_->publish(ros_pose_msg);
+}
 
 void AprilTag2Node::getPose(const matd_t& H, geometry_msgs::msg::Transform& t, const int ID, const bool z_up)
 {

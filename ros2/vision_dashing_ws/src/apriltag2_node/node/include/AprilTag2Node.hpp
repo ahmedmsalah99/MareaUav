@@ -12,11 +12,11 @@
 #include <apriltag_msgs/msg/april_tag_detection_array.hpp>
 #include <tf2_msgs/msg/tf_message.hpp>
 #include <lcm_messages/geometry/vision.hpp>
+#include "geometry_msgs/msg/pose_with_covariance_stamped.hpp"
 // apriltag
 #include <apriltag.h>
 #include <apriltag_pose.h>
-
-
+#include "nav_msgs/msg/odometry.hpp"
 #include <common/pjpeg.h>
 #include "LandingPlatform.h"
 
@@ -78,6 +78,10 @@ private:
 	rclcpp::Subscription<sensor_msgs::msg::CompressedImage>::SharedPtr sub_img;
 	rclcpp::Subscription<sensor_msgs::msg::CameraInfo>::SharedPtr sub_info;
 	rclcpp::Subscription<px4_msgs::msg::VehicleOdometry>::SharedPtr odometry_sub;
+	rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr filtered_pad_pose_sub;
+	nav_msgs::msg::Odometry filtered_pad_pose;
+	void filteredOdometryCallback(const nav_msgs::msg::Odometry::SharedPtr msg);
+
 	rclcpp::Publisher<tf2_msgs::msg::TFMessage>::SharedPtr pub_tf;
 	rclcpp::Publisher<apriltag_msgs::msg::AprilTagDetectionArray>::SharedPtr pub_detections;
 
@@ -89,5 +93,9 @@ private:
 	double movingFilter(double raw, std::queue<double> *queue_t, double *integral);
 	void toEulerAngle(double quaternion[], double *Roll, double *Pitch, double *Yaw);
 	void publish_data_center(const apriltag_msgs::msg::AprilTagDetectionArray& Detections, const tf2_msgs::msg::TFMessage& t_f);
+	void publishGlobalPosition(const geometry::vision& vision_pose);
+	void updateAndPublishVision();
+	// Publisher for robot_localization (topic: /pad_pose)
+    rclcpp::Publisher<geometry_msgs::msg::PoseWithCovarianceStamped>::SharedPtr pose_pub_;
 
 };

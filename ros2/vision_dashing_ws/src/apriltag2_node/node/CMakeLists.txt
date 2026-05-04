@@ -12,6 +12,7 @@ find_package(class_loader REQUIRED)
 find_package(tf2_msgs REQUIRED)
 find_package(rclcpp_components REQUIRED)
 find_package(Eigen3 REQUIRED)
+find_package(nav_msgs REQUIRED)
 INCLUDE_DIRECTORIES(${EIGEN3_INCLUDE_DIR})
 
 find_package(Threads REQUIRED)
@@ -38,7 +39,7 @@ include_directories(include)
 add_library(AprilTag2Node SHARED src/AprilTag2Node2_0.cpp)
 # target_include_directories(AprilTag2Node PUBLIC ${apriltag_INCLUDE_DIRS})
 
-ament_target_dependencies(AprilTag2Node rclcpp sensor_msgs rclcpp_components apriltag_msgs px4_msgs class_loader tf2_msgs)
+ament_target_dependencies(AprilTag2Node rclcpp sensor_msgs rclcpp_components apriltag_msgs px4_msgs class_loader tf2_msgs nav_msgs)
 target_link_libraries(AprilTag2Node ${apriltag_LIBRARIES} ${LCM_LIBRARIES})
 rclcpp_components_register_nodes(AprilTag2Node "AprilTag2Node")
 

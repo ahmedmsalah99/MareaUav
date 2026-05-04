@@ -18,6 +18,7 @@
   <depend>apriltag_msgs</depend>
   <depend>apriltag</depend>
   <depend>class_loader</depend>
+  <depend>nav_msgs</depend>
 
   <export>
     <build_type>ament_cmake</build_type>

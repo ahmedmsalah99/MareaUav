@@ -81,6 +81,11 @@ bool drone = false;
 bool camera = false;
 bool platform = false;
 
+rclcpp::Time pos_setpoint_last_timestamp_;
+bool first_pos_setpoint_cmd_ = true;
+double prev_pos_setpoint[3] = {0.0, 0.0, 0.0};
+const double max_velocity = 1.0; // 1.0 m/s
+// const double pos_setpoint_cutoff_frequency = 0.5;
 //STOP
 
 
@@ -288,6 +293,7 @@ int main(int argc, char **argv)
         msg.position = position_enabled;
         msg.velocity = velocity_enabled;
         msg.acceleration = false;
+        msg.acceleration = false;
         msg.attitude = false;
         msg.body_rate = false;
 
@@ -464,13 +470,78 @@ int main(int argc, char **argv)
                 // auto commandPose = std::make_shared<geometry_msgs::msg::PoseStamped>();
                 px4_msgs::msg::TrajectorySetpoint setpoint;
                 handler2.handle();
+
+                // low pass filter start
+                // 1. Get current time and calculate dt
+                rclcpp::Time current_time = node->get_clock()->now();
+
+                if (first_pos_setpoint_cmd_) {
+                    pos_setpoint_last_timestamp_ = current_time;
+                    // Initialize prev_setpoint with the first incoming data
+                    prev_pos_setpoint[0] = call._position_sp.getY();
+                    prev_pos_setpoint[1] = call._position_sp.getX();
+                    prev_pos_setpoint[2] = -call._position_sp.getZ();
+                    first_pos_setpoint_cmd_ = false;
+                }
+
+                double dt = (current_time - pos_setpoint_last_timestamp_).seconds();
+                pos_setpoint_last_timestamp_ = current_time;
+
+                // Target values from the incoming call
+                double target[3];
+                target[0] = call._position_sp.getY();
+                target[1] = call._position_sp.getX();
+                target[2] = -call._position_sp.getZ();
+
+                // 2. Handle Large dt or Jump in time
+                // If dt is > 0.5s, the filter will "lag" too much; just snap to target.
+                if (dt <= 0.0 || dt > 0.5) {
+                    for (int i = 0; i < 3; ++i) {
+                        setpoint.position[i] = target[i];
+                        prev_pos_setpoint[i] = target[i];
+                    }
+                } else {
+            //         // 3. Apply Low Pass Filter
+            //         // Alpha formula: a = dt / (dt + RC), where RC = 1 / (2 * pi * f_c)
+            //         double tau = 1.0 / (2.0 * M_PI * pos_setpoint_cutoff_frequency);
+            //         double alpha = dt / (dt + tau);
+
+            //         for (int i = 0; i < 3; ++i) {
+            //             setpoint.position[i] = prev_pos_setpoint[i] + alpha * (target[i] - prev_pos_setpoint[i]);
+            //             prev_pos_setpoint[i] = setpoint.position[i]; // Store for next iteration
+            //         }
+            //         RCLCPP_INFO(node->get_logger(), "dt: %f | alpha: %f | target: %f | current: %f", 
+            // dt, alpha, target[0], setpoint.position[0]);
+                    for (int i = 0; i < 3; ++i) {
+                        double error = target[i] - prev_pos_setpoint[i];
+            
+                        // Calculate the maximum step size for this dt based on velocity limit
+                        double max_step = max_velocity * dt;
+
+                        // Clamp the error to the max step
+                        if (error > max_step) {
+                            error = max_step;
+                        } else if (error < -max_step) {
+                            error = -max_step;
+                        }
+
+                        setpoint.position[i] = prev_pos_setpoint[i] + error;
+                        prev_pos_setpoint[i] = setpoint.position[i];
+                    }
+                }
+                
+                // low pass filter end
+
+
                 setpoint.timestamp = node->now().nanoseconds() / 1000;
-                setpoint.position[0] = call._position_sp.getY();
-                setpoint.position[1] = call._position_sp.getX();
-                setpoint.position[2] = -call._position_sp.getZ();
+                // setpoint.position[0] = call._position_sp.getY();
+                // setpoint.position[1] = call._position_sp.getX();
+                // setpoint.position[2] = -call._position_sp.getZ();
 
                 setpoint.yaw = yawFromQuaternion(call._position_sp.getOrientation());
                 setpoint.velocity = {NAN,NAN,NAN};
+                setpoint.acceleration = {NAN,NAN,NAN};
+                setpoint.yawspeed = NAN;
                 position_enabled = true;
                 velocity_enabled = false;
                 // commandPose->pose.position.x = call._position_sp.getX();
@@ -533,7 +604,9 @@ int main(int argc, char **argv)
                 setpoint.velocity[1] = call._position_sp.getVx();
                 setpoint.velocity[2] = -call._position_sp.getVz();
                 setpoint.position = {NAN,NAN,NAN};
-
+                setpoint.acceleration = {NAN,NAN,NAN};
+                setpoint.yaw = NAN;
+                setpoint.yawspeed = NAN;
                 position_enabled = false;
                 velocity_enabled = true;
 
