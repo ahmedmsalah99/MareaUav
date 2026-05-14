@@ -247,9 +247,15 @@ void AprilTag2Node::onImage(const sensor_msgs::msg::CompressedImage::SharedPtr m
 		//Then, it projects this information in the centre of the platform (related to the tag in the centre).
 		// getPose(*(det->H), tf.transform, det->id, z_up);
 		// tf.transform = homography(det, intrinsics, platform_tags[det->id]);
-		tf.transform = pnp(det, intrinsics, platform_tags[det->id]);
-		RCLCPP_INFO(get_logger(), "ID: %li ", msg_detection.id);
-		std::cout << "family " << msg_detection.family << std::endl;
+		try{
+			tf.transform = pnp(det, intrinsics, platform_tags[det->id]);
+		}catch (const cv::Exception& e) {
+			RCLCPP_WARN_THROTTLE(get_logger(), *get_clock(), 1000,
+                         "solvePnP failed: %s", e.what());
+			continue;
+		}
+		// RCLCPP_INFO(get_logger(), "ID: %li ", msg_detection.id);
+		// std::cout << "family " << msg_detection.family << std::endl;
 		if(std::isnan(tf.transform.translation.x) || std::isnan(tf.transform.translation.y) || std::isnan(tf.transform.translation.z)) continue;
 		if(std::abs(tf.transform.translation.x) > 20 || std::abs(tf.transform.translation.y) > 20 || std::abs(tf.transform.translation.z) > 10) continue; 
 		msg_detections.detections.push_back(msg_detection);
@@ -366,9 +372,9 @@ void AprilTag2Node::publish_data_center(const apriltag_msgs::msg::AprilTagDetect
 			double yy = t_f.transforms.at( areaID(i, 0) ).transform.translation.y;
 			double rot_yaw = -1*_drone_pose.yaw;
 			auto temp = -(sinf(rot_yaw) * xx + cosf(rot_yaw) * yy);	
-			RCLCPP_INFO(get_logger(), "Area: %lf %lf", areaID(i,0), areaID(i, 1));
-			RCLCPP_INFO(get_logger(), "DETECTED TAG: %lf x %f gt_x_comp %f gtx %f y %f z %f", areaID(i,0),xx,temp,(2 - _drone_pose.position[0]),
-			yy,t_f.transforms.at( areaID(i, 0) ).transform.translation.z);
+			// RCLCPP_INFO(get_logger(), "Area: %lf %lf", areaID(i,0), areaID(i, 1));
+			// RCLCPP_INFO(get_logger(), "DETECTED TAG: %lf x %f gt_x_comp %f gtx %f y %f z %f", areaID(i,0),xx,temp,(2 - _drone_pose.position[0]),
+			// yy,t_f.transforms.at( areaID(i, 0) ).transform.translation.z);
 		}
 		// std::cout<<"weighTot: "<<weighTot<<std::endl;
 		auto median = [](std::vector<double> v)
@@ -527,8 +533,8 @@ void AprilTag2Node::publish_data_center(const apriltag_msgs::msg::AprilTagDetect
 		// auto tmp = vision_pose.position[0];
 		// vision_pose.position[0] = vision_pose.position[1];
 		// vision_pose.position[1] = tmp;
-		std::cout << "xnon filtered " << vision_pose.position[0] << std::endl;
-		std::cout << "z is " << vision_pose.position[2] << std::endl;
+		// std::cout << "xnon filtered " << vision_pose.position[0] << std::endl;
+		// std::cout << "z is " << vision_pose.position[2] << std::endl;
 		// vision_pose.position[0] = movingFilter(vision_pose.position[0], &_Queue_x,&_integral_x);
 		// vision_pose.position[1] = movingFilter(vision_pose.position[1], &_Queue_y,&_integral_y);
 		//lcm publication.

@@ -28,6 +28,7 @@ void InspectionSearchState::handle()
     getSignals();
     if(_VisionPose.VisionDataUpdated)
     {
+        std::cout << "_VisionPose.VisionDataUpdated " << _VisionPose.VisionDataUpdated << std::endl;
         this->_contextL->setStatePtr(_nextState); //set next state (InitState)
         printStateTransition();
     }

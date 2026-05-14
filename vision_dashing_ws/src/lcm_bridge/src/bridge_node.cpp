@@ -585,7 +585,7 @@ int main(int argc, char **argv)
                         prev_pos_setpoint[i] = target[i];
                     }
                 } else {
-                    std::cout << "small time " << dt << std::endl;
+                    // std::cout << "small time " << dt << std::endl;
                     for (int i = 0; i < 3; ++i) {
                         double error = target[i] - prev_pos_setpoint[i];
             
@@ -598,7 +598,7 @@ int main(int argc, char **argv)
                         } else if (error < -max_step) {
                             error = -max_step;
                         }
-                        std::cout << "max step is " << max_step  << " and error is " << error << std::endl;
+                        // std::cout << "max step is " << max_step  << " and error is " << error << std::endl;
 
 
                         setpoint.position[i] = prev_pos_setpoint[i] + error;
@@ -614,10 +614,10 @@ int main(int argc, char **argv)
                 // setpoint.position[0] = call._position_sp.getY();
                 // setpoint.position[1] = call._position_sp.getX();
                 // setpoint.position[2] = -call._position_sp.getZ();
-                std::cout << "setpoint.position[0] " << setpoint.position[0] << " setpoint.position[1] " << setpoint.position[1] << " setpoint.position[2] " << setpoint.position[2] << std::endl;
+                // std::cout << "setpoint.position[0] " << setpoint.position[0] << " setpoint.position[1] " << setpoint.position[1] << " setpoint.position[2] " << setpoint.position[2] << std::endl;
                 
                 setpoint.yaw = -yawFromQuaternion(call._position_sp.getOrientation());
-                std::cout << "yaw " << setpoint.yaw << std::endl;
+                // std::cout << "yaw " << setpoint.yaw << std::endl;
                 setpoint.velocity = {NAN,NAN,NAN};
                 position_enabled = true;
                 velocity_enabled = false;
