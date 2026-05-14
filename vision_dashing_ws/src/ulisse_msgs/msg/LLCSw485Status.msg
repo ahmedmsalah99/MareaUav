@@ -1,0 +1,7 @@
+Time stamp
+uint64 timestamp_sw_485
+uint16 missed_deadlines
+Sw485InOut left_motor
+Sw485InOut right_motor
+Sw485InOut left_satellite
+Sw485InOut right_satellite

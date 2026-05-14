@@ -1,0 +1,3 @@
+[submodule "vision_dashing_ws/src/px4_msgs"]
+	path = vision_dashing_ws/src/px4_msgs
+	url = https://github.com/PX4/px4_msgs.git

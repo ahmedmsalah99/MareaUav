@@ -1,0 +1,9 @@
+package exec;
+struct gps_status
+{
+	double lon;
+	double lat;
+	double alt;
+	int8_t status;
+	double timestamp;
+}

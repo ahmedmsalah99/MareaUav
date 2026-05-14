@@ -1,0 +1,8 @@
+uint16 command_type
+LLCBeep beep_data
+LLCConfig config_data
+LLCEnableRef enable_ref_data
+LLCPowerButtons pwr_buttons_data
+LLCPumps pumps_data
+---
+int16 res

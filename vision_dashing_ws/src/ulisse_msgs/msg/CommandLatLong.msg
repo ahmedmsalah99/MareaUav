@@ -1,0 +1,2 @@
+LatLong goal
+float64 acceptance_radius
