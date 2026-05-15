@@ -16,6 +16,8 @@
   <depend>px4_msgs</depend>
   <depend>ulisse_msgs</depend>
   <depend>eigen</depend>
+  <depend>ultrasonic_sensor</depend>
+
   <test_depend>ament_lint_auto</test_depend>
   <test_depend>ament_lint_common</test_depend>
 
