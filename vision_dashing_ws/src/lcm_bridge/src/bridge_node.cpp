@@ -1,717 +1,536 @@
-#include "lcm/lcm-cpp.hpp"
-#include "rclcpp/rclcpp.hpp"
-#include "geometry_msgs/msg/transform_stamped.hpp"
-#include "geometry_msgs/msg/pose_stamped.hpp"
-#include "geometry_msgs/msg/twist_stamped.hpp"
-// #include "px4_msgs/msg/vehicle_local_position_setpoint.hpp"
-#include "px4_msgs/msg/trajectory_setpoint.hpp"
-#include "px4_msgs/msg/vehicle_attitude_setpoint.hpp"
-// #include "sensor_msgs/msg/battery_state.hpp"
-#include "px4_msgs/msg/battery_status.hpp"
-// #include "sensor_msgs/msg/nav_sat_fix.hpp"
-// #include "px4_msgs/msg/vehicle_gps_position.hpp"
-#include <px4_msgs/msg/offboard_control_mode.hpp>
-#include "px4_msgs/msg/sensor_gps.hpp"
-#include "sensor_msgs/msg/camera_info.hpp"
-// #include "mavros_msgs/msg/state.hpp"
-// #include "px4_msgs/msg/actuator_armed.hpp"
-#include "px4_msgs/msg/vehicle_control_mode.hpp"
-// #include "mavros_msgs/msg/extended_state.hpp"
-#include "px4_msgs/msg/vehicle_land_detected.hpp"
-// #include "mavros_msgs/msg/param_set.h"
-#include "px4_msgs/msg/vehicle_odometry.hpp"
-#include "std_msgs/msg/string.hpp"
-#include <std_msgs/msg/float32.hpp>
-#include "lcm_messages/geometry/pose.hpp"
-// #include "lcm_messages/geometry/vision.hpp"
-#include "lcm_messages/exec/state.hpp"
-#include "lcm_messages/exec/battery.hpp"
-#include "lcm_messages/exec/gps_status.hpp"
-#include "lcm_messages/exec/camera_info.hpp"
-#include "lcm_messages/exec/release_payload.hpp"
-#include "lcm_messages/exec/plat_task_status.hpp"
+// bridge_node.cpp
+//
+// LCM <-> ROS 2 bridge after the application migration.
+//
+// What this node does:
+//   * Republishes /fmu/out/vehicle_odometry as ROS 2 "vision_position_estimate"
+//     (with NED->ENU axis swap). App nodes subscribe to this; any other source
+//     (mocap, custom estimator) can publish to the same topic to override.
+//   * Republishes /ulisse/nav_filter/data as ROS 2 "nav_pose"
+//     (with global->local lat/lon conversion using a captured home).
+//   * Plugin-input mirrors (ROS 2 -> LCM, fed to Gazebo plugins):
+//       vision_position_estimate, nav_pose, Landing_Site/pose_cmd,
+//       release_payload_feedback, gps_status
+//   * Plugin-output mirror (LCM -> ROS 2, from landingPlat plugin):
+//       Landing_Site/pose
+//   * Translates ROS 2 "local_position_sp" (nav_msgs/Odometry) to PX 4
+//     /fmu/in/trajectory_setpoint, with ENU->NED swap and the slew-rate filter.
+//     POSITION vs VELOCITY is read from header.frame_id ("POSITION"|"VELOCITY").
+//   * Publishes /fmu/in/offboard_control_mode at 50 ms, with position/velocity
+//     flags tracking the last local_position_sp type.
+//   * Translates "actual_task" action enum to /drone_state (Float32) for the
+//     RPi-side fsm_raspicam package.
+//
+// Dropped from the old bridge:
+//   * /fmu/out/battery_status -> LCM "battery"           (apps read PX 4 direct)
+//   * /apriltag/image/camera_info -> LCM "camera_info"    (apps read direct)
+//   * /fmu/out/vehicle_control_mode + vehicle_land_detected -> LCM "state"
+//                                                       (apps read direct)
+//   * /ulisse/ctrl/vehicle_status -> LCM "nav_task_status" (apps read direct)
+//   * LCM "release_payload" -> ROS 2 /release_payload    (Automatic.cpp should
+//        publish to ROS 2 /release_payload directly; downstream reads native).
 
-#include "ulisse_msgs/msg/nav_filter_data.hpp"
-#include "ulisse_msgs/msg/vehicle_status.hpp"
-
-#include "common/common.h"
-#include "common/conversions.h"
-
-
-#include "common/conversions.h"
-#include "common/MavState.h"
-#include "common/CallbackHandler.hpp"
-#include <poll.h>
-#include <Eigen/Core>
-#include <Eigen/Geometry>
-// #include "apriltag_msgs/msg/april_tag_detection_array.hpp"
-// #include "tf2_msgs/msg/tf_message.hpp"
-#include <cmath>
-// #include <queue>
-#include <sys/time.h>
-#include <class_loader/register_macro.hpp>
-#include "rclcpp/logger.hpp"
-#include "rcutils/logging_macros.h"
 #include <chrono>
-#include <ctime>
+#include <cmath>
+#include <memory>
 #include <string>
 
+#include <rclcpp/rclcpp.hpp>
+
+#include <Eigen/Core>
+#include <Eigen/Geometry>
+
+#include <lcm/lcm-cpp.hpp>
+
+// PX 4
+#include <px4_msgs/msg/vehicle_odometry.hpp>
+#include <px4_msgs/msg/vehicle_control_mode.hpp>
+#include <px4_msgs/msg/vehicle_land_detected.hpp>
+#include <px4_msgs/msg/sensor_gps.hpp>
+#include <px4_msgs/msg/trajectory_setpoint.hpp>
+#include <px4_msgs/msg/offboard_control_mode.hpp>
+
+// Standard / ulisse
+#include <nav_msgs/msg/odometry.hpp>
+#include <std_msgs/msg/string.hpp>
+#include <std_msgs/msg/float32.hpp>
+#include <ulisse_msgs/msg/nav_filter_data.hpp>
+
+// Custom app messages
+#include <ulisse_exec_msgs/msg/actual_task.hpp>
+
+// LCM message types (unchanged from before).
+#include <lcm_messages/geometry/pose.hpp>
+#include <lcm_messages/exec/gps_status.hpp>
+#include <lcm_messages/exec/release_payload.hpp>
+
+// Project utilities
+#include "common/MavState.h"      // common::actions::*
+#include "common/conversions.h"   // globalToLocalCoords, yawFromQuaternion
+
 using namespace std::chrono_literals;
+using std::placeholders::_1;
 
-lcm::LCM handler, handler2, handler3, handler5, handler6, handler7, handler8, handler9, handler10, handler11;
-geometry::pose lcm_pose;
-exec::state robot_state;
-exec::battery battery_lcm;
-exec::camera_info camera_info_lcm;
-exec::gps_status gps_status_lcm;
-exec::release_payload rel_pay_fb_lcm;
-exec::plat_task_status nav_task_status_lcm;
-
-geometry::pose nav_pose;
-
-//nav_msgs::Odometry platPos;
-auto platPos = std::make_shared<px4_msgs::msg::VehicleOdometry>();
-
-//mavros_msgs::State disarmed;
-auto disarmed = std::make_shared<px4_msgs::msg::VehicleControlMode>();
-
-//mavros_msgs::ExtendedState landed;
-auto landed = std::make_shared<px4_msgs::msg::VehicleLandDetected>();
-
-CallbackHandler call;
-
-
-//these variable are used to estimate the position of the camera respect to the UAV.
-Eigen::Matrix4d Cam_T_plat;
-Eigen::Matrix4d zero_T_plat;
-Eigen::Matrix4d zero_T_drone;
-Eigen::Matrix4d drone_T_plat;
-Eigen::Matrix4d drone_T_camera;
-
-
-bool drone = false;
-bool camera = false;
-bool platform = false;
-
-
-rclcpp::Time pos_setpoint_last_timestamp_;
-bool first_pos_setpoint_cmd_ = true;
-double prev_pos_setpoint[3] = {0.0, 0.0, 0.0};
-const double max_velocity = 1.0; // 1.0 m/s
-//STOP
-
-
-
-// geometry::vision vision_pose; //lcm message for vision topic.
-
-// typedef std::queue<double> queue_t;
-// queue_t Queue_roll;
-// queue_t Queue_pitch;
-// queue_t Queue_yaw;
-// double integral_roll = 0;
-// double integral_pitch = 0;
-// double integral_yaw = 0;
-// double roll;
-// double pitch;
-// double yaw;
-
-bool firstState = true;
-bool firstEState = true;
-bool firstNavState = true;
-
-double nav_home_lat;
-double nav_home_lon;
-
-bool offboard_enabled = 0;
-//void odometryCallback(nav_msgs::Odometry pose){ //the callback of pose of the UAV computed via the motion capture system.
-
-
-void odometryCallback(const px4_msgs::msg::VehicleOdometry::SharedPtr pose){
-
-    lcm_pose.position[0] =  pose->position[1];
-    lcm_pose.position[1] =  pose->position[0];
-    lcm_pose.position[2] =  -pose->position[2];
-
-    lcm_pose.velocity[0] = pose->velocity[1];
-    lcm_pose.velocity[1] = pose->velocity[0];
-    lcm_pose.velocity[2] = -pose->velocity[2];
-
-    lcm_pose.orientation[0] = pose->q[0];
-    lcm_pose.orientation[1] = pose->q[1];
-    lcm_pose.orientation[2] = pose->q[2];
-    lcm_pose.orientation[3] = pose->q[3];
-
-    lcm_pose.isValid = offboard_enabled;
-
-    handler.publish("vision_position_estimate",&lcm_pose);
-
-}
-
-// double movingFilter(double raw, std::queue<double> *queue_t, double *integral){
-//
-// 	int window = 12;
-// 	if(queue_t->size() == window){
-//
-// 		*integral += raw - queue_t->front();
-// 		queue_t->pop();
-//
-// 	}
-// 	else
-// 		*integral +=raw;
-//
-// 	queue_t->push(raw);
-//
-// 	return *integral/queue_t->size();
-//
-//
-// }
-//
-// void toEulerAngle(double quaternion[], double *Roll, double *Pitch, double *Yaw){
-//
-// 	//roll (x-axis rotation)
-// 	double sinr_cosp = 2.0 *( quaternion[0]*quaternion[1] + quaternion[2]*quaternion[3] );
-// 	double cosr_cosp = 1.0 - 2.0*( quaternion[1]*quaternion[1] + quaternion[2]*quaternion[2] );
-//
-// 	*Roll = atan2( sinr_cosp, cosr_cosp );
-//
-// 	//pitch (y-axis rotation)
-// 	double sinp = 2.0*( quaternion[0]*quaternion[2] + quaternion[3]*quaternion[1] );
-//
-// 	if( fabs(sinp) >= 1 )
-//
-// 		*Pitch = copysign(M_PI/2,sinp); //use 90 degrees if out of range
-//
-// 	else
-// 		*Pitch = asin(sinp);
-//
-// 	//yaw (z-axis rotation)
-// 	double siny_cosp = 2.0 *( quaternion[0]*quaternion[3] + quaternion[1]*quaternion[2] );
-// 	double cosy_cosp = 1.0 - 2.0*( quaternion[2]*quaternion[2] + quaternion[3]*quaternion[3] );
-// 	*Yaw = atan2(siny_cosp,cosy_cosp);
-//
-// }
-
-void batteryStatusCallback(const px4_msgs::msg::BatteryStatus::SharedPtr bs)
+class BridgeNode : public rclcpp::Node
 {
-  battery_lcm.voltage = bs->voltage_v;
-  battery_lcm.current = bs->current_a;
-  battery_lcm.remaining = bs->remaining;
-
-
-  handler5.publish("battery", &battery_lcm);
-}
-
-void gpsStatusCallback(const px4_msgs::msg::SensorGps::SharedPtr vgp)
-{
-  // scaling the position to the conventional one (the topic gives it in integers)
-  // TODO: Make it work on VehicleGlobalPosition for more reliable estimation ?
-  gps_status_lcm.lon = 0.0000001 * vgp->longitude_deg;
-  gps_status_lcm.lat = 0.0000001 * vgp->latitude_deg;
-  gps_status_lcm.alt = 0.001 * vgp->altitude_msl_m;
-  gps_status_lcm.status = vgp->fix_type;
-  gps_status_lcm.timestamp = (double)(std::chrono::system_clock::now().time_since_epoch() / std::chrono::milliseconds(1));
-  handler6.publish("gps_status", &gps_status_lcm);
-}
-
-void CameraInfoCallback(const sensor_msgs::msg::CameraInfo::SharedPtr ci)
-{
-    // saving the time the callback gets called.
-    // this is used for safety purposes, to know if the camera is dead.
-    camera_info_lcm.timestamp = (double)(std::chrono::system_clock::now().time_since_epoch() / std::chrono::milliseconds(1));
-    handler7.publish("camera_info", &camera_info_lcm);
-}
-
-void ReleasePayloadFbCallback(const std_msgs::msg::String::SharedPtr s)
-{
-    rel_pay_fb_lcm.data = s->data;
-    handler8.publish("release_payload_feedback", &rel_pay_fb_lcm);
-}
-
-void EStateCallback(const px4_msgs::msg::VehicleLandDetected::SharedPtr es){
-
-    if (firstEState) {
-        landed->landed = es->landed;
-        firstEState = false;
-    }
-
-    if(landed->landed == es->landed) robot_state.landed = 1;
-    else robot_state.landed = 0;
-
-}
-
-void controlModeCallback(const px4_msgs::msg::VehicleControlMode::SharedPtr vcm)
-{
-
-    offboard_enabled = vcm->flag_control_offboard_enabled;
-
-    if (firstState)
-    {
-        disarmed->flag_armed = vcm->flag_armed;
-        firstState = false;
-    }
-
-    //Store arming state
-    if(disarmed->flag_armed == vcm->flag_armed) robot_state.armed = 0;
-    else robot_state.armed = 1;
-}
-
-void NavFilterDataCallback(const ulisse_msgs::msg::NavFilterData::SharedPtr nd)
-{
-  nav_pose.timestamp = (double)(std::chrono::system_clock::now().time_since_epoch() / std::chrono::milliseconds(1));
-
-  if(firstNavState)
+public:
+  BridgeNode()
+  : rclcpp::Node("ros2lcm_bridge")
   {
-    nav_home_lat = nd->inertialframe_linear_position.latlong.latitude;
-    nav_home_lon = nd->inertialframe_linear_position.latlong.longitude;
-    std::cout << "NAV_LAT: " << nav_home_lat << std::endl;
-    std::cout << "NAV_LON: " << nav_home_lon << std::endl;
-    firstNavState = false;
+    if (!lcm_.good()) {
+      RCLCPP_FATAL(get_logger(), "Failed to initialize LCM");
+      throw std::runtime_error("lcm init failed");
+    }
+
+    auto px4_qos      = rclcpp::QoS(rclcpp::KeepLast(1)).best_effort();
+    auto reliable_qos = rclcpp::QoS(rclcpp::KeepLast(1)).reliable();
+
+    // ==================== ROS 2 publishers ====================
+
+    // Republisher outputs.
+    vision_position_estimate_pub_ = create_publisher<px4_msgs::msg::VehicleOdometry>(
+      "vision_position_estimate", px4_qos);
+    nav_pose_pub_ = create_publisher<nav_msgs::msg::Odometry>(
+      "nav_pose", reliable_qos);
+
+    // Plugin-output mirror.
+    landing_site_pose_pub_ = create_publisher<nav_msgs::msg::Odometry>(
+      "Landing_Site/pose", reliable_qos);
+
+    // PX 4 command outputs.
+    trajectory_setpoint_pub_ = create_publisher<px4_msgs::msg::TrajectorySetpoint>(
+      "/fmu/in/trajectory_setpoint", 1);
+    gt_setpoint_pub_ = create_publisher<px4_msgs::msg::TrajectorySetpoint>(
+      "/bridge/gt_trajectory_setpoint", 1);
+    offboard_control_mode_pub_ = create_publisher<px4_msgs::msg::OffboardControlMode>(
+      "/fmu/in/offboard_control_mode", 1);
+
+    // RPi-facing translator output.
+    drone_state_pub_ = create_publisher<std_msgs::msg::Float32>("/drone_state", 1);
+
+    // ==================== ROS 2 subscriptions ====================
+
+    // -- Republisher sources --
+    odom_sub_ = create_subscription<px4_msgs::msg::VehicleOdometry>(
+      "/fmu/out/vehicle_odometry", px4_qos,
+      std::bind(&BridgeNode::onPx4Odom, this, _1));
+    nav_filter_sub_ = create_subscription<ulisse_msgs::msg::NavFilterData>(
+      "/ulisse/nav_filter/data", reliable_qos,
+      std::bind(&BridgeNode::onNavFilter, this, _1));
+
+    // -- Cached state used by other paths --
+    control_mode_sub_ = create_subscription<px4_msgs::msg::VehicleControlMode>(
+      "/fmu/out/vehicle_control_mode", px4_qos,
+      std::bind(&BridgeNode::onControlMode, this, _1));
+    land_detected_sub_ = create_subscription<px4_msgs::msg::VehicleLandDetected>(
+      "/fmu/out/vehicle_land_detected", px4_qos,
+      std::bind(&BridgeNode::onLandDetected, this, _1));
+
+    // -- Plugin-input mirrors (ROS 2 -> LCM) --
+    // NOTE: these subscribe to topics this same node also publishes (vision_position_estimate
+    // and nav_pose). ROS 2 delivers self-publishes back to the same node, so the mirror picks
+    // up the republisher output. If a different node publishes the topic, the mirror still works.
+    vis_pos_for_lcm_sub_ = create_subscription<px4_msgs::msg::VehicleOdometry>(
+      "vision_position_estimate", px4_qos,
+      std::bind(&BridgeNode::onVisionPosForLcm, this, _1));
+    nav_pose_for_lcm_sub_ = create_subscription<nav_msgs::msg::Odometry>(
+      "nav_pose", reliable_qos,
+      std::bind(&BridgeNode::onNavPoseForLcm, this, _1));
+    landing_site_pose_cmd_sub_ = create_subscription<nav_msgs::msg::Odometry>(
+      "Landing_Site/pose_cmd", reliable_qos,
+      std::bind(&BridgeNode::onLandingSitePoseCmd, this, _1));
+    rel_pay_fb_sub_ = create_subscription<std_msgs::msg::String>(
+      "release_payload_feedback", reliable_qos,
+      std::bind(&BridgeNode::onReleasePayloadFb, this, _1));
+    gps_sub_ = create_subscription<px4_msgs::msg::SensorGps>(
+      "/fmu/out/vehicle_gps_position", px4_qos,
+      std::bind(&BridgeNode::onGpsForLcm, this, _1));
+
+    // -- Command translator --
+    local_position_sp_sub_ = create_subscription<nav_msgs::msg::Odometry>(
+      "local_position_sp", reliable_qos,
+      std::bind(&BridgeNode::onLocalPositionSp, this, _1));
+
+    // -- actual_task -> /drone_state translator --
+    actual_task_sub_ = create_subscription<ulisse_exec_msgs::msg::ActualTask>(
+      "actual_task", reliable_qos,
+      std::bind(&BridgeNode::onActualTask, this, _1));
+
+    // ==================== LCM subscriptions ====================
+
+    lcm_sub_landing_pose_ = lcm_.subscribe(
+      "Landing_Site/pose", &BridgeNode::onLcmLandingSitePose, this);
+    lcm_sub_landing_pose_->setQueueCapacity(1);
+
+    // ==================== Timers ====================
+
+    // Offboard heartbeat (50 ms, matches old bridge).
+    offboard_timer_ = create_wall_timer(
+      50ms, std::bind(&BridgeNode::publishOffboardMode, this));
+
+    // Drain LCM at 1 ms — non-blocking, no thread required.
+    lcm_poll_timer_ = create_wall_timer(1ms, [this]() {
+      while (lcm_.handleTimeout(0) > 0) { /* keep draining */ }
+    });
+
+    RCLCPP_INFO(get_logger(), "Bridge node ready");
   }
-  double coords[3];
-  coords[0] = nd->inertialframe_linear_position.latlong.longitude;
-  coords[1] = nd->inertialframe_linear_position.latlong.latitude;
-  coords[2] = 0;
-  double home_coords[3];
-  home_coords[0] = nav_home_lon;
-  home_coords[1] = nav_home_lat;
-  home_coords[2] = 0;
-  globalToLocalCoords(coords, home_coords);
 
-  nav_pose.position[0] = coords[0];
-  nav_pose.position[1] = coords[1];
-  nav_pose.position[2] = 0;
-  nav_pose.velocity[0] = nd->bodyframe_linear_velocity[0];
-  nav_pose.velocity[1] = nd->bodyframe_linear_velocity[1];
-  nav_pose.velocity[2] = nd->bodyframe_linear_velocity[2];
-
-  std::cout << "x: " << nav_pose.velocity[0] << std::endl;
-  std::cout << "y: " << nav_pose.velocity[1] << std::endl;
-
-  Eigen::Quaternionf q;
-  q = Eigen::AngleAxisf(nd->bodyframe_angular_position.roll, Eigen::Vector3f::UnitX())
-      * Eigen::AngleAxisf(nd->bodyframe_angular_position.pitch, Eigen::Vector3f::UnitY())
-      * Eigen::AngleAxisf(nd->bodyframe_angular_position.yaw, Eigen::Vector3f::UnitZ());
-
-  nav_pose.orientation[0] = q.w();
-  nav_pose.orientation[1] = q.x();
-  nav_pose.orientation[2] = q.y();
-  nav_pose.orientation[3] = q.z();
-
-  handler10.publish("nav_pose", &nav_pose);
-}
-
-void NavTaskStatusCallback(const ulisse_msgs::msg::VehicleStatus::SharedPtr nd)
-{
-  nav_task_status_lcm.stamp_sec = nd->stamp.sec;
-  nav_task_status_lcm.state = nd->vehicle_state;
-
-  handler11.publish("nav_task_status", &nav_task_status_lcm);
-}
-// void ApriltagCallback(const geometry_msgs::msg::TransformStamped::SharedPtr platform_det){
-//
-//     vision_pose.position[0] = platform_det->transform.translation.x;
-//     vision_pose.position[1] = platform_det->transform.translation.y;
-//     vision_pose.position[2] = platform_det->transform.translation.z;
-//
-//     vision_pose.velocity[0] = 0;
-//     vision_pose.velocity[1] = 0;
-//     vision_pose.velocity[2] = 0;
-//
-//     vision_pose.orientation[0] = platform_det->transform.rotation.w;
-//     vision_pose.orientation[1] = platform_det->transform.rotation.x;
-//     vision_pose.orientation[2] = platform_det->transform.rotation.y;
-//     vision_pose.orientation[3] = platform_det->transform.rotation.z;
-//
-//   	//DEBUG
-//   	// std::cout<<"x: "<<vision_pose.position[0]<<std::endl;
-//     // std::cout<<"y: "<<vision_pose.position[1]<<std::endl;
-// 		// std::cout<<"z: "<<vision_pose.position[2]<<std::endl;
-//
-//     toEulerAngle(vision_pose.orientation,&roll,&pitch,&yaw);
-// 		//moving filter to clean a bit the data
-//
-// 		vision_pose.roll = movingFilter(roll,&Queue_roll,&integral_roll);
-// 		vision_pose.pitch = movingFilter(pitch,&Queue_pitch,&integral_pitch);
-// 		vision_pose.yaw = movingFilter(yaw,&Queue_yaw,&integral_yaw);
-//
-//     //lcm publication.
-//     handler4.publish("apriltag_vision_system",&vision_pose);
-//
-// }
-
-
-int main(int argc, char **argv)
-{
-
-    rclcpp::init(argc, argv);
-    auto best_effort_qos = rclcpp::QoS(rclcpp::KeepLast(1)).best_effort();
-    bool position_enabled = true;
-    bool velocity_enabled = false;
-    auto node = rclcpp::Node::make_shared("ros2lcm_bridge");
-
-    auto offboard_control_mode_pub = node->create_publisher<px4_msgs::msg::OffboardControlMode>(
-    "/fmu/in/offboard_control_mode",1);
-
-    auto offboard_timer_ = node->create_wall_timer(
-    std::chrono::milliseconds(50),
-    [&]() {
-        px4_msgs::msg::OffboardControlMode msg;
-        msg.timestamp = node->now().nanoseconds() / 1000;
-
-        msg.position = position_enabled;
-        msg.velocity = velocity_enabled;
-        msg.acceleration = false;
-        msg.attitude = false;
-        msg.body_rate = false;
-
-        offboard_control_mode_pub->publish(msg);
+  ~BridgeNode() override
+  {
+    if (lcm_sub_landing_pose_ != nullptr) {
+      lcm_.unsubscribe(lcm_sub_landing_pose_);
     }
-);
-
-    auto trajectory_setpoint_pub = node->create_publisher<px4_msgs::msg::TrajectorySetpoint>("/fmu/in/trajectory_setpoint",1);
-    auto gt_setpoint_pub = node->create_publisher<px4_msgs::msg::TrajectorySetpoint>("/bridge/gt_trajectory_setpoint",1);
-
-    //topic with position and velocity of the robot
-    auto odometry_sub = node->create_subscription<px4_msgs::msg::VehicleOdometry>("/fmu/out/vehicle_odometry", best_effort_qos, &odometryCallback);
-    // another one to know the actual control mode
-    auto control_mode_sub = node->create_subscription<px4_msgs::msg::VehicleControlMode>("/fmu/out/vehicle_control_mode", best_effort_qos, &controlModeCallback);
-
-    // auto state_sub = node->create_subscription<px4_msgs::msg::ActuatorArmed>("/ActuatorArmed_PubSubTopic", 1, &stateCallback);
-
-    auto land_detected_sub = node->create_subscription<px4_msgs::msg::VehicleLandDetected>("/fmu/out/vehicle_land_detected", best_effort_qos, &EStateCallback);
-
-    //vision system
-    // auto relative_pose_sub = node->create_subscription<geometry_msgs::msg::TransformStamped>("/platform_center", 1, &ApriltagCallback);
-
-
-    auto battery_status_sub = node->create_subscription<px4_msgs::msg::BatteryStatus>("/fmu/out/battery_status", best_effort_qos, &batteryStatusCallback);
-    auto gps_status_sub = node->create_subscription<px4_msgs::msg::SensorGps>("/fmu/out/vehicle_gps_position", best_effort_qos, &gpsStatusCallback);
-    auto camera_info_sub = node->create_subscription<sensor_msgs::msg::CameraInfo>("/apriltag/image/camera_info", 1, &CameraInfoCallback);
-
-    auto pay_rel_fb_sub = node->create_subscription<std_msgs::msg::String>("release_payload_feedback", 1, &ReleasePayloadFbCallback);
-
-    auto nav_pose_sub = node->create_subscription<ulisse_msgs::msg::NavFilterData>("/ulisse/nav_filter/data", 1, &NavFilterDataCallback);
-    auto nav_task_status = node->create_subscription<ulisse_msgs::msg::VehicleStatus>("/ulisse/ctrl/vehicle_status", 1, &NavTaskStatusCallback);
-    //publishers
-    // auto pub = node->create_publisher<px4_msgs::msg::VehicleLocalPositionSetpoint>("/VehicleLocalPositionSetpoint_PubSubTopic",1);
-    //
-    // // auto pub1 = node->create_publisher<px4_msgs::msg::TrajectorySetpoint>("/TrajectorySetpoint_PubSubTopic",1);
-    //
-    // // auto pub1 = node->create_publisher<px4_msgs::msg::VehicleOdometry>("/global_platform_position",1);
-    //
-    // auto pub2 = node->create_publisher<px4_msgs::msg::VehicleAttitudeSetpoint>("/VehicleAttitudeSetpoint_PubSubTopic",1);
-
-    // auto pub = node->create_publisher<geometry_msgs::msg::PoseStamped>("/mavros/setpoint_position/local",1);
-
-    auto pub1 = node->create_publisher<std_msgs::msg::String>("/release_payload",1);
-
-    // auto pub2 = node->create_publisher<geometry_msgs::msg::TwistStamped>("/mavros/setpoint_velocity/cmd_vel",1);
-
-    auto pub3 = node->create_publisher<std_msgs::msg::Float32>("/drone_state",1);
-
-
-
-    //LCM stuff
-    lcm::Subscription *sub2 = handler2.subscribe("local_position_sp", &CallbackHandler::positionSetpointCallback, &call);
-
-    lcm::Subscription *sub3 = handler3.subscribe("release_payload", &CallbackHandler::releasePayloadCallback, &call);
-
-    lcm::Subscription *sub4 = handler9.subscribe("actual_task", &CallbackHandler::actualTaskCallback, &call);
-
-    sub2->setQueueCapacity(1);
-    sub3->setQueueCapacity(1);
-    sub4->setQueueCapacity(1);
-
-    struct pollfd fds[3];
-
-    fds[0].fd = handler2.getFileno(); // Robot position
-    fds[0].events = POLLIN;
-
-    fds[1].fd = handler3.getFileno(); // Release Payload
-    fds[1].events = POLLIN;
-
-    fds[2].fd = handler9.getFileno(); // Actual Task
-    fds[2].events = POLLIN;
-
-
-    robot_state.landed = 1;
-    robot_state.armed  = 0;
-
-    //main loop
-    rclcpp::Rate loop_rate(30);
-
-
-    int stateRate = 0;
-    int*  payloadDataRec = new int(0);
-    int*  robotDataRec    = new int(0);
-    int*  actualTaskRec    = new int(0);
-
-    struct timeval time_;
-
-    while (rclcpp::ok())
-    {
-
-        //Poll file descriptors
-        int ret = poll(fds,3,0);
-
-        *robotDataRec = fds[0].revents & POLLIN;
-
-        *payloadDataRec = fds[1].revents & POLLIN;
-
-        *actualTaskRec = fds[2].revents & POLLIN;
-
-	      //Release Payload POLLIN
-	      if(*payloadDataRec)
-        {
-
-            handler3.handle();
-
-            auto relPayData = std::make_shared<std_msgs::msg::String>();
-            relPayData->data = call.release_payload.data;
-	          pub1->publish(*relPayData);
-
-        }
-
-        // Actual Task POLLIN
-        if(*actualTaskRec)
-        {
-            handler9.handle();
-            // this pub is needed for the fsm_raspicam package, that runs on RPi
-            auto droneStateData = std::make_shared<std_msgs::msg::Float32>();
-            // depending on the actual drone state, the camera state needs to be updated
-            if(call._task.action == common::actions::LAND)
-            {
-                droneStateData->data = 0;
-            }
-            else if(call._task.action == common::actions::SEARCH)
-            {
-                droneStateData->data = 1;
-            }
-            else if(call._task.action == common::actions::EMERG_LAND || robot_state.landed == 1)
-            {
-                // STOP state: when the camera is not needed
-                droneStateData->data = 2;
-            }
-            else
-            {
-                // IDLE state
-                droneStateData->data = 3;
-            }
-            pub3->publish(*droneStateData);
-        }
-
-        //Position Command POLLIN
-        if(*robotDataRec){
-
-            if(call._position_sp.getType() == MavState::type::POSITION) {
-
-                // auto commandPose = std::make_shared<px4_msgs::msg::VehicleLocalPositionSetpoint>();
-                // // auto commandPose1 = std::make_shared<px4_msgs::msg::TrajectorySetpoint>();
-                // auto commandPose2 = std::make_shared<px4_msgs::msg::VehicleAttitudeSetpoint>();
-                //
-                // handler2.handle();
-                //
-                // commandPose->x = call._position_sp.getX();
-                // commandPose->y = call._position_sp.getY();
-                // commandPose->z = call._position_sp.getZ();
-                //
-     	          // commandPose->timestamp = node->now().nanoseconds() * 1E-3;
-                // //
-                // // commandPose1->x = call._position_sp.getX();
-                // // commandPose1->y = call._position_sp.getY();
-                // // commandPose1->z = call._position_sp.getZ();
-                // //
-     	          // // commandPose1->timestamp = node->now().nanoseconds() * 1E-3;
-                //
-                //
-                // commandPose2->q_d[0] = call._position_sp.getOrientation().w();
-                // commandPose2->q_d[1] = call._position_sp.getOrientation().x();
-                // commandPose2->q_d[2] = call._position_sp.getOrientation().y();
-                // commandPose2->q_d[3] = call._position_sp.getOrientation().z();
-                //
-                // commandPose2->timestamp = node->now().nanoseconds() * 1E-3;
-                //
-                // // std::cout << "command: " << commandPose->x << " " << commandPose->y << " " <<commandPose->z << std::endl;
-                // // std::cout << "timestamp1: " << commandPose->timestamp << std::endl;
-                // // std::cout << "timestamp2: " << commandPose2->timestamp << std::endl;
-                // pub->publish(*commandPose);
-                // // pub1->publish(*commandPose1);
-                // pub2->publish(*commandPose2);
-                // auto commandPose = std::make_shared<geometry_msgs::msg::PoseStamped>();
-
-                // handler2.handle();
-
-                // commandPose->pose.position.x = call._position_sp.getX();
-                // commandPose->pose.position.y = call._position_sp.getY();
-                // commandPose->pose.position.z = call._position_sp.getZ();
-
-                // commandPose->pose.orientation.x = call._position_sp.getOrientation().x();
-                // commandPose->pose.orientation.y = call._position_sp.getOrientation().y();
-                // commandPose->pose.orientation.z = call._position_sp.getOrientation().z();
-                // commandPose->pose.orientation.w = call._position_sp.getOrientation().w();
-
-                // auto commandPose = std::make_shared<geometry_msgs::msg::PoseStamped>();
-                px4_msgs::msg::TrajectorySetpoint setpoint;
-                handler2.handle();
-
-                // slew rate start
-                // 1. Get current time and calculate dt
-                rclcpp::Time current_time = node->get_clock()->now();
-
-                if (first_pos_setpoint_cmd_) {
-                    pos_setpoint_last_timestamp_ = current_time;
-                    // Initialize prev_setpoint with the first incoming data
-                    prev_pos_setpoint[0] = call._position_sp.getY();
-                    prev_pos_setpoint[1] = call._position_sp.getX();
-                    prev_pos_setpoint[2] = -call._position_sp.getZ();
-                    first_pos_setpoint_cmd_ = false;
-                }
-
-                double dt = (current_time - pos_setpoint_last_timestamp_).seconds();
-                pos_setpoint_last_timestamp_ = current_time;
-
-                // Target values from the incoming call
-                double target[3];
-                target[0] = call._position_sp.getY();
-                target[1] = call._position_sp.getX();
-                target[2] = -call._position_sp.getZ();
-
-                // 2. Handle Large dt or Jump in time
-                // If dt is > 0.5s, the filter will "lag" too much; just snap to target.
-                if (dt <= 0.0 || dt > 0.5) {
-                    std::cout << "dt is big or negativo " <<  dt  << std::endl;
-                    for (int i = 0; i < 3; ++i) {
-                        setpoint.position[i] = target[i];
-                        prev_pos_setpoint[i] = target[i];
-                    }
-                } else {
-                    // std::cout << "small time " << dt << std::endl;
-                    for (int i = 0; i < 3; ++i) {
-                        double error = target[i] - prev_pos_setpoint[i];
-            
-                        // Calculate the maximum step size for this dt based on velocity limit
-                        double max_step = max_velocity * dt;
-
-                        // Clamp the error to the max step
-                        if (error > max_step) {
-                            error = max_step;
-                        } else if (error < -max_step) {
-                            error = -max_step;
-                        }
-                        // std::cout << "max step is " << max_step  << " and error is " << error << std::endl;
-
-
-                        setpoint.position[i] = prev_pos_setpoint[i] + error;
-                        prev_pos_setpoint[i] = setpoint.position[i];
-                    }
-                }
-                
-                // slew rate end
-
-
-
-                setpoint.timestamp = node->now().nanoseconds() / 1000;
-                // setpoint.position[0] = call._position_sp.getY();
-                // setpoint.position[1] = call._position_sp.getX();
-                // setpoint.position[2] = -call._position_sp.getZ();
-                // std::cout << "setpoint.position[0] " << setpoint.position[0] << " setpoint.position[1] " << setpoint.position[1] << " setpoint.position[2] " << setpoint.position[2] << std::endl;
-                
-                setpoint.yaw = -yawFromQuaternion(call._position_sp.getOrientation());
-                // std::cout << "yaw " << setpoint.yaw << std::endl;
-                setpoint.velocity = {NAN,NAN,NAN};
-                position_enabled = true;
-                velocity_enabled = false;
-
-
-                //
-                // std::cout << "YAW DES " << call._position_sp.getYaw()*180.0/3.14 << std::endl;
-                //
-                // geometry::pose pose;
-                // pose.orientation[0] = commandPose->pose.orientation.w;
-                // pose.orientation[1] = commandPose->pose.orientation.x;
-                // pose.orientation[2] = commandPose->pose.orientation.y;
-                // pose.orientation[3] = commandPose->pose.orientation.z;
-                //
-                //
-                // double pitch, roll, yaw;
-                // toEulerAngle(pose.orientation, &roll, &pitch, &yaw);
-                // std::cout << "command: " << commandPose->pose.position.x << " " << commandPose->pose.position.y << " " <<commandPose->pose.position.z << std::endl;
-                // pub->publish(*commandPose);
-                trajectory_setpoint_pub->publish(setpoint);
-                
-                px4_msgs::msg::TrajectorySetpoint gt_setpoint;
-                gt_setpoint.position[0] = lcm_pose.position[1] + 1;
-                gt_setpoint.position[1] = lcm_pose.position[0];
-                gt_setpoint.position[2] = -lcm_pose.position[1];
-                gt_setpoint_pub->publish(gt_setpoint);
-            }
-            else if(call._position_sp.getType() == MavState::type::VELOCITY) {
-
-                // auto commandPose = std::make_shared<px4_msgs::msg::VehicleLocalPositionSetpoint>();
-                // // auto commandPose1 = std::make_shared<px4_msgs::msg::TrajectorySetpoint>();
-                //
-                //
-                // handler2.handle();
-                //
-                // commandPose->vx =  call._position_sp.getVx();
-                // commandPose->vy =  call._position_sp.getVy();
-                // commandPose->vz =  call._position_sp.getVz();
-                //
-                // commandPose->timestamp = node->now().nanoseconds() * 1E-3;
-                //
-                //
-                // // commandPose1->x = call._position_sp.getX();
-                // // commandPose1->y = call._position_sp.getY();
-                // // commandPose1->z = call._position_sp.getZ();
-                // //
-     	          // // commandPose1->timestamp = node->now().nanoseconds() * 1E-3;
-                //
-                // std::cout << "commandV: " << commandPose->vx << " " << commandPose->vy << " " <<commandPose->vz << std::endl;
-                // pub->publish(*commandPose);
-                // pub1->publish(*commandPose1);
-                // auto commandPose = std::make_shared<geometry_msgs::msg::TwistStamped>();
-                px4_msgs::msg::TrajectorySetpoint setpoint;
-                handler2.handle();
-                setpoint.timestamp = node->now().nanoseconds() / 1000;
-                setpoint.velocity[0] = call._position_sp.getVy();
-                setpoint.velocity[1] = call._position_sp.getVx();
-                setpoint.velocity[2] = -call._position_sp.getVz();
-                setpoint.position = {NAN,NAN,NAN};
-
-                position_enabled = false;
-                velocity_enabled = true;
-                
-
-                // commandPose->twist.linear.x =  call._position_sp.getVx();
-                // commandPose->twist.linear.y =  call._position_sp.getVy();
-                // commandPose->twist.linear.z =  call._position_sp.getVz();
-
-                // std::cout << "commandV: " << commandPose->twist.linear.x << " " << commandPose->twist.linear.y << " " <<commandPose->twist.linear.z << std::endl;
-                // pub2->publish(*commandPose);
-                trajectory_setpoint_pub->publish(setpoint);
-
-            }
-
-	        RCLCPP_INFO_ONCE(rclcpp::get_logger("lcm_bridge"),"Publish ros command");
-        }
-
-        //Publish state sometimes
-        if (stateRate++ > 10){
-            handler2.publish("state",&robot_state);
-            stateRate = 0;
-        }
-
-
-        //ROS_INFO_ONCE("Spinning");
-	      RCLCPP_INFO_ONCE(rclcpp::get_logger("lcm_bridge"), "spinning");
-        rclcpp::spin_some(node);
-        loop_rate.sleep();
-
+  }
+
+private:
+  // ===================== Republisher: PX 4 odom -> ENU =====================
+
+  void onPx4Odom(const px4_msgs::msg::VehicleOdometry::SharedPtr msg)
+  {
+    px4_msgs::msg::VehicleOdometry out = *msg;
+    // NED -> ENU axis swap.
+    out.position[0] =  msg->position[1];
+    out.position[1] =  msg->position[0];
+    out.position[2] = -msg->position[2];
+    out.velocity[0] =  msg->velocity[1];
+    out.velocity[1] =  msg->velocity[0];
+    out.velocity[2] = -msg->velocity[2];
+    // Orientation: the original bridge passed q[] through unchanged when writing
+    // to LCM geometry::pose. Preserve that behavior — if you want a proper
+    // frame-rotation on the quaternion, do it here.
+    vision_position_estimate_pub_->publish(out);
+
+    last_drone_pose_enu_ = out;  // cache for gt_setpoint
+  }
+
+  // ===================== Republisher: nav_filter -> nav_pose ===================
+
+  void onNavFilter(const ulisse_msgs::msg::NavFilterData::SharedPtr msg)
+  {
+    if (first_nav_state_) {
+      nav_home_lat_ = msg->inertialframe_linear_position.latlong.latitude;
+      nav_home_lon_ = msg->inertialframe_linear_position.latlong.longitude;
+      RCLCPP_INFO(get_logger(), "NAV home lat=%.7f lon=%.7f", nav_home_lat_, nav_home_lon_);
+      first_nav_state_ = false;
     }
 
-   // delete platformDataRec;
-    delete robotDataRec;
+    double coords[3] = {
+      msg->inertialframe_linear_position.latlong.longitude,
+      msg->inertialframe_linear_position.latlong.latitude,
+      0.0
+    };
+    double home[3] = {nav_home_lon_, nav_home_lat_, 0.0};
+    globalToLocalCoords(coords, home);
 
-    return 0;
+    nav_msgs::msg::Odometry out;
+    out.header.stamp = this->now();
+    out.header.frame_id = "local";
+    out.pose.pose.position.x = coords[0];
+    out.pose.pose.position.y = coords[1];
+    out.pose.pose.position.z = 0.0;
 
+    out.twist.twist.linear.x = msg->bodyframe_linear_velocity[0];
+    out.twist.twist.linear.y = msg->bodyframe_linear_velocity[1];
+    out.twist.twist.linear.z = msg->bodyframe_linear_velocity[2];
+
+    Eigen::Quaternionf q =
+      Eigen::AngleAxisf(msg->bodyframe_angular_position.roll,  Eigen::Vector3f::UnitX()) *
+      Eigen::AngleAxisf(msg->bodyframe_angular_position.pitch, Eigen::Vector3f::UnitY()) *
+      Eigen::AngleAxisf(msg->bodyframe_angular_position.yaw,   Eigen::Vector3f::UnitZ());
+    out.pose.pose.orientation.w = q.w();
+    out.pose.pose.orientation.x = q.x();
+    out.pose.pose.orientation.y = q.y();
+    out.pose.pose.orientation.z = q.z();
+
+    nav_pose_pub_->publish(out);
+  }
+
+  // ===================== Cached state callbacks =====================
+
+  void onControlMode(const px4_msgs::msg::VehicleControlMode::SharedPtr msg)
+  {
+    offboard_enabled_ = msg->flag_control_offboard_enabled;
+  }
+
+  void onLandDetected(const px4_msgs::msg::VehicleLandDetected::SharedPtr msg)
+  {
+    landed_ = msg->landed;
+  }
+
+  // ===================== Plugin-input mirrors (ROS 2 -> LCM) =====================
+
+  void onVisionPosForLcm(const px4_msgs::msg::VehicleOdometry::SharedPtr msg)
+  {
+    // Already ENU (this topic is the republisher's output, or any equivalent ENU source).
+    geometry::pose p {};
+    p.position[0] = msg->position[0];
+    p.position[1] = msg->position[1];
+    p.position[2] = msg->position[2];
+    p.velocity[0] = msg->velocity[0];
+    p.velocity[1] = msg->velocity[1];
+    p.velocity[2] = msg->velocity[2];
+    p.orientation[0] = msg->q[0];
+    p.orientation[1] = msg->q[1];
+    p.orientation[2] = msg->q[2];
+    p.orientation[3] = msg->q[3];
+    p.isValid = offboard_enabled_;
+    lcm_.publish("vision_position_estimate", &p);
+  }
+
+  void onNavPoseForLcm(const nav_msgs::msg::Odometry::SharedPtr msg)
+  {
+    geometry::pose p {};
+    p.position[0] = msg->pose.pose.position.x;
+    p.position[1] = msg->pose.pose.position.y;
+    p.position[2] = msg->pose.pose.position.z;
+    p.velocity[0] = msg->twist.twist.linear.x;
+    p.velocity[1] = msg->twist.twist.linear.y;
+    p.velocity[2] = msg->twist.twist.linear.z;
+    p.orientation[0] = msg->pose.pose.orientation.w;
+    p.orientation[1] = msg->pose.pose.orientation.x;
+    p.orientation[2] = msg->pose.pose.orientation.y;
+    p.orientation[3] = msg->pose.pose.orientation.z;
+    lcm_.publish("nav_pose", &p);
+  }
+
+  void onLandingSitePoseCmd(const nav_msgs::msg::Odometry::SharedPtr msg)
+  {
+    geometry::pose p {};
+    p.position[0] = msg->pose.pose.position.x;
+    p.position[1] = msg->pose.pose.position.y;
+    p.position[2] = msg->pose.pose.position.z;
+    p.velocity[0] = msg->twist.twist.linear.x;
+    p.velocity[1] = msg->twist.twist.linear.y;
+    p.velocity[2] = msg->twist.twist.linear.z;
+    p.orientation[0] = msg->pose.pose.orientation.w;
+    p.orientation[1] = msg->pose.pose.orientation.x;
+    p.orientation[2] = msg->pose.pose.orientation.y;
+    p.orientation[3] = msg->pose.pose.orientation.z;
+    // If geometry::pose has a separate yaw field, derive it from the quaternion.
+    // TODO: confirm signature of yawFromQuaternion (Eigen::Quaterniond vs raw double[4]).
+    Eigen::Quaterniond q(
+      p.orientation[0], p.orientation[1], p.orientation[2], p.orientation[3]);
+    p.yaw = yawFromQuaternion(q);
+    lcm_.publish("Landing_Site/pose_cmd", &p);
+  }
+
+  void onReleasePayloadFb(const std_msgs::msg::String::SharedPtr msg)
+  {
+    exec::release_payload fb {};
+    fb.data = msg->data;
+    lcm_.publish("release_payload_feedback", &fb);
+  }
+
+  void onGpsForLcm(const px4_msgs::msg::SensorGps::SharedPtr msg)
+  {
+    exec::gps_status gs {};
+    gs.lon = 1.0e-7 * msg->longitude_deg;
+    gs.lat = 1.0e-7 * msg->latitude_deg;
+    // TODO: confirm altitude_msl_m units against your px4_msgs version
+    // (the original bridge used a 1e-3 scaling, which is suspicious for "_m").
+    gs.alt = 1.0e-3 * msg->altitude_msl_m;
+    gs.status = msg->fix_type;
+    gs.timestamp = static_cast<double>(
+      std::chrono::system_clock::now().time_since_epoch() / std::chrono::milliseconds(1));
+    lcm_.publish("gps_status", &gs);
+  }
+
+  // ===================== Plugin-output mirror (LCM -> ROS 2) =====================
+
+  void onLcmLandingSitePose(const lcm::ReceiveBuffer * /*rbuf*/,
+                            const std::string & /*chan*/,
+                            const geometry::pose * msg)
+  {
+    nav_msgs::msg::Odometry out;
+    out.header.stamp = this->now();
+    out.header.frame_id = "Landing_Site";
+    out.pose.pose.position.x = msg->position[0];
+    out.pose.pose.position.y = msg->position[1];
+    out.pose.pose.position.z = msg->position[2];
+    out.twist.twist.linear.x = msg->velocity[0];
+    out.twist.twist.linear.y = msg->velocity[1];
+    out.twist.twist.linear.z = msg->velocity[2];
+    out.pose.pose.orientation.w = msg->orientation[0];
+    out.pose.pose.orientation.x = msg->orientation[1];
+    out.pose.pose.orientation.y = msg->orientation[2];
+    out.pose.pose.orientation.z = msg->orientation[3];
+    landing_site_pose_pub_->publish(out);
+  }
+
+  // ===================== Command translator =====================
+  // ROS 2 nav_msgs/Odometry on "local_position_sp" -> PX 4 TrajectorySetpoint.
+  // header.frame_id selects POSITION vs VELOCITY. ENU -> NED on the way out.
+
+  void onLocalPositionSp(const nav_msgs::msg::Odometry::SharedPtr msg)
+  {
+    px4_msgs::msg::TrajectorySetpoint setpoint;
+    setpoint.timestamp = this->now().nanoseconds() / 1000;
+
+    if (msg->header.frame_id == "POSITION") {
+      const rclcpp::Time current_time = get_clock()->now();
+      // ENU -> NED target.
+      double target[3];
+      target[0] =  msg->pose.pose.position.y;
+      target[1] =  msg->pose.pose.position.x;
+      target[2] = -msg->pose.pose.position.z;
+
+      if (first_pos_sp_) {
+        pos_sp_last_time_ = current_time;
+        prev_pos_sp_[0] = target[0];
+        prev_pos_sp_[1] = target[1];
+        prev_pos_sp_[2] = target[2];
+        first_pos_sp_ = false;
+      }
+
+      const double dt = (current_time - pos_sp_last_time_).seconds();
+      pos_sp_last_time_ = current_time;
+
+      if (dt <= 0.0 || dt > 0.5) {
+        // Big dt jump (or first frame): snap.
+        for (int i = 0; i < 3; ++i) {
+          setpoint.position[i] = target[i];
+          prev_pos_sp_[i]      = target[i];
+        }
+      } else {
+        const double max_step = kMaxVelocity * dt;
+        for (int i = 0; i < 3; ++i) {
+          double error = target[i] - prev_pos_sp_[i];
+          if      (error >  max_step) error =  max_step;
+          else if (error < -max_step) error = -max_step;
+          setpoint.position[i] = prev_pos_sp_[i] + error;
+          prev_pos_sp_[i]      = setpoint.position[i];
+        }
+      }
+
+      Eigen::Quaterniond q(
+        msg->pose.pose.orientation.w,
+        msg->pose.pose.orientation.x,
+        msg->pose.pose.orientation.y,
+        msg->pose.pose.orientation.z);
+      setpoint.yaw = -yawFromQuaternion(q);
+      setpoint.velocity = {NAN, NAN, NAN};
+
+      position_enabled_ = true;
+      velocity_enabled_ = false;
+      trajectory_setpoint_pub_->publish(setpoint);
+
+      // gt_setpoint: drone-position-plus-offset, preserved verbatim from the
+      // original. NOTE: position[2] uses position[1] in the source, which looks
+      // like a typo (should probably be -position[2]); kept as-is.
+      px4_msgs::msg::TrajectorySetpoint gt;
+      gt.position[0] =  last_drone_pose_enu_.position[1] + 1.0;
+      gt.position[1] =  last_drone_pose_enu_.position[0];
+      gt.position[2] = -last_drone_pose_enu_.position[1];  // FIXME (probably should be -position[2])
+      gt_setpoint_pub_->publish(gt);
+    }
+    else if (msg->header.frame_id == "VELOCITY") {
+      // ENU -> NED on velocity.
+      setpoint.velocity[0] =  msg->twist.twist.linear.y;
+      setpoint.velocity[1] =  msg->twist.twist.linear.x;
+      setpoint.velocity[2] = -msg->twist.twist.linear.z;
+      setpoint.position = {NAN, NAN, NAN};
+
+      position_enabled_ = false;
+      velocity_enabled_ = true;
+      trajectory_setpoint_pub_->publish(setpoint);
+    }
+    else {
+      RCLCPP_WARN_THROTTLE(get_logger(), *get_clock(), 5000,
+        "local_position_sp: unknown frame_id '%s' (expected POSITION or VELOCITY)",
+        msg->header.frame_id.c_str());
+    }
+  }
+
+  // ===================== actual_task -> /drone_state =====================
+
+  void onActualTask(const ulisse_exec_msgs::msg::ActualTask::SharedPtr msg)
+  {
+    std_msgs::msg::Float32 ds;
+    if      (msg->action == common::actions::LAND)        ds.data = 0;
+    else if (msg->action == common::actions::SEARCH)      ds.data = 1;
+    else if (msg->action == common::actions::EMERG_LAND || landed_) ds.data = 2;
+    else                                                  ds.data = 3;
+    drone_state_pub_->publish(ds);
+  }
+
+  // ===================== Offboard heartbeat =====================
+
+  void publishOffboardMode()
+  {
+    px4_msgs::msg::OffboardControlMode msg;
+    msg.timestamp    = this->now().nanoseconds() / 1000;
+    msg.position     = position_enabled_;
+    msg.velocity     = velocity_enabled_;
+    msg.acceleration = false;
+    msg.attitude     = false;
+    msg.body_rate    = false;
+    offboard_control_mode_pub_->publish(msg);
+  }
+
+  // ===================== State =====================
+
+  lcm::LCM            lcm_;
+  lcm::Subscription * lcm_sub_landing_pose_ {nullptr};
+
+  // Latest ENU drone pose (republisher output) used for gt_setpoint.
+  px4_msgs::msg::VehicleOdometry last_drone_pose_enu_ {};
+  // Latest flags used by other paths.
+  bool offboard_enabled_ {false};
+  bool landed_ {true};
+
+  // Nav filter home (captured on first message).
+  bool   first_nav_state_ {true};
+  double nav_home_lat_    {0.0};
+  double nav_home_lon_    {0.0};
+
+  // Slew-rate state for the position command translator.
+  static constexpr double kMaxVelocity = 1.0;  // m/s
+  bool         first_pos_sp_ {true};
+  rclcpp::Time pos_sp_last_time_;
+  double       prev_pos_sp_[3] {0.0, 0.0, 0.0};
+
+  // Offboard mode flags reflect the type of the last accepted local_position_sp.
+  bool position_enabled_ {true};
+  bool velocity_enabled_ {false};
+
+  // ---- Publishers ----
+  rclcpp::Publisher<px4_msgs::msg::VehicleOdometry>::SharedPtr      vision_position_estimate_pub_;
+  rclcpp::Publisher<nav_msgs::msg::Odometry>::SharedPtr             nav_pose_pub_;
+  rclcpp::Publisher<nav_msgs::msg::Odometry>::SharedPtr             landing_site_pose_pub_;
+  rclcpp::Publisher<px4_msgs::msg::TrajectorySetpoint>::SharedPtr   trajectory_setpoint_pub_;
+  rclcpp::Publisher<px4_msgs::msg::TrajectorySetpoint>::SharedPtr   gt_setpoint_pub_;
+  rclcpp::Publisher<px4_msgs::msg::OffboardControlMode>::SharedPtr  offboard_control_mode_pub_;
+  rclcpp::Publisher<std_msgs::msg::Float32>::SharedPtr              drone_state_pub_;
+
+  // ---- Subscriptions ----
+  rclcpp::Subscription<px4_msgs::msg::VehicleOdometry>::SharedPtr      odom_sub_;
+  rclcpp::Subscription<ulisse_msgs::msg::NavFilterData>::SharedPtr     nav_filter_sub_;
+  rclcpp::Subscription<px4_msgs::msg::VehicleControlMode>::SharedPtr   control_mode_sub_;
+  rclcpp::Subscription<px4_msgs::msg::VehicleLandDetected>::SharedPtr  land_detected_sub_;
+  rclcpp::Subscription<px4_msgs::msg::VehicleOdometry>::SharedPtr      vis_pos_for_lcm_sub_;
+  rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr             nav_pose_for_lcm_sub_;
+  rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr             landing_site_pose_cmd_sub_;
+  rclcpp::Subscription<std_msgs::msg::String>::SharedPtr               rel_pay_fb_sub_;
+  rclcpp::Subscription<px4_msgs::msg::SensorGps>::SharedPtr            gps_sub_;
+  rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr             local_position_sp_sub_;
+  rclcpp::Subscription<ulisse_exec_msgs::msg::ActualTask>::SharedPtr   actual_task_sub_;
+
+  // ---- Timers ----
+  rclcpp::TimerBase::SharedPtr offboard_timer_;
+  rclcpp::TimerBase::SharedPtr lcm_poll_timer_;
+};
+
+int main(int argc, char ** argv)
+{
+  rclcpp::init(argc, argv);
+  try {
+    rclcpp::spin(std::make_shared<BridgeNode>());
+  } catch (const std::exception & e) {
+    std::cerr << "Fatal: " << e.what() << std::endl;
+    rclcpp::shutdown();
+    return 1;
+  }
+  rclcpp::shutdown();
+  return 0;
 }

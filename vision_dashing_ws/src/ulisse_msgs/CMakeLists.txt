@@ -48,6 +48,9 @@ rosidl_generate_interfaces(ulisse_msgs
   "msg/FeedbackGui.msg"
   "msg/SimulatedSystem.msg"
   "msg/DynamicPidControl.msg"
+  "msg/Safety.msg"
+  "msg/SafetyAck.msg"
+  "msg/ActualTask.msg"
 
   # Commands
   "msg/CommandHold.msg"

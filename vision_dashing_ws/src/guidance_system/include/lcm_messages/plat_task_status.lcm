@@ -1,0 +1,6 @@
+package exec;
+struct plat_task_status
+{
+	int64_t stamp_sec;
+	string state;
+}
