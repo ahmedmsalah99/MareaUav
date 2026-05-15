@@ -33,6 +33,7 @@ find_package(geometry_msgs REQUIRED)
 find_package(px4_msgs REQUIRED)
 find_package(sensor_msgs REQUIRED)
 find_package(ulisse_msgs REQUIRED)
+find_package(nav_msgs REQUIRED)
 ## find_package(mavros_msgs REQUIRED)
 find_package(class_loader REQUIRED)
 ###########
@@ -72,7 +73,7 @@ ${Eigen_INCLUDE_DIR}
 ## Declare a C++ executable
 add_executable(bridge_node src/bridge_node.cpp ${M2M_INCLUDE}/../src/MavState.cpp)
 
-ament_target_dependencies(bridge_node rclcpp std_msgs sensor_msgs px4_msgs geometry_msgs apriltag_msgs class_loader ulisse_msgs)
+ament_target_dependencies(bridge_node rclcpp std_msgs sensor_msgs px4_msgs geometry_msgs apriltag_msgs class_loader ulisse_msgs nav_msgs)
 
 
 ## Specify libraries to link a library or executable target against

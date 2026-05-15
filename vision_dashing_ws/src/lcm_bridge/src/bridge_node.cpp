@@ -57,7 +57,7 @@
 #include <ulisse_msgs/msg/nav_filter_data.hpp>
 
 // Custom app messages
-#include <ulisse_exec_msgs/msg/actual_task.hpp>
+#include <ulisse_msgs/msg/actual_task.hpp>
 
 // LCM message types (unchanged from before).
 #include <lcm_messages/geometry/pose.hpp>
@@ -67,6 +67,8 @@
 // Project utilities
 #include "common/MavState.h"      // common::actions::*
 #include "common/conversions.h"   // globalToLocalCoords, yawFromQuaternion
+#include "common/common.h"
+#include "common/CallbackHandler.hpp"
 
 using namespace std::chrono_literals;
 using std::placeholders::_1;
@@ -152,7 +154,7 @@ public:
       std::bind(&BridgeNode::onLocalPositionSp, this, _1));
 
     // -- actual_task -> /drone_state translator --
-    actual_task_sub_ = create_subscription<ulisse_exec_msgs::msg::ActualTask>(
+    actual_task_sub_ = create_subscription<ulisse_msgs::msg::ActualTask>(
       "actual_task", reliable_qos,
       std::bind(&BridgeNode::onActualTask, this, _1));
 
@@ -444,7 +446,7 @@ private:
 
   // ===================== actual_task -> /drone_state =====================
 
-  void onActualTask(const ulisse_exec_msgs::msg::ActualTask::SharedPtr msg)
+  void onActualTask(const ulisse_msgs::msg::ActualTask::SharedPtr msg)
   {
     std_msgs::msg::Float32 ds;
     if      (msg->action == common::actions::LAND)        ds.data = 0;
@@ -514,7 +516,7 @@ private:
   rclcpp::Subscription<std_msgs::msg::String>::SharedPtr               rel_pay_fb_sub_;
   rclcpp::Subscription<px4_msgs::msg::SensorGps>::SharedPtr            gps_sub_;
   rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr             local_position_sp_sub_;
-  rclcpp::Subscription<ulisse_exec_msgs::msg::ActualTask>::SharedPtr   actual_task_sub_;
+  rclcpp::Subscription<ulisse_msgs::msg::ActualTask>::SharedPtr   actual_task_sub_;
 
   // ---- Timers ----
   rclcpp::TimerBase::SharedPtr offboard_timer_;

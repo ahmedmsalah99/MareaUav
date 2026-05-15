@@ -40,6 +40,7 @@
   <exec_depend>rmw_implementation</exec_depend>    
     
   <exec_depend>std_msgs</exec_depend>    
+  <exec_depend>nav_msgs</exec_depend>    
   
   <exec_depend>apriltags</exec_depend>
 
