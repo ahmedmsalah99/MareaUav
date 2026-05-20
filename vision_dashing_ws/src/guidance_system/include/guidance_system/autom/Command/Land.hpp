@@ -157,6 +157,7 @@ private:
         }
 
         if (_plat == 0){
+            std::cout << "simpleLanding " << std::endl;
             simpleLanding((float)_xin,(float)_yin,0);
         } else {
 
@@ -202,6 +203,7 @@ public:
      */
 
     void execute() override {
+        // std::cout << "executing landing " << std::endl;
         land();
     }
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW

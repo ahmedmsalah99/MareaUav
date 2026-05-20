@@ -16,7 +16,7 @@ void Parameters::loadConfigFile(const char *config_file) {
 
 void Parameters::loadParamFile(const char *config_file) {
 
-
+    std::cout << "config_file " << config_file << std::endl;
     std::ifstream cFile (config_file);
     if( cFile.is_open() ){
 

@@ -188,8 +188,8 @@ void AprilTag2RescueNode::onImage(const sensor_msgs::msg::CompressedImage::Share
 		try{
 			tf.transform = pnp(det, intrinsics, rescue_tags[det->id]);
 		}catch (const cv::Exception& e) {
-			RCLCPP_WARN_THROTTLE(get_logger(), *get_clock(), 1000,
-                         "solvePnP failed: %s", e.what());
+			// RCLCPP_WARN_THROTTLE(get_logger(), *get_clock(), 1000,
+            //              "solvePnP failed: %s", e.what());
 			continue;
 		}
 
@@ -370,10 +370,10 @@ void AprilTag2RescueNode::publish_data_center(const apriltag_msgs::msg::AprilTag
 			vision_pose.isValid = true;
 		}
 
-		std::cout << "IS DATA VALID: "<< (bool)vision_pose.isValid << std::endl;
-		std::cout << "vision_pose.position[0] " << vision_pose.position[0] << std::endl;
-		std::cout << "vision_pose.position[1] " << vision_pose.position[1] << std::endl;
-		std::cout << "vision_pose.position[2] " << vision_pose.position[2] << std::endl;
+		// std::cout << "IS DATA VALID: "<< (bool)vision_pose.isValid << std::endl;
+		// std::cout << "vision_pose.position[0] " << vision_pose.position[0] << std::endl;
+		// std::cout << "vision_pose.position[1] " << vision_pose.position[1] << std::endl;
+		// std::cout << "vision_pose.position[2] " << vision_pose.position[2] << std::endl;
 		//lcm publication.
 		_handler.publish("apriltag_rescue_vision",&vision_pose);
 

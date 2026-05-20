@@ -7,6 +7,7 @@
 #include "guidance_system/autom/Lander/Lander.h"
 #include "common/conversions.h"
 #include "guidance_system/autom/param.h"
+#include "ament_index_cpp/get_package_share_directory.hpp"
 
 Lander::Lander()
         : _horizontaErr((double)0)    , _tauHold((double)0), _tauLost((double)0), _tauErr((double)0), _NHold(0),
@@ -18,7 +19,9 @@ Lander::Lander()
   //set the state machine
   initStateMachine();
   ////Load parameters
-	param.loadConfigFile("Landing_params.txt");
+  std::string pkg_path = ament_index_cpp::get_package_share_directory("guidance_system");
+  std::string params_path = pkg_path + "/params/Landing_params.txt";
+	param.loadConfigFile(params_path.c_str());
 
 	// std::cout<<"Params: "<<param.zMax<<std::endl;
 
@@ -80,8 +83,10 @@ MavState Lander::getCommand() {
 }
 
 void Lander::loadMachine() {
-
-	param.loadConfigFile("Landing_params.txt");
+  std::cout << "parsing landing params " << std::endl;
+  std::string pkg_path = ament_index_cpp::get_package_share_directory("guidance_system");
+  std::string params_path = pkg_path + "/params/Landing_params.txt";
+	param.loadConfigFile(params_path.c_str());
 
 	_holdPIDX.reset();
 	_holdPIDY.reset();
@@ -202,7 +207,7 @@ void Lander::initStateMachine() {
   _machine.setStatePtr(&_initS); //set the state with the INIT one.
 
   //Print actual state
-  std::cout << "Actual state: " << _machine.getActualNodeId() << std::endl;
+  // std::cout << "Actual state: " << _machine.getActualNodeId() << std::endl;
 
 }
 
@@ -336,13 +341,15 @@ void Lander::handleMachine() {
 
 	//isValid = 1 ==> OFFBOARD
 	//isValid = 0 ==> ANOTHER FLIGHT MODE
+  // std::cout << "start _state.IsValid " << _state.IsValid << " _resetMachine " << _resetMachine << std::endl;
 	if( !_state.IsValid && !_resetMachine ) {
+    // std::cout << "_state.IsValid " << _state.IsValid << " _resetMachine " << _resetMachine << std::endl;
 
 		initStateMachine();
 		_resetMachine = true;
 	}
 	else if( _state.IsValid ) { //OFFBOARD
-
+    // std::cout << "offboard _state.IsValid " << _state.IsValid << " _resetMachine " << _resetMachine << std::endl;
 		if(_resetMachine) {
 			loadMachine();
 			_resetMachine = false;
@@ -399,7 +406,7 @@ void Lander::run() {
   switch (_actualState){
 
     case (AbstractLandState::states::INIT):
-
+      std::cout << "in init "<< " initDone " << initDone << " startFromBeginning " << startFromBeginning << std::endl;
       if(!initDone)
       {
 
@@ -526,10 +533,10 @@ void Lander::run() {
   }
 
 	if (print > 30){
-		printSignals();
+		// printSignals();
 		print = 0;
 	}
-
+  std::cout << "actual state " << _actualState << std::endl;
 
 }
 

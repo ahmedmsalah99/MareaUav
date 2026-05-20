@@ -250,8 +250,8 @@ void AprilTag2Node::onImage(const sensor_msgs::msg::CompressedImage::SharedPtr m
 		try{
 			tf.transform = pnp(det, intrinsics, platform_tags[det->id]);
 		}catch (const cv::Exception& e) {
-			RCLCPP_WARN_THROTTLE(get_logger(), *get_clock(), 1000,
-                         "solvePnP failed: %s", e.what());
+			// RCLCPP_WARN_THROTTLE(get_logger(), *get_clock(), 1000,
+            //              "solvePnP failed: %s", e.what());
 			continue;
 		}
 		// RCLCPP_INFO(get_logger(), "ID: %li ", msg_detection.id);

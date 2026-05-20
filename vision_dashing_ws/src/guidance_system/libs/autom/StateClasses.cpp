@@ -12,7 +12,7 @@ void InitState::handle(){
     //Got everything (assume it)
     getSignals();
     static int wait = 0;
-
+    std::cout << "start param.search " << param.search << std::endl;
     //Wait 20 iterations
     if( wait++ > 20 && _VisionPose.VisionDataUpdated && _readyToLand) {
         this->_contextL->setStatePtr(_nextState);
@@ -20,7 +20,7 @@ void InitState::handle(){
         wait=0;
     }
 	  else if(wait++ > 20 && !_VisionPose.VisionDataUpdated) {
-
+        std::cout << "param.search " << param.search << std::endl;
       if(param.search){
           this->_contextL->setStatePtr(_nextInspeState);
           printStateTransition(); //print the actual state.

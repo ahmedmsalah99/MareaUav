@@ -155,17 +155,15 @@ public:
      */
 
     enum states{
-
         INIT,
         INSPE,
-		    HOVERING,
+		HOVERING,
         HOLD,
         DESC,
         ASCE,
         R2LA,
         COMP,
         LAND
-
     };
 
     /**

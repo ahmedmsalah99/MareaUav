@@ -56,6 +56,24 @@ def generate_launch_description():
         output='screen'
     )
 
+    safety_node = Node(
+        package='guidance_system',
+        executable='safety_handler_node',
+        output='screen'
+    )
+
+    exec_node = Node(
+        package='guidance_system',
+        executable='executioner_node',
+        output='screen'
+    )
+
+    autom_node = Node(
+        package='guidance_system',
+        executable='autom_node',
+        output='screen'
+    )
+
     # apriltag_node = Node(
     #     package='apriltag2_node',
     #     executable='apriltag2_node',
@@ -89,4 +107,7 @@ def generate_launch_description():
         payload_node,
         apriltag_node,
         rescue_node,
+        safety_node,
+        exec_node,
+        autom_node
     ])

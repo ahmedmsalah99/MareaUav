@@ -175,6 +175,7 @@ private:
     // NOTE: We pass the raw armed flag. The old bridge encoded "differs from
     // first observed", which is equivalent if the drone starts disarmed.
     armed_ = msg->flag_armed ? 1 : 0;
+    offboard_ = msg->flag_control_offboard_enabled;
     e_.setStatus(armed_, landed_);
   }
 
@@ -309,8 +310,11 @@ private:
 
   void tick()
   {
+    if(!offboard_)
+      return;
     e_.setState(current_pose_);
     e_.run();
+    // std::cout << "offboard_ " << offboard_ << std::endl;
     if (e_.readyToPublish()) {
       std::cout << "publishing task" << std::endl;
       // TODO: change `Executioner::_actualTask` type to
@@ -327,6 +331,7 @@ private:
   MavState                              current_pose_;
   int                                   armed_  {0};
   int                                   landed_ {1};   // assume drone starts landed
+  bool                                  offboard_{false};
   ulisse_msgs::msg::SafetyAck      safety_ack_msg_ {};
 
   // Publishers

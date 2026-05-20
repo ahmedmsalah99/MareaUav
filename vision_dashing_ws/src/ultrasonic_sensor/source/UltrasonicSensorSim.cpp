@@ -41,7 +41,7 @@ double UltrasonicSensor::getDistance()
 
 bool UltrasonicSensor::GetValidity() const {
 
-	return isValid;
+	return true;
 }
 
 

@@ -3,7 +3,7 @@
 
 
 #define PI 3.141592653589
-#define GUI
+// #define GUI
 
 int node = 0;
 
@@ -99,7 +99,6 @@ bool Executioner::readyToPublish() {
 
 
 void Executioner::run(){
-
     if(_nodeList.size() > 0) {
 
         loadTask();
@@ -194,7 +193,7 @@ void Executioner::run(){
 
     _actualTask.yaw = computeDesiredYaw(_state, coords);
 
-    std::cout << _actualTask.yaw*180.0/3.14 << std::endl;
+    // std::cout << _actualTask.yaw*180.0/3.14 << std::endl;
   }
     // Check for next task
     if((CheckActions(_actualTask.action) || skip) && _can_run) {
@@ -235,7 +234,7 @@ bool Executioner::CheckActions(int a)
             return false;
           else  // returns the distance condition wrt the platform coordinates and the prefixed desired altitude
           {
-            std::cout << "_actualTask.x " << _actualTask.x << " _actualTask.y " << _actualTask.y << " _actualTask.z " << _actualTask.z << std::endl;
+            // std::cout << "_actualTask.x " << _actualTask.x << " _actualTask.y " << _actualTask.y << " _actualTask.z " << _actualTask.z << std::endl;
             return (fabs(_state.getX() - _actualTask.x) < _actualTask.params[1] &&
                     fabs(_state.getY() - _actualTask.y) < _actualTask.params[1] &&
                     fabs(_state.getZ() - _actualTask.z) < _actualTask.params[1]);// && _nav_mission_finished);
@@ -346,6 +345,7 @@ void Executioner::loadTask() {
     _actualTask.x         = _nodeList[_actualNode].x;
     _actualTask.y         = _nodeList[_actualNode].y;
     _actualTask.z         = _nodeList[_actualNode].z;
+    // std::cout << "_actualNode " << _actualNode << " _actualTask.x " << _actualTask.x << " _actualTask.y " << _actualTask.y << " _actualTask.z " << _actualTask.z << " _nodeList[_actualNode].z " << _nodeList[_actualNode].z << std::endl;
     _actualTask.yaw       = _nodeList[_actualNode].yaw;
     _actualTask.target    = _nodeList[_actualNode].target;
     _actualTask.action    = _nodeList[_actualNode].action;
@@ -355,7 +355,6 @@ void Executioner::loadTask() {
     _actualTask.params[2] = _nodeList[_actualNode].params[2];
     _actualTask.params[3] = _nodeList[_actualNode].params[3];
     _actualTask.params[4] = _nodeList[_actualNode].params[4];
-
 
     if(_actualTask.action == actions::MOVE)
     {

@@ -1,181 +1,96 @@
 #include <iostream>
 #include "UltrasonicSensor.h"
-#include "lcm/lcm-cpp.hpp"
-#include "lcm_messages/geometry/UltrasonicPosition.hpp"
-//#include "utils/TimeHelpers.hpp"
 #include <queue>
 #include <cmath>
 #include "rclcpp/rclcpp.hpp"
 #include "ultrasonic_sensor/msg/ultrasonic_msg.hpp"
+#include "sensor_msgs/msg/range.hpp"
 #include "MedianFilter.h"
 #include <sys/time.h>
 
-// #include <rclcpp/time.hpp>
-// #include <rclcpp/clock.hpp>
-/************************************************************
-FILE TO COMMUNICATE SENSOR DATA WITH MOCAP2MAV
-KALMAN FILTER USING ONLY POSITION DATA
-*************************************************************/
-
-#define trigger 23	//pin of the raspberry for trigger signal.
-#define echo 22 	//pin of the raspberry for echo signal.
-#define timeout 150 //timeout in milliseconds.
-
-
-//just to connect the ultrasonic module with the mocap2mav
-lcm::LCM handler;
-geometry::UltrasonicPosition temp_plat_filtr;
-//geometry::UltrasonicPosition temp_plat_prev_filtr;
-
-//TimeManager tm;
+#define trigger 23
+#define echo    22
+#define timeout 150
 
 bool init = true;
 
-typedef std::queue<double> queue_t; //it allows to implement FIFO access.
+typedef std::queue<double> queue_t;
 queue_t stack_z;
 
-//for computing the velocity
-double integral_z = 0;
+double integral_z      = 0;
 double previous_distance = 0;
-int window = 6;
+int    window          = 6;
 
 struct timeval start;
 struct timeval end;
 double dt;
 int RATE = 30;
 
-//Parameters of Kalman filter
 double Pred_P_k_1 = 0.003;
 double Xk;
 double Pk;
-double Q = 0.5*1e-3;
+double Q = 0.5e-3;
 double R = 2.92e-3;
 
-// rclcpp::Time prev;
-// rclcpp::Time curr;
-// double max = 0;
-// double min = 10;
-// double mean2 = 0;
-// double sum = 0;
-// int c = 0;
-// rclcpp::Clock clocksis;
-
-int main(int argc, char **argv) {
-
+int main(int argc, char **argv)
+{
   rclcpp::init(argc, argv);
   auto node = rclcpp::Node::make_shared("Basic_kalman_filter_for_ultra_Sensor");
 
-	// UltrasonicSensor Sonar1; //it sets the sensor
   auto Sonar1 = std::make_shared<UltrasonicSensor>();
-
   Sonar1->setParameters(trigger, echo, timeout);
 
   auto best_effort_qos = rclcpp::QoS(rclcpp::KeepLast(1)).best_effort();
-  auto ultrasonic_sensor_sub = node->create_subscription<sensor_msgs::msg::Range>("/ultrasonic/sonar", best_effort_qos, std::bind(&UltrasonicSensor::setSensorData, Sonar1, std::placeholders::_1));
+  auto reliable_qos    = rclcpp::QoS(rclcpp::KeepLast(1)).reliable();
 
-	// auto PubSensorData = node->create_publisher<ultrasonic_sensor::msg::UltrasonicMsg>("/UltrasonicSensor_filtr", 1);
+  auto ultrasonic_sensor_sub = node->create_subscription<sensor_msgs::msg::Range>(
+    "/ultrasonic/sonar", best_effort_qos,
+    std::bind(&UltrasonicSensor::setSensorData, Sonar1, std::placeholders::_1));
 
-	rclcpp::WallRate loop_rate(30);
+  // Replaces: handler.publish("UltrasonicSensor/platform", &temp_plat_filtr)
+  auto ultrasonic_pub = node->create_publisher<ultrasonic_sensor::msg::UltrasonicMsg>(
+    "UltrasonicSensor/platform", reliable_qos);
 
-	//ROS messages for plotting
-	auto state = std::make_shared<ultrasonic_sensor::msg::UltrasonicMsg>();
-	auto state_filtr = std::make_shared<ultrasonic_sensor::msg::UltrasonicMsg>();
+  rclcpp::WallRate loop_rate(30);
 
-	state->z_position = Sonar1->getDistance();
+  auto state       = std::make_shared<ultrasonic_sensor::msg::UltrasonicMsg>();
+  auto state_filtr = std::make_shared<ultrasonic_sensor::msg::UltrasonicMsg>();
 
-	double Pred_Xk_1 = state->z_position;
+  state->z_position = Sonar1->getDistance();
 
-	MedianFilter<double, 5> f;
+  double Pred_Xk_1 = state->z_position;
 
-	dt = 1/RATE;
+  MedianFilter<double, 5> f;
 
-	//tm.updateTimer();
+  dt = 1.0 / RATE;
 
-	while(rclcpp::ok())
+  while (rclcpp::ok())
   {
+    gettimeofday(&start, NULL);
 
-    // prev = curr;
-    // curr = clocksis.now();
-    // auto delta = (curr.nanoseconds() - prev.nanoseconds())*0.0000001;
-    // std::cout << "delta = " << delta << std::endl;
-    // if((double)delta < 100.0)
-    // {
-    // 	if((double)delta > max)
-    // 		max = (double)delta;
-    // 	if((double)delta < min)
-    // 		min = (double)delta;
-    // 	c++;
-    // 	sum += (double)delta;
-    // 	mean2 = sum/c;
-    //
-    // 	std::cout << "max = " << max << std::endl;
-    // 	std::cout << "min = " << min << std::endl;
-    // 	std::cout << "mean = " << mean2 << std::endl;
-    // }
-  	gettimeofday(&start,NULL);
+    KF(Pred_Xk_1, Pred_P_k_1, state->z_position, &Xk, &Pk, Q, R);
 
-  	//tm.updateTimer();
+    Pred_P_k_1 = Pk;
+    Pred_Xk_1  = Xk;
 
-  	/*
-  	F = [1]
-  	B = [0]
-  	H = [1]
-  	Q = [0.5*1e-3]
-  	R = [2,92e-3]
-          */
+    state->z_position        = Sonar1->getDistance();
+    state_filtr->z_position  = Xk;
+    state_filtr->is_valid    = Sonar1->GetValidity();  // replaces temp_plat_filtr.isValid
+	
+    f.addSample(EstimatedVelocity(
+      &state_filtr->z_position, &previous_distance,
+      &stack_z, &init, dt, &integral_z, window));
 
-  	KF(Pred_Xk_1, Pred_P_k_1, state->z_position, &Xk, &Pk, Q, R); //kalman filter
-
-  	//update the covariance of the error and the states of both filters
-  	Pred_P_k_1 = Pk;
-  	Pred_Xk_1 = Xk;
-
-  	//taking the distance from the sensor
-  	state->z_position = Sonar1->getDistance();
-
-  	state_filtr->z_position = Xk; //filtered data
-
-  	temp_plat_filtr.isValid = Sonar1->GetValidity();
-
-  	//LCM STUFF TO DO THE VELOCITY
-  	temp_plat_filtr.Z_Position = state_filtr->z_position; //kalman position
-
-  	//velocity after kalman filter
-  	f.addSample( EstimatedVelocity( &state_filtr->z_position, &previous_distance, &stack_z, &init, dt, &integral_z, window) );
-
-  	//FOR PLOTTING THE VELOCITY
-  	if( f.isReady() )
-  		state_filtr->z_velocity = f.getMedian();
-
-  	else
-  		state_filtr->z_velocity = 0;
-
-  	temp_plat_filtr.Z_Velocity = state_filtr->z_velocity;
-
-  	// PubSensorData->publish( *state_filtr );
-  	handler.publish("UltrasonicSensor/platform",&temp_plat_filtr);
+    state_filtr->z_velocity = f.isReady() ? f.getMedian() : 0.0;
+	// state_filtr->is_valid = true;
+    // Replaces: handler.publish("UltrasonicSensor/platform", &temp_plat_filtr)
+    ultrasonic_pub->publish(*state_filtr);
 
     rclcpp::spin_some(node);
     loop_rate.sleep();
 
-  	gettimeofday(&end,NULL);
-
-  	dt = ((end.tv_sec - start.tv_sec)*1000000.0 + (end.tv_usec - start.tv_usec))*0.000001;
-
-    // std::cout << dt << std::endl;
-    // if(dt > max)
-		// 	max = dt;
-		// if(dt < min)
-		// 	min = dt;
-		// c++;
-		// sum += dt;
-		// mean2 = sum/c;
-    //
-		// std::cout << "max = " << max << std::endl;
-		// std::cout << "min = " << min << std::endl;
-		// std::cout << "mean = " << mean2 << std::endl;
-
-
-	}
-
+    gettimeofday(&end, NULL);
+    dt = ((end.tv_sec  - start.tv_sec)  * 1000000.0
+        + (end.tv_usec - start.tv_usec)) * 1.0e-6;
+  }
 }
