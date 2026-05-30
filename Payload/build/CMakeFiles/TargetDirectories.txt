@@ -1,3 +1,0 @@
-/home/stark/stuff/Projects/MAREA_CODE/Payload/build/CMakeFiles/payloadPlugin.dir
-/home/stark/stuff/Projects/MAREA_CODE/Payload/build/CMakeFiles/edit_cache.dir
-/home/stark/stuff/Projects/MAREA_CODE/Payload/build/CMakeFiles/rebuild_cache.dir
