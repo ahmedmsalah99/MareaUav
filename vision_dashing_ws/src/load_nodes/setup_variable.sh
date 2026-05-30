@@ -9,12 +9,14 @@ export M2M_INCLUDE=/home/andrea/Marea/mar_frankenrotor_ros/ros2SITL/mocap2mav/in
 echo "exporting simulation variable: 1=sim, 0=no-sim"
 export M2M_SIM=1
 
-echo "load gazebo plugin for the platform, put the correct path of the landingPlat directory "
+echo "load gazebo plugins (landingPlat / Payload)"
+# The plugins are now ament packages that talk ROS 2 directly. After building
+# them with colcon they install their .so into <install>/<pkg>/lib, and each
+# ships an env-hook that appends that dir to GAZEBO_PLUGIN_PATH when you source
+# the workspace install/setup.bash. If you don't source that setup, point
+# GAZEBO_PLUGIN_PATH at the install lib dirs explicitly (fix the root to yours):
 
-export GAZEBO_PLUGIN_PATH=${GAZEBO_PLUGIN_PATH}:/home/andrea/Marea/mar_frankenrotor_ros/ros2SITL/landingPlat/build
-
-echo "do the same for the Payload directory"
-
-export GAZEBO_PLUGIN_PATH=${GAZEBO_PLUGIN_PATH}:/home/andrea/Marea/mar_frankenrotor_ros/ros2SITL/Payload/build
+export GAZEBO_PLUGIN_PATH=${GAZEBO_PLUGIN_PATH}:/home/andrea/Marea/mar_frankenrotor_ros/ros2SITL/install/landingPlat/lib
+export GAZEBO_PLUGIN_PATH=${GAZEBO_PLUGIN_PATH}:/home/andrea/Marea/mar_frankenrotor_ros/ros2SITL/install/Payload/lib
 
 echo "done!!:)"

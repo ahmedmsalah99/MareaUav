@@ -3,11 +3,16 @@
 #include <gazebo/physics/physics.hh>
 #include <gazebo/common/common.hh>
 #include <stdio.h>
-#include "lcm/lcm-cpp.hpp"
-#include "lcm_messages/geometry/pose.hpp"
-#include "WaveGen.h"
-#include "poll.h"
 #include <fstream>
+#include <mutex>
+
+// ROS 2 (gazebo_ros) — replaces the old LCM transport.
+#include <gazebo_ros/node.hpp>
+#include <rclcpp/rclcpp.hpp>
+#include <nav_msgs/msg/odometry.hpp>
+#include <px4_msgs/msg/vehicle_odometry.hpp>
+
+#include "WaveGen.h"
 
 #define VEL 0.1
 
@@ -20,6 +25,16 @@
 namespace gazebo
 {
 
+    // Plain holder for the pose data the plugin consumes. Replaces the old
+    // lcm geometry::pose so the motion logic below is left untouched.
+    struct PoseData
+    {
+        double position[3]    {0, 0, 0};
+        double velocity[3]    {0, 0, 0};
+        double orientation[4] {1, 0, 0, 0};
+        double yaw            {0};
+    };
+
     class PlatformManager : public ModelPlugin
     {
 
@@ -31,21 +46,19 @@ namespace gazebo
         std::string _cmd_pose_topic;
         std::string _local_pose_topic;
 
-        lcm::LCM _handler;
-        lcm::LCM _handler2;
-        lcm::LCM _handler3;
-        lcm::LCM _handler4;
+        // ROS 2 node + endpoints (gazebo_ros spins the node on its own thread).
+        gazebo_ros::Node::SharedPtr _ros_node;
+        rclcpp::Publisher<nav_msgs::msg::Odometry>::SharedPtr _pose_pub;
+        rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr _cmd_sub;
+        rclcpp::Subscription<px4_msgs::msg::VehicleOdometry>::SharedPtr _drone_sub;
+        rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr _nav_sub;
 
-        lcm::Subscription *_sub;
-        lcm::Subscription *_sub2;
-        lcm::Subscription *_sub3;
+        // Guards the data written by ROS callbacks and read in OnUpdate.
+        std::mutex _data_mutex;
 
-        geometry::pose _position_sp;
-        geometry::pose _drone_pos;
-        geometry::pose _nav_pos;
-
-      	struct pollfd _fds[3];
-
+        PoseData _position_sp;
+        PoseData _drone_pos;
+        PoseData _nav_pos;
 
         double _actual_sim_time;
         double _prev_sim_time;
@@ -110,23 +123,26 @@ namespace gazebo
                 _local_pose_topic = _model.get()->GetName() + "/pose";
                 _cmd_pose_topic   = _model.get()->GetName() + "/pose_cmd";
 
-                _sub = _handler2.subscribe(_cmd_pose_topic, &PlatformManager::positionSetpointCallback, this);
-                _sub2 = _handler3.subscribe("vision_position_estimate", &PlatformManager::positionDroneCallback, this);
+                // Grab the gazebo_ros node tied to this plugin's SDF.
+                _ros_node = gazebo_ros::Node::Get(_sdf);
 
-                _sub3 = _handler4.subscribe("nav_pose", &PlatformManager::navPoseCallback, this);
+                auto px4_qos      = rclcpp::QoS(rclcpp::KeepLast(1)).best_effort();
+                auto reliable_qos = rclcpp::QoS(rclcpp::KeepLast(1)).reliable();
 
-                _sub->setQueueCapacity(1);
-                _sub2->setQueueCapacity(1);
-              	_sub3->setQueueCapacity(1);
+                _pose_pub = _ros_node->create_publisher<nav_msgs::msg::Odometry>(
+                    _local_pose_topic, reliable_qos);
 
-                _fds[0].fd = _handler2.getFileno();
-                _fds[0].events = POLLIN;
+                _cmd_sub = _ros_node->create_subscription<nav_msgs::msg::Odometry>(
+                    _cmd_pose_topic, reliable_qos,
+                    std::bind(&PlatformManager::positionSetpointCallback, this, std::placeholders::_1));
 
-                _fds[1].fd = _handler3.getFileno();
-                _fds[1].events = POLLIN;
+                _drone_sub = _ros_node->create_subscription<px4_msgs::msg::VehicleOdometry>(
+                    "vision_position_estimate", px4_qos,
+                    std::bind(&PlatformManager::positionDroneCallback, this, std::placeholders::_1));
 
-                _fds[2].fd = _handler4.getFileno();
-                _fds[2].events = POLLIN;
+                _nav_sub = _ros_node->create_subscription<nav_msgs::msg::Odometry>(
+                    "nav_pose", reliable_qos,
+                    std::bind(&PlatformManager::navPoseCallback, this, std::placeholders::_1));
 
                 wave.init(10,2.0,0.5,7.0);
 
@@ -150,15 +166,14 @@ namespace gazebo
                 _nav_pos.orientation[2] = 0;
                 _nav_pos.orientation[3] = 0;
 
-                std::cout << "New platform skamfkasm registered, topics:" << std::endl;
-                std::cout << "  "<<_local_pose_topic << std::endl;
-                std::cout << "  "<<_cmd_pose_topic   << std::endl;
-                std::cout << "And some info: " << std::endl;
+                RCLCPP_INFO(_ros_node->get_logger(), "New platform registered, topics:");
+                RCLCPP_INFO(_ros_node->get_logger(), "  %s", _local_pose_topic.c_str());
+                RCLCPP_INFO(_ros_node->get_logger(), "  %s", _cmd_pose_topic.c_str());
                 wave.info();
                 _platVel = VEL;
                 _dir = 1;
                 _first_rb = true;
-                std::cout << "PlatformManager LOADED" << std::endl;
+                RCLCPP_INFO(_ros_node->get_logger(), "PlatformManager LOADED");
             }
             void invertDirection(){
 
@@ -171,25 +186,9 @@ namespace gazebo
 
 
                 manageTime(_info);
-                // std::cout << _dt << std::endl;
-                // gzerr << "dt " << _dt << std::endl;
-                int ret = poll(_fds,3,0);
-                //
-                if(_fds[0].revents & POLLIN)
-                {
-                  _handler2.handle();
-                  _rescueTarget = true;
-                }
 
-                if(_fds[1].revents & POLLIN)
-                {
-                  _handler3.handle();
-                }
-
-                if(_fds[2].revents & POLLIN)
-                {
-                  _handler4.handle();
-                }
+                // Snapshot subscriber-fed data under the lock.
+                std::unique_lock<std::mutex> lk(_data_mutex);
 
                 _pose = _model.get()->WorldPose();
                 // _pose.rot = ignition::math::Quaternion(1,0,0,0);
@@ -276,62 +275,70 @@ namespace gazebo
                   yaw_des = 1.57;
                 }
 
+                // Done reading shared subscriber data.
+                lk.unlock();
 
                 _model.get()->SetAngularVel(ignition::math::Vector3<double>(0,0,0));
                 _model.get()->SetWorldPose(_pose);
-                //Prepare LCM material
+                //Prepare pose message
                 double vx,vy,vz;
-                geometry::pose plat_pose;
+                nav_msgs::msg::Odometry plat_pose;
 
                 vx = (_pose.Pos()[0] - _prev_pose.Pos()[0])/_dt;
                 vy = (_pose.Pos()[1] - _prev_pose.Pos()[1])/_dt;
                 vz = (_pose.Pos()[2] - _prev_pose.Pos()[2])/_dt;
 
+                plat_pose.header.stamp = _ros_node->now();
+                plat_pose.header.frame_id = "Landing_Site";
+
                 // giving an error to the quadrotor to trigger inspection phase
-                plat_pose.position[0] = _pose.Pos()[0]; //x - 5.7
-                plat_pose.position[1] = _pose.Pos()[1]; //y + 3.5
-                plat_pose.position[2] = _pose.Pos()[2]; //z
+                plat_pose.pose.pose.position.x = _pose.Pos()[0]; //x - 5.7
+                plat_pose.pose.pose.position.y = _pose.Pos()[1]; //y + 3.5
+                plat_pose.pose.pose.position.z = _pose.Pos()[2]; //z
 
-                plat_pose.velocity[0] = vx;
-                plat_pose.velocity[1] = vy;
-                plat_pose.velocity[2] = vz;
+                plat_pose.twist.twist.linear.x = vx;
+                plat_pose.twist.twist.linear.y = vy;
+                plat_pose.twist.twist.linear.z = vz;
 
-                plat_pose.yaw = yawFromQuaternion(_pose.Rot()) ;
+                plat_pose.pose.pose.orientation.w = _pose.Rot().W(); // w
+                plat_pose.pose.pose.orientation.x = _pose.Rot().X(); // x
+                plat_pose.pose.pose.orientation.y = _pose.Rot().Y(); // y
+                plat_pose.pose.pose.orientation.z = _pose.Rot().Z(); // z
 
-                plat_pose.isValid = 1;
-                plat_pose.orientation[0] = _pose.Rot().W(); // w
-                plat_pose.orientation[1] = _pose.Rot().X(); // x
-                plat_pose.orientation[2] = _pose.Rot().Y(); // y
-                plat_pose.orientation[3] = _pose.Rot().Z(); // z
-
-
-                _handler.publish(_local_pose_topic,&plat_pose);
+                _pose_pub->publish(plat_pose);
 
                 _prev_pose = _pose;
             }
 
-            void positionSetpointCallback(const lcm::ReceiveBuffer* rbuf, const std::string& chan, const geometry::pose* msg)
+            void positionSetpointCallback(const nav_msgs::msg::Odometry::SharedPtr msg)
             {
+                std::lock_guard<std::mutex> lk(_data_mutex);
 
-                _position_sp.position[0] = (float)msg->position[0];
-                _position_sp.position[1] = (float)msg->position[1];
-                _position_sp.position[2] = (float)msg->position[2];
+                _position_sp.position[0] = (float)msg->pose.pose.position.x;
+                _position_sp.position[1] = (float)msg->pose.pose.position.y;
+                _position_sp.position[2] = (float)msg->pose.pose.position.z;
 
-                _position_sp.velocity[0] = (float)msg->velocity[0];
-                _position_sp.velocity[1] = (float)msg->velocity[1];
-                _position_sp.velocity[2] = (float)msg->velocity[2];
+                _position_sp.velocity[0] = (float)msg->twist.twist.linear.x;
+                _position_sp.velocity[1] = (float)msg->twist.twist.linear.y;
+                _position_sp.velocity[2] = (float)msg->twist.twist.linear.z;
 
-                _position_sp.orientation[0] = (float)msg->orientation[0];
-                _position_sp.orientation[1] = (float)msg->orientation[1];
-                _position_sp.orientation[2] = (float)msg->orientation[2];
-                _position_sp.orientation[3] = (float)msg->orientation[3];
+                _position_sp.orientation[0] = (float)msg->pose.pose.orientation.w;
+                _position_sp.orientation[1] = (float)msg->pose.pose.orientation.x;
+                _position_sp.orientation[2] = (float)msg->pose.pose.orientation.y;
+                _position_sp.orientation[3] = (float)msg->pose.pose.orientation.z;
 
-                _position_sp.yaw = (float)msg->yaw;
+                ignition::math::Quaterniond q(
+                    _position_sp.orientation[0], _position_sp.orientation[1],
+                    _position_sp.orientation[2], _position_sp.orientation[3]);
+                _position_sp.yaw = yawFromQuaternion(q);
 
+                // A pose command means a rescue target has been identified.
+                _rescueTarget = true;
             }
 
-            void positionDroneCallback(const lcm::ReceiveBuffer* rbuf, const std::string& chan, const geometry::pose* msg)
+            void positionDroneCallback(const px4_msgs::msg::VehicleOdometry::SharedPtr msg)
             {
+                std::lock_guard<std::mutex> lk(_data_mutex);
 
                 _drone_pos.position[0] = (float)msg->position[0];
                 _drone_pos.position[1] = (float)msg->position[1];
@@ -341,19 +348,33 @@ namespace gazebo
                 _drone_pos.velocity[1] = (float)msg->velocity[1];
                 _drone_pos.velocity[2] = (float)msg->velocity[2];
 
-                _drone_pos.orientation[0] = (float)msg->orientation[0];
-                _drone_pos.orientation[1] = (float)msg->orientation[1];
-                _drone_pos.orientation[2] = (float)msg->orientation[2];
-                _drone_pos.orientation[3] = (float)msg->orientation[3];
+                _drone_pos.orientation[0] = (float)msg->q[0];
+                _drone_pos.orientation[1] = (float)msg->q[1];
+                _drone_pos.orientation[2] = (float)msg->q[2];
+                _drone_pos.orientation[3] = (float)msg->q[3];
 
-                _drone_pos.yaw = (float)msg->yaw;
-
+                ignition::math::Quaterniond q(
+                    _drone_pos.orientation[0], _drone_pos.orientation[1],
+                    _drone_pos.orientation[2], _drone_pos.orientation[3]);
+                _drone_pos.yaw = yawFromQuaternion(q);
             }
 
-            void navPoseCallback(const lcm::ReceiveBuffer* rbuf, const std::string& chan, const geometry::pose* msg)
+            void navPoseCallback(const nav_msgs::msg::Odometry::SharedPtr msg)
             {
-                _nav_pos = *msg;
-                // std::cout << "navsat message received" << std::endl;
+                std::lock_guard<std::mutex> lk(_data_mutex);
+
+                _nav_pos.position[0] = msg->pose.pose.position.x;
+                _nav_pos.position[1] = msg->pose.pose.position.y;
+                _nav_pos.position[2] = msg->pose.pose.position.z;
+
+                _nav_pos.velocity[0] = msg->twist.twist.linear.x;
+                _nav_pos.velocity[1] = msg->twist.twist.linear.y;
+                _nav_pos.velocity[2] = msg->twist.twist.linear.z;
+
+                _nav_pos.orientation[0] = msg->pose.pose.orientation.w;
+                _nav_pos.orientation[1] = msg->pose.pose.orientation.x;
+                _nav_pos.orientation[2] = msg->pose.pose.orientation.y;
+                _nav_pos.orientation[3] = msg->pose.pose.orientation.z;
             }
     };
 
