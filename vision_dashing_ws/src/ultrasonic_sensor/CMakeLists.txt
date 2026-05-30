@@ -20,7 +20,6 @@ find_package(rosidl_default_generators REQUIRED)
 
 find_package(PkgConfig REQUIRED)
 find_package(rcl_interfaces REQUIRED)
-pkg_search_module(LCM REQUIRED lcm)
 
 ################################################
 ## Declare ROS messages, services and actions ##
@@ -48,26 +47,19 @@ ${sensor_msgs_INCLUDE_DIRS}
 )
 
 
-set(M2M_INCLUDE "$ENV{M2M_INCLUDE}")
-if(M2M_INCLUDE)            
- include_directories(${M2M_INCLUDE})
-else()
- message(STATUS "INCLUDE at ${M2M_INCLUDE}")
- message(FATAL_ERROR "Undefined M2M_INCLUDE env var. HINT: export M2M_INCLUDE=/path/to/mocap2mav/include")
-endif()
-
+# TimeManager (utils/TimeHelpers.hpp) is now vendored under include/, so this
+# package no longer needs M2M_INCLUDE (mocap2mav/include) or LCM.
 include_directories(include)
 
 set(M2M_SIM "$ENV{M2M_SIM}")
-if(${M2M_SIM} STREQUAL "1")   
+if(${M2M_SIM} STREQUAL "1")
  set(SOURCE FILES source/UltrasonicSensorSim.cpp include/UltrasonicSensor.h)
  add_library(UltrasonicSensor source/UltrasonicSensorSim.cpp include/UltrasonicSensor.h)
- target_link_libraries(UltrasonicSensor ${LCM_LIBRARIES})
 elseif(${M2M_SIM} STREQUAL "0")
  set(SOURCE FILES source/UltrasonicSensorReal.cpp include/UltrasonicSensor.h)
  add_library(UltrasonicSensor source/UltrasonicSensorReal.cpp include/UltrasonicSensor.h)
  find_library(wiringPi_LIB wiringPi)
- target_link_libraries(UltrasonicSensor ${wiringPi_LIB} ${LCM_LIBRARIES})
+ target_link_libraries(UltrasonicSensor ${wiringPi_LIB})
 else()
  message(FATAL_ERROR "Undefined M2M_SIM env var. HINT: export M2M_SIM=1 if running simulation, 0 else")
 endif()
