@@ -121,7 +121,7 @@ namespace gazebo
                 _cmd_pose_topic   = _model.get()->GetName() + "/pose_cmd";
 
                 // Grab the gazebo_ros node tied to this plugin's SDF.
-                _ros_node = gazebo_ros::Node::Get(_sdf);
+                _ros_node = gazebo_ros::Node::Get(_sdf, "payload_manager");
 
                 auto px4_qos      = rclcpp::QoS(rclcpp::KeepLast(1)).best_effort();
                 auto reliable_qos = rclcpp::QoS(rclcpp::KeepLast(1)).reliable();

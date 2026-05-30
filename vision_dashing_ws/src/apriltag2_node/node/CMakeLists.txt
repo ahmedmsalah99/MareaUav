@@ -20,15 +20,8 @@ find_package(Threads REQUIRED)
 
 find_package(PkgConfig REQUIRED)
 pkg_search_module(apriltag REQUIRED apriltag)
-pkg_search_module(LCM REQUIRED lcm)
 
-set(M2M_INCLUDE "$ENV{M2M_INCLUDE}")
-if(M2M_INCLUDE)            
- include_directories(${M2M_INCLUDE})
-else()
- message(STATUS "INCLUDE at ${M2M_INCLUDE}")
- message(FATAL_ERROR "Undefined M2M_INCLUDE env var. HINT: export M2M_INCLUDE=/path/to/mocap2mav/include")
-endif()
+
 
 set(M2M_SIM "$ENV{M2M_SIM}")
 
@@ -39,7 +32,15 @@ include_directories(include)
 
 add_library(AprilTag2Node SHARED src/AprilTag2Node2_0.cpp)
 ament_target_dependencies(AprilTag2Node rclcpp sensor_msgs rclcpp_components apriltag_msgs px4_msgs class_loader tf2_msgs)
-target_link_libraries(AprilTag2Node ${apriltag_LIBRARIES} ${LCM_LIBRARIES} opencv_calib3d)
+target_link_libraries(AprilTag2Node ${apriltag_LIBRARIES} opencv_calib3d)
+
+message( "INCLUDE_DIRS=${apriltag_INCLUDE_DIRS}")
+message( "INCLUDEDIR=${apriltag_INCLUDEDIR}")
+message( "CFLAGS=${apriltag_CFLAGS}")
+message( "LIBRARIES=${apriltag_LIBRARIES}")
+message( "PKG_CONFIG_PATH=$ENV{PKG_CONFIG_PATH}")
+target_include_directories(AprilTag2Node PRIVATE ${apriltag_INCLUDE_DIRS})
+
 rclcpp_components_register_nodes(AprilTag2Node "AprilTag2Node")
 
 add_executable(apriltag2_node src/apriltag2_node.cpp)

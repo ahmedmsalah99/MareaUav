@@ -21,15 +21,8 @@ find_package(Threads REQUIRED)
 
 find_package(PkgConfig REQUIRED)
 pkg_search_module(apriltag REQUIRED apriltag)
-pkg_search_module(LCM REQUIRED lcm)
 
-set(M2M_INCLUDE "$ENV{M2M_INCLUDE}")
-if(M2M_INCLUDE)            
- include_directories(${M2M_INCLUDE})
-else()
- message(STATUS "INCLUDE at ${M2M_INCLUDE}")
- message(FATAL_ERROR "Undefined M2M_INCLUDE env var. HINT: export M2M_INCLUDE=/path/to/mocap2mav/include")
-endif()
+
 
 set(M2M_SIM "$ENV{M2M_SIM}")
 
@@ -40,7 +33,7 @@ include_directories(include)
 
 add_library(AprilTag2RescueNode SHARED src/AprilTag2RescueNode2.cpp)
 ament_target_dependencies(AprilTag2RescueNode rclcpp sensor_msgs px4_msgs rclcpp_components apriltag_msgs class_loader tf2_msgs)
-target_link_libraries(AprilTag2RescueNode ${apriltag_LIBRARIES} ${LCM_LIBRARIES} opencv_calib3d)
+target_link_libraries(AprilTag2RescueNode ${apriltag_LIBRARIES}  opencv_calib3d)
 rclcpp_components_register_nodes(AprilTag2RescueNode "AprilTag2RescueNode")
 
 add_executable(apriltag2_rescue_node src/apriltag2_rescue_node.cpp)

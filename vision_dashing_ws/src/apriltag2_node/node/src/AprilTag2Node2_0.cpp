@@ -264,8 +264,8 @@ void AprilTag2Node::onImage(const sensor_msgs::msg::CompressedImage::SharedPtr m
 		// msg_relative_pose.header.stamp = this->get_clock()->now();
 	}
 	// msg_relative_pose.header.stamp = this->get_clock()->now();
-	// msg_relative_pose.transform.translation.x = std::isnan(vision_pose.position[0]) ? -1 : vision_pose.position[0];
-	// msg_relative_pose.transform.translation.y = std::isnan(vision_pose.position[1]) ? -1 : vision_pose.position[1];
+	// msg_relative_pose.transform.translation.x = std::isnan(vision_pose.transform.translation.x) ? -1 : vision_pose.transform.translation.x;
+	// msg_relative_pose.transform.translation.y = std::isnan(vision_pose.transform.translation.y) ? -1 : vision_pose.transform.translation.y;
 	// msg_relative_pose.transform.translation.z = std::isnan(rotation_yaw) ? -1 : rotation_yaw;
 	// pub_platformCenter->publish(tfs[0]);
 	if(zarray_size(detections) > 0 && msg_detections.detections.size() > 0) {
@@ -279,36 +279,7 @@ void AprilTag2Node::onImage(const sensor_msgs::msg::CompressedImage::SharedPtr m
 
 	image_u8_destroy(im);
 }
-void AprilTag2Node::lowPassFilter(geometry::vision vision_pose){
-	rclcpp::Time current_time = this->get_clock()->now();
-	if(std::isnan(vision_pose.position[0]) || std::isnan(vision_pose.position[1]) || std::isnan(vision_pose.position[2])) return;
-	if (_first_vision_run) {
-		_last_vision_time = current_time;
-		for(int i=0; i<3; ++i) _filtered_vision_pos[i] = vision_pose.position[i];
-		_first_vision_run = false;
-	}
-	double dt = (current_time - _last_vision_time).seconds();
-	_last_vision_time = current_time;
 
-	// 3. Filtering and Validation Logic
-	if (dt > 0.0 && dt < 0.5) 
-	{
-		// Low Pass Filter Math
-		double tau = 1.0 / (2.0 * M_PI * _vision_cutoff_freq);
-		double alpha = dt / (dt + tau);
-
-		for (int i = 0; i < 3; ++i) {
-			_filtered_vision_pos[i] = _filtered_vision_pos[i] + alpha * (vision_pose.position[i] - _filtered_vision_pos[i]);
-			vision_pose.position[i] = _filtered_vision_pos[i];
-		}
-		
-	}
-	else 
-	{
-		// Handle large dt or first run by snapping to raw value
-		for(int i=0; i<3; ++i) _filtered_vision_pos[i] = vision_pose.position[i];
-	}
-}
 
 void AprilTag2Node::publish_data_center(const apriltag_msgs::msg::AprilTagDetectionArray& Detections, const tf2_msgs::msg::TFMessage& t_f)
 {
@@ -316,40 +287,43 @@ void AprilTag2Node::publish_data_center(const apriltag_msgs::msg::AprilTagDetect
 	{
 		Eigen::MatrixXd areaID(Detections.detections.size(), 2);
 		geometry_msgs::msg::TransformStamped msg_relative_pose;
-		geometry::vision vision_pose; //lcm message for vision topic.
+		geometry_msgs::msg::TransformStamped vision_pose; // ROS2-friendly internal container
+		// vision_pose.pose is not used; we store position/orientation in the transform fields.
+		vision_pose.transform.rotation.w = 1.0;
+		vision_pose.transform.rotation.x = 0.0;
+		vision_pose.transform.rotation.y = 0.0;
+		vision_pose.transform.rotation.z = 0.0;
+		vision_pose.transform.translation.x = 0.0;
+		vision_pose.transform.translation.y = 0.0;
+		vision_pose.transform.translation.z = 0.0;
+
 		std::array<double, 7> vision_pose2;
+
 
 		for( int i=0; i< Detections.detections.size(); i++ ) {
 			double l1 = sqrt( pow(Detections.detections.at(i).corners.at(1).y - Detections.detections.at(i).corners.at(0).y,2) + pow(Detections.detections.at(i).corners.at(1).x - Detections.detections.at(i).corners.at(0).x,2));
 			double l2 = sqrt( pow(Detections.detections.at(i).corners.at(2).y - Detections.detections.at(i).corners.at(1).y,2) + pow(Detections.detections.at(i).corners.at(2).x - Detections.detections.at(i).corners.at(1).x,2));
 			double l3 = sqrt( pow(Detections.detections.at(i).corners.at(3).y - Detections.detections.at(i).corners.at(2).y,2) + pow(Detections.detections.at(i).corners.at(3).x - Detections.detections.at(i).corners.at(2).x,2));
 			double l4 = sqrt( pow(Detections.detections.at(i).corners.at(0).y - Detections.detections.at(i).corners.at(3).y,2) + pow(Detections.detections.at(i).corners.at(0).x - Detections.detections.at(i).corners.at(3).x,2));
-
-			// RCLCPP_INFO(get_logger(), "Lati: %lf %lf %lf %lf", l1, l2, l3, l4);
-
 			areaID(i,0) = i;
 			areaID(i,1) = pow( (l1 + l2 + l3 +l4)/4,2 );
-
-			// RCLCPP_INFO(get_logger(), "Area: %lf %lf", areaID(i,0), areaID(i, 1));
-			// RCLCPP_INFO(get_logger(), "DETECTED TAG: %lf", areaID(i,0));
 		}
 
 		double weighTot = 0;
 
-		//std::cout<<"detection_size: "<<Detections.detections.size()<< " Rows: "<<areaID.rows()<<std::endl;
 
 		int num_of_valid_ids = 0;
 		std::vector<double> xs, ys, zs;
 
 		for( int i = 0; i< areaID.rows(); i++ ) {
-			vision_pose.position[0] += t_f.transforms.at( areaID(i, 0) ).transform.translation.x * areaID(i, 1);
-			vision_pose.position[1] += t_f.transforms.at( areaID(i, 0) ).transform.translation.y * areaID(i, 1);
-			vision_pose.position[2] += t_f.transforms.at( areaID(i, 0) ).transform.translation.z * areaID(i, 1);
+			vision_pose.transform.translation.x += t_f.transforms.at( areaID(i, 0) ).transform.translation.x * areaID(i, 1);
+			vision_pose.transform.translation.y += t_f.transforms.at( areaID(i, 0) ).transform.translation.y * areaID(i, 1);
+			vision_pose.transform.translation.z += t_f.transforms.at( areaID(i, 0) ).transform.translation.z * areaID(i, 1);
 
-			vision_pose.orientation[0] += t_f.transforms.at( areaID(i, 0) ).transform.rotation.w * areaID(i, 1);
-			vision_pose.orientation[1] += t_f.transforms.at( areaID(i, 0) ).transform.rotation.x * areaID(i, 1);
-			vision_pose.orientation[2] += t_f.transforms.at( areaID(i, 0) ).transform.rotation.y * areaID(i, 1);
-			vision_pose.orientation[3] += t_f.transforms.at( areaID(i, 0) ).transform.rotation.z * areaID(i, 1);
+			vision_pose.transform.rotation.w += t_f.transforms.at( areaID(i, 0) ).transform.rotation.w * areaID(i, 1);
+			vision_pose.transform.rotation.x += t_f.transforms.at( areaID(i, 0) ).transform.rotation.x * areaID(i, 1);
+			vision_pose.transform.rotation.y += t_f.transforms.at( areaID(i, 0) ).transform.rotation.y * areaID(i, 1);
+			vision_pose.transform.rotation.z += t_f.transforms.at( areaID(i, 0) ).transform.rotation.z * areaID(i, 1);
 
 
 
@@ -370,13 +344,9 @@ void AprilTag2Node::publish_data_center(const apriltag_msgs::msg::AprilTagDetect
 
 			double xx = t_f.transforms.at( areaID(i, 0) ).transform.translation.x;
 			double yy = t_f.transforms.at( areaID(i, 0) ).transform.translation.y;
-			double rot_yaw = -1*_drone_pose.yaw;
+			double rot_yaw = -1*_drone_yaw;
 			auto temp = -(sinf(rot_yaw) * xx + cosf(rot_yaw) * yy);	
-			// RCLCPP_INFO(get_logger(), "Area: %lf %lf", areaID(i,0), areaID(i, 1));
-			// RCLCPP_INFO(get_logger(), "DETECTED TAG: %lf x %f gt_x_comp %f gtx %f y %f z %f", areaID(i,0),xx,temp,(2 - _drone_pose.position[0]),
-			// yy,t_f.transforms.at( areaID(i, 0) ).transform.translation.z);
 		}
-		// std::cout<<"weighTot: "<<weighTot<<std::endl;
 		auto median = [](std::vector<double> v)
 		{
 			std::sort(v.begin(), v.end());
@@ -389,38 +359,26 @@ void AprilTag2Node::publish_data_center(const apriltag_msgs::msg::AprilTagDetect
 			return v[n/2];
 		};
 
-		// double median_x = median(xs);
-		// double median_y = median(ys);
-		// double median_z = median(zs);
 
-		// vision_pose.position[0] = median_x;
-		// vision_pose.position[1] = median_y;
-		// vision_pose.position[2] = median_z;
+		vision_pose.transform.translation.x = vision_pose.transform.translation.x / weighTot;
+		vision_pose.transform.translation.y = vision_pose.transform.translation.y / weighTot;
+		vision_pose.transform.translation.z = vision_pose.transform.translation.z / weighTot;
 
 
-		vision_pose.position[0] = vision_pose.position[0] / weighTot;
-		vision_pose.position[1] = vision_pose.position[1] / weighTot;
-		vision_pose.position[2] = vision_pose.position[2] / weighTot;
 
-		vision_pose.velocity[0] = 0;
-		vision_pose.velocity[1] = 0;
-		vision_pose.velocity[2] = 0;
-
-		vision_pose.orientation[0] = vision_pose.orientation[0] / weighTot;
-		vision_pose.orientation[1] = vision_pose.orientation[1] / weighTot;
-		vision_pose.orientation[2] = vision_pose.orientation[2] / weighTot;
-		vision_pose.orientation[3] = vision_pose.orientation[3] / weighTot;
+		vision_pose.transform.rotation.w = vision_pose.transform.rotation.w / weighTot;
+		vision_pose.transform.rotation.x = vision_pose.transform.rotation.x / weighTot;
+		vision_pose.transform.rotation.y = vision_pose.transform.rotation.y / weighTot;
+		vision_pose.transform.rotation.z = vision_pose.transform.rotation.z / weighTot;
 
 
-		toEulerAngle(vision_pose.orientation,&_roll,&_pitch,&_yaw);
-		//moving filter to clean a bit the data
+		// toEulerAngle(vision_pose.transform.rotation,&_roll,&_pitch,&_yaw);
+		// //moving filter to clean a bit the data
 
-		vision_pose.roll = movingFilter(_roll,&_Queue_roll,&_integral_roll);
-		vision_pose.pitch = movingFilter(_pitch,&_Queue_pitch,&_integral_pitch);
-		vision_pose.yaw = movingFilter(_yaw,&_Queue_yaw,&_integral_yaw);
+		// vision_pose.roll = movingFilter(_roll,&_Queue_roll,&_integral_roll);
+		// vision_pose.pitch = movingFilter(_pitch,&_Queue_pitch,&_integral_pitch);
+		// vision_pose.yaw = movingFilter(_yaw,&_Queue_yaw,&_integral_yaw);
 
-		// std::cout << "Z: " << vision_pose.position[2] << std::endl;
-		// std::cout << "YAW: " << _drone_pose.yaw*180.0/3.14 << std::endl;
 
 
 		vision_pose2[0] = vision_pose2[0] / weighTot;
@@ -439,17 +397,17 @@ void AprilTag2Node::publish_data_center(const apriltag_msgs::msg::AprilTagDetect
 		// preparing for last rotation: the computed position is wrt drone frame: the whole should be
 		// rotated in global frame.
 		// creating then a temporary store
-		geometry::vision vision_temp;
+		geometry_msgs::msg::TransformStamped vision_temp;
 		// the rotation sign depends on the choosen direction of z as well
 		int sign = 1;
 		if(z_up)
 			sign = -1;
 
-		double rotation_yaw = sign*_drone_pose.yaw;
+		double rotation_yaw = sign*_drone_yaw;
 		// performing a scalar product with a rotation matrix on drone's z-axis: this one
 		// rotates the error in the world frame, so that it corresponds to real working environment
-		vision_temp.position[0] = (cosf(rotation_yaw) * vision_pose.position[0] - sinf(rotation_yaw) * vision_pose.position[1]);
-		vision_temp.position[1] = (sinf(rotation_yaw) * vision_pose.position[0] + cosf(rotation_yaw) * vision_pose.position[1]);
+		vision_temp.transform.translation.x = (cosf(rotation_yaw) * vision_pose.transform.translation.x - sinf(rotation_yaw) * vision_pose.transform.translation.y);
+		vision_temp.transform.translation.y = (sinf(rotation_yaw) * vision_pose.transform.translation.x + cosf(rotation_yaw) * vision_pose.transform.translation.y);
 
 		
 
@@ -459,106 +417,64 @@ void AprilTag2Node::publish_data_center(const apriltag_msgs::msg::AprilTagDetect
 		// this is due to the sign of rotation angle
 		if(z_up)
 		{
-			vision_pose.position[0] = -vision_temp.position[1];
-			vision_pose.position[1] = vision_temp.position[0];
+			vision_pose.transform.translation.x = -vision_temp.transform.translation.y;
+			vision_pose.transform.translation.y = vision_temp.transform.translation.x;
 		}
 		else
 		{
-			vision_pose.position[0] = -vision_temp.position[0];
-			vision_pose.position[1] = -vision_temp.position[1];
+			vision_pose.transform.translation.x = -vision_temp.transform.translation.x;
+			vision_pose.transform.translation.y = -vision_temp.transform.translation.y;
 		}
 
 		// checking whenever we would have anomalies in the computed errors
-		if(abs(vision_pose.position[0]) > _x_err_thld)
+		if(abs(vision_pose.transform.translation.x) > _x_err_thld)
 		{
-			vision_pose.position[0] = _previous_x_err;
+			vision_pose.transform.translation.x = _previous_x_err;
 			// RCLCPP_WARN(get_logger(), "X error is too high, selecting previous one!");
 			_x_err_count++;
 		}
 		else
 		{
 			// if it's good instead, saving it for the next iteration
-			_previous_x_err = vision_pose.position[0];
+			_previous_x_err = vision_pose.transform.translation.x;
 			_x_err_count = 0;
 		}
 
 		// doing the same for Y and Z
-		if(abs(vision_pose.position[1]) > _y_err_thld)
+		if(abs(vision_pose.transform.translation.y) > _y_err_thld)
 		{
-			vision_pose.position[1] = _previous_y_err;
+			vision_pose.transform.translation.y = _previous_y_err;
 			// RCLCPP_WARN(get_logger(), "Y error is too high, selecting previous one!");
 			_y_err_count++;
 		}
 		else
 		{
-			_previous_y_err = vision_pose.position[1];
+			_previous_y_err = vision_pose.transform.translation.y;
 			_y_err_count = 0;
 		}
 
-		if(abs(vision_pose.position[2]) > _z_err_thld)
+		if(abs(vision_pose.transform.translation.z) > _z_err_thld)
 		{
-			vision_pose.position[2] = _previous_z_err;
+			vision_pose.transform.translation.z = _previous_z_err;
 			// RCLCPP_WARN(get_logger(), "Z error is too high, selecting previous one!");
 			_z_err_count++;
 		}
 		else
 		{
-			_previous_z_err = vision_pose.position[2];
+			_previous_z_err = vision_pose.transform.translation.z;
 			_z_err_count = 0;
 		}
-
-		// check on the errors: if it's already some iterations they pass the threshold
-		// then we signal the data to be inconsistent; on the other side, the drone will keep the positon.
-		// otherwise, everything is ok
-		if(_x_err_count > _iter_err_thld || _y_err_count > _iter_err_thld || _z_err_count > _iter_err_thld)
-		{
-			vision_pose.isValid = false;
-		}
-		else
-		{
-			vision_pose.isValid = true;
-			// applyChangeLimiter(vision_pose);
-			// vision_pose.position[0] = _filtered_vision_pos[1];
-			// vision_pose.position[1] = _filtered_vision_pos[0];
-			// vision_pose.position[2] = _filtered_vision_pos[2];
-
-			// applyMedianFilter(vision_pose);
-			// lowPassFilter(vision_pose);
-			// vision_pose.position[0] = _filtered_vision_pos[0];
-			// vision_pose.position[1] = _filtered_vision_pos[1];
-			// vision_pose.position[2] = _filtered_vision_pos[2];
-		}
-
-		// std::cout << "IS DATA VALID: "<< (bool)vision_pose.isValid << std::endl;
-		// auto tmp = vision_pose.position[0];
-		// vision_pose.position[0] = vision_pose.position[1];
-		// vision_pose.position[1] = tmp;
-		// std::cout << "xnon filtered " << vision_pose.position[0] << std::endl;
-		// std::cout << "z is " << vision_pose.position[2] << std::endl;
-		// vision_pose.position[0] = movingFilter(vision_pose.position[0], &_Queue_x,&_integral_x);
-		// vision_pose.position[1] = movingFilter(vision_pose.position[1], &_Queue_y,&_integral_y);
-		//lcm publication.
-
-		// vision_pose.position[0] = -2 + _drone_pose.position[1];
-		// vision_pose.position[1] = 2 + _drone_pose.position[0];
-
-		// vision_pose.position[0] = 2 - _drone_pose.position[0];
-		// vision_pose.position[1] = -2 - _drone_pose.position[1];
 		
-		_handler.publish("apriltag_vision_system",&vision_pose);
+		// _handler.publish("apriltag_vision_system",&vision_pose);
 		geometry_msgs::msg::TransformStamped msg_tf;
 		geometry_msgs::msg::TransformStamped gt_msg_tf;
-		if(vision_pose.isValid){
-			msg_tf.transform.translation.x = std::isnan(vision_pose.position[0]) ? -1.0 : vision_pose.position[0];
-			msg_tf.transform.translation.y = std::isnan(vision_pose.position[1]) ? -1.0 : vision_pose.position[1];
-			msg_tf.transform.translation.z = std::isnan(vision_pose.position[2]) ? -1.0 : vision_pose.position[2];
-			// std::cout << "det->id " << msg_detection.id << "tf x is "<< msg_tf.transform.translation.x << " msg_detection.decision_margin " << msg_detection.decision_margin << std::endl;
-			pub_platformCenter->publish(msg_tf);
-			gt_msg_tf.transform.translation.x = 2 - _drone_pose.position[0];
-			gt_msg_tf.transform.translation.y = -2 - _drone_pose.position[1];
-			pub_platformCenter_gt->publish(gt_msg_tf);
-		}
-		
+		msg_tf.transform.translation.x = std::isnan(vision_pose.transform.translation.x) ? -1.0 : vision_pose.transform.translation.x;
+		msg_tf.transform.translation.y = std::isnan(vision_pose.transform.translation.y) ? -1.0 : vision_pose.transform.translation.y;
+		msg_tf.transform.translation.z = std::isnan(vision_pose.transform.translation.z) ? -1.0 : vision_pose.transform.translation.z;
+		pub_platformCenter->publish(msg_tf);
+		gt_msg_tf.transform.translation.x = 2 - _drone_pose.transform.translation.x;
+		gt_msg_tf.transform.translation.y = -2 - _drone_pose.transform.translation.y;
+		pub_platformCenter_gt->publish(gt_msg_tf);
 	}
 }
 
@@ -688,67 +604,20 @@ void AprilTag2Node::toEulerAngle(double quaternion[], double *Roll, double *Pitc
 
 void AprilTag2Node::getDroneOdometry(const px4_msgs::msg::VehicleOdometry::SharedPtr msg_odom)
 {
-	_drone_pose.position[0] =  msg_odom->position[1];
-	_drone_pose.position[1] =  msg_odom->position[0];
-	_drone_pose.position[2] =  -msg_odom->position[2];
+	_drone_pose.transform.translation.x =  msg_odom->position[1];
+	_drone_pose.transform.translation.y =  msg_odom->position[0];
+	_drone_pose.transform.translation.z =  -msg_odom->position[2];
 
-	_drone_pose.velocity[0] = msg_odom->velocity[1];
-	_drone_pose.velocity[1] = msg_odom->velocity[0];
-	_drone_pose.velocity[2] = -msg_odom->velocity[2];
+	// _drone_pose.velocity[0] = msg_odom->velocity[1];
+	// _drone_pose.velocity[1] = msg_odom->velocity[0];
+	// _drone_pose.velocity[2] = -msg_odom->velocity[2];
 
-	_drone_pose.orientation[0] = msg_odom->q[0];
-	_drone_pose.orientation[1] = msg_odom->q[1];
-	_drone_pose.orientation[2] = msg_odom->q[2];
-	_drone_pose.orientation[3] = msg_odom->q[3];
+	_drone_pose.transform.rotation.w = msg_odom->q[0];
+	_drone_pose.transform.rotation.x = msg_odom->q[1];
+	_drone_pose.transform.rotation.y = msg_odom->q[2];
+	_drone_pose.transform.rotation.z = msg_odom->q[3];
 
-	_drone_pose.yaw = atan2(2.0 * (msg_odom->q[0]*msg_odom->q[3] + msg_odom->q[0]*msg_odom->q[2]), 1.0 - 2.0 * (msg_odom->q[2]*msg_odom->q[2] + msg_odom->q[3]*msg_odom->q[3]));
-}
-
-void AprilTag2Node::applyChangeLimiter(geometry::vision &vision_pose) {
-    rclcpp::Time current_time = this->get_clock()->now();
-    
-    // 1. Sanity check for NaNs
-    if(std::isnan(vision_pose.position[0]) || 
-       std::isnan(vision_pose.position[1]) || 
-       std::isnan(vision_pose.position[2])) {
-        return;
-    }
-
-    // 2. Initialize on first run
-    if (_first_vision_run) {
-        _last_vision_time = current_time;
-        for(int i=0; i<3; ++i) _filtered_vision_pos[i] = vision_pose.position[i];
-        _first_vision_run = false;
-        return;
-    }
-
-    double dt = (current_time - _last_vision_time).seconds();
-    _last_vision_time = current_time;
-
-    // 3. Apply Slew Rate (Velocity) Limiting
-    if (dt > 0.0 && dt < 0.5) 
-    {
-        double max_step = _max_vision_velocity * dt;
-
-        for (int i = 0; i < 3; ++i) {
-            double delta = vision_pose.position[i] - _filtered_vision_pos[i];
-
-            // Clamp the change to +/- max_step
-            if (delta > max_step) {
-                delta = max_step;
-            } else if (delta < -max_step) {
-                delta = -max_step;
-            }
-
-            _filtered_vision_pos[i] += delta;
-            vision_pose.position[i] = _filtered_vision_pos[i];
-        }
-    }
-    else 
-    {
-        // Handle large dt gaps by snapping to current to avoid huge jumps later
-        for(int i=0; i<3; ++i) _filtered_vision_pos[i] = vision_pose.position[i];
-    }
+	_drone_yaw = atan2(2.0 * (msg_odom->q[0]*msg_odom->q[3] + msg_odom->q[0]*msg_odom->q[2]), 1.0 - 2.0 * (msg_odom->q[2]*msg_odom->q[2] + msg_odom->q[3]*msg_odom->q[3]));
 }
 
 double AprilTag2Node::getMedian(std::deque<double> buffer) {
@@ -757,29 +626,6 @@ double AprilTag2Node::getMedian(std::deque<double> buffer) {
     return sort_vec[sort_vec.size() / 2];
 }
 
-void AprilTag2Node::applyMedianFilter(geometry::vision &vision_pose) {
-    // 1. NaN Guard
-    if(std::isnan(vision_pose.position[0])) return;
-
-    // 2. Update Buffers
-    _buffer_x.push_back(vision_pose.position[0]);
-    _buffer_y.push_back(vision_pose.position[1]);
-    _buffer_z.push_back(vision_pose.position[2]);
-
-    // 3. Maintain Window Size
-    if (_buffer_x.size() > _median_window_size) {
-        _buffer_x.pop_front();
-        _buffer_y.pop_front();
-        _buffer_z.pop_front();
-    }
-
-    // 4. Compute Median (only if buffer is full enough to be effective)
-    if (_buffer_x.size() >= 3) {
-        vision_pose.position[0] = getMedian(_buffer_x);
-        vision_pose.position[1] = getMedian(_buffer_y);
-        vision_pose.position[2] = getMedian(_buffer_z);
-    }
-}
 geometry_msgs::msg::Transform
 AprilTag2Node::pnp(apriltag_detection_t* const detection, const std::array<double, 4>& intr, double tagsize)
 {

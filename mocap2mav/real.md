@@ -1,4 +1,0 @@
-autom
-exec
-safety
->

@@ -37,8 +37,8 @@ def generate_launch_description():
     )
 
     # ---------- Nodes ----------
-    lcm_bridge_node = Node(
-        package='lcm_bridge',
+    px4_bridge_node = Node(
+        package='px4_bridge',
         executable='bridge_node',
         output='screen'
     )
@@ -102,7 +102,7 @@ def generate_launch_description():
 			value='1'
 		),
         bridge_launch,
-        lcm_bridge_node,
+        px4_bridge_node,
         ultrasonic_node,
         payload_node,
         apriltag_node,

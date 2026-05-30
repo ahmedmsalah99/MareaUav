@@ -225,7 +225,7 @@ void AprilTag2RescueNode::publish_data_center(const apriltag_msgs::msg::AprilTag
 	{
 		Eigen::MatrixXd areaID(Detections.detections.size(), 2);
 		// geometry_msgs::msg::TransformStamped msg_relative_pose;
-		geometry::vision vision_pose; //lcm message for vision topic.
+		geometry_msgs::msg::TransformStamped vision_pose; //lcm message for vision topic.
 
 		for( int i=0; i< Detections.detections.size(); i++ ) {
 			double l1 = sqrt( pow(Detections.detections.at(i).corners.at(1).y - Detections.detections.at(i).corners.at(0).y,2) + pow(Detections.detections.at(i).corners.at(1).x - Detections.detections.at(i).corners.at(0).x,2));
@@ -247,61 +247,57 @@ void AprilTag2RescueNode::publish_data_center(const apriltag_msgs::msg::AprilTag
 
 
 		for( int i = 0; i< areaID.rows(); i++ ) {
-			vision_pose.position[0] += t_f.transforms.at( areaID(i, 0) ).transform.translation.x * areaID(i, 1);
-			vision_pose.position[1] += t_f.transforms.at( areaID(i, 0) ).transform.translation.y * areaID(i, 1);
-			vision_pose.position[2] += t_f.transforms.at( areaID(i, 0) ).transform.translation.z * areaID(i, 1);
+			vision_pose.transform.translation.x += t_f.transforms.at( areaID(i, 0) ).transform.translation.x * areaID(i, 1);
+			vision_pose.transform.translation.y += t_f.transforms.at( areaID(i, 0) ).transform.translation.y * areaID(i, 1);
+			vision_pose.transform.translation.z += t_f.transforms.at( areaID(i, 0) ).transform.translation.z * areaID(i, 1);
 
-			vision_pose.orientation[0] += t_f.transforms.at( areaID(i, 0) ).transform.rotation.w * areaID(i, 1);
-			vision_pose.orientation[1] += t_f.transforms.at( areaID(i, 0) ).transform.rotation.x * areaID(i, 1);
-			vision_pose.orientation[2] += t_f.transforms.at( areaID(i, 0) ).transform.rotation.y * areaID(i, 1);
-			vision_pose.orientation[3] += t_f.transforms.at( areaID(i, 0) ).transform.rotation.z * areaID(i, 1);
+			vision_pose.transform.rotation.w += t_f.transforms.at( areaID(i, 0) ).transform.rotation.w * areaID(i, 1);
+			vision_pose.transform.rotation.x += t_f.transforms.at( areaID(i, 0) ).transform.rotation.x * areaID(i, 1);
+			vision_pose.transform.rotation.y += t_f.transforms.at( areaID(i, 0) ).transform.rotation.y * areaID(i, 1);
+			vision_pose.transform.rotation.z += t_f.transforms.at( areaID(i, 0) ).transform.rotation.z * areaID(i, 1);
 
 			weighTot += areaID(i, 1);
 		}
-		// std::cout<<"weighTot: "<<weighTot<<std::endl;
 
 
 
 
-		vision_pose.position[0] = vision_pose.position[0] / weighTot;
-		vision_pose.position[1] = vision_pose.position[1] / weighTot;
-		vision_pose.position[2] = vision_pose.position[2] / weighTot;
+		vision_pose.transform.translation.x = vision_pose.transform.translation.x / weighTot;
+		vision_pose.transform.translation.y = vision_pose.transform.translation.y / weighTot;
+		vision_pose.transform.translation.z = vision_pose.transform.translation.z / weighTot;
 
-		vision_pose.velocity[0] = 0;
-		vision_pose.velocity[1] = 0;
-		vision_pose.velocity[2] = 0;
+		// vision_pose.velocity[0] = 0;
+		// vision_pose.velocity[1] = 0;
+		// vision_pose.velocity[2] = 0;
 
-		vision_pose.orientation[0] = vision_pose.orientation[0] / weighTot;
-		vision_pose.orientation[1] = vision_pose.orientation[1] / weighTot;
-		vision_pose.orientation[2] = vision_pose.orientation[2] / weighTot;
-		vision_pose.orientation[3] = vision_pose.orientation[3] / weighTot;
+		vision_pose.transform.rotation.w = vision_pose.transform.rotation.w / weighTot;
+		vision_pose.transform.rotation.x = vision_pose.transform.rotation.x / weighTot;
+		vision_pose.transform.rotation.y = vision_pose.transform.rotation.y / weighTot;
+		vision_pose.transform.rotation.z = vision_pose.transform.rotation.z / weighTot;
 
 
-		toEulerAngle(vision_pose.orientation,&_roll,&_pitch,&_yaw);
-		// std::cout << "YAW: " << _yaw*180.0/3.14 << std::endl;
-		//moving filter to clean a bit the data
+		// toEulerAngle(vision_pose.orientation,&_roll,&_pitch,&_yaw);
+		// //moving filter to clean a bit the data
 
-		vision_pose.roll = movingFilter(_roll,&_Queue_roll,&_integral_roll);
-		vision_pose.pitch = movingFilter(_pitch,&_Queue_pitch,&_integral_pitch);
-		vision_pose.yaw = movingFilter(_yaw,&_Queue_yaw,&_integral_yaw);
+		// vision_pose.roll = movingFilter(_roll,&_Queue_roll,&_integral_roll);
+		// vision_pose.pitch = movingFilter(_pitch,&_Queue_pitch,&_integral_pitch);
+		// vision_pose.yaw = movingFilter(_yaw,&_Queue_yaw,&_integral_yaw);
 
-		// std::cout << "Z: " << vision_pose.position[2] << std::endl;
-		// std::cout << "YAW: " << _drone_pose.yaw*180.0/3.14 << std::endl;
 
 		// preparing for last rotation: the computed position is wrt drone frame: the whole should be
 		// rotated in global frame.
 		// creating then a temporary store
-		geometry::vision vision_temp;
+		geometry_msgs::msg::TransformStamped vision_temp;
 		// the rotation sign depends on the choosen direction of z as well
 		int sign = 1;
 		if(z_up)
 			sign = -1;
 
-		double rotation_yaw = sign*_drone_pose.yaw;
+		double rotation_yaw = sign*_drone_pose_yaw;
 		// performing a scalar product with a rotation matrix on drone's z-axis: this one
 		// rotates the error in the world frame, so that it corresponds to real working environment
-		vision_temp.position[0] = (cosf(rotation_yaw) * vision_pose.position[0] - sinf(rotation_yaw) * vision_pose.position[1]);
-		vision_temp.position[1] = (sinf(rotation_yaw) * vision_pose.position[0] + cosf(rotation_yaw) * vision_pose.position[1]);
+		vision_pose.transform.translation.x = (cosf(rotation_yaw) * vision_pose.transform.translation.x - sinf(rotation_yaw) * vision_pose.transform.translation.y);
+		vision_pose.transform.translation.y = (sinf(rotation_yaw) * vision_pose.transform.translation.x + cosf(rotation_yaw) * vision_pose.transform.translation.y);
 
 		// finally, assigning the computed rotation, adapting it to NED framework
 		// (rotations along Z by 90 degrees counterclockwise and X by 180 degrees for z_up)
@@ -309,73 +305,54 @@ void AprilTag2RescueNode::publish_data_center(const apriltag_msgs::msg::AprilTag
 		// this is due to the sign of rotation angle
 		if(z_up)
 		{
-			vision_pose.position[0] = -vision_temp.position[1];
-			vision_pose.position[1] = vision_temp.position[0];
+			vision_pose.transform.translation.x = -_drone_pose.transform.translation.y;
+			vision_pose.transform.translation.y = _drone_pose.transform.translation.x;
 		}
 		else
 		{
-			vision_pose.position[0] = -vision_temp.position[0];
-			vision_pose.position[1] = -vision_temp.position[1];
+			vision_pose.transform.translation.x = -_drone_pose.transform.translation.x;
+			vision_pose.transform.translation.y = -_drone_pose.transform.translation.y;
 		}
 
 
 		// checking whenever we would have anomalies in the computed errors
-		if(abs(vision_pose.position[0]) > _x_err_thld)
+		if(abs(vision_pose.transform.translation.x) > _x_err_thld)
 		{
-			vision_pose.position[0] = _previous_x_err;
+			vision_pose.transform.translation.x = _previous_x_err;
 			RCLCPP_WARN(get_logger(), "X error is too high, selecting previous one!");
 			_x_err_count++;
 		}
 		else
 		{
 			// if it's good instead, saving it for the next iteration
-			_previous_x_err = vision_pose.position[0];
+			_previous_x_err = vision_pose.transform.translation.x;
 			_x_err_count = 0;
 		}
 
 		// doing the same for Y and Z
-		if(abs(vision_pose.position[1]) > _y_err_thld)
+		if(abs(vision_pose.transform.translation.y) > _y_err_thld)
 		{
-			vision_pose.position[1] = _previous_y_err;
+			vision_pose.transform.translation.y = _previous_y_err;
 			RCLCPP_WARN(get_logger(), "Y error is too high, selecting previous one!");
 			_y_err_count++;
 		}
 		else
 		{
-			_previous_y_err = vision_pose.position[1];
+			_previous_y_err = vision_pose.transform.translation.y;
 			_y_err_count = 0;
 		}
 
-		if(abs(vision_pose.position[2]) > _z_err_thld)
+		if(abs(vision_pose.transform.translation.z) > _z_err_thld)
 		{
-			vision_pose.position[2] = _previous_z_err;
+			vision_pose.transform.translation.z = _previous_z_err;
 			RCLCPP_WARN(get_logger(), "Z error is too high, selecting previous one!");
 			_z_err_count++;
 		}
 		else
 		{
-			_previous_z_err = vision_pose.position[2];
+			_previous_z_err = vision_pose.transform.translation.z;
 			_z_err_count = 0;
 		}
-
-		// check on the errors: if it's already some iterations they pass the threshold
-		// then we signal the data to be inconsistent; on the other side, the drone will keep the positon.
-		// otherwise, everything is ok
-		if(_x_err_count > _iter_err_thld || _y_err_count > _iter_err_thld || _z_err_count > _iter_err_thld)
-		{
-			vision_pose.isValid = false;
-		}
-		else
-		{
-			vision_pose.isValid = true;
-		}
-
-		// std::cout << "IS DATA VALID: "<< (bool)vision_pose.isValid << std::endl;
-		// std::cout << "vision_pose.position[0] " << vision_pose.position[0] << std::endl;
-		// std::cout << "vision_pose.position[1] " << vision_pose.position[1] << std::endl;
-		// std::cout << "vision_pose.position[2] " << vision_pose.position[2] << std::endl;
-		//lcm publication.
-		_handler.publish("apriltag_rescue_vision",&vision_pose);
 
 	}
 }
@@ -488,20 +465,20 @@ void AprilTag2RescueNode::toEulerAngle(double quaternion[], double *Roll, double
 
 void AprilTag2RescueNode::getDroneOdometry(const px4_msgs::msg::VehicleOdometry::SharedPtr msg_odom)
 {
-	_drone_pose.position[0] =  msg_odom->position[1];
-	_drone_pose.position[1] =  msg_odom->position[0];
-	_drone_pose.position[2] =  -msg_odom->position[2];
+	_drone_pose.transform.translation.x =  msg_odom->position[1];
+	_drone_pose.transform.translation.y =  msg_odom->position[0];
+	_drone_pose.transform.translation.z =  -msg_odom->position[2];
 
-	_drone_pose.velocity[0] = msg_odom->velocity[1];
-	_drone_pose.velocity[1] = msg_odom->velocity[0];
-	_drone_pose.velocity[2] = -msg_odom->velocity[2];
+	// _drone_pose.velocity[0] = msg_odom->velocity[1];
+	// _drone_pose.velocity[1] = msg_odom->velocity[0];
+	// _drone_pose.velocity[2] = -msg_odom->velocity[2];
 
-	_drone_pose.orientation[0] = msg_odom->q[0];
-	_drone_pose.orientation[1] = msg_odom->q[1];
-	_drone_pose.orientation[2] = msg_odom->q[2];
-	_drone_pose.orientation[3] = msg_odom->q[3];
+	_drone_pose.transform.rotation.w = msg_odom->q[0];
+	_drone_pose.transform.rotation.x = msg_odom->q[1];
+	_drone_pose.transform.rotation.y = msg_odom->q[2];
+	_drone_pose.transform.rotation.z = msg_odom->q[3];
 
-	_drone_pose.yaw = atan2(2.0 * (msg_odom->q[0]*msg_odom->q[3] + msg_odom->q[0]*msg_odom->q[2]), 1.0 - 2.0 * (msg_odom->q[2]*msg_odom->q[2] + msg_odom->q[3]*msg_odom->q[3]));
+	_drone_pose_yaw = atan2(2.0 * (msg_odom->q[0]*msg_odom->q[3] + msg_odom->q[0]*msg_odom->q[2]), 1.0 - 2.0 * (msg_odom->q[2]*msg_odom->q[2] + msg_odom->q[3]*msg_odom->q[3]));
 }
 geometry_msgs::msg::Transform
 AprilTag2RescueNode::pnp(apriltag_detection_t* const detection, const std::array<double, 4>& intr, double tagsize)

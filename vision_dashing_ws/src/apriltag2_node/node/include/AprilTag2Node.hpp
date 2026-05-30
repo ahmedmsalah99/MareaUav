@@ -1,7 +1,6 @@
 #pragma once
 
 // ros
-#include "lcm/lcm-cpp.hpp"
 #include <rclcpp/rclcpp.hpp>
 #include <rclcpp/node_options.hpp>
 #include <rclcpp/qos.hpp>
@@ -11,7 +10,6 @@
 #include <apriltag_msgs/msg/april_tag_detection.hpp>
 #include <apriltag_msgs/msg/april_tag_detection_array.hpp>
 #include <tf2_msgs/msg/tf_message.hpp>
-#include <lcm_messages/geometry/vision.hpp>
 // apriltag
 #include <apriltag.h>
 #include <apriltag_pose.h>
@@ -44,10 +42,10 @@ private:
 	double tag_edge_size;
 	int max_hamming;
 	int n_tags;
-	geometry::vision _drone_pose;
+	geometry_msgs::msg::TransformStamped _drone_pose;
+	double _drone_yaw;
 	std::map<int, std::string> tracked_tags;
 	std::map<int, float> platform_tags;
-	lcm::LCM _handler;
 	typedef std::queue<double> queue_t;
 	queue_t _Queue_roll;
 	queue_t _Queue_pitch;
@@ -111,8 +109,6 @@ private:
 	double movingFilter(double raw, std::queue<double> *queue_t, double *integral);
 	void toEulerAngle(double quaternion[], double *Roll, double *Pitch, double *Yaw);
 	void publish_data_center(const apriltag_msgs::msg::AprilTagDetectionArray& Detections, const tf2_msgs::msg::TFMessage& t_f);
-	void lowPassFilter(geometry::vision vision_pose);
-	void applyChangeLimiter(geometry::vision &vision_pose);
 	geometry_msgs::msg::Transform
 	// homography(apriltag_detection_t* const detection, const std::array<double, 4>& intr, double tagsize);
 	pnp(apriltag_detection_t* const detection, const std::array<double, 4>& intr, double tagsize);
@@ -121,7 +117,6 @@ private:
 	const size_t _median_window_size = 5; // Use an odd number (5-9 is usually best)
 
 	double getMedian(std::deque<double> buffer);
-	void applyMedianFilter(geometry::vision &vision_pose);
 	geometry_msgs::msg::Transform
 	toMsg(const std::pair<cv::Mat_<double>, cv::Mat_<double>>& pose);
 	void convert(const Eigen::Quaterniond& eigen_quat, geometry_msgs::msg::Quaternion& msg_quat);

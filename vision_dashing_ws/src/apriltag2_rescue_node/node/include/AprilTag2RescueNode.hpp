@@ -1,7 +1,6 @@
 #pragma once
 
 // ros
-#include "lcm/lcm-cpp.hpp"
 #include <rclcpp/rclcpp.hpp>
 #include <rclcpp/node_options.hpp>
 #include <rclcpp/qos.hpp>
@@ -11,7 +10,6 @@
 #include <apriltag_msgs/msg/april_tag_detection.hpp>
 #include <apriltag_msgs/msg/april_tag_detection_array.hpp>
 #include <tf2_msgs/msg/tf_message.hpp>
-#include <lcm_messages/geometry/vision.hpp>
 // apriltag
 #include <apriltag.h>
 #include <apriltag_pose.h>
@@ -40,10 +38,10 @@ private:
 	double tag_edge_size;
 	int max_hamming;
 	int n_tags;
-	geometry::vision _drone_pose;
+	geometry_msgs::msg::TransformStamped _drone_pose;
+	double _drone_pose_yaw;
 	std::map<int, std::string> tracked_tags;
 	std::map<int, float> rescue_tags;
-	lcm::LCM _handler;
 	typedef std::queue<double> queue_t;
 	queue_t _Queue_roll;
 	queue_t _Queue_pitch;

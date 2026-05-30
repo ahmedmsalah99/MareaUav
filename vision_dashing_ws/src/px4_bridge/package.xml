@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>px4_bridge</name>
+  <version>0.0.0</version>
+  <description>PX4 &lt;-&gt; ROS 2 bridge (pure ROS 2; LCM removed).</description>
+
+  <maintainer email="NicoNelli@todo.todo">andreanisti</maintainer>
+
+  <license>TODO</license>
+
+  <buildtool_depend>ament_cmake</buildtool_depend>
+
+  <depend>rclcpp</depend>
+  <depend>rmw_implementation</depend>
+  <depend>std_msgs</depend>
+  <depend>nav_msgs</depend>
+  <depend>px4_msgs</depend>
+  <depend>ulisse_msgs</depend>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>

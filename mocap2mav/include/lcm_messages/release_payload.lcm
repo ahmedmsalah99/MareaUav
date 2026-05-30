@@ -1,5 +1,0 @@
-package exec;
-struct release_payload
-{
-	string data;
-}

@@ -26,8 +26,8 @@ set(PROJECT_SRC_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src)
 
 # Shared common code lives outside this package, at the workspace root.
 # Adjust the relative path if your workspace layout differs.
-set(COMMON_SRC_DIR     ${CMAKE_CURRENT_SOURCE_DIR}/common/src)
-set(COMMON_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/common/include)
+set(COMMON_SRC_DIR     ${CMAKE_CURRENT_SOURCE_DIR}/../common/src)
+set(COMMON_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../common/include)
 
 set(CMAKE_AUTOMOC ON)
 set(M2M_SIM "$ENV{M2M_SIM}")
@@ -168,8 +168,8 @@ install(TARGETS autom_node
   DESTINATION lib/${PROJECT_NAME}
 )
 install(DIRECTORY
-  common/lists
-  common/params
+  ../common/lists
+  ../common/params
   DESTINATION share/${PROJECT_NAME}
 )
 if(BUILD_TESTING)

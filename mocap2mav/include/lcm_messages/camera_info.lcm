@@ -1,5 +1,0 @@
-package exec;
-struct camera_info
-{
-	double timestamp;
-}

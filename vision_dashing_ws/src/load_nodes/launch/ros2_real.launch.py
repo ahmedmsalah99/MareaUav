@@ -17,7 +17,7 @@ def generate_launch_description():
         launch_ros.actions.Node(
             # the name of the executable is set in CMakeLists.txt, towards the end of
             # the file, in add_executable(...) and the directives following it
-           package='lcm_bridge', node_executable='bridge_node', output='screen'),
+           package='px4_bridge', node_executable='bridge_node', output='screen'),
 	launch_ros.actions.Node(package='ultrasonic_sensor', node_executable='ultrasonic_sensor_node_Mocap2mav', output='screen'),
 
 	launch_ros.actions.Node(package='payload_releaser', node_executable='payload_releaser', output='screen'),

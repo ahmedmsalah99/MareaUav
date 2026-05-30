@@ -1,7 +1,0 @@
-package geometry;
-struct UltrasonicPosition
-{
-    double   Z_Position;
-    double   Z_Velocity;
-    int32_t  isValid;
-}
