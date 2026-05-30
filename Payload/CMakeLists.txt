@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.5)
-project(Payload)
+project(payload)
 
 if(NOT CMAKE_CXX_STANDARD)
   set(CMAKE_CXX_STANDARD 14)
@@ -15,7 +15,10 @@ find_package(gazebo REQUIRED)
 
 include_directories(${GAZEBO_INCLUDE_DIRS})
 link_directories(${GAZEBO_LIBRARY_DIRS})
-list(APPEND CMAKE_CXX_FLAGS "${GAZEBO_CXX_FLAGS}")
+# Append (as a string) Gazebo's own compile flags, e.g. -fPIC -std=c++17.
+# NOTE: do not use list(APPEND ...) here — that makes CMAKE_CXX_FLAGS a
+# semicolon-separated list and the flags get split into bogus commands.
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${GAZEBO_CXX_FLAGS}")
 
 add_library(payloadPlugin SHARED src/plugin.cpp)
 
@@ -30,5 +33,5 @@ target_link_libraries(payloadPlugin ${GAZEBO_LIBRARIES})
 install(TARGETS payloadPlugin
   LIBRARY DESTINATION lib)
 
-ament_environment_hooks("${CMAKE_CURRENT_SOURCE_DIR}/env-hooks/Payload.dsv.in")
+ament_environment_hooks("${CMAKE_CURRENT_SOURCE_DIR}/env-hooks/payload.dsv.in")
 ament_package()
