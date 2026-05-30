@@ -4,14 +4,36 @@
 #include <gazebo/common/common.hh>
 #include <stdio.h>
 #include <math.h>
-#include "lcm/lcm-cpp.hpp"
-#include "lcm_messages/geometry/pose.hpp"
-#include "lcm_messages/exec/release_payload.hpp"
-#include "lcm_messages/exec/gps_status.hpp"
-#include "poll.h"
+#include <mutex>
+#include <string>
+
+// ROS 2 (gazebo_ros) — replaces the old LCM transport.
+#include <gazebo_ros/node.hpp>
+#include <rclcpp/rclcpp.hpp>
+#include <std_msgs/msg/string.hpp>
+#include <px4_msgs/msg/vehicle_odometry.hpp>
+#include <px4_msgs/msg/sensor_gps.hpp>
 
 namespace gazebo
 {
+
+    // Plain holders replacing the old lcm geometry::pose / exec::gps_status so
+    // the physics logic below is left untouched.
+    struct PoseData
+    {
+        double position[3]    {0, 0, 0};
+        double velocity[3]    {0, 0, 0};
+        double orientation[4] {1, 0, 0, 0};
+        double yaw            {0};
+    };
+
+    struct GpsData
+    {
+        double lon {0};
+        double lat {0};
+        double alt {0};
+        int    status {0};
+    };
 
     class PayloadManager : public ModelPlugin
     {
@@ -30,19 +52,18 @@ namespace gazebo
         std::string _cmd_pose_topic;
         std::string _local_pose_topic;
 
-        lcm::LCM _handler;
-        lcm::LCM _handler2;
-        lcm::LCM _handler3;
+        // ROS 2 node + endpoints (gazebo_ros spins the node on its own thread).
+        gazebo_ros::Node::SharedPtr _ros_node;
+        rclcpp::Subscription<std_msgs::msg::String>::SharedPtr _rel_pay_sub;
+        rclcpp::Subscription<px4_msgs::msg::VehicleOdometry>::SharedPtr _drone_sub;
+        rclcpp::Subscription<px4_msgs::msg::SensorGps>::SharedPtr _gps_sub;
 
-        lcm::Subscription *_sub;
-        lcm::Subscription *_sub2;
-        lcm::Subscription *_sub3;
+        // Guards the data written by ROS callbacks and read in OnUpdate.
+        std::mutex _data_mutex;
 
-        geometry::pose _drone_pos;
-        exec::release_payload _releasePayload;
-        exec::gps_status _drone_glob_pos;
-
-      	struct pollfd _fds[3];
+        PoseData _drone_pos;
+        std::string _releasePayload;
+        GpsData _drone_glob_pos;
 
         double _startingFallZ;
 
@@ -99,22 +120,23 @@ namespace gazebo
                 _local_pose_topic = _model.get()->GetName() + "/pose";
                 _cmd_pose_topic   = _model.get()->GetName() + "/pose_cmd";
 
-                _sub = _handler.subscribe("release_payload_feedback", &PayloadManager::relpayloadCallback, this);
-                _sub2 = _handler2.subscribe("vision_position_estimate", &PayloadManager::positionDroneCallback, this);
-                _sub3 = _handler3.subscribe("gps_status", &PayloadManager::globalPosDroneCallback, this);
+                // Grab the gazebo_ros node tied to this plugin's SDF.
+                _ros_node = gazebo_ros::Node::Get(_sdf);
 
-                _sub->setQueueCapacity(1);
-                _sub2->setQueueCapacity(1);
-              	_sub3->setQueueCapacity(1);
+                auto px4_qos      = rclcpp::QoS(rclcpp::KeepLast(1)).best_effort();
+                auto reliable_qos = rclcpp::QoS(rclcpp::KeepLast(1)).reliable();
 
-                _fds[0].fd = _handler.getFileno();
-                _fds[0].events = POLLIN;
+                _rel_pay_sub = _ros_node->create_subscription<std_msgs::msg::String>(
+                    "release_payload_feedback", reliable_qos,
+                    std::bind(&PayloadManager::relpayloadCallback, this, std::placeholders::_1));
 
-                _fds[1].fd = _handler2.getFileno();
-                _fds[1].events = POLLIN;
+                _drone_sub = _ros_node->create_subscription<px4_msgs::msg::VehicleOdometry>(
+                    "vision_position_estimate", px4_qos,
+                    std::bind(&PayloadManager::positionDroneCallback, this, std::placeholders::_1));
 
-                _fds[2].fd = _handler3.getFileno();
-                _fds[2].events = POLLIN;
+                _gps_sub = _ros_node->create_subscription<px4_msgs::msg::SensorGps>(
+                    "/fmu/out/vehicle_gps_position", px4_qos,
+                    std::bind(&PayloadManager::globalPosDroneCallback, this, std::placeholders::_1));
 
                 _pose = _model.get()->WorldPose();
 
@@ -137,9 +159,9 @@ namespace gazebo
                 _home_alt = 488.0;
 
                 _first = true;
-                std::cout << "New payload registered, topics:" << std::endl;
-                std::cout << "  "<<_local_pose_topic << std::endl;
-                std::cout << "  "<<_cmd_pose_topic   << std::endl;
+                RCLCPP_INFO(_ros_node->get_logger(), "New payload registered, topics:");
+                RCLCPP_INFO(_ros_node->get_logger(), "  %s", _local_pose_topic.c_str());
+                RCLCPP_INFO(_ros_node->get_logger(), "  %s", _cmd_pose_topic.c_str());
 
             }
 
@@ -150,26 +172,13 @@ namespace gazebo
 
                 manageTime(_info);
 
-                int ret = poll(_fds,3,0);
-                //
-                if(_fds[0].revents & POLLIN)
-                {
-                  _handler.handle();
-                  if(_releasePayload.data == "W")
-                    _releasingPayload = true;
-                  else if(_releasePayload.data == "R")
-                    _payloadReleased = true;
-                }
+                // Snapshot subscriber-fed data under the lock.
+                std::unique_lock<std::mutex> lk(_data_mutex);
 
-                if(_fds[1].revents & POLLIN)
-                {
-                  _handler2.handle();
-                }
-
-                if(_fds[2].revents & POLLIN)
-                {
-                  _handler3.handle();
-                }
+                if(_releasePayload == "W")
+                  _releasingPayload = true;
+                else if(_releasePayload == "R")
+                  _payloadReleased = true;
 
                 _pose = _model.get()->WorldPose();
 
@@ -220,6 +229,9 @@ namespace gazebo
                   newZ = -5000;
                 }
 
+                // Done reading shared subscriber data.
+                lk.unlock();
+
                 _pose.Set(ignition::math::Vector3<double>(newX, newY, newZ), ignition::math::Quaternion<double>(1,0,0,0));
 
                 _model.get()->SetAngularVel(ignition::math::Vector3<double>(0,0,0));
@@ -229,13 +241,15 @@ namespace gazebo
 
             }
 
-            void relpayloadCallback(const lcm::ReceiveBuffer* rbuf, const std::string& chan, const exec::release_payload* msg)
+            void relpayloadCallback(const std_msgs::msg::String::SharedPtr msg)
             {
-              _releasePayload.data = msg->data;
+              std::lock_guard<std::mutex> lk(_data_mutex);
+              _releasePayload = msg->data;
             }
 
-            void positionDroneCallback(const lcm::ReceiveBuffer* rbuf, const std::string& chan, const geometry::pose* msg)
+            void positionDroneCallback(const px4_msgs::msg::VehicleOdometry::SharedPtr msg)
             {
+                std::lock_guard<std::mutex> lk(_data_mutex);
 
                 _drone_pos.position[0] = (float)msg->position[0];
                 _drone_pos.position[1] = (float)msg->position[1];
@@ -245,21 +259,25 @@ namespace gazebo
                 _drone_pos.velocity[1] = (float)msg->velocity[1];
                 _drone_pos.velocity[2] = (float)msg->velocity[2];
 
-                _drone_pos.orientation[0] = (float)msg->orientation[0];
-                _drone_pos.orientation[1] = (float)msg->orientation[1];
-                _drone_pos.orientation[2] = (float)msg->orientation[2];
-                _drone_pos.orientation[3] = (float)msg->orientation[3];
+                _drone_pos.orientation[0] = (float)msg->q[0];
+                _drone_pos.orientation[1] = (float)msg->q[1];
+                _drone_pos.orientation[2] = (float)msg->q[2];
+                _drone_pos.orientation[3] = (float)msg->q[3];
 
-                _drone_pos.yaw = (float)msg->yaw;
-
+                ignition::math::Quaterniond q(
+                    _drone_pos.orientation[0], _drone_pos.orientation[1],
+                    _drone_pos.orientation[2], _drone_pos.orientation[3]);
+                _drone_pos.yaw = yawFromQuaternion(q);
             }
 
-            void globalPosDroneCallback(const lcm::ReceiveBuffer* rbuf, const std::string& chan, const exec::gps_status* msg)
+            void globalPosDroneCallback(const px4_msgs::msg::SensorGps::SharedPtr msg)
             {
-              _drone_glob_pos.lon = (float)msg->lon;
-              _drone_glob_pos.lat = (float)msg->lat;
-              _drone_glob_pos.alt = (float)msg->alt;
-              _drone_glob_pos.status = msg->status;
+              std::lock_guard<std::mutex> lk(_data_mutex);
+              _drone_glob_pos.lon = 1.0e-7 * msg->longitude_deg;
+              _drone_glob_pos.lat = 1.0e-7 * msg->latitude_deg;
+              // Same scaling the old bridge used when filling exec::gps_status.alt.
+              _drone_glob_pos.alt = 1.0e-3 * msg->altitude_msl_m;
+              _drone_glob_pos.status = msg->fix_type;
             }
     };
 

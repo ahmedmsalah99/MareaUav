@@ -1,38 +1,38 @@
-cmake_minimum_required(VERSION 2.8 FATAL_ERROR)
-PROJECT(landingPlat CXX C)
+cmake_minimum_required(VERSION 3.5)
+project(landingPlat)
 
+if(NOT CMAKE_CXX_STANDARD)
+  set(CMAKE_CXX_STANDARD 14)
+endif()
+
+find_package(ament_cmake REQUIRED)
+find_package(gazebo_dev REQUIRED)
+find_package(gazebo_ros REQUIRED)
+find_package(rclcpp REQUIRED)
+find_package(nav_msgs REQUIRED)
+find_package(std_msgs REQUIRED)
+find_package(px4_msgs REQUIRED)
 find_package(gazebo REQUIRED)
-include_directories(${GAZEBO_INCLUDE_DIRS})
-link_directories(${GAZEBO_LIBRARY_DIRS})
 
+include_directories(include ${GAZEBO_INCLUDE_DIRS})
+link_directories(${GAZEBO_LIBRARY_DIRS})
 list(APPEND CMAKE_CXX_FLAGS "${GAZEBO_CXX_FLAGS}")
 
-include_directories(include)
+add_library(platformPlugin SHARED
+  src/plugin.cpp
+  src/WaveGen.cpp)
 
-set(M2M_INCLUDE "$ENV{M2M_INCLUDE}")
-if(M2M_INCLUDE)
-    include_directories(${M2M_INCLUDE})
-else()
-    message(STATUS "INCLUDE at ${M2M_INCLUDE}")
-    message(FATAL_ERROR "Undefined M2M_INCLUDE env var. HINT: export M2M_INCLUDE=/path/to/mocap2mav/include")
-endif()
+ament_target_dependencies(platformPlugin
+  rclcpp
+  gazebo_ros
+  nav_msgs
+  std_msgs
+  px4_msgs)
 
-find_package(Eigen 3 QUIET)
-if(NOT Eigen_FOUND)
-    #include(cmake/FindEigen3.cmake)
-    include(../mocap2mav/cmake/FindEigen3.cmake)
-    set(Eigen_INCLUDE_DIR ${EIGEN3_INCLUDE_DIR})
-endif()
+target_link_libraries(platformPlugin ${GAZEBO_LIBRARIES})
 
-#find_package(PkgConfig)
-#pkg_search_module(Eigen3 REQUIRED eigen3)
+install(TARGETS platformPlugin
+  LIBRARY DESTINATION lib)
 
-include_directories(${Eigen_INCLUDE_DIR})
-
-find_package(PkgConfig REQUIRED)
-pkg_search_module(LCM REQUIRED lcm)
-
-add_library(platformPlugin SHARED src/plugin.cpp src/WaveGen.cpp include/WaveGen.h)
-target_link_libraries(platformPlugin
-        ${GAZEBO_LIBRARIES}
-        ${LCM_LIBRARIES})
+ament_environment_hooks("${CMAKE_CURRENT_SOURCE_DIR}/env-hooks/landingPlat.dsv.in")
+ament_package()
