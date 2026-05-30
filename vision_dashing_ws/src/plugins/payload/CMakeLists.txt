@@ -15,7 +15,11 @@ find_package(gazebo REQUIRED)
 
 include_directories(${GAZEBO_INCLUDE_DIRS})
 link_directories(${GAZEBO_LIBRARY_DIRS})
-list(APPEND CMAKE_CXX_FLAGS "${GAZEBO_CXX_FLAGS}")
+# Append (as a string) Gazebo's own compile flags, e.g. -fPIC -std=c++17.
+# NOTE: do not use list(APPEND ...) here — that makes CMAKE_CXX_FLAGS a
+# semicolon-separated list and the flags get split into bogus commands
+# (e.g. "/bin/sh: 1: -fPIC: not found").
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${GAZEBO_CXX_FLAGS}")
 
 add_library(payloadPlugin SHARED src/plugin.cpp)
 
