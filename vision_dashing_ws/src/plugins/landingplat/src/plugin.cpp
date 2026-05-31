@@ -207,19 +207,9 @@ namespace gazebo
                   orientation.Y(_nav_pos.orientation[2]);
                   orientation.Z(_nav_pos.orientation[3]);
 
-                  if(_actual_sim_time <= 77.0)
-                    _pose.Set(ignition::math::Vector3<double>(_nav_pos.position[0], _nav_pos.position[1], wave.generateWaveHeightAtPoint(_pose.Pos()[0],_pose.Pos()[1],_actual_sim_time,0)/2.0 + 2), orientation);
-                  else
-                  {
-                    // if(_first_rb)
-                    // {
-                    //   _first_rb = false;
-                    //   _nav_pos_0 = _nav_pos.position[0];
-                    // }
-                    // _nav_pos_0+=_dt*(0.40);
-                    // _pose.Set(ignition::math::Vector3<double>(_nav_pos_0, _nav_pos.position[1], wave.generateWaveHeightAtPoint(_pose.Pos()[0],_pose.Pos()[1],_actual_sim_time,0) + 2), orientation);
-                    _pose.Set(ignition::math::Vector3<double>(_nav_pos.position[0], _nav_pos.position[1], wave.generateWaveHeightAtPoint(_pose.Pos()[0],_pose.Pos()[1],_actual_sim_time,0) + 2), orientation);
-                  }
+                  // Track the boat flat: follow nav X/Y and heading at a constant
+                  // height (no synthetic wave heave).
+                  _pose.Set(ignition::math::Vector3<double>(_nav_pos.position[0], _nav_pos.position[1], 2.0), orientation);
 
                   myfile << std::to_string(_pose.Pos()[0]) + "," + std::to_string(_pose.Pos()[1]) + "," + std::to_string(_pose.Pos()[2]) + "\n";
                 }
