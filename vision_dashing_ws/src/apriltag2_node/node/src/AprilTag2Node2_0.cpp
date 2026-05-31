@@ -162,25 +162,6 @@ AprilTag2Node::~AprilTag2Node()
 
 void AprilTag2Node::onImage(const sensor_msgs::msg::CompressedImage::SharedPtr msg_img)
 {
-	// prev = curr;
-	// curr = clocksis.now();
-	// auto delta = (curr.nanoseconds() - prev.nanoseconds())*0.0000001;
-	// std::cout << "delta = " << delta << std::endl;
-	// if((double)delta < 100.0)
-	// {
-	// 	if((double)delta > max)
-	// 		max = (double)delta;
-	// 	if((double)delta < min)
-	// 		min = (double)delta;
-	// 	c++;
-	// 	sum += (double)delta;
-	// 	mean = sum/c;
-	//
-	// 	std::cout << "max = " << max << std::endl;
-	// 	std::cout << "min = " << min << std::endl;
-	// 	std::cout << "mean = " << mean << std::endl;
-	// }
-
 	// decode image
 	image_u8_t* im = nullptr;
 
@@ -245,35 +226,21 @@ void AprilTag2Node::onImage(const sensor_msgs::msg::CompressedImage::SharedPtr m
 
 		//This function computes the relative translation and rotation of each tag in the scene w.r.t the camera.
 		//Then, it projects this information in the centre of the platform (related to the tag in the centre).
-		// getPose(*(det->H), tf.transform, det->id, z_up);
-		// tf.transform = homography(det, intrinsics, platform_tags[det->id]);
 		try{
 			tf.transform = pnp(det, intrinsics, platform_tags[det->id]);
 		}catch (const cv::Exception& e) {
-			// RCLCPP_WARN_THROTTLE(get_logger(), *get_clock(), 1000,
-            //              "solvePnP failed: %s", e.what());
 			continue;
 		}
-		// RCLCPP_INFO(get_logger(), "ID: %li ", msg_detection.id);
-		// std::cout << "family " << msg_detection.family << std::endl;
 		if(std::isnan(tf.transform.translation.x) || std::isnan(tf.transform.translation.y) || std::isnan(tf.transform.translation.z)) continue;
 		if(std::abs(tf.transform.translation.x) > 20 || std::abs(tf.transform.translation.y) > 20 || std::abs(tf.transform.translation.z) > 10) continue; 
 		msg_detections.detections.push_back(msg_detection);
 		tfs.transforms.push_back(tf);
-		// RCLCPP_INFO(get_logger(), "ID: %li ", i);
-		// msg_relative_pose.header.stamp = this->get_clock()->now();
+
 	}
-	// msg_relative_pose.header.stamp = this->get_clock()->now();
-	// msg_relative_pose.transform.translation.x = std::isnan(vision_pose.transform.translation.x) ? -1 : vision_pose.transform.translation.x;
-	// msg_relative_pose.transform.translation.y = std::isnan(vision_pose.transform.translation.y) ? -1 : vision_pose.transform.translation.y;
-	// msg_relative_pose.transform.translation.z = std::isnan(rotation_yaw) ? -1 : rotation_yaw;
-	// pub_platformCenter->publish(tfs[0]);
 	if(zarray_size(detections) > 0 && msg_detections.detections.size() > 0) {
 		publish_data_center( msg_detections,tfs );
 	}
 
-	//pub_detections->publish(msg_detections);
-	//pub_tf->publish(tfs);
 
 	apriltag_detections_destroy(detections);
 
@@ -617,7 +584,7 @@ void AprilTag2Node::getDroneOdometry(const px4_msgs::msg::VehicleOdometry::Share
 	_drone_pose.transform.rotation.y = msg_odom->q[2];
 	_drone_pose.transform.rotation.z = msg_odom->q[3];
 
-	_drone_yaw = atan2(2.0 * (msg_odom->q[0]*msg_odom->q[3] + msg_odom->q[0]*msg_odom->q[2]), 1.0 - 2.0 * (msg_odom->q[2]*msg_odom->q[2] + msg_odom->q[3]*msg_odom->q[3]));
+	_drone_yaw = atan2(2.0 * (msg_odom->q[0]*msg_odom->q[3] + msg_odom->q[1]*msg_odom->q[2]), 1.0 - 2.0 * (msg_odom->q[2]*msg_odom->q[2] + msg_odom->q[3]*msg_odom->q[3]));
 }
 
 double AprilTag2Node::getMedian(std::deque<double> buffer) {

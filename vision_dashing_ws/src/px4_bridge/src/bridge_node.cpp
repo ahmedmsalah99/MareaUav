@@ -312,7 +312,7 @@ private:
   double nav_home_lon_    {0.0};
 
   // Slew-rate state for the position command translator.
-  static constexpr double kMaxVelocity = 1.0;  // m/s
+  static constexpr double kMaxVelocity = 0.3;  // m/s
   bool         first_pos_sp_ {true};
   rclcpp::Time pos_sp_last_time_;
   double       prev_pos_sp_[3] {0.0, 0.0, 0.0};
