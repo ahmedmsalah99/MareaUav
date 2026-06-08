@@ -74,12 +74,6 @@ def generate_launch_description():
         output='screen'
     )
 
-    # apriltag_node = Node(
-    #     package='apriltag2_node',
-    #     executable='apriltag2_node',
-    #     output='screen',
-    #     parameters=[parameters_file_path]
-    # )
     apriltag_node = Node(
     package='apriltag2_node',
     executable='apriltag2_node',

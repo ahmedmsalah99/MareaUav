@@ -2,7 +2,6 @@
 #include <iostream>
 #include <unistd.h>
 #include <raspicam/raspicam.h>
-#include <fstream>
 
 
 void IdleState::setParameters()
@@ -76,9 +75,6 @@ LandingState::LandingState(FiniteStateMachine *machine, int32_t width, int32_t h
 	camInfoMsg_->k = {fx,0,cx,
 			   0,fy,cy,
 			   0,0,1};
-	//
-	// imageSize_ = cameraComp_.getImageTypeSize ( raspicam::RASPICAM_FORMAT_BGR );
-	// dataRaw_ = new uint8_t[ imageSize_ ];
 
         compressedImageMsg_->header.frame_id = "camera_compressed";
         compressedImageMsg_->format = "rgb8; jpeg compressed bgr8";
@@ -130,7 +126,6 @@ void LandingState::setParameters()
 	{
 					imageSize_ = cameraComp_.getImageBufferSize();
 					dataRaw_ = new uint8_t[ imageSize_ ];
-					//static bool save = true;
 
 					cameraComp_.grab();
 					//extract the image in rgb format
@@ -162,14 +157,6 @@ void LandingState::setParameters()
 					compressedImageMsg_->header.stamp.nanosec = 1000 * time_.tv_usec;
 
 					publisherCompressed_->publish(compressedImageMsg_);
-
-			/*
-					if (save) {
-									std::ofstream outFile ( "photo_compressed_land.ppm", std::ios::binary );
-									outFile.write ( ( char* ) mem, memSize);
-									save = false;
-					}
-			*/
 
 			if (mem != NULL) {
 						free(mem);
@@ -234,9 +221,6 @@ SearchState::SearchState(FiniteStateMachine *machine, int32_t width, int32_t hei
 	camInfoMsg_->k = {fx,0,cx,
 			   0,fy,cy,
 			   0,0,1};
-	//
-	// imageSize_ = cameraComp_.getImageTypeSize ( raspicam::RASPICAM_FORMAT_BGR );
-	// dataRaw_ = new uint8_t[ imageSize_ ];
 
 	compressedImageMsg_->header.frame_id = "camera_compressed";
 	compressedImageMsg_->format = "rgb8; jpeg compressed bgr8";
@@ -289,8 +273,6 @@ void SearchState::setParameters()
 	{
 		imageSize_ = cameraComp_.getImageBufferSize();
 		dataRaw_ = new uint8_t[ imageSize_ ];
-		//compressed image
-		//static bool save = true;
 
 		cameraComp_.grab();
 		//extract the image in rgb format
@@ -322,14 +304,6 @@ void SearchState::setParameters()
 		compressedImageMsg_->header.stamp.nanosec = 1000 * time_.tv_usec;
 
 		publisherCompressed_->publish(compressedImageMsg_);
-
-		/*
-		if (save) {
-			std::ofstream outFile ( "photo_compressed_search.ppm", std::ios::binary );
-			outFile.write ( ( char* ) mem, memSize);
-			save = false;
-		}
-		*/
 
 		if (mem != NULL) {
 			free(mem);

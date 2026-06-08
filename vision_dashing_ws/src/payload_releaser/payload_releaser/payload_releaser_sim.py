@@ -1,9 +1,5 @@
 import rclpy
 
-import os
-
-import sys
-
 from rclpy.node import Node
 
 from std_msgs.msg import String
