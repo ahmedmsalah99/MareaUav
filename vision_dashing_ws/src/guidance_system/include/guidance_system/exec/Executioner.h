@@ -61,7 +61,7 @@ public:
 
 	ulisse_msgs::msg::ActualTask _actualTask;
 	bool _can_run;
-	int _actualNode;
+	int _currentTaskIndex;
 	bool _idle;
 	bool skip;
 	bool env_sim;
@@ -77,7 +77,7 @@ private:
 
 	MavState _state;
 	MavState _platState;
-	std::deque<exec::task> _nodeList;
+	std::deque<exec::task> _taskQueue;
 	bool _newTask;
 	bool _publish_task;
 	bool _payloadReleased;

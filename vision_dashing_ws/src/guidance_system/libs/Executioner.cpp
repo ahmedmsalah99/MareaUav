@@ -12,7 +12,7 @@ using namespace common;
 
 Executioner::Executioner(){
 
-    _actualNode = 0;
+    _currentTaskIndex = 0;
     _idle = false;
     _can_run = false;
     _newTask = true;
@@ -32,7 +32,7 @@ Executioner::Executioner(){
 
 void Executioner::init(){
 
-    if(_nodeList.size()>0){
+    if(_taskQueue.size()>0){
 
         _can_run = true;
         _newTask = true;
@@ -63,7 +63,7 @@ void Executioner::setPlatformState(MavState ps){
 
 void Executioner::setList(std::deque<exec::task> list) {
 
-    _nodeList = list;
+    _taskQueue = list;
 
 }
 
@@ -97,7 +97,7 @@ bool Executioner::readyToPublish() {
 
 
 void Executioner::run(){
-    if(_nodeList.size() > 0) {
+    if(_taskQueue.size() > 0) {
 
         loadTask();
         _can_run = true;
@@ -196,13 +196,13 @@ void Executioner::run(){
     // Check for next task
     if((CheckActions(_actualTask.action) || skip) && _can_run) {
 
-        if(_nodeList.size() > 0){
+        if(_taskQueue.size() > 0){
 
-            _nodeList.pop_front();
-            _nodeList.shrink_to_fit();
-            std::cout << "popping, size: "<< _nodeList.size() << std::endl;
+            _taskQueue.pop_front();
+            _taskQueue.shrink_to_fit();
+            std::cout << "popping, size: "<< _taskQueue.size() << std::endl;
 
-            if (_nodeList.empty()) _newTask = false;
+            if (_taskQueue.empty()) _newTask = false;
             else                   _newTask = true;
 
         }
@@ -216,7 +216,7 @@ void Executioner::run(){
         _newTask = false;
     }
 
-    //std::cout << _nodeList.size() << std::endl;
+    //std::cout << _taskQueue.size() << std::endl;
 }
 
 bool Executioner::CheckActions(int a)
@@ -309,22 +309,22 @@ bool Executioner::CheckActions(int a)
 
 void Executioner::setLastTask(const exec::task task){
 
-    _nodeList.shrink_to_fit();
-    _nodeList.push_back(task);
+    _taskQueue.shrink_to_fit();
+    _taskQueue.push_back(task);
 
 }
 
 void Executioner::setNextTask(const exec::task task){
 
-    _nodeList.shrink_to_fit();
-    _nodeList.push_front(task);
+    _taskQueue.shrink_to_fit();
+    _taskQueue.push_front(task);
 
 }
 
 void Executioner::clearList(){
 
-    _nodeList.clear();
-    _nodeList.shrink_to_fit();
+    _taskQueue.clear();
+    _taskQueue.shrink_to_fit();
 
 }
 
@@ -340,19 +340,19 @@ void Executioner::rtl() {
 
 void Executioner::loadTask() {
 
-    _actualTask.x         = _nodeList[_actualNode].x;
-    _actualTask.y         = _nodeList[_actualNode].y;
-    _actualTask.z         = _nodeList[_actualNode].z;
-    // std::cout << "_actualNode " << _actualNode << " _actualTask.x " << _actualTask.x << " _actualTask.y " << _actualTask.y << " _actualTask.z " << _actualTask.z << " _nodeList[_actualNode].z " << _nodeList[_actualNode].z << std::endl;
-    _actualTask.yaw       = _nodeList[_actualNode].yaw;
-    _actualTask.target    = _nodeList[_actualNode].target;
-    _actualTask.action    = _nodeList[_actualNode].action;
-    _actualTask.id        = _nodeList[_actualNode].id;
-    _actualTask.params[0] = _nodeList[_actualNode].params[0];
-    _actualTask.params[1] = _nodeList[_actualNode].params[1];
-    _actualTask.params[2] = _nodeList[_actualNode].params[2];
-    _actualTask.params[3] = _nodeList[_actualNode].params[3];
-    _actualTask.params[4] = _nodeList[_actualNode].params[4];
+    _actualTask.x         = _taskQueue[_currentTaskIndex].x;
+    _actualTask.y         = _taskQueue[_currentTaskIndex].y;
+    _actualTask.z         = _taskQueue[_currentTaskIndex].z;
+    // std::cout << "_currentTaskIndex " << _currentTaskIndex << " _actualTask.x " << _actualTask.x << " _actualTask.y " << _actualTask.y << " _actualTask.z " << _actualTask.z << " _taskQueue[_currentTaskIndex].z " << _taskQueue[_currentTaskIndex].z << std::endl;
+    _actualTask.yaw       = _taskQueue[_currentTaskIndex].yaw;
+    _actualTask.target    = _taskQueue[_currentTaskIndex].target;
+    _actualTask.action    = _taskQueue[_currentTaskIndex].action;
+    _actualTask.id        = _taskQueue[_currentTaskIndex].id;
+    _actualTask.params[0] = _taskQueue[_currentTaskIndex].params[0];
+    _actualTask.params[1] = _taskQueue[_currentTaskIndex].params[1];
+    _actualTask.params[2] = _taskQueue[_currentTaskIndex].params[2];
+    _actualTask.params[3] = _taskQueue[_currentTaskIndex].params[3];
+    _actualTask.params[4] = _taskQueue[_currentTaskIndex].params[4];
 
     if(_actualTask.action == actions::MOVE)
     {
@@ -407,7 +407,7 @@ void Executioner::batteryGoneHandler(const ulisse_msgs::msg::Safety& safety)
   // hence, the safety task has to be build
   exec::task tempTask;
   // resetting the index to access the task list
-  _actualNode = 0;
+  _currentTaskIndex = 0;
   // setting the action to EMERG_LAND
   tempTask.action = actions::EMERG_LAND;
   // with a proper id
@@ -452,9 +452,9 @@ void Executioner::batteryLimitHandler(const ulisse_msgs::msg::Safety& safety)
   // QUEST: Checking for already existing tasks to copy or filling directly?
   // checking if in the list of the tasks to be executed there exist MOVE to platform
   // and LAND already, starting from the current executed task
-  // for(int i = _actualNode; i < _nodeList.size(); i++)
+  // for(int i = _currentTaskIndex; i < _taskQueue.size(); i++)
   // {
-  //   if(_nodeList[i].action == actions::MOVE && _nodeList[i].target == "platform")
+  //   if(_taskQueue[i].action == actions::MOVE && _taskQueue[i].target == "platform")
   //   {
   //   }
   // }
@@ -531,7 +531,7 @@ void Executioner::moveToSafeHarbor(const ulisse_msgs::msg::Safety& safety)
   exec::task tempTask1;
   exec::task tempTask2;
   // resetting the index to access the task list
-  _actualNode = 0;
+  _currentTaskIndex = 0;
   // starting with rotating the drone in the direction of the safe harbor
   tempTask0.action = actions::ROTATE;
   // desired coordinates
@@ -603,11 +603,11 @@ void Executioner::setSkip()
 void Executioner::resetLanding()
 {
   // resetting the Land task, if it's getting executed
-  for(int i = 0; i < _nodeList.size(); i++)
+  for(int i = 0; i < _taskQueue.size(); i++)
   {
-    if(_nodeList[i].action == actions::LAND)
+    if(_taskQueue[i].action == actions::LAND)
     {
-      _nodeList[i].target = "reset_land";
+      _taskQueue[i].target = "reset_land";
     }
   }
 }

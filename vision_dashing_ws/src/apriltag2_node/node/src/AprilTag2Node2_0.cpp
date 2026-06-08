@@ -13,7 +13,7 @@
 #include <cstdlib>
 static Platform_tag TAGS;
 
-std::ofstream myfile;
+std::ofstream detectionLog;
 
 AprilTag2Node::AprilTag2Node() : Node("apriltag2", "apriltag", rclcpp::NodeOptions().use_intra_process_comms(true))
 {
@@ -80,8 +80,8 @@ AprilTag2Node::AprilTag2Node() : Node("apriltag2", "apriltag", rclcpp::NodeOptio
 	if(!tag_create.count(tag_family)) {
 		throw std::runtime_error("unsupported tag family: " + tag_family);
 	}
-	tf = tag_create.at(tag_family)();
-	td = apriltag_detector_create();
+	_tagFamily = tag_create.at(tag_family)();
+	_tagDetector = apriltag_detector_create();
 
 	declare_parameter<float>("decimate", 1.0);
 	declare_parameter<float>("blur", 0.0);
@@ -93,29 +93,29 @@ AprilTag2Node::AprilTag2Node() : Node("apriltag2", "apriltag", rclcpp::NodeOptio
 	declare_parameter<double>("z_err_thld", 100.0);
 	declare_parameter<double>("iter_err_thld", 10.0);
 
-	get_parameter("decimate", td->quad_decimate);
-	get_parameter("blur", td->quad_sigma);
-	get_parameter("threads", td->nthreads);
-	get_parameter("debug", td->debug);
-	get_parameter("refine-edges", td->refine_edges);
+	get_parameter("decimate", _tagDetector->quad_decimate);
+	get_parameter("blur", _tagDetector->quad_sigma);
+	get_parameter("threads", _tagDetector->nthreads);
+	get_parameter("debug", _tagDetector->debug);
+	get_parameter("refine-edges", _tagDetector->refine_edges);
 	get_parameter("x_err_thld", _x_err_thld);
 	get_parameter("y_err_thld", _y_err_thld);
 	get_parameter("z_err_thld", _z_err_thld);
 	get_parameter("iter_err_thld", _iter_err_thld);
 
-	apriltag_detector_add_family(td, tf);
+	apriltag_detector_add_family(_tagDetector, _tagFamily);
 
 
-	myfile.open("matlab_data_sim.txt");
-	myfile << "det_tags,horiz_dist,vert_dist,timestamp\n";
+	detectionLog.open("matlab_data_sim.txt");
+	detectionLog << "det_tags,horiz_dist,vert_dist,timestamp\n";
 
 }
 
 AprilTag2Node::~AprilTag2Node()
 {
-	apriltag_detector_destroy(td);
-	tag_destroy.at(tag_family)(tf);
-	myfile.close();
+	apriltag_detector_destroy(_tagDetector);
+	tag_destroy.at(tag_family)(_tagFamily);
+	detectionLog.close();
 }
 
 void AprilTag2Node::onImage(const sensor_msgs::msg::CompressedImage::SharedPtr msg_img)
@@ -146,7 +146,7 @@ void AprilTag2Node::onImage(const sensor_msgs::msg::CompressedImage::SharedPtr m
 	}
 
 	// decode image
-	zarray_t* detections = apriltag_detector_detect(td, im);
+	zarray_t* detections = apriltag_detector_detect(_tagDetector, im);
 
 	apriltag_msgs::msg::AprilTagDetectionArray msg_detections;
 	msg_detections.header = msg_img->header;
@@ -177,22 +177,22 @@ void AprilTag2Node::onImage(const sensor_msgs::msg::CompressedImage::SharedPtr m
 		
 
 		// 3D orientation and position
-		geometry_msgs::msg::TransformStamped tf;
-		tf.header = msg_img->header;
+		geometry_msgs::msg::TransformStamped tagTransform;
+		tagTransform.header = msg_img->header;
 		// set child frame name by generic tag name or configured tag name
-		tf.child_frame_id = tracked_tags.size() ? tracked_tags.at(det->id) : std::string(det->family->name) + ":" + std::to_string(det->id);
+		tagTransform.child_frame_id = tracked_tags.size() ? tracked_tags.at(det->id) : std::string(det->family->name) + ":" + std::to_string(det->id);
 
 		//This function computes the relative translation and rotation of each tag in the scene w.r.t the camera.
 		//Then, it projects this information in the centre of the platform (related to the tag in the centre).
 		try{
-			tf.transform = pnp(det, intrinsics, platform_tags[det->id]);
+			tagTransform.transform = pnp(det, intrinsics, platform_tags[det->id]);
 		}catch (const cv::Exception& e) {
 			continue;
 		}
-		if(std::isnan(tf.transform.translation.x) || std::isnan(tf.transform.translation.y) || std::isnan(tf.transform.translation.z)) continue;
-		if(std::abs(tf.transform.translation.x) > 20 || std::abs(tf.transform.translation.y) > 20 || std::abs(tf.transform.translation.z) > 10) continue; 
+		if(std::isnan(tagTransform.transform.translation.x) || std::isnan(tagTransform.transform.translation.y) || std::isnan(tagTransform.transform.translation.z)) continue;
+		if(std::abs(tagTransform.transform.translation.x) > 20 || std::abs(tagTransform.transform.translation.y) > 20 || std::abs(tagTransform.transform.translation.z) > 10) continue;
 		msg_detections.detections.push_back(msg_detection);
-		tfs.transforms.push_back(tf);
+		tfs.transforms.push_back(tagTransform);
 
 	}
 	if(zarray_size(detections) > 0 && msg_detections.detections.size() > 0) {
@@ -206,11 +206,11 @@ void AprilTag2Node::onImage(const sensor_msgs::msg::CompressedImage::SharedPtr m
 }
 
 
-void AprilTag2Node::publish_data_center(const apriltag_msgs::msg::AprilTagDetectionArray& Detections, const tf2_msgs::msg::TFMessage& t_f)
+void AprilTag2Node::publish_data_center(const apriltag_msgs::msg::AprilTagDetectionArray& detections, const tf2_msgs::msg::TFMessage& transforms)
 {
-	if(Detections.detections.size()>0)
+	if(detections.detections.size()>0)
 	{
-		Eigen::MatrixXd areaID(Detections.detections.size(), 2);
+		Eigen::MatrixXd tagAreaWeights(detections.detections.size(), 2);
 		geometry_msgs::msg::TransformStamped msg_relative_pose;
 		geometry_msgs::msg::TransformStamped vision_pose; // ROS2-friendly internal container
 		// vision_pose.pose is not used; we store position/orientation in the transform fields.
@@ -225,50 +225,50 @@ void AprilTag2Node::publish_data_center(const apriltag_msgs::msg::AprilTagDetect
 		std::array<double, 7> vision_pose2;
 
 
-		for( int i=0; i< Detections.detections.size(); i++ ) {
-			double l1 = sqrt( pow(Detections.detections.at(i).corners.at(1).y - Detections.detections.at(i).corners.at(0).y,2) + pow(Detections.detections.at(i).corners.at(1).x - Detections.detections.at(i).corners.at(0).x,2));
-			double l2 = sqrt( pow(Detections.detections.at(i).corners.at(2).y - Detections.detections.at(i).corners.at(1).y,2) + pow(Detections.detections.at(i).corners.at(2).x - Detections.detections.at(i).corners.at(1).x,2));
-			double l3 = sqrt( pow(Detections.detections.at(i).corners.at(3).y - Detections.detections.at(i).corners.at(2).y,2) + pow(Detections.detections.at(i).corners.at(3).x - Detections.detections.at(i).corners.at(2).x,2));
-			double l4 = sqrt( pow(Detections.detections.at(i).corners.at(0).y - Detections.detections.at(i).corners.at(3).y,2) + pow(Detections.detections.at(i).corners.at(0).x - Detections.detections.at(i).corners.at(3).x,2));
-			areaID(i,0) = i;
-			areaID(i,1) = pow( (l1 + l2 + l3 +l4)/4,2 );
+		for( int i=0; i< detections.detections.size(); i++ ) {
+			double side1 = sqrt( pow(detections.detections.at(i).corners.at(1).y - detections.detections.at(i).corners.at(0).y,2) + pow(detections.detections.at(i).corners.at(1).x - detections.detections.at(i).corners.at(0).x,2));
+			double side2 = sqrt( pow(detections.detections.at(i).corners.at(2).y - detections.detections.at(i).corners.at(1).y,2) + pow(detections.detections.at(i).corners.at(2).x - detections.detections.at(i).corners.at(1).x,2));
+			double side3 = sqrt( pow(detections.detections.at(i).corners.at(3).y - detections.detections.at(i).corners.at(2).y,2) + pow(detections.detections.at(i).corners.at(3).x - detections.detections.at(i).corners.at(2).x,2));
+			double side4 = sqrt( pow(detections.detections.at(i).corners.at(0).y - detections.detections.at(i).corners.at(3).y,2) + pow(detections.detections.at(i).corners.at(0).x - detections.detections.at(i).corners.at(3).x,2));
+			tagAreaWeights(i,0) = i;
+			tagAreaWeights(i,1) = pow( (side1 + side2 + side3 + side4)/4,2 );
 		}
 
-		double weighTot = 0;
+		double totalWeight = 0;
 
 
 		int num_of_valid_ids = 0;
 		std::vector<double> xs, ys, zs;
 
-		for( int i = 0; i< areaID.rows(); i++ ) {
-			vision_pose.transform.translation.x += t_f.transforms.at( areaID(i, 0) ).transform.translation.x * areaID(i, 1);
-			vision_pose.transform.translation.y += t_f.transforms.at( areaID(i, 0) ).transform.translation.y * areaID(i, 1);
-			vision_pose.transform.translation.z += t_f.transforms.at( areaID(i, 0) ).transform.translation.z * areaID(i, 1);
+		for( int i = 0; i< tagAreaWeights.rows(); i++ ) {
+			vision_pose.transform.translation.x += transforms.transforms.at( tagAreaWeights(i, 0) ).transform.translation.x * tagAreaWeights(i, 1);
+			vision_pose.transform.translation.y += transforms.transforms.at( tagAreaWeights(i, 0) ).transform.translation.y * tagAreaWeights(i, 1);
+			vision_pose.transform.translation.z += transforms.transforms.at( tagAreaWeights(i, 0) ).transform.translation.z * tagAreaWeights(i, 1);
 
-			vision_pose.transform.rotation.w += t_f.transforms.at( areaID(i, 0) ).transform.rotation.w * areaID(i, 1);
-			vision_pose.transform.rotation.x += t_f.transforms.at( areaID(i, 0) ).transform.rotation.x * areaID(i, 1);
-			vision_pose.transform.rotation.y += t_f.transforms.at( areaID(i, 0) ).transform.rotation.y * areaID(i, 1);
-			vision_pose.transform.rotation.z += t_f.transforms.at( areaID(i, 0) ).transform.rotation.z * areaID(i, 1);
+			vision_pose.transform.rotation.w += transforms.transforms.at( tagAreaWeights(i, 0) ).transform.rotation.w * tagAreaWeights(i, 1);
+			vision_pose.transform.rotation.x += transforms.transforms.at( tagAreaWeights(i, 0) ).transform.rotation.x * tagAreaWeights(i, 1);
+			vision_pose.transform.rotation.y += transforms.transforms.at( tagAreaWeights(i, 0) ).transform.rotation.y * tagAreaWeights(i, 1);
+			vision_pose.transform.rotation.z += transforms.transforms.at( tagAreaWeights(i, 0) ).transform.rotation.z * tagAreaWeights(i, 1);
 
 
 
-			vision_pose2[0] += t_f.transforms.at( areaID(i, 0) ).transform.translation.x * areaID(i, 1);
-			vision_pose2[1] += t_f.transforms.at( areaID(i, 0) ).transform.translation.y * areaID(i, 1);
-			vision_pose2[2] += t_f.transforms.at( areaID(i, 0) ).transform.translation.z * areaID(i, 1);
+			vision_pose2[0] += transforms.transforms.at( tagAreaWeights(i, 0) ).transform.translation.x * tagAreaWeights(i, 1);
+			vision_pose2[1] += transforms.transforms.at( tagAreaWeights(i, 0) ).transform.translation.y * tagAreaWeights(i, 1);
+			vision_pose2[2] += transforms.transforms.at( tagAreaWeights(i, 0) ).transform.translation.z * tagAreaWeights(i, 1);
 
-			vision_pose2[3] += t_f.transforms.at( areaID(i, 0) ).transform.rotation.w * areaID(i, 1);
-			vision_pose2[4] += t_f.transforms.at( areaID(i, 0) ).transform.rotation.x * areaID(i, 1);
-			vision_pose2[5] += t_f.transforms.at( areaID(i, 0) ).transform.rotation.y * areaID(i, 1);
-			vision_pose2[6] += t_f.transforms.at( areaID(i, 0) ).transform.rotation.z * areaID(i, 1);
+			vision_pose2[3] += transforms.transforms.at( tagAreaWeights(i, 0) ).transform.rotation.w * tagAreaWeights(i, 1);
+			vision_pose2[4] += transforms.transforms.at( tagAreaWeights(i, 0) ).transform.rotation.x * tagAreaWeights(i, 1);
+			vision_pose2[5] += transforms.transforms.at( tagAreaWeights(i, 0) ).transform.rotation.y * tagAreaWeights(i, 1);
+			vision_pose2[6] += transforms.transforms.at( tagAreaWeights(i, 0) ).transform.rotation.z * tagAreaWeights(i, 1);
 
-			xs.push_back(t_f.transforms.at( areaID(i, 0) ).transform.translation.x);
-			ys.push_back(t_f.transforms.at( areaID(i, 0) ).transform.translation.y);
-			zs.push_back(t_f.transforms.at( areaID(i, 0) ).transform.translation.z);
+			xs.push_back(transforms.transforms.at( tagAreaWeights(i, 0) ).transform.translation.x);
+			ys.push_back(transforms.transforms.at( tagAreaWeights(i, 0) ).transform.translation.y);
+			zs.push_back(transforms.transforms.at( tagAreaWeights(i, 0) ).transform.translation.z);
 
-			weighTot += areaID(i, 1);
+			totalWeight += tagAreaWeights(i, 1);
 
-			double xx = t_f.transforms.at( areaID(i, 0) ).transform.translation.x;
-			double yy = t_f.transforms.at( areaID(i, 0) ).transform.translation.y;
+			double xx = transforms.transforms.at( tagAreaWeights(i, 0) ).transform.translation.x;
+			double yy = transforms.transforms.at( tagAreaWeights(i, 0) ).transform.translation.y;
 			double rot_yaw = -1*_drone_yaw;
 			auto temp = -(sinf(rot_yaw) * xx + cosf(rot_yaw) * yy);	
 		}
@@ -285,30 +285,30 @@ void AprilTag2Node::publish_data_center(const apriltag_msgs::msg::AprilTagDetect
 		};
 
 
-		vision_pose.transform.translation.x = vision_pose.transform.translation.x / weighTot;
-		vision_pose.transform.translation.y = vision_pose.transform.translation.y / weighTot;
-		vision_pose.transform.translation.z = vision_pose.transform.translation.z / weighTot;
+		vision_pose.transform.translation.x = vision_pose.transform.translation.x / totalWeight;
+		vision_pose.transform.translation.y = vision_pose.transform.translation.y / totalWeight;
+		vision_pose.transform.translation.z = vision_pose.transform.translation.z / totalWeight;
 
 
 
-		vision_pose.transform.rotation.w = vision_pose.transform.rotation.w / weighTot;
-		vision_pose.transform.rotation.x = vision_pose.transform.rotation.x / weighTot;
-		vision_pose.transform.rotation.y = vision_pose.transform.rotation.y / weighTot;
-		vision_pose.transform.rotation.z = vision_pose.transform.rotation.z / weighTot;
+		vision_pose.transform.rotation.w = vision_pose.transform.rotation.w / totalWeight;
+		vision_pose.transform.rotation.x = vision_pose.transform.rotation.x / totalWeight;
+		vision_pose.transform.rotation.y = vision_pose.transform.rotation.y / totalWeight;
+		vision_pose.transform.rotation.z = vision_pose.transform.rotation.z / totalWeight;
 
 
-		vision_pose2[0] = vision_pose2[0] / weighTot;
-		vision_pose2[1] = vision_pose2[1] / weighTot;
-		vision_pose2[2] = vision_pose2[2] / weighTot;
+		vision_pose2[0] = vision_pose2[0] / totalWeight;
+		vision_pose2[1] = vision_pose2[1] / totalWeight;
+		vision_pose2[2] = vision_pose2[2] / totalWeight;
 
-		vision_pose2[3] = vision_pose2[3] / weighTot;
-		vision_pose2[4] = vision_pose2[4] / weighTot;
-		vision_pose2[5] = vision_pose2[5] / weighTot;
-		vision_pose2[6] = vision_pose2[6] / weighTot;
+		vision_pose2[3] = vision_pose2[3] / totalWeight;
+		vision_pose2[4] = vision_pose2[4] / totalWeight;
+		vision_pose2[5] = vision_pose2[5] / totalWeight;
+		vision_pose2[6] = vision_pose2[6] / totalWeight;
 
 		double horiz_dist_norm = sqrt(pow(vision_pose2[0],2) + pow(vision_pose2[1],2));
 
-		myfile << std::to_string(Detections.detections.size()) + "," + std::to_string(horiz_dist_norm) + "," + std::to_string(vision_pose2[2]) + "," + std::to_string(this->now().seconds()) + "\n";
+		detectionLog << std::to_string(detections.detections.size()) + "," + std::to_string(horiz_dist_norm) + "," + std::to_string(vision_pose2[2]) + "," + std::to_string(this->now().seconds()) + "\n";
 
 		// preparing for last rotation: the computed position is wrt drone frame: the whole should be
 		// rotated in global frame.
@@ -449,16 +449,16 @@ void AprilTag2Node::getPose(const matd_t& H, geometry_msgs::msg::Transform& t, c
 		pose = pose * TAGS.TAG8_T_TAG5;
 	} else if (ID == 9) {
 		pose = pose * TAGS.TAG9_T_TAG5;
-		myfile << "BABBALA9" << "\n";
+		detectionLog << "BABBALA9" << "\n";
 	} else if (ID == 10) {
 		pose = pose * TAGS.TAG10_T_TAG5;
-		myfile << "BABBALA10" << "\n";
+		detectionLog << "BABBALA10" << "\n";
 	} else if (ID == 11) {
 		pose = pose * TAGS.TAG11_T_TAG5;
-		myfile << "BABBALA11" << "\n";
+		detectionLog << "BABBALA11" << "\n";
 	} else if (ID == 12) {
 		pose = pose * TAGS.TAG12_T_TAG5;
-		myfile << "BABBALA12" << "\n";
+		detectionLog << "BABBALA12" << "\n";
 	}
 
 	pose = TAGS.robot_T_cam * pose;
@@ -599,16 +599,16 @@ AprilTag2Node::pnp(apriltag_detection_t* const detection, const std::array<doubl
 		pose = pose * TAGS.TAG8_T_TAG5;
 	} else if (detection->id == 9) {
 		pose = pose * TAGS.TAG9_T_TAG5;
-		myfile << "BABBALA9" << "\n";
+		detectionLog << "BABBALA9" << "\n";
 	} else if (detection->id == 10) {
 		pose = pose * TAGS.TAG10_T_TAG5;
-		myfile << "BABBALA10" << "\n";
+		detectionLog << "BABBALA10" << "\n";
 	} else if (detection->id == 11) {
 		pose = pose * TAGS.TAG11_T_TAG5;
-		myfile << "BABBALA11" << "\n";
+		detectionLog << "BABBALA11" << "\n";
 	} else if (detection->id == 12) {
 		pose = pose * TAGS.TAG12_T_TAG5;
-		myfile << "BABBALA12" << "\n";
+		detectionLog << "BABBALA12" << "\n";
 	}
 
 	pose = TAGS.robot_T_cam * pose;

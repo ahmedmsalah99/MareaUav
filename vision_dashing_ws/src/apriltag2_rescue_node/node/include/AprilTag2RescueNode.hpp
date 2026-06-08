@@ -32,14 +32,14 @@ public:
 private:
 	typedef Eigen::Matrix<double, 3, 3, Eigen::RowMajor> Mat3;
 
-	apriltag_family_t *tf;
-	apriltag_detector_t *td;
+	apriltag_family_t *_tagFamily;
+	apriltag_detector_t *_tagDetector;
 	std::string tag_family;
 	double tag_edge_size;
 	int max_hamming;
 	int n_tags;
 	geometry_msgs::msg::TransformStamped _drone_pose;
-	double _drone_pose_yaw;
+	double _droneYaw;
 	std::map<int, std::string> tracked_tags;
 	std::map<int, float> rescue_tags;
 	typedef std::queue<double> queue_t;
@@ -88,7 +88,7 @@ private:
 	void getPose(const matd_t& H, geometry_msgs::msg::Transform& t, const int ID, const bool z_up = false);
 	double movingFilter(double raw, std::queue<double> *queue_t, double *integral);
 	void toEulerAngle(double quaternion[], double *Roll, double *Pitch, double *Yaw);
-	void publish_data_center(const apriltag_msgs::msg::AprilTagDetectionArray& Detections, const tf2_msgs::msg::TFMessage& t_f);
+	void publish_data_center(const apriltag_msgs::msg::AprilTagDetectionArray& detections, const tf2_msgs::msg::TFMessage& transforms);
 	geometry_msgs::msg::Transform pnp(apriltag_detection_t* const detection, const std::array<double, 4>& intr, double tagsize);
 
 };
