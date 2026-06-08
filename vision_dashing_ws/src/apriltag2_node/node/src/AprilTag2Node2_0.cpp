@@ -1,8 +1,6 @@
 #include <AprilTag2Node.hpp>
 #include <class_loader/register_macro.hpp>
 #include "LandingPlatform.h"
-// #include <apriltag_pose.h>
-// #include <apriltag.h>
 #include <sstream>
 #include <iostream>
 #include <fstream>
@@ -13,21 +11,9 @@
 #include <math.h>
 #include <Eigen/Dense>
 #include <cstdlib>
-// #include <apriltag/common/homography.h>
-// #include <opencv2/calib3d.hpp>
-// #include <tf2/convert.hpp>
 static Platform_tag TAGS;
 
 std::ofstream myfile;
-
-// rclcpp::Time prev;
-// rclcpp::Time curr;
-// double max = 0;
-// double min = 10;
-// double mean = 0;
-// double sum = 0;
-// int c = 0;
-// rclcpp::Clock clocksis;
 
 AprilTag2Node::AprilTag2Node() : Node("apriltag2", "apriltag", rclcpp::NodeOptions().use_intra_process_comms(true))
 {
@@ -42,31 +28,14 @@ AprilTag2Node::AprilTag2Node() : Node("apriltag2", "apriltag", rclcpp::NodeOptio
 	odometry_sub = this->create_subscription<px4_msgs::msg::VehicleOdometry>("/fmu/out/vehicle_odometry",
 		rclcpp::QoS(rclcpp::QoSInitialization(rmw_qos_profile_sensor_data.history,rmw_qos_profile_sensor_data.depth),rmw_qos_profile_sensor_data),
 		std::bind(&AprilTag2Node::getDroneOdometry, this, std::placeholders::_1));
-	//tf of each tags in the scene
-	//pub_tf = this->create_publisher<tf2_msgs::msg::TFMessage>("/tf", tf_qos_profile);
-
-	//information from the vision system(hamming, goodness, corners..)
-	//pub_detections = this->create_publisher<apriltag_msgs::msg::AprilTagDetectionArray>("detections");
-
-	//platform center pose
-	// pub_platformCenter = this->create_publisher<geometry_msgs::msg::TransformStamped>("/platform_center",1);
 	pub_platformCenter = this->create_publisher<geometry_msgs::msg::TransformStamped>("/platform_center",1);
 	pub_platformCenter_gt = this->create_publisher<geometry_msgs::msg::TransformStamped>("/platform_center_gt",1);
 
-	// set camera info message, these values are obtained after calibration and they are good for 640x480.
-	// const double fx = 508.624627;
-	// const double fx = 510.06217068128194;
-	// const double fx = 320.25492609007654;
+	// calibration values for 640x480
 	const double cx = 323.83127;
-	// const double fy = 508.77675;
-	// const double fy = 510.06217068128194;
-	// const double fy = 320.25492609007654;
 	const double cy = 248.651286;
-
 	const double fx = 381.36246688113556;
-	// const double cx = 320;
 	const double fy = 381.36246688113556;
-	// const double cy = 240.5;
 
 	K << fx, 0, cx, 0, fy, cy, 0, 0, 1;
 	intrinsics = {fx, fy, cx,cy};
@@ -93,17 +62,6 @@ AprilTag2Node::AprilTag2Node() : Node("apriltag2", "apriltag", rclcpp::NodeOptio
 	get_parameter("z_up", z_up);
 
 
-	// get tag names and IDs
-	// static const std::string tag_list_prefix = "tag_lists";
-	// auto parameters_and_prefixes = list_parameters({tag_list_prefix}, 10);
-	// for (const std::string &name : parameters_and_prefixes.names) {
-	// 	// declare_parameter(name);
-	// 	// get_parameter(name,platform_tags[])
-	// 	const int id = stoi( name.substr(tag_list_prefix.size()+1, name.size()) );
-	// 	platform_tags[id] = get_parameter(name).get_value<float>();
-	// 	// get_parameter(name, platform_tags[id]);
-	// 	std::cout<<id<<platform_tags[id]<<std::endl;
-	// }
 	static const std::string tag_prefix = "tag_";
 	declare_parameter<int>("n_tags", 0);
 	get_parameter("n_tags", n_tags);
@@ -339,15 +297,6 @@ void AprilTag2Node::publish_data_center(const apriltag_msgs::msg::AprilTagDetect
 		vision_pose.transform.rotation.z = vision_pose.transform.rotation.z / weighTot;
 
 
-		// toEulerAngle(vision_pose.transform.rotation,&_roll,&_pitch,&_yaw);
-		// //moving filter to clean a bit the data
-
-		// vision_pose.roll = movingFilter(_roll,&_Queue_roll,&_integral_roll);
-		// vision_pose.pitch = movingFilter(_pitch,&_Queue_pitch,&_integral_pitch);
-		// vision_pose.yaw = movingFilter(_yaw,&_Queue_yaw,&_integral_yaw);
-
-
-
 		vision_pose2[0] = vision_pose2[0] / weighTot;
 		vision_pose2[1] = vision_pose2[1] / weighTot;
 		vision_pose2[2] = vision_pose2[2] / weighTot;
@@ -575,10 +524,6 @@ void AprilTag2Node::getDroneOdometry(const px4_msgs::msg::VehicleOdometry::Share
 	_drone_pose.transform.translation.y =  msg_odom->position[0];
 	_drone_pose.transform.translation.z =  -msg_odom->position[2];
 
-	// _drone_pose.velocity[0] = msg_odom->velocity[1];
-	// _drone_pose.velocity[1] = msg_odom->velocity[0];
-	// _drone_pose.velocity[2] = -msg_odom->velocity[2];
-
 	_drone_pose.transform.rotation.w = msg_odom->q[0];
 	_drone_pose.transform.rotation.x = msg_odom->q[1];
 	_drone_pose.transform.rotation.y = msg_odom->q[2];
@@ -677,7 +622,6 @@ AprilTag2Node::pnp(apriltag_detection_t* const detection, const std::array<doubl
 	t.rotation.x = q.x();
 	t.rotation.y = q.y();
 	t.rotation.z = q.z();
-    // return toMsg(std::make_pair(tvec, rvec));
 	return t;
 }
 geometry_msgs::msg::Transform
@@ -710,24 +654,6 @@ void AprilTag2Node::convert(const cv::Mat_<double>& vec, geometry_msgs::msg::Vec
     msg_vec.y = vec.at<double>(1);
     msg_vec.z = vec.at<double>(2);
 }
-// geometry_msgs::msg::Transform
-// AprilTag2Node::homography(apriltag_detection_t* const detection, const std::array<double, 4>& intr, double tagsize)
-// {
-//     apriltag_detection_info_t info = {detection, tagsize, intr[0], intr[1], intr[2], intr[3]};
-
-//     apriltag_pose_t pose;
-//     estimate_pose_for_tag_homography(&info, &pose);
-
-//     // rotate frame such that z points in the opposite direction towards the camera
-//     for(int i = 0; i < 3; i++) {
-//         // swap x and y axes
-//         std::swap(MATD_EL(pose.R, 0, i), MATD_EL(pose.R, 1, i));
-//         // invert z axis
-//         MATD_EL(pose.R, 2, i) *= -1;
-//     }
-
-//     return tf2::toMsg<apriltag_pose_t, geometry_msgs::msg::Transform>(const_cast<const apriltag_pose_t&>(pose));
-// }
 
 std::map<std::string, apriltag_family_t *(*)(void)> AprilTag2Node::tag_create =
 {

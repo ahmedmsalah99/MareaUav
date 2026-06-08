@@ -1,6 +1,5 @@
 #include "State.h"
 
-//raspicam::RaspiCam State::cameraComp2_;
 raspicam::RaspiCam State::cameraComp_;
 
 int State::flightMode_ = -1;

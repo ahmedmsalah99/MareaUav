@@ -1,12 +1,9 @@
-//#include "lcm/lcm-cpp.hpp"
 #include "rclcpp/rclcpp.hpp"
 #include <sensor_msgs/msg/image.hpp>
 #include <std_msgs/msg/float32.hpp>
 #include <sensor_msgs/msg/camera_info.hpp>
 #include <sensor_msgs/msg/compressed_image.hpp>
-#include <ctime>
 #include <sys/time.h>
-#include <fstream>
 #include <iostream>
 #include <unistd.h>
 #include <raspicam/raspicam.h>
@@ -50,10 +47,6 @@ int main ( int argc,char **argv )
 	CameraMachine.setState(&IdleS);
 
 	int actualState;
-
-	enum flightMode{LAND,SEARCH};
-	//during land mode the camera is set as compressed image 640x480 at 20 Hz
-	//during search mode the camera is set as compressed image 1280x960 at 2 Hz
 
 	struct timeval timer;
 	struct timeval end;
@@ -114,9 +107,6 @@ int main ( int argc,char **argv )
 		loop_rate.sleep();
 		gettimeofday(&end,NULL);
 
-		// if(printRate == 10){
-		// 	std::cout<<"rate: "<< 1000000.0 / (double) ((end.tv_sec - timer.tv_sec) * 1000000 + (end.tv_usec - timer.tv_usec))<<std::endl;
-		// 	printRate = 0;
 		}
 		printRate++;
 		printStateMachine++;

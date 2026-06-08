@@ -36,13 +36,4 @@ def generate_launch_description():
 
 	launch_ros.actions.Node(package='fsm_raspicam', node_executable='camera_main_node', output='screen',
 	),
-	# DeclareLaunchArgument(
-		# 'world_name',
-		# default_value = argument_path,
-		# description = 'Argument for Gazebo launch file'),
-
-	# IncludeLaunchDescription( 
-	# PythonLaunchDescriptionSource(['/opt/ros/dashing/share/gazebo_ros/launch/empty_world.launch.py']),
-	# launch_arguments={'world_name': argument_path}.items()
-       #  ),
     ])
