@@ -20,8 +20,7 @@ Executioner::Executioner(){
     _payloadReleased = false;
     _nav_mission_finished = false;
     _first_hold = true;
-    _nodeList.clear();
-    _nodeList.shrink_to_fit();
+    clearList();
     isBatterySafetyTaskRunning = 0;
     isGPSSafetyTaskRunning = 0;
     isCameraSafetyTaskRunning = 0;
@@ -42,8 +41,7 @@ void Executioner::init(){
     }
     else{
 
-        _nodeList.clear();
-        _nodeList.shrink_to_fit();
+        clearList();
         std::cout << "WARNING, empty list"<<std::endl;
         _can_run = false;
         _idle = true;

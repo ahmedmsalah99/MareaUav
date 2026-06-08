@@ -3,28 +3,33 @@
 #include <unistd.h>
 #include <raspicam/raspicam.h>
 
+static constexpr int USEC_PER_SEC = 1000000;
+static constexpr int SLEEP_IDLE_TRANSITION_SEC  = 2;
+static constexpr int SLEEP_CAMERA_STABILIZE_SEC = 3;
+static constexpr int SLEEP_STOP_SEC             = 1;
+
 
 void IdleState::setParameters()
 {
-	if (flightMode_ == 0) { //LANDING ACTION
+	if (flightMode_ == FM_LAND) {
 
 		cameraComp_.release();
 
-		usleep(2*1000000);
+		usleep(SLEEP_IDLE_TRANSITION_SEC * USEC_PER_SEC);
 
 		this->machine_->setState(nextLandingState_);
 
 	}
 
-	else if (flightMode_ == 1) { //SEARCH&RESCUE
+	else if (flightMode_ == FM_SEARCH) {
 
 		cameraComp_.release();
 
-		usleep(2 * 1000000);
+		usleep(SLEEP_IDLE_TRANSITION_SEC * USEC_PER_SEC);
 
 		this->machine_->setState(nextSearchState_);
 	}
-	else if(flightMode_ == 2) //STOP CAMERA
+	else if(flightMode_ == FM_STOP)
 		this->machine_->setState(nextStopState_);
 	else // If we are before landing or search states
 	{
@@ -175,12 +180,12 @@ void LandingState::setParameters()
 			pubCameraInfo_->publish(camInfoMsg_);
 
 
-					if (preFlightMode_ == 0 && flightMode_ == 1){
+					if (preFlightMode_ == FM_LAND && flightMode_ == FM_SEARCH){
 									this->machine_->setState(nextState_);
 			Init = false;
 			}
 
-			else if(preFlightMode_ == 0 && flightMode_ == 2){
+			else if(preFlightMode_ == FM_LAND && flightMode_ == FM_STOP){
 			this->machine_->setState(nextStopState_);
 			Init = false;
 			}
@@ -266,7 +271,7 @@ void SearchState::setParameters()
 								}
                 std::cout<<"Sleeping for 3 secs"<<std::endl;
 
-                usleep(3 * 1000000); // wait a while until camera stabilizes
+                usleep(SLEEP_CAMERA_STABILIZE_SEC * USEC_PER_SEC); // wait a while until camera stabilizes
 		Init = true;
 	}
 	if(_cameraOpened)
@@ -321,12 +326,12 @@ void SearchState::setParameters()
 		camInfoMsg_->header.stamp.nanosec = 1000 * time_.tv_usec;
 		pubCameraInfo_->publish(camInfoMsg_);
 
-		if (preFlightMode_ == 1 && flightMode_ == 0){
+		if (preFlightMode_ == FM_SEARCH && flightMode_ == FM_LAND){
 			this->machine_->setState(nextState_);
 			Init = false;
 		}
 
-		else if(preFlightMode_ == 1 && flightMode_ == 2){
+		else if(preFlightMode_ == FM_SEARCH && flightMode_ == FM_STOP){
 									this->machine_->setState(nextStopState_);
 			Init = false;
 		}
@@ -346,9 +351,9 @@ void StopState::setParameters()
 		cameraComp_.release();
 		Init = true;
 	}
-	usleep( 1000000);
+	usleep(SLEEP_STOP_SEC * USEC_PER_SEC);
 
-	if(flightMode_ != 2){
+	if(flightMode_ != FM_STOP){
 		this->machine_->setState(nextState_);
 		Init = false;
 	}

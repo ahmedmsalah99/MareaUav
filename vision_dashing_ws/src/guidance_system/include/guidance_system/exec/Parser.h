@@ -30,6 +30,7 @@ public:
 
 private:
     double getValue(std::string str);
+    bool parseFiniteDouble(const std::string& str, double& out);
     bool parseAction(int pos);
     std::vector<std::vector<std::string>> _tokens;
     std::deque<exec::task> _taskListParsed;
