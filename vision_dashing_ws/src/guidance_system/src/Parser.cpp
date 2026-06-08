@@ -81,6 +81,15 @@ bool Parser::parse() {
 
 }
 
+bool Parser::parseFiniteDouble(const std::string& str, double& out) {
+    out = getValue(str);
+    if (!std::isfinite(out)) {
+        std::cout << "value is not finite" << std::endl;
+        return false;
+    }
+    return true;
+}
+
 double Parser::getValue(std::string str)  {
     char *cstr = new char[str.length() + 1];
     strcpy(cstr, str.c_str());
@@ -155,18 +164,11 @@ bool Parser::parseTakeOff(exec::task& task,int pos) {
 
         if(field == "z"){
 
-            //atof Helper, cast string into double
-            double value = getValue(value_str);
-
-            if(std::isfinite(value)){
-                mask |= zFound;
-                task.params[0] = value;
-                std::cout << "  Z: " << value << std::endl;
-
-            }else{
-                std::cout << "value is not finite" << std::endl;
-                return false;
-            }
+            double value;
+            if(!parseFiniteDouble(value_str, value)) return false;
+            mask |= zFound;
+            task.params[0] = value;
+            std::cout << "  Z: " << value << std::endl;
 
         }
         else if(field == "id"){
@@ -177,22 +179,14 @@ bool Parser::parseTakeOff(exec::task& task,int pos) {
         }
         else if(field == "threshold")
         {
-          // if the found value is a threshold
-          double value = getValue(value_str);
-          // we check its validity
-          if(std::isfinite(value) && value >= 0)
-          {
-            mask |= trFound;
-            // and we assign it to task's parameters
-            task.params[1] = value;
-            std::cout << "  threshold: " <<value<< " found for action: " << pos << std::endl;
-          }
-          else
-          {
-            // otherwhise we signal it and we stop the execution
+          double value;
+          if(!parseFiniteDouble(value_str, value) || value < 0) {
             std::cout << "value threshold is not valid" << std::endl;
             return false;
           }
+          mask |= trFound;
+          task.params[1] = value;
+          std::cout << "  threshold: " <<value<< " found for action: " << pos << std::endl;
         }
         else{
 
@@ -248,19 +242,11 @@ bool Parser::parseMove(exec::task& task,int pos) {
         }
         else if(field == "x") {
 
-            //atof Helper, cast string into double
-
-            double value = getValue(value_str);
-
-            if (std::isfinite(value)) {
-                mask |= xFound;
-                task.x = value;
-                std::cout << "  X: " <<value<< " found for action: " << pos << std::endl;
-
-            } else {
-                std::cout << "value is not finite" << std::endl;
-                return false;
-            }
+            double value;
+            if(!parseFiniteDouble(value_str, value)) return false;
+            mask |= xFound;
+            task.x = value;
+            std::cout << "  X: " <<value<< " found for action: " << pos << std::endl;
 
         }
         else if(field == "id"){
@@ -271,115 +257,65 @@ bool Parser::parseMove(exec::task& task,int pos) {
         }
         else if(field == "y"){
 
-            //atof Helper, cast string into double
-            double value = getValue(value_str);
-
-            if (std::isfinite(value)) {
-                mask |= yFound;
-                task.y = value;
-                std::cout << "  Y: " <<value<< " found for action: " << pos << std::endl;
-
-            } else {
-                std::cout << "value is not finite" << std::endl;
-                return false;
-            }
+            double value;
+            if(!parseFiniteDouble(value_str, value)) return false;
+            mask |= yFound;
+            task.y = value;
+            std::cout << "  Y: " <<value<< " found for action: " << pos << std::endl;
 
         }
         else if(field == "z"){
 
-            //atof Helper, cast string into double
-            double value = getValue(value_str);
-
-            if (std::isfinite(value)) {
-                mask |= zFound;
-                task.z = value;
-                std::cout << "  Z: " <<value<< " found for action: " << pos << std::endl;
-
-            } else {
-                std::cout << "value is not finite" << std::endl;
-                return false;
-            }
+            double value;
+            if(!parseFiniteDouble(value_str, value)) return false;
+            mask |= zFound;
+            task.z = value;
+            std::cout << "  Z: " <<value<< " found for action: " << pos << std::endl;
 
         }
         else if(field == "home_lon")
         {
-          //atof Helper, cast string into double
-          double value = getValue(value_str);
-
-          if (std::isfinite(value)) {
-              mask |= hlonFound;
-              task.params[2] = value;
-              std::cout << "  Home_lon: " <<value<< " found for action: " << pos << std::endl;
-
-          } else {
-              std::cout << "value is not finite" << std::endl;
-              return false;
-          }
+          double value;
+          if(!parseFiniteDouble(value_str, value)) return false;
+          mask |= hlonFound;
+          task.params[2] = value;
+          std::cout << "  Home_lon: " <<value<< " found for action: " << pos << std::endl;
         }
         else if(field == "home_lat")
         {
-          //atof Helper, cast string into double
-          double value = getValue(value_str);
-
-          if (std::isfinite(value)) {
-              mask |= hlatFound;
-              task.params[3] = value;
-              std::cout << "  Home_lat: " <<value<< " found for action: " << pos << std::endl;
-
-          } else {
-              std::cout << "value is not finite" << std::endl;
-              return false;
-          }
+          double value;
+          if(!parseFiniteDouble(value_str, value)) return false;
+          mask |= hlatFound;
+          task.params[3] = value;
+          std::cout << "  Home_lat: " <<value<< " found for action: " << pos << std::endl;
         }
         else if(field == "home_alt")
         {
-          //atof Helper, cast string into double
-          double value = getValue(value_str);
-
-          if (std::isfinite(value)) {
-              mask |= haltFound;
-              task.params[4] = value;
-              std::cout << "  Home_alt: " <<value<< " found for action: " << pos << std::endl;
-
-          } else {
-              std::cout << "value is not finite" << std::endl;
-              return false;
-          }
+          double value;
+          if(!parseFiniteDouble(value_str, value)) return false;
+          mask |= haltFound;
+          task.params[4] = value;
+          std::cout << "  Home_alt: " <<value<< " found for action: " << pos << std::endl;
         }
         else if(field == "alpha"){
 
-            //atof Helper, cast string into double
-            double value = getValue(value_str);
-
-            if (std::isfinite(value)) {
-                mask |= aFound;
-                task.params[0] = value;
-                std::cout << "  Alpha: " <<value<< " found for action: " << pos << std::endl;
-
-            } else {
-                std::cout << "value is not finite" << std::endl;
-                return false;
-            }
+            double value;
+            if(!parseFiniteDouble(value_str, value)) return false;
+            mask |= aFound;
+            task.params[0] = value;
+            std::cout << "  Alpha: " <<value<< " found for action: " << pos << std::endl;
 
         }
         else if(field == "threshold")
         {
-          // if the found value is a threshold
-          double value = getValue(value_str);
-          // we check its validity
-          if(std::isfinite(value) && value >= 0)
-          {
-            trFound = true;
-            // and we assign it to task's parameters
-            task.params[1] = value;
-            std::cout << "  threshold: " <<value<< " found for action: " << pos << std::endl;
-          }
-          else
-          {
-            // otherwhise we signal it and we stop the execution
+          double value;
+          if(!parseFiniteDouble(value_str, value) || value < 0) {
             std::cout << "value threshold is not valid" << std::endl;
             return false;
           }
+          trFound = true;
+          task.params[1] = value;
+          std::cout << "  threshold: " <<value<< " found for action: " << pos << std::endl;
         }
         else{
 
@@ -415,55 +351,27 @@ bool Parser::parseSearch(exec::task& task, int pos) {
 
         if (field == "radius")
         {
-
-            //atof Helper, cast string into double
-            double value = getValue(value_str);
-
-            if (std::isfinite(value))
-            {
-                mask |= rFound;
-                task.params[0] = value;
-                std::cout << "Radius: " << value << " found for action: " << pos << std::endl;
-
-            } else {
-                std::cout << "value is not finite" << std::endl;
-                return false;
-            }
-
+            double value;
+            if(!parseFiniteDouble(value_str, value)) return false;
+            mask |= rFound;
+            task.params[0] = value;
+            std::cout << "Radius: " << value << " found for action: " << pos << std::endl;
         }
         else if (field == "velocity")
         {
-
-            //atof Helper, cast string into double
-            double value = getValue(value_str);
-
-            if (std::isfinite(value)) {
-                mask |= vFound;
-                task.params[1] = value;
-                std::cout << "Velocity: " << value << " found for action: " << pos << std::endl;
-
-            } else {
-                std::cout << "value is not finite" << std::endl;
-                return false;
-            }
-
+            double value;
+            if(!parseFiniteDouble(value_str, value)) return false;
+            mask |= vFound;
+            task.params[1] = value;
+            std::cout << "Velocity: " << value << " found for action: " << pos << std::endl;
         }
         else if (field == "plat_dist")
         {
-
-            //atof Helper, cast string into double
-            double value = getValue(value_str);
-
-            if (std::isfinite(value)) {
-                mask |= pFound;
-                task.params[2] = value;
-                std::cout << "Platform Distance Threshold: " << value << " found for action: " << pos << std::endl;
-
-            } else {
-                std::cout << "value is not finite" << std::endl;
-                return false;
-            }
-
+            double value;
+            if(!parseFiniteDouble(value_str, value)) return false;
+            mask |= pFound;
+            task.params[2] = value;
+            std::cout << "Platform Distance Threshold: " << value << " found for action: " << pos << std::endl;
         }
         else if (field == "id")
         {
@@ -474,20 +382,11 @@ bool Parser::parseSearch(exec::task& task, int pos) {
         }
         else if(field == "z")
         {
-
-            //atof Helper, cast string into double
-            double value = getValue(value_str);
-
-            if (std::isfinite(value)) {
-                mask |= zFound;
-                task.z = value;
-                std::cout << "  Z: " <<value<< " found for action: " << pos << std::endl;
-
-            } else {
-                std::cout << "value is not finite" << std::endl;
-                return false;
-            }
-
+            double value;
+            if(!parseFiniteDouble(value_str, value)) return false;
+            mask |= zFound;
+            task.z = value;
+            std::cout << "  Z: " <<value<< " found for action: " << pos << std::endl;
         }
         else
         {
@@ -523,33 +422,19 @@ bool Parser::parseRotate(exec::task& task, int pos) {
 
         if (field == "x") {
 
-            //atof Helper, cast string into double
-            double value = getValue(value_str);
-
-            if (std::isfinite(value)) {
-                mask |= xFound;
-                task.x = value;
-                std::cout << "X: " << value << " found for action: " << pos << std::endl;
-
-            } else {
-                std::cout << "value is not finite" << std::endl;
-                return false;
-            }
+            double value;
+            if(!parseFiniteDouble(value_str, value)) return false;
+            mask |= xFound;
+            task.x = value;
+            std::cout << "X: " << value << " found for action: " << pos << std::endl;
 
         } else if (field == "y") {
 
-            //atof Helper, cast string into double
-            double value = getValue(value_str);
-
-            if (std::isfinite(value)) {
-                mask |= yFound;
-                task.y = value;
-                std::cout << "Y: " << value << " found for action: " << pos << std::endl;
-
-            } else {
-                std::cout << "value is not finite" << std::endl;
-                return false;
-            }
+            double value;
+            if(!parseFiniteDouble(value_str, value)) return false;
+            mask |= yFound;
+            task.y = value;
+            std::cout << "Y: " << value << " found for action: " << pos << std::endl;
 
         } else if (field == "id") {
 
@@ -558,38 +443,23 @@ bool Parser::parseRotate(exec::task& task, int pos) {
 
         } else if (field == "yaw") {
 
-            //atof Helper, cast string into double
-            double value = getValue(value_str);
-
-            if (std::isfinite(value)) {
-                mask |= yawFound;
-                task.yaw = value * PI / 180;
-                std::cout << "Yaw: " << value << " found for action: " << pos << std::endl;
-
-            } else {
-                std::cout << "value is not finite" << std::endl;
-                return false;
-            }
+            double value;
+            if(!parseFiniteDouble(value_str, value)) return false;
+            mask |= yawFound;
+            task.yaw = value * PI / 180;
+            std::cout << "Yaw: " << value << " found for action: " << pos << std::endl;
 
         }
         else if(field == "threshold")
         {
-          // if the found value is a threshold
-          double value = getValue(value_str);
-          // we check its validity
-          if(std::isfinite(value) && value >= 0)
-          {
-            mask |= trFound;
-            // and we assign it to task's parameters
-            task.params[1] = value * PI / 180;
-            std::cout << "  threshold: " <<value<< " found for action: " << pos << std::endl;
-          }
-          else
-          {
-            // otherwhise we signal it and we stop the execution
+          double value;
+          if(!parseFiniteDouble(value_str, value) || value < 0) {
             std::cout << "value threshold is not valid" << std::endl;
             return false;
           }
+          mask |= trFound;
+          task.params[1] = value * PI / 180;
+          std::cout << "  threshold: " <<value<< " found for action: " << pos << std::endl;
         }
         else{
 

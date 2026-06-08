@@ -31,6 +31,7 @@ public:
 	static raspicam::RaspiCam cameraComp_;
 
 	enum states { IDLE, LANDING, SEARCH, STOP };
+	enum FlightMode { FM_LAND = 0, FM_SEARCH = 1, FM_STOP = 2 };
 
 protected:
 	int32_t             id_;
