@@ -228,7 +228,7 @@ void AprilTag2RescueNode::publish_data_center(const apriltag_msgs::msg::AprilTag
 			// RCLCPP_INFO(get_logger(), "Lati: %lf %lf %lf %lf", l1, l2, l3, l4);
 
 			tagAreaWeights(i,0) = i;
-			tagAreaWeights(i,1) = pow( (side1 + side2 + side3 + side4)/4,2 );
+			tagAreaWeights(i,1) = pow( (side1 + side2 + side3 + side4)/4,2 ); // weight = squared mean side length (larger/closer tag is more reliable)
 
 			// RCLCPP_INFO(get_logger(), "Area: %lf %lf", tagAreaWeights(i,0), tagAreaWeights(i, 1));
 		}
@@ -376,7 +376,7 @@ void AprilTag2RescueNode::getPose(const matd_t& H, geometry_msgs::msg::Transform
 	// R = R2_z * R;
 
 	if(z_up) {
-		// rotate by half rotation about x-axis
+		// z_up convention: flip Y and Z axes to match coordinate system
 		R.col(1) *= -1;
 		R.col(2) *= -1;
 	}
@@ -457,6 +457,7 @@ void AprilTag2RescueNode::toEulerAngle(double quaternion[], double *Roll, double
 
 void AprilTag2RescueNode::getDroneOdometry(const px4_msgs::msg::VehicleOdometry::SharedPtr msg_odom)
 {
+	// PX4 NED→ROS ENU: swap X/Y axes, negate Z
 	_drone_pose.transform.translation.x =  msg_odom->position[1];
 	_drone_pose.transform.translation.y =  msg_odom->position[0];
 	_drone_pose.transform.translation.z =  -msg_odom->position[2];
@@ -470,7 +471,7 @@ void AprilTag2RescueNode::getDroneOdometry(const px4_msgs::msg::VehicleOdometry:
 	_drone_pose.transform.rotation.y = msg_odom->q[2];
 	_drone_pose.transform.rotation.z = msg_odom->q[3];
 
-	_droneYaw = atan2(2.0 * (msg_odom->q[0]*msg_odom->q[3] + msg_odom->q[0]*msg_odom->q[2]), 1.0 - 2.0 * (msg_odom->q[2]*msg_odom->q[2] + msg_odom->q[3]*msg_odom->q[3]));
+	_droneYaw = atan2(2.0 * (msg_odom->q[0]*msg_odom->q[3] + msg_odom->q[0]*msg_odom->q[2]), 1.0 - 2.0 * (msg_odom->q[2]*msg_odom->q[2] + msg_odom->q[3]*msg_odom->q[3])); // yaw from quaternion [w,x,y,z]
 }
 geometry_msgs::msg::Transform
 AprilTag2RescueNode::pnp(apriltag_detection_t* const detection, const std::array<double, 4>& intr, double tagsize)
@@ -501,6 +502,7 @@ AprilTag2RescueNode::pnp(apriltag_detection_t* const detection, const std::array
 	cv::Mat R_cv;
 	cv::Rodrigues(rvec, R_cv);
 	if (z_up) {
+		// z_up convention: flip Y and Z axes to match coordinate system
 		R_cv.col(1) *= -1;
     	R_cv.col(2) *= -1;
 	}

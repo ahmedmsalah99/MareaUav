@@ -231,7 +231,7 @@ void AprilTag2Node::publish_data_center(const apriltag_msgs::msg::AprilTagDetect
 			double side3 = sqrt( pow(detections.detections.at(i).corners.at(3).y - detections.detections.at(i).corners.at(2).y,2) + pow(detections.detections.at(i).corners.at(3).x - detections.detections.at(i).corners.at(2).x,2));
 			double side4 = sqrt( pow(detections.detections.at(i).corners.at(0).y - detections.detections.at(i).corners.at(3).y,2) + pow(detections.detections.at(i).corners.at(0).x - detections.detections.at(i).corners.at(3).x,2));
 			tagAreaWeights(i,0) = i;
-			tagAreaWeights(i,1) = pow( (side1 + side2 + side3 + side4)/4,2 );
+			tagAreaWeights(i,1) = pow( (side1 + side2 + side3 + side4)/4,2 ); // weight = squared mean side length (larger/closer tag is more reliable)
 		}
 
 		double totalWeight = 0;
@@ -409,7 +409,7 @@ void AprilTag2Node::getPose(const matd_t& H, geometry_msgs::msg::Transform& t, c
 	R.col(2) = R.col(0).cross(R.col(1));
 
 	if(z_up) {
-		// rotate by half rotation about x-axis
+		// z_up convention: flip Y and Z axes to match coordinate system
 		R.col(1) *= -1;
 		R.col(2) *= -1;
 	}
@@ -520,6 +520,7 @@ void AprilTag2Node::toEulerAngle(double quaternion[], double *Roll, double *Pitc
 
 void AprilTag2Node::getDroneOdometry(const px4_msgs::msg::VehicleOdometry::SharedPtr msg_odom)
 {
+	// PX4 NED→ROS ENU: swap X/Y axes, negate Z
 	_drone_pose.transform.translation.x =  msg_odom->position[1];
 	_drone_pose.transform.translation.y =  msg_odom->position[0];
 	_drone_pose.transform.translation.z =  -msg_odom->position[2];
@@ -529,7 +530,7 @@ void AprilTag2Node::getDroneOdometry(const px4_msgs::msg::VehicleOdometry::Share
 	_drone_pose.transform.rotation.y = msg_odom->q[2];
 	_drone_pose.transform.rotation.z = msg_odom->q[3];
 
-	_drone_yaw = atan2(2.0 * (msg_odom->q[0]*msg_odom->q[3] + msg_odom->q[1]*msg_odom->q[2]), 1.0 - 2.0 * (msg_odom->q[2]*msg_odom->q[2] + msg_odom->q[3]*msg_odom->q[3]));
+	_drone_yaw = atan2(2.0 * (msg_odom->q[0]*msg_odom->q[3] + msg_odom->q[1]*msg_odom->q[2]), 1.0 - 2.0 * (msg_odom->q[2]*msg_odom->q[2] + msg_odom->q[3]*msg_odom->q[3])); // yaw from quaternion [w,x,y,z]
 }
 
 double AprilTag2Node::getMedian(std::deque<double> buffer) {
@@ -567,6 +568,7 @@ AprilTag2Node::pnp(apriltag_detection_t* const detection, const std::array<doubl
 	cv::Mat R_cv;
 	cv::Rodrigues(rvec, R_cv);
 	if (z_up) {
+		// z_up convention: flip Y and Z axes to match coordinate system
 		R_cv.col(1) *= -1;
     	R_cv.col(2) *= -1;
 	}
