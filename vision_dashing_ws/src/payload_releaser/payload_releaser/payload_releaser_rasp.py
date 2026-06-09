@@ -33,13 +33,13 @@ class PayloadReleaser(Node):
 
 				p = GPIO.PWM(servoPIN, 50) # 50Hz PWM
 
-				p.start(2.5) # Init
+				p.start(2.5) # 2.5% duty cycle = neutral/center position
 				try:
 					print ("Arm")
-					p.ChangeDutyCycle(0)
+					p.ChangeDutyCycle(0)    # 0% = arm servo
 					time.sleep(1.5)
 					print ("Opening")
-					p.ChangeDutyCycle(0.08)
+					p.ChangeDutyCycle(0.08) # 0.08% = open/release position
 					time.sleep(5)
 					print ("Disarm")
 					p.stop()

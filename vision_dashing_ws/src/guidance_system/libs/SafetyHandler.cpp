@@ -82,7 +82,7 @@ bool SafetyHandler::handleCamera(double camera_timestamp)
   // if the timestamps difference is greater than a certain threshold, means that
   // it passed too much time since the last camera publication, aka camera doesn't
   // publish, aka it's dead
-  if(((double)tm.getTimeMilliSecond() - camera_timestamp)*0.001 > _safety_params.cameragone_threshold)
+  if(((double)tm.getTimeMilliSecond() - camera_timestamp)*0.001 > _safety_params.cameragone_threshold) // *0.001: convert ms difference to seconds
     return true;
 
   return false;
@@ -91,7 +91,7 @@ bool SafetyHandler::handleCamera(double camera_timestamp)
 bool SafetyHandler::handleGPS(double gps_timestamp)
 {
   // same as camera check.
-  if(((double)tm.getTimeMilliSecond() - gps_timestamp)*0.001 > _safety_params.gpsgone_threshold1)
+  if(((double)tm.getTimeMilliSecond() - gps_timestamp)*0.001 > _safety_params.gpsgone_threshold1) // *0.001: convert ms difference to seconds
     return true;
 
   return false;
@@ -101,7 +101,7 @@ bool SafetyHandler::handleSafeHarbor(double cameragone_timestamp)
 {
   if(cameragone_timestamp == 0.0)
     return false;
-  else if(((double)tm.getTimeMilliSecond() - cameragone_timestamp)*0.001 > _safety_params.cameratosafe_threshold)
+  else if(((double)tm.getTimeMilliSecond() - cameragone_timestamp)*0.001 > _safety_params.cameratosafe_threshold) // *0.001: convert ms difference to seconds
     return true;
 
   return false;

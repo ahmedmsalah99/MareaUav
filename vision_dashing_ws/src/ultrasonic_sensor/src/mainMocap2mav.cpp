@@ -8,9 +8,9 @@
 #include "MedianFilter.h"
 #include <sys/time.h>
 
-#define trigger 23
-#define echo    22
-#define timeout 150
+#define trigger 23  // GPIO pin: ultrasonic trigger
+#define echo    22  // GPIO pin: ultrasonic echo
+#define timeout 150 // echo timeout in milliseconds
 
 bool init = true;
 
@@ -26,11 +26,11 @@ struct timeval end;
 double dt;
 int RATE = 30;
 
-double Pred_P_k_1 = 0.003;
+double Pred_P_k_1 = 0.003; // initial Kalman covariance estimate
 double Xk;
 double Pk;
-double Q = 0.5e-3;
-double R = 2.92e-3;
+double Q = 0.5e-3;   // process noise covariance
+double R = 2.92e-3;  // measurement noise covariance
 
 int main(int argc, char **argv)
 {
