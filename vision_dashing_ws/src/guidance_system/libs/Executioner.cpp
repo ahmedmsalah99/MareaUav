@@ -74,6 +74,8 @@ void Executioner::setRelPayFeedback(const std::string& feedback) {
 }
 
 void Executioner::setNavTaskStatus(const ulisse_msgs::msg::VehicleStatus& nav_task_status) {
+    // _first_hold prevents treating the initial Hold state at startup as mission complete;
+    // only after the drone starts moving (Path_Following/Go_To) can a subsequent Hold mean done.
     if(nav_task_status.vehicle_state == "Hold" && !_first_hold)
     {
         _nav_mission_finished = true;
@@ -277,7 +279,7 @@ bool Executioner::CheckActions(int a)
         //LAND
         case actions::LAND:
 
-          if(_actualTask.params[0] == 1){
+          if(_actualTask.params[0] == 1){ // params[0]==1: platform landing — stopping condition not yet implemented
 
               return false;//TODO: implement stopping condition
 

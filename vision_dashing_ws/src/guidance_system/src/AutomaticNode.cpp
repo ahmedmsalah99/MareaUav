@@ -310,6 +310,7 @@ private:
 
   void onGps(const px4_msgs::msg::SensorGps::SharedPtr msg)
   {
+    // PX4 GPS fields are scaled integers: 1e-7 degrees, 1e-3 meters
     gps_lon_ = 1.0e-7 * msg->longitude_deg;
     gps_lat_ = 1.0e-7 * msg->latitude_deg;
     gps_alt_ = 1.0e-3 * msg->altitude_msl_m;
@@ -361,7 +362,7 @@ private:
 
       double platform_pos[3] = {
         platform_state_.getX(), platform_state_.getY(), platform_state_.getZ()};
-      double yaw_temp = computeDesiredYaw(autom_.getState(), platform_pos) + 1.57;
+      double yaw_temp = computeDesiredYaw(autom_.getState(), platform_pos) + 1.57; // +π/2: 90° offset to align camera forward direction with target
 
       Eigen::Quaterniond orient = getQuatFromYaw(yaw_temp);
       rescue.pose.pose.orientation.w = orient.w();
