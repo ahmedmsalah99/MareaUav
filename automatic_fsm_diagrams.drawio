@@ -1,0 +1,551 @@
+<mxfile host="65bd71144e">
+    <diagram id="cmdfsm" name="1. Command Dispatcher">
+        <mxGraphModel dx="1213" dy="573" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1169" pageHeight="827" math="0" shadow="0">
+            <root>
+                <mxCell id="0"/>
+                <mxCell id="1" parent="0"/>
+                <mxCell id="2" value="Automatic — Top-Level Command Dispatcher" style="text;html=1;fontStyle=1;fontSize=16;align=center;" parent="1" vertex="1">
+                    <mxGeometry x="100" y="15" width="700" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="5" value="Task Queue&#xa;(deque&lt;exec::task&gt;)" style="shape=mxgraph.flowchart.stored_data;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;fontColor=#333333;fontSize=11;" parent="1" vertex="1">
+                    <mxGeometry x="460" y="60" width="180" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="6" value="Executioner::run()&#xa;50 Hz" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontStyle=1;fontSize=12;" parent="1" vertex="1">
+                    <mxGeometry x="460" y="170" width="180" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="7" value="" style="edgeStyle=orthogonalEdgeStyle;html=1;" parent="1" source="5" target="6" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="10" value="IDLE&#xa;────────&#xa;Hold current X,Y,Z" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;fontColor=#333333;fontSize=11;" parent="1" vertex="1">
+                    <mxGeometry x="460" y="310" width="180" height="70" as="geometry"/>
+                </mxCell>
+                <mxCell id="11" value="TAKE_OFF&#xa;────────&#xa;Hold X,Y; climb to params[0]" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=11;" parent="1" vertex="1">
+                    <mxGeometry x="60" y="310" width="195" height="70" as="geometry"/>
+                </mxCell>
+                <mxCell id="12" value="MOVE&#xa;────────&#xa;Fly to (x,y,z,yaw)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=11;" parent="1" vertex="1">
+                    <mxGeometry x="60" y="430" width="195" height="70" as="geometry"/>
+                </mxCell>
+                <mxCell id="13" value="ROTATE&#xa;────────&#xa;Yaw to target bearing" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=11;" parent="1" vertex="1">
+                    <mxGeometry x="60" y="550" width="195" height="70" as="geometry"/>
+                </mxCell>
+                <mxCell id="14" value="LAND&#xa;────────&#xa;params[0]=0: simple land&#xa;params[0]=1: Lander FSM" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=11;" parent="1" vertex="1">
+                    <mxGeometry x="840" y="310" width="210" height="80" as="geometry"/>
+                </mxCell>
+                <mxCell id="15" value="SEARCH&#xa;────────&#xa;Searcher FSM&#xa;→ release payload" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=11;" parent="1" vertex="1">
+                    <mxGeometry x="840" y="430" width="210" height="80" as="geometry"/>
+                </mxCell>
+                <mxCell id="16" value="EMERG_LAND&#xa;────────&#xa;Descend immediately&#xa;(never completes)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontStyle=1;fontSize=11;" parent="1" vertex="1">
+                    <mxGeometry x="460" y="550" width="180" height="80" as="geometry"/>
+                </mxCell>
+                <mxCell id="20" value="action==IDLE&#xa;(queue empty)" style="edgeStyle=orthogonalEdgeStyle;html=1;fontSize=9;" parent="1" source="6" target="10" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="21" value="action==TAKE_OFF" style="edgeStyle=orthogonalEdgeStyle;html=1;fontSize=9;exitX=0;exitY=0.5;exitDx=0;exitDy=0;" parent="1" source="6" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="452.52" y="200.0000000000001" as="sourcePoint"/>
+                        <mxPoint x="149.99826086956526" y="310" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="22" value="action==MOVE" style="edgeStyle=orthogonalEdgeStyle;html=1;fontSize=9;exitX=0;exitY=1;exitDx=0;exitDy=0;" parent="1" source="6" target="12" edge="1">
+                    <mxGeometry x="-0.324" y="20" relative="1" as="geometry">
+                        <mxPoint x="482.52" y="200.0000000000001" as="sourcePoint"/>
+                        <mxPoint x="179.99826086956526" y="429.9999999999999" as="targetPoint"/>
+                        <Array as="points">
+                            <mxPoint x="450" y="230"/>
+                            <mxPoint x="450" y="220"/>
+                            <mxPoint x="181" y="220"/>
+                        </Array>
+                        <mxPoint as="offset"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="23" value="action==ROTATE" style="edgeStyle=orthogonalEdgeStyle;html=1;fontSize=9;" parent="1" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="422.52" y="200.0000000000001" as="sourcePoint"/>
+                        <mxPoint x="119.99826086956526" y="550" as="targetPoint"/>
+                        <Array as="points">
+                            <mxPoint x="423" y="160"/>
+                            <mxPoint x="121" y="160"/>
+                            <mxPoint x="121" y="550"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="24" value="action==LAND" style="edgeStyle=orthogonalEdgeStyle;html=1;fontSize=9;exitX=1;exitY=0.5;exitDx=0;exitDy=0;" parent="1" source="6" target="14" edge="1">
+                    <mxGeometry x="-0.3253" relative="1" as="geometry">
+                        <mxPoint x="650" y="200.0181818181818" as="sourcePoint"/>
+                        <mxPoint x="970" y="300" as="targetPoint"/>
+                        <Array as="points">
+                            <mxPoint x="650" y="200"/>
+                            <mxPoint x="650" y="190"/>
+                            <mxPoint x="956" y="190"/>
+                        </Array>
+                        <mxPoint as="offset"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="25" value="action==SEARCH" style="edgeStyle=orthogonalEdgeStyle;html=1;fontSize=9;exitX=1;exitY=0.75;exitDx=0;exitDy=0;" parent="1" source="6" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="700" y="210" as="sourcePoint"/>
+                        <mxPoint x="925" y="430" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="26" value="action==EMERG_LAND&#xa;(safety inject)" style="edgeStyle=orthogonalEdgeStyle;html=1;fontSize=9;strokeColor=#b85450;fontColor=#b85450;" parent="1" edge="1">
+                    <mxGeometry x="0.3125" y="5" relative="1" as="geometry">
+                        <mxPoint x="585" y="220" as="sourcePoint"/>
+                        <mxPoint x="585" y="540" as="targetPoint"/>
+                        <mxPoint as="offset"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="30" value="z ≥ params[0] − tol" style="edgeStyle=orthogonalEdgeStyle;html=1;fontSize=9;dashed=1;entryX=0;entryY=0.25;entryDx=0;entryDy=0;" parent="1" target="6" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="190" y="180"/>
+                            <mxPoint x="440" y="180"/>
+                            <mxPoint x="440" y="185"/>
+                        </Array>
+                        <mxPoint x="189.9965217391305" y="310" as="sourcePoint"/>
+                        <mxPoint x="495.04" y="200.0000000000001" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="31" value="dist(x,y,z) &lt; tol" style="edgeStyle=orthogonalEdgeStyle;html=1;fontSize=9;dashed=1;" parent="1" source="12" target="6" edge="1">
+                    <mxGeometry x="-0.7864" y="20" relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="420" y="500"/>
+                            <mxPoint x="420" y="190"/>
+                        </Array>
+                        <mxPoint as="offset"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="32" value="|yaw_err| &lt; tol" style="edgeStyle=orthogonalEdgeStyle;html=1;fontSize=9;dashed=1;" parent="1" source="13" edge="1">
+                    <mxGeometry x="-0.6911" y="20" relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="155" y="620"/>
+                            <mxPoint x="420" y="620"/>
+                            <mxPoint x="420" y="210"/>
+                        </Array>
+                        <mxPoint x="255" y="629.99" as="sourcePoint"/>
+                        <mxPoint x="460" y="209.9961349693251" as="targetPoint"/>
+                        <mxPoint as="offset"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="33" value="landed=true" style="edgeStyle=orthogonalEdgeStyle;html=1;fontSize=9;dashed=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;" parent="1" source="14" edge="1">
+                    <mxGeometry x="-0.2903" y="6" relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="1050" y="360"/>
+                            <mxPoint x="1060" y="360"/>
+                            <mxPoint x="1060" y="224"/>
+                        </Array>
+                        <mxPoint x="1050" y="413.98" as="sourcePoint"/>
+                        <mxPoint x="640" y="223.9981818181818" as="targetPoint"/>
+                        <mxPoint as="offset"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="34" value="payload released&#xa;&amp;&amp; nav done" style="edgeStyle=orthogonalEdgeStyle;html=1;fontSize=9;dashed=1;" parent="1" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="1060" y="490"/>
+                            <mxPoint x="1100" y="490"/>
+                            <mxPoint x="1100" y="180"/>
+                        </Array>
+                        <mxPoint x="1050" y="490" as="sourcePoint"/>
+                        <mxPoint x="640" y="180" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="40" value="Lander FSM&#xa;(see page 2)" style="text;html=1;fontSize=9;fontStyle=2;fillColor=#fff2cc;strokeColor=#d6b656;rounded=1;" parent="1" vertex="1">
+                    <mxGeometry x="740" y="327.5" width="100" height="35" as="geometry"/>
+                </mxCell>
+                <mxCell id="41" value="Searcher FSM&#xa;(see page 3)" style="text;html=1;fontSize=9;fontStyle=2;fillColor=#fff2cc;strokeColor=#d6b656;rounded=1;" parent="1" vertex="1">
+                    <mxGeometry x="870" y="515" width="100" height="35" as="geometry"/>
+                </mxCell>
+                <mxCell id="45" value="SafetyHandlerNode&#xa;(battery / camera / GPS)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=11;" parent="1" vertex="1">
+                    <mxGeometry x="460" y="680" width="180" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="46" value="Clear queue, inject safety tasks" style="edgeStyle=orthogonalEdgeStyle;html=1;fontSize=9;strokeColor=#b85450;fontColor=#b85450;dashed=1;" parent="1" source="45" target="5" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="410" y="710"/>
+                            <mxPoint x="410" y="90"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="50" value="─── dispatch" style="text;html=1;fontSize=10;" parent="1" vertex="1">
+                    <mxGeometry x="1000" y="60" width="130" height="20" as="geometry"/>
+                </mxCell>
+                <mxCell id="51" value="- - - task complete" style="text;html=1;fontSize=10;" parent="1" vertex="1">
+                    <mxGeometry x="1000" y="80" width="130" height="20" as="geometry"/>
+                </mxCell>
+            </root>
+        </mxGraphModel>
+    </diagram>
+    <diagram id="lander" name="2. Landing FSM">
+        <mxGraphModel dx="1334" dy="630" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1169" pageHeight="1169" math="0" shadow="0">
+            <root>
+                <mxCell id="0"/>
+                <mxCell id="1" parent="0"/>
+                <mxCell id="2" value="Lander FSM  (active when LAND task with params[0]=1)" style="text;html=1;fontStyle=1;fontSize=15;align=center;" parent="1" vertex="1">
+                    <mxGeometry x="100" y="15" width="800" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="3" value="" style="ellipse;whiteSpace=wrap;html=1;fillColor=#000000;strokeColor=#000000;" parent="1" vertex="1">
+                    <mxGeometry x="495" y="60" width="30" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="10" value="INIT&#xa;────────────────────&#xa;align yaw to platform&#xa;position drone in front" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontStyle=1;fontSize=12;" parent="1" vertex="1">
+                    <mxGeometry x="400" y="110" width="220" height="80" as="geometry"/>
+                </mxCell>
+                <mxCell id="11" value="INSPE&#xa;──────────────────&#xa;fly circular search&#xa;pattern (inspection)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontStyle=1;fontSize=12;" parent="1" vertex="1">
+                    <mxGeometry x="80" y="290" width="210" height="80" as="geometry"/>
+                </mxCell>
+                <mxCell id="12" value="HOVERING&#xa;──────────────────&#xa;hold starting position&#xa;(no vision, no search)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontStyle=1;fontSize=12;" parent="1" vertex="1">
+                    <mxGeometry x="730" y="290" width="215" height="80" as="geometry"/>
+                </mxCell>
+                <mxCell id="13" value="HOLD&#xa;──────────────────&#xa;PID-track platform&#xa;horizontally (vision)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontStyle=1;fontSize=12;" parent="1" vertex="1">
+                    <mxGeometry x="400" y="480" width="220" height="80" as="geometry"/>
+                </mxCell>
+                <mxCell id="14" value="DESC&#xa;──────────────&#xa;descend 10 cm" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d6b656;fontStyle=1;fontSize=12;" parent="1" vertex="1">
+                    <mxGeometry x="130" y="660" width="170" height="70" as="geometry"/>
+                </mxCell>
+                <mxCell id="15" value="ASCE&#xa;──────────────&#xa;ascend 10 cm" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d6b656;fontStyle=1;fontSize=12;" parent="1" vertex="1">
+                    <mxGeometry x="720" y="660" width="170" height="70" as="geometry"/>
+                </mxCell>
+                <mxCell id="16" value="R2LA&#xa;────────────────────&#xa;clamp Z setpoint&#xa;accumulate NComp frames" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontStyle=1;fontSize=12;" parent="1" vertex="1">
+                    <mxGeometry x="400" y="660" width="220" height="80" as="geometry"/>
+                </mxCell>
+                <mxCell id="17" value="COMP&#xa;────────────────────&#xa;velocity-based altitude&#xa;compensation (hold+comp)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontStyle=1;fontSize=12;" parent="1" vertex="1">
+                    <mxGeometry x="400" y="840" width="220" height="80" as="geometry"/>
+                </mxCell>
+                <mxCell id="18" value="LAND  ✓" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontStyle=1;fontSize=14;" parent="1" vertex="1">
+                    <mxGeometry x="440" y="1020" width="140" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="30" value="" style="edgeStyle=orthogonalEdgeStyle;html=1;" parent="1" source="3" target="10" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="31" value="vision valid &amp;&amp;&#xa;ready_to_land" style="edgeStyle=orthogonalEdgeStyle;html=1;fontSize=10;" parent="1" source="10" target="13" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="32" value="no vision 20+ iters&#xa;&amp;&amp; search=true" style="edgeStyle=orthogonalEdgeStyle;html=1;fontSize=10;" parent="1" source="10" target="11" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="33" value="no vision 20+ iters&#xa;&amp;&amp; search=false" style="edgeStyle=orthogonalEdgeStyle;html=1;fontSize=10;" parent="1" source="10" target="12" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="34" value="vision valid" style="edgeStyle=orthogonalEdgeStyle;html=1;fontSize=10;" parent="1" source="11" target="10" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="60" y="330"/>
+                            <mxPoint x="60" y="150"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="35" value="vision valid &amp;&amp; IsValid" style="edgeStyle=orthogonalEdgeStyle;html=1;fontSize=10;" parent="1" source="12" target="10" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="960" y="330"/>
+                            <mxPoint x="960" y="150"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="36" value="holding &amp;&amp; z &gt; zMin" style="edgeStyle=orthogonalEdgeStyle;html=1;fontSize=10;" parent="1" source="13" target="14" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="37" value="lost &amp;&amp; z &lt; zMax" style="edgeStyle=orthogonalEdgeStyle;html=1;fontSize=10;" parent="1" source="13" target="15" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="38" value="no vision &amp;&amp;&#xa;z &lt; zMax" style="edgeStyle=orthogonalEdgeStyle;html=1;fontSize=10;" parent="1" source="13" target="10" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="390" y="520"/>
+                            <mxPoint x="340" y="520"/>
+                            <mxPoint x="340" y="150"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="39" value="no vision data&#xa;&amp;&amp; z ≥ zMax" style="edgeStyle=orthogonalEdgeStyle;html=1;fontSize=10;" parent="1" source="13" target="12" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="630" y="520"/>
+                            <mxPoint x="840" y="520"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="40" value="centered &amp;&amp;&#xa;wait &gt; 10 frames" style="edgeStyle=orthogonalEdgeStyle;html=1;fontSize=10;" parent="1" source="13" target="16" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="41" value="always" style="edgeStyle=orthogonalEdgeStyle;html=1;fontSize=10;" parent="1" source="14" target="13" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="215" y="695"/>
+                            <mxPoint x="215" y="520"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="42" value="always" style="edgeStyle=orthogonalEdgeStyle;html=1;fontSize=10;" parent="1" source="15" target="13" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="805" y="695"/>
+                            <mxPoint x="805" y="520"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="43" value="NComp &gt; NFramesComp" style="edgeStyle=orthogonalEdgeStyle;html=1;fontSize=10;" parent="1" source="16" target="17" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="44" value="not centered" style="edgeStyle=orthogonalEdgeStyle;html=1;fontSize=10;" parent="1" source="16" target="13" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="390" y="700"/>
+                            <mxPoint x="360" y="700"/>
+                            <mxPoint x="360" y="520"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="45" value="not on_target || not_centered&#xa;| no ultrasonic | roll/pitch &gt; thr" style="edgeStyle=orthogonalEdgeStyle;html=1;fontSize=10;" parent="1" source="17" target="15" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="630" y="880"/>
+                            <mxPoint x="900" y="880"/>
+                            <mxPoint x="900" y="695"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="46" value="not vision valid" style="edgeStyle=orthogonalEdgeStyle;html=1;fontSize=10;" parent="1" source="17" target="12" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="630" y="880"/>
+                            <mxPoint x="960" y="880"/>
+                            <mxPoint x="960" y="330"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="47" value="on_target &amp;&amp; centered&#xa;&amp;&amp; vert_err &lt; land_threshold" style="edgeStyle=orthogonalEdgeStyle;html=1;fontSize=10;strokeColor=#b85450;fontColor=#b85450;fontStyle=1;" parent="1" source="17" target="18" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="55" value="Altitude source switch (in HOLD/COMP/DESC):&#xa;  z &gt; 0.83 m → use vision Z&#xa;  z ≤ 0.83 m → use ultrasonic Z (− sensor offset)" style="text;html=1;align=left;fontSize=11;fillColor=#EEF5FF;strokeColor=#6c8ebf;rounded=1;" parent="1" vertex="1">
+                    <mxGeometry x="20" y="850" width="350" height="70" as="geometry"/>
+                </mxCell>
+                <mxCell id="56" value="HOLD / COMP / R2LA use PID:&#xa;  xTarget = PID_X(0, vision.X)&#xa;  yTarget = PID_Y(0, vision.Y)&#xa;Gains: KpHold, KiHold, KdHold" style="text;html=1;align=left;fontSize=11;fillColor=#F0FFF0;strokeColor=#82b366;rounded=1;" parent="1" vertex="1">
+                    <mxGeometry x="680" y="840" width="300" height="75" as="geometry"/>
+                </mxCell>
+            </root>
+        </mxGraphModel>
+    </diagram>
+    <diagram id="searcher" name="3. Search/Rescue FSM">
+        <mxGraphModel dx="1334" dy="630" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1169" pageHeight="827" math="0" shadow="0">
+            <root>
+                <mxCell id="0"/>
+                <mxCell id="1" parent="0"/>
+                <mxCell id="2" value="Searcher FSM  (active during SEARCH task)" style="text;html=1;fontStyle=1;fontSize=15;align=center;" parent="1" vertex="1">
+                    <mxGeometry x="150" y="15" width="700" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="3" value="" style="ellipse;whiteSpace=wrap;html=1;fillColor=#000000;strokeColor=#000000;" parent="1" vertex="1">
+                    <mxGeometry x="485" y="55" width="30" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="10" value="INIT&#xa;─────────────────────&#xa;align yaw to target&#xa;position drone above target" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontStyle=1;fontSize=12;" parent="1" vertex="1">
+                    <mxGeometry x="380" y="110" width="240" height="80" as="geometry"/>
+                </mxCell>
+                <mxCell id="11" value="INSPE&#xa;───────────────────&#xa;fly circular search&#xa;for rescue target" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontStyle=1;fontSize=12;" parent="1" vertex="1">
+                    <mxGeometry x="80" y="290" width="210" height="80" as="geometry"/>
+                </mxCell>
+                <mxCell id="12" value="HOVERING&#xa;───────────────────&#xa;hold last known&#xa;position (no target)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontStyle=1;fontSize=12;" parent="1" vertex="1">
+                    <mxGeometry x="710" y="290" width="210" height="80" as="geometry"/>
+                </mxCell>
+                <mxCell id="13" value="HOLD&#xa;─────────────────────&#xa;PID-track rescue target&#xa;horizontally (vision)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontStyle=1;fontSize=12;" parent="1" vertex="1">
+                    <mxGeometry x="380" y="470" width="240" height="80" as="geometry"/>
+                </mxCell>
+                <mxCell id="14" value="RELEASE  ✓&#xa;─────────────────────&#xa;publish release_payload&#xa;wait for feedback &#39;R&#39;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontStyle=1;fontSize=13;" parent="1" vertex="1">
+                    <mxGeometry x="380" y="660" width="240" height="80" as="geometry"/>
+                </mxCell>
+                <mxCell id="20" value="" style="edgeStyle=orthogonalEdgeStyle;html=1;" parent="1" source="3" target="10" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="21" value="vision_updated&#xa;10+ consecutive frames" style="edgeStyle=orthogonalEdgeStyle;html=1;fontSize=10;" parent="1" source="10" target="13" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="22" value="no vision&#xa;10+ iters" style="edgeStyle=orthogonalEdgeStyle;html=1;fontSize=10;" parent="1" source="10" target="11" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="23" value="vision_updated" style="edgeStyle=orthogonalEdgeStyle;html=1;fontSize=10;" parent="1" source="11" target="10" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="60" y="330"/>
+                            <mxPoint x="60" y="150"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="24" value="vision_valid &amp;&amp;&#xa;vision_updated" style="edgeStyle=orthogonalEdgeStyle;html=1;fontSize=10;" parent="1" source="12" target="10" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="940" y="330"/>
+                            <mxPoint x="940" y="150"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="25" value="holding &amp;&amp; positioned&#xa;&amp;&amp; !payloadReleased" style="edgeStyle=orthogonalEdgeStyle;html=1;fontSize=10;strokeColor=#b85450;fontColor=#b85450;fontStyle=1;" parent="1" source="13" target="14" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="26" value="not vision_valid" style="edgeStyle=orthogonalEdgeStyle;html=1;fontSize=10;" parent="1" source="13" target="12" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="630" y="510"/>
+                            <mxPoint x="815" y="510"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="27" value="no vision data &amp;&amp;&#xa;!payloadReleased &amp;&amp; wait&gt;20" style="edgeStyle=orthogonalEdgeStyle;html=1;fontSize=10;" parent="1" source="13" target="10" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="370" y="510"/>
+                            <mxPoint x="320" y="510"/>
+                            <mxPoint x="320" y="150"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="28" value="payload released&#xa;(keeps in HOLD)" style="edgeStyle=orthogonalEdgeStyle;html=1;fontSize=10;" parent="1" source="14" target="13" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="630" y="700"/>
+                            <mxPoint x="680" y="700"/>
+                            <mxPoint x="680" y="510"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="35" value="After RELEASE: Executioner waits for&#xa;  1. payload feedback == &#39;R&#39;&#xa;  2. nav_mission_finished == true&#xa;Then pops SEARCH task → next task runs." style="text;html=1;align=left;fontSize=11;fillColor=#EEF5FF;strokeColor=#6c8ebf;rounded=1;" parent="1" vertex="1">
+                    <mxGeometry x="20" y="630" width="340" height="80" as="geometry"/>
+                </mxCell>
+                <mxCell id="36" value="Inspection parameters:&#xa;  params[0]: radius&#xa;  params[1]: linear velocity&#xa;  task.z:    search altitude" style="text;html=1;align=left;fontSize=11;fillColor=#F0FFF0;strokeColor=#82b366;rounded=1;" parent="1" vertex="1">
+                    <mxGeometry x="700" y="600" width="250" height="75" as="geometry"/>
+                </mxCell>
+            </root>
+        </mxGraphModel>
+    </diagram>
+    <diagram id="simreal" name="4. Sim vs Real">
+        <mxGraphModel dx="1334" dy="630" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1654" pageHeight="1169" math="0" shadow="0">
+            <root>
+                <mxCell id="0"/>
+                <mxCell id="1" parent="0"/>
+                <mxCell id="2" value="Simulation vs. Real Hardware — System Differences" style="text;html=1;fontStyle=1;fontSize=16;align=center;" parent="1" vertex="1">
+                    <mxGeometry x="200" y="15" width="1000" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="3" value="Component" style="text;html=1;fontStyle=1;fontSize=13;align=center;fillColor=#666666;fontColor=#ffffff;rounded=1;" parent="1" vertex="1">
+                    <mxGeometry x="20" y="60" width="200" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="4" value="SIMULATION  (M2M_SIM=1)" style="text;html=1;fontStyle=1;fontSize=13;align=center;fillColor=#0e7ab8;fontColor=#ffffff;rounded=1;" parent="1" vertex="1">
+                    <mxGeometry x="240" y="60" width="520" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="5" value="REAL HARDWARE  (M2M_SIM=0)" style="text;html=1;fontStyle=1;fontSize=13;align=center;fillColor=#006633;fontColor=#ffffff;rounded=1;" parent="1" vertex="1">
+                    <mxGeometry x="780" y="60" width="520" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="6" value="Code Flag / File" style="text;html=1;fontStyle=1;fontSize=11;align=center;fillColor=#555555;fontColor=#ffffff;rounded=1;" parent="1" vertex="1">
+                    <mxGeometry x="1320" y="60" width="200" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="10" value="PX4 FCU" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;fontStyle=1;fontSize=12;" parent="1" vertex="1">
+                    <mxGeometry x="20" y="120" width="200" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="11" value="PX4 SITL in Gazebo&#xa;Simulated IMU, GPS, physics&#xa;Topics on localhost" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dbeeff;strokeColor=#0e7ab8;fontSize=11;" parent="1" vertex="1">
+                    <mxGeometry x="240" y="120" width="520" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="12" value="Real PX4 autopilot (Pixhawk)&#xa;Physical IMU, barometer, GPS&#xa;Connected via UART/USB DDS" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e6ffee;strokeColor=#006633;fontSize=11;" parent="1" vertex="1">
+                    <mxGeometry x="780" y="120" width="520" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="13" value="(infrastructure)" style="text;html=1;fontSize=10;align=center;fontStyle=2;" parent="1" vertex="1">
+                    <mxGeometry x="1320" y="120" width="200" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="20" value="Camera" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;fontStyle=1;fontSize=12;" parent="1" vertex="1">
+                    <mxGeometry x="20" y="195" width="200" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="21" value="Gazebo camera plugin&#xa;Publishes /apriltag/image/compressed&#xa;directly (no CameraFSM needed)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dbeeff;strokeColor=#0e7ab8;fontSize=11;" parent="1" vertex="1">
+                    <mxGeometry x="240" y="195" width="520" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="22" value="Raspberry Pi v1/v2 camera&#xa;CameraFSM controls open/capture/JPEG&#xa;Publishes same topic" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e6ffee;strokeColor=#006633;fontSize=11;" parent="1" vertex="1">
+                    <mxGeometry x="780" y="195" width="520" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="23" value="CameraFSM node&#xa;(only real HW)" style="text;html=1;fontSize=10;align=center;fontStyle=2;" parent="1" vertex="1">
+                    <mxGeometry x="1320" y="195" width="200" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="30" value="Ultrasonic&#xa;Sensor" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;fontStyle=1;fontSize=12;" parent="1" vertex="1">
+                    <mxGeometry x="20" y="270" width="200" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="31" value="Gazebo range plugin&#xa;Publishes sensor_msgs/Range&#xa;on /ultrasonic/sonar" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dbeeff;strokeColor=#0e7ab8;fontSize=11;" parent="1" vertex="1">
+                    <mxGeometry x="240" y="270" width="520" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="32" value="HC-SR04 on GPIO pins 22/23&#xa;UltrasonicNode reads via pigpio&#xa;Kalman filter → UltrasonicSensor/platform" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e6ffee;strokeColor=#006633;fontSize=11;" parent="1" vertex="1">
+                    <mxGeometry x="780" y="270" width="520" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="33" value="mainMocap2mav.cpp&#xa;#define trigger 23&#xa;#define echo 22" style="text;html=1;fontSize=10;align=center;fontStyle=2;" parent="1" vertex="1">
+                    <mxGeometry x="1320" y="270" width="200" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="40" value="Payload&#xa;Servo" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;fontStyle=1;fontSize=12;" parent="1" vertex="1">
+                    <mxGeometry x="20" y="345" width="200" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="41" value="Simulated (no physical servo)&#xa;release_payload topic consumed&#xa;PayloadReleaser sends &#39;R&#39; feedback immediately" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dbeeff;strokeColor=#0e7ab8;fontSize=11;" parent="1" vertex="1">
+                    <mxGeometry x="240" y="345" width="520" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="42" value="Real servo on GPIO pin 24&#xa;50Hz PWM: 2.5%→neutral, 0%→arm, 0.08%→release&#xa;PayloadReleaser waits 5s then sends &#39;R&#39;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e6ffee;strokeColor=#006633;fontSize=11;" parent="1" vertex="1">
+                    <mxGeometry x="780" y="345" width="520" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="43" value="payload_releaser_rasp.py&#xa;servoPIN = 24" style="text;html=1;fontSize=10;align=center;fontStyle=2;" parent="1" vertex="1">
+                    <mxGeometry x="1320" y="345" width="200" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="50" value="Platform&#xa;Position" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;fontStyle=1;fontSize=12;" parent="1" vertex="1">
+                    <mxGeometry x="20" y="420" width="200" height="70" as="geometry"/>
+                </mxCell>
+                <mxCell id="51" value="Live platform state injected every tick&#xa;Executioner continuously updates MOVE&#xa;task x,y to platform_state.getX/Y()&#xa;(AprilTag not needed for coordinates)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dbeeff;strokeColor=#0e7ab8;fontSize=11;" parent="1" vertex="1">
+                    <mxGeometry x="240" y="420" width="520" height="70" as="geometry"/>
+                </mxCell>
+                <mxCell id="52" value="AprilTag2Node computes platform center&#xa;from camera image (PnP + tag geometry)&#xa;Executioner uses task.x,y set at load time&#xa;(not updated continuously)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e6ffee;strokeColor=#006633;fontSize=11;" parent="1" vertex="1">
+                    <mxGeometry x="780" y="420" width="520" height="70" as="geometry"/>
+                </mxCell>
+                <mxCell id="53" value="Executioner.cpp&#xa;lines 182-197&#xa;if(env_sim &amp;&amp; target==&#xa;&quot;platform&quot;)" style="text;html=1;fontSize=10;align=center;fontStyle=2;" parent="1" vertex="1">
+                    <mxGeometry x="1320" y="420" width="200" height="70" as="geometry"/>
+                </mxCell>
+                <mxCell id="60" value="Coordinate&#xa;Transform" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;fontStyle=1;fontSize=12;" parent="1" vertex="1">
+                    <mxGeometry x="20" y="505" width="200" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="61" value="NO global→local conversion&#xa;Task coordinates already in local ENU frame&#xa;Skips transform block entirely" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dbeeff;strokeColor=#0e7ab8;fontSize=11;" parent="1" vertex="1">
+                    <mxGeometry x="240" y="505" width="520" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="62" value="Applies global→local GPS conversion&#xa;GPS (lon,lat,alt) → local ENU (x,y,z)&#xa;via haversine / cap_radius formula" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e6ffee;strokeColor=#006633;fontSize=11;" parent="1" vertex="1">
+                    <mxGeometry x="780" y="505" width="520" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="63" value="Executioner.cpp&#xa;lines 379-387&#xa;if(!env_sim)" style="text;html=1;fontSize=10;align=center;fontStyle=2;" parent="1" vertex="1">
+                    <mxGeometry x="1320" y="505" width="200" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="70" value="Rescue&#xa;Coordinates" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;fontStyle=1;fontSize=12;" parent="1" vertex="1">
+                    <mxGeometry x="20" y="580" width="200" height="70" as="geometry"/>
+                </mxCell>
+                <mxCell id="71" value="AutomaticNode uses drone&#39;s own position&#xa;(x,y,z from odometry) as rescue target&#xa;Yaw = computeDesiredYaw + π/2&#xa;publishRescueCoords: uses autom.getState()" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dbeeff;strokeColor=#0e7ab8;fontSize=11;" parent="1" vertex="1">
+                    <mxGeometry x="240" y="580" width="520" height="70" as="geometry"/>
+                </mxCell>
+                <mxCell id="72" value="AutomaticNode uses real GPS fix&#xa;gps_lon_, gps_lat_, gps_alt_&#xa;Scaled: 1e-7 deg, 1e-3 m&#xa;publishRescueCoords: uses real GPS" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e6ffee;strokeColor=#006633;fontSize=11;" parent="1" vertex="1">
+                    <mxGeometry x="780" y="580" width="520" height="70" as="geometry"/>
+                </mxCell>
+                <mxCell id="73" value="AutomaticNode.cpp&#xa;publishRescueCoords()&#xa;if(autom_.env_sim)" style="text;html=1;fontSize=10;align=center;fontStyle=2;" parent="1" vertex="1">
+                    <mxGeometry x="1320" y="580" width="200" height="70" as="geometry"/>
+                </mxCell>
+                <mxCell id="80" value="Tag Transform&#xa;Matrices" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;fontStyle=1;fontSize=12;" parent="1" vertex="1">
+                    <mxGeometry x="20" y="665" width="200" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="81" value="SetMatrix(&amp;TAGS, env_bool=true)&#xa;Loads sim-specific tag transform matrices&#xa;(platform geometry for Gazebo model)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dbeeff;strokeColor=#0e7ab8;fontSize=11;" parent="1" vertex="1">
+                    <mxGeometry x="240" y="665" width="520" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="82" value="SetMatrix(&amp;TAGS, env_bool=false)&#xa;Loads real-hardware tag matrices&#xa;(physical platform tag geometry)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e6ffee;strokeColor=#006633;fontSize=11;" parent="1" vertex="1">
+                    <mxGeometry x="780" y="665" width="520" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="83" value="AprilTag2Node.cpp&#xa;LandingPlatform.h&#xa;SetMatrix(env_bool)" style="text;html=1;fontSize=10;align=center;fontStyle=2;" parent="1" vertex="1">
+                    <mxGeometry x="1320" y="665" width="200" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="90" value="env_sim flag" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;fontStyle=1;fontSize=12;" parent="1" vertex="1">
+                    <mxGeometry x="20" y="740" width="200" height="50" as="geometry"/>
+                </mxCell>
+                <mxCell id="91" value="export M2M_SIM=1&#xa;atoi(getenv(&quot;M2M_SIM&quot;)) ≥ 1  →  env_sim = true" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dbeeff;strokeColor=#0e7ab8;fontSize=11;" parent="1" vertex="1">
+                    <mxGeometry x="240" y="740" width="520" height="50" as="geometry"/>
+                </mxCell>
+                <mxCell id="92" value="export M2M_SIM=0  (or unset)&#xa;atoi(getenv(&quot;M2M_SIM&quot;)) = 0  →  env_sim = false" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e6ffee;strokeColor=#006633;fontSize=11;" parent="1" vertex="1">
+                    <mxGeometry x="780" y="740" width="520" height="50" as="geometry"/>
+                </mxCell>
+                <mxCell id="93" value="Executioner, Automatic,&#xa;AprilTag2Node,&#xa;AprilTag2RescueNode" style="text;html=1;fontSize=10;align=center;fontStyle=2;" parent="1" vertex="1">
+                    <mxGeometry x="1320" y="740" width="200" height="50" as="geometry"/>
+                </mxCell>
+                <mxCell id="95" value="Identical in both modes: topic names, message types, QoS, PID gains, Lander/Searcher FSM logic, safety handler, AprilTag detection algorithm, Kalman filter" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f0f0f0;strokeColor=#999999;fontSize=11;fontStyle=2;align=left;" parent="1" vertex="1">
+                    <mxGeometry x="20" y="810" width="1500" height="40" as="geometry"/>
+                </mxCell>
+            </root>
+        </mxGraphModel>
+    </diagram>
+</mxfile>
