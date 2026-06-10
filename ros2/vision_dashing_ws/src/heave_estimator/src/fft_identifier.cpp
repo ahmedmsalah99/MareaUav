@@ -9,12 +9,9 @@ namespace heave_estimator {
 FFTIdentifier::FFTIdentifier(int window_size, double sample_rate, double peak_threshold)
     : sample_rate_(sample_rate), peak_threshold_(peak_threshold)
 {
-    // Round down to nearest power of 2
+    // Round down to nearest power of 2 (required by Cooley-Tukey FFT)
     window_size_ = 1;
     while (window_size_ * 2 <= window_size) window_size_ *= 2;
-    if (window_size_ != window_size) window_size_ = window_size_ / 2 * 2;  // keep
-    // Accept as-is; caller should pass power of 2
-    window_size_ = window_size;
     buffer_.reserve(window_size_);
 }
 
