@@ -12,6 +12,7 @@ find_package(rclcpp REQUIRED)
 find_package(nav_msgs REQUIRED)
 find_package(std_msgs REQUIRED)
 find_package(px4_msgs REQUIRED)
+find_package(sensor_msgs REQUIRED)
 find_package(gazebo REQUIRED)
 
 include_directories(include ${GAZEBO_INCLUDE_DIRS})
@@ -31,7 +32,8 @@ ament_target_dependencies(platformPlugin
   gazebo_ros
   nav_msgs
   std_msgs
-  px4_msgs)
+  px4_msgs
+  sensor_msgs)
 
 target_link_libraries(platformPlugin ${GAZEBO_LIBRARIES})
 
