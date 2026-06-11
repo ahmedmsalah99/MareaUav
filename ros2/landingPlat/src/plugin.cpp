@@ -3,10 +3,11 @@
 #include <gazebo/physics/physics.hh>
 #include <gazebo/common/common.hh>
 #include <stdio.h>
-#include "lcm/lcm-cpp.hpp"
-#include "lcm_messages/geometry/pose.hpp"
+
+#include <gazebo_ros/node.hpp>
+#include <sensor_msgs/msg/imu.hpp>
+
 #include "WaveGen.h"
-#include "poll.h"
 
 #define VEL 0.1
 
@@ -15,6 +16,8 @@
 #define MAX_DIST 15
 
 #define DIST_VEL_THRE 5
+
+static constexpr double G = 9.81;
 
 namespace gazebo
 {
@@ -27,21 +30,8 @@ namespace gazebo
         physics::ModelPtr _model;
         event::ConnectionPtr _updateConnection;
 
-        std::string _cmd_pose_topic;
-        std::string _local_pose_topic;
-
-        lcm::LCM _handler;
-        lcm::LCM _handler2;
-        lcm::LCM _handler3;
-
-        lcm::Subscription *_sub;
-        lcm::Subscription *_sub2;
-
-        geometry::pose _position_sp;
-        geometry::pose _drone_pos;
-
-      	struct pollfd _fds[2];
-
+        gazebo_ros::Node::SharedPtr _ros_node;
+        rclcpp::Publisher<sensor_msgs::msg::Imu>::SharedPtr _imu_pub;
 
         double _actual_sim_time;
         double _prev_sim_time;
@@ -87,20 +77,8 @@ namespace gazebo
                 this->_updateConnection = event::Events::ConnectWorldUpdateBegin(
                         boost::bind(&PlatformManager::OnUpdate, this, _1));
 
-                _local_pose_topic = _model.get()->GetName() + "/pose";
-                _cmd_pose_topic   = _model.get()->GetName() + "/pose_cmd";
-
-                _sub = _handler2.subscribe(_cmd_pose_topic, &PlatformManager::positionSetpointCallback, this);
-                _sub2 = _handler3.subscribe("vision_position_estimate", &PlatformManager::positionDroneCallback, this);
-
-                _sub->setQueueCapacity(1);
-              	_sub2->setQueueCapacity(1);
-
-                _fds[0].fd = _handler2.getFileno();
-                _fds[0].events = POLLIN;
-
-                _fds[1].fd = _handler3.getFileno();
-                _fds[1].events = POLLIN;
+                _ros_node = gazebo_ros::Node::Get(_sdf);
+                _imu_pub  = _ros_node->create_publisher<sensor_msgs::msg::Imu>("imu/data", 10);
 
                 wave.init(10,2.0,0.5,7.0);
 
@@ -114,10 +92,8 @@ namespace gazebo
 
                 _rescueTarget = false;
 
-                std::cout << "New platform registered, topics:" << std::endl;
-                std::cout << "  "<<_local_pose_topic << std::endl;
-                std::cout << "  "<<_cmd_pose_topic   << std::endl;
-                std::cout << "And some info: " << std::endl;
+                std::cout << "New platform registered." << std::endl;
+                std::cout << "Publishing IMU on: imu/data" << std::endl;
                 wave.info();
                 _platVel = VEL;
                 _dir = 1;
@@ -134,22 +110,7 @@ namespace gazebo
 
                 manageTime(_info);
 
-                int ret = poll(_fds,2,0);
-                //
-                if(_fds[0].revents & POLLIN)
-                {
-                  _handler2.handle();
-                  _rescueTarget = true;
-                }
-
-                if(_fds[1].revents & POLLIN)
-                {
-                  _handler3.handle();
-                }
-
                 _pose = _model.get()->WorldPose();
-                // _pose.rot = ignition::math::Quaternion(1,0,0,0);
-                // _pose.pos.z = wave.generateWaveHeightAtPoint(_pose.Pos().x,_pose.Pos().y,_actual_sim_time,0) + 2;
 
                 double xTemp = _pose.Pos()[0];
 
@@ -157,22 +118,17 @@ namespace gazebo
 
                 if(_rescueTarget)
                 {
-                  std::cout << "Target Identified!" << std::endl;
-                  std::cout << "LONGITUDE: " << _position_sp.position[0] << std::endl;
-                  std::cout << "LATITUDE: " << _position_sp.position[1] << std::endl;
+                  double yTemp = _pose.Pos()[1];
 
-                  double dist = sqrt(pow((_pose.Pos()[0] - _drone_pos.position[0]),2) + pow((_pose.Pos()[1] - _drone_pos.position[1]),2));
+                  double x_err = _position_sp_x - xTemp;
+                  double y_err = _position_sp_y - yTemp;
+
+                  double dist = sqrt(x_err * x_err + y_err * y_err);
 
                   if(dist < DIST_VEL_THRE)
                     _platVel = 0.0;
                   else
                     _platVel = CRUISE_VEL;
-
-
-                  double yTemp = _pose.Pos()[1];
-
-                  double x_err = _position_sp.position[0] - xTemp;
-                  double y_err = _position_sp.position[1] - yTemp;
 
                   double dirX = (x_err > 0) ? 1 : ((x_err < 0) ? -1 : 0);
                   double dirY = (y_err > 0) ? 1 : ((y_err < 0) ? -1 : 0);
@@ -180,18 +136,7 @@ namespace gazebo
                   double newX = xTemp + dirX * (_dt * _platVel);
                   double newY = yTemp + dirY * (_dt * _platVel);
 
-                  ignition::math::Quaternion<double> orientation;
-
-                  orientation.W(_position_sp.orientation[0]);
-                  orientation.X(_position_sp.orientation[1]);
-                  orientation.Y(_position_sp.orientation[2]);
-                  orientation.Z(_position_sp.orientation[3]);
-
-                  _pose.Set(ignition::math::Vector3<double>(newX, newY, wave.generateWaveHeightAtPoint(_pose.Pos()[0],_pose.Pos()[1],_actual_sim_time,0) + 2), orientation);
-
-                  yaw_des = _position_sp.yaw;
-
-                  // std::cout << "YAW: " << yaw_des << std::endl;
+                  _pose.Set(ignition::math::Vector3<double>(newX, newY, wave.generateWaveHeightAtPoint(_pose.Pos()[0],_pose.Pos()[1],_actual_sim_time,0) + 2), ignition::math::Quaternion<double>(1,0,0,0));
                 }
                 else
                 {
@@ -202,83 +147,41 @@ namespace gazebo
                   //_pose.pos.x = newX;
 
                   _pose.Set(ignition::math::Vector3<double>(0, 0, wave.generateWaveHeightAtPoint(_pose.Pos()[0],_pose.Pos()[1],_actual_sim_time,0) + 2), ignition::math::Quaternion<double>(1,0,0,0));
-                  // _pose.Set(ignition::math::Vector3<double>(0, 0, wave.generateWaveHeightAtPoint(_pose.Pos()[0],_pose.Pos()[1],_actual_sim_time,0) + 2), ignition::math::Quaternion<double>(1,0,0,0));
 
                   yaw_des = 1.57;
                 }
 
                 _model.get()->SetAngularVel(ignition::math::Vector3<double>(0,0,0));
                 _model.get()->SetWorldPose(_pose);
-                //Prepare LCM material
-                double vx,vy,vz;
-                geometry::pose plat_pose;
 
-                vx = (_pose.Pos()[0] - _prev_pose.Pos()[0])/_dt;
-                vy = (_pose.Pos()[1] - _prev_pose.Pos()[1])/_dt;
-                vz = (_pose.Pos()[2] - _prev_pose.Pos()[2])/_dt;
+                // Publish IMU: compute z-acceleration via central difference on wave height,
+                // then apply measurement model: az_imu = z̈ - g  (Eq. 7 of Küchler et al.)
+                if (_dt > 1e-9) {
+                    const double h = 1e-4;
+                    double x = _pose.Pos()[0];
+                    double y = _pose.Pos()[1];
+                    double z_p = wave.generateWaveHeightAtPoint(x, y, _actual_sim_time + h, 0) + 2;
+                    double z_0 = wave.generateWaveHeightAtPoint(x, y, _actual_sim_time,     0) + 2;
+                    double z_m = wave.generateWaveHeightAtPoint(x, y, _actual_sim_time - h, 0) + 2;
+                    double az  = (z_p - 2.0 * z_0 + z_m) / (h * h);
 
-                plat_pose.position[0] = _pose.Pos()[0]; //x
-                plat_pose.position[1] = _pose.Pos()[1]; //y
-                plat_pose.position[2] = _pose.Pos()[2]; //z
-
-                plat_pose.velocity[0] = vx;
-                plat_pose.velocity[1] = vy;
-                plat_pose.velocity[2] = vz;
-
-                plat_pose.yaw = yawFromQuaternion(_pose.Rot()) ;
-
-                plat_pose.isValid = 1;
-                plat_pose.orientation[0] = _pose.Rot().W(); // w
-                plat_pose.orientation[1] = _pose.Rot().X(); // x
-                plat_pose.orientation[2] = _pose.Rot().Y(); // y
-                plat_pose.orientation[3] = _pose.Rot().Z(); // z
-
-
-                _handler.publish(_local_pose_topic,&plat_pose);
+                    sensor_msgs::msg::Imu imu_msg;
+                    imu_msg.header.stamp    = _ros_node->get_clock()->now();
+                    imu_msg.header.frame_id = "vessel_imu";
+                    imu_msg.linear_acceleration.x = 0.0;
+                    imu_msg.linear_acceleration.y = 0.0;
+                    imu_msg.linear_acceleration.z = az - G;   // gravity bias (z-down convention)
+                    imu_msg.linear_acceleration_covariance[0] = -1;  // covariance unknown (REP-145)
+                    _imu_pub->publish(imu_msg);
+                }
 
                 _prev_pose = _pose;
 
             }
 
-            void positionSetpointCallback(const lcm::ReceiveBuffer* rbuf, const std::string& chan, const geometry::pose* msg)
-            {
-
-                _position_sp.position[0] = (float)msg->position[0];
-                _position_sp.position[1] = (float)msg->position[1];
-                _position_sp.position[2] = (float)msg->position[2];
-
-                _position_sp.velocity[0] = (float)msg->velocity[0];
-                _position_sp.velocity[1] = (float)msg->velocity[1];
-                _position_sp.velocity[2] = (float)msg->velocity[2];
-
-                _position_sp.orientation[0] = (float)msg->orientation[0];
-                _position_sp.orientation[1] = (float)msg->orientation[1];
-                _position_sp.orientation[2] = (float)msg->orientation[2];
-                _position_sp.orientation[3] = (float)msg->orientation[3];
-
-                _position_sp.yaw = (float)msg->yaw;
-
-            }
-
-            void positionDroneCallback(const lcm::ReceiveBuffer* rbuf, const std::string& chan, const geometry::pose* msg)
-            {
-
-                _drone_pos.position[0] = (float)msg->position[0];
-                _drone_pos.position[1] = (float)msg->position[1];
-                _drone_pos.position[2] = (float)msg->position[2];
-
-                _drone_pos.velocity[0] = (float)msg->velocity[0];
-                _drone_pos.velocity[1] = (float)msg->velocity[1];
-                _drone_pos.velocity[2] = (float)msg->velocity[2];
-
-                _drone_pos.orientation[0] = (float)msg->orientation[0];
-                _drone_pos.orientation[1] = (float)msg->orientation[1];
-                _drone_pos.orientation[2] = (float)msg->orientation[2];
-                _drone_pos.orientation[3] = (float)msg->orientation[3];
-
-                _drone_pos.yaw = (float)msg->yaw;
-
-            }
+    private:
+        double _position_sp_x = 0.0;
+        double _position_sp_y = 0.0;
     };
 
     // Register this plugin with the simulator

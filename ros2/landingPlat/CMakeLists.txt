@@ -24,15 +24,16 @@ if(NOT Eigen_FOUND)
     set(Eigen_INCLUDE_DIR ${EIGEN3_INCLUDE_DIR})
 endif()
 
-#find_package(PkgConfig)
-#pkg_search_module(Eigen3 REQUIRED eigen3)
-
 include_directories(${Eigen_INCLUDE_DIR})
 
-find_package(PkgConfig REQUIRED)
-pkg_search_module(LCM REQUIRED lcm)
+find_package(gazebo_ros REQUIRED)
+find_package(sensor_msgs REQUIRED)
 
 add_library(platformPlugin SHARED src/plugin.cpp src/WaveGen.cpp include/WaveGen.h)
 target_link_libraries(platformPlugin
         ${GAZEBO_LIBRARIES}
-        ${LCM_LIBRARIES})
+        gazebo_ros::gazebo_ros
+        ${sensor_msgs_LIBRARIES})
+target_include_directories(platformPlugin PRIVATE
+        ${gazebo_ros_INCLUDE_DIRS}
+        ${sensor_msgs_INCLUDE_DIRS})
