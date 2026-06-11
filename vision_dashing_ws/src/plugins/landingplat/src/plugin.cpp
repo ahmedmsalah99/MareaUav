@@ -11,6 +11,7 @@
 #include <rclcpp/rclcpp.hpp>
 #include <nav_msgs/msg/odometry.hpp>
 #include <px4_msgs/msg/vehicle_odometry.hpp>
+#include <sensor_msgs/msg/imu.hpp>
 
 #include "WaveGen.h"
 
@@ -49,6 +50,7 @@ namespace gazebo
         // ROS 2 node + endpoints (gazebo_ros spins the node on its own thread).
         gazebo_ros::Node::SharedPtr _ros_node;
         rclcpp::Publisher<nav_msgs::msg::Odometry>::SharedPtr _pose_pub;
+        rclcpp::Publisher<sensor_msgs::msg::Imu>::SharedPtr _imu_pub;
         rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr _cmd_sub;
         rclcpp::Subscription<px4_msgs::msg::VehicleOdometry>::SharedPtr _drone_sub;
         rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr _nav_sub;
@@ -131,6 +133,7 @@ namespace gazebo
 
                 _pose_pub = _ros_node->create_publisher<nav_msgs::msg::Odometry>(
                     _local_pose_topic, reliable_qos);
+                _imu_pub = _ros_node->create_publisher<sensor_msgs::msg::Imu>("imu/data", 10);
 
                 _cmd_sub = _ros_node->create_subscription<nav_msgs::msg::Odometry>(
                     _cmd_pose_topic, reliable_qos,
@@ -306,6 +309,26 @@ namespace gazebo
                 plat_pose.pose.pose.orientation.z = _pose.Rot().Z(); // z
 
                 _pose_pub->publish(plat_pose);
+
+                // Publish IMU: heave acceleration via central difference + gravity bias.
+                // az_imu = z̈ − g  (Eq. 7 of Küchler et al., z-axis points down)
+                if (_dt > 1e-9) {
+                    constexpr double G = 9.81;
+                    constexpr double h = 1e-4;
+                    double x = _pose.Pos()[0];
+                    double y = _pose.Pos()[1];
+                    double z_p = wave.generateWaveHeightAtPoint(x, y, _actual_sim_time + h, 0);
+                    double z_0 = wave.generateWaveHeightAtPoint(x, y, _actual_sim_time,     0);
+                    double z_m = wave.generateWaveHeightAtPoint(x, y, _actual_sim_time - h, 0);
+                    double az  = (z_p - 2.0 * z_0 + z_m) / (h * h);
+
+                    sensor_msgs::msg::Imu imu_msg;
+                    imu_msg.header.stamp    = _ros_node->now();
+                    imu_msg.header.frame_id = "vessel_imu";
+                    imu_msg.linear_acceleration.z = az - G;
+                    imu_msg.linear_acceleration_covariance[0] = -1;  // covariance unknown (REP-145)
+                    _imu_pub->publish(imu_msg);
+                }
 
                 _prev_pose = _pose;
             }
