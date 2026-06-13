@@ -56,11 +56,17 @@ bool FFTIdentifier::identify(std::vector<Mode>& modes)
 
     const int N = window_size_;
 
+    // Subtract mean before windowing to prevent any DC bias from leaking
+    // into frequency bins via the Hann window sidelobes.
+    double mean = 0.0;
+    for (int i = 0; i < N; ++i) mean += buffer_[i];
+    mean /= N;
+
     // Apply Hann window to reduce spectral leakage
     std::vector<std::complex<double>> X(N);
     for (int i = 0; i < N; ++i) {
         double w = 0.5 * (1.0 - std::cos(2.0 * M_PI * i / (N - 1)));
-        X[i] = std::complex<double>(buffer_[i] * w, 0.0);
+        X[i] = std::complex<double>((buffer_[i] - mean) * w, 0.0);
     }
 
     fft(X);
