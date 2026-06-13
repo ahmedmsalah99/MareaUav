@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <fstream>
 #include <mutex>
+#include <random>
 
 // ROS 2 (gazebo_ros) — replaces the old LCM transport.
 #include <gazebo_ros/node.hpp>
@@ -77,7 +78,14 @@ namespace gazebo
 
         std::fstream myfile;
 
-        ignition::math::Pose3d _pose, _start_pose, _prev_pose;
+        ignition::math::Pose3d _pose, _start_pose, _prev_pose, _prev_prev_pose;
+
+        // IMU publishing
+        bool   _publish_imu;
+        double _imu_noise_std;
+        bool   _imu_history_ready;   // true once we have three poses for double diff
+        std::mt19937 _rng{std::random_device{}()};
+        std::normal_distribution<double> _noise{0.0, 1.0};
 
         bool _first_rb;
         double _nav_pos_0;
@@ -128,6 +136,9 @@ namespace gazebo
                 // Grab the gazebo_ros node tied to this plugin's SDF.
                 _ros_node = gazebo_ros::Node::Get(_sdf, "platform_manager");
 
+                _publish_imu    = _ros_node->declare_parameter("publish_imu",    true);
+                _imu_noise_std  = _ros_node->declare_parameter("imu_noise_std",  0.01);
+
                 auto px4_qos      = rclcpp::QoS(rclcpp::KeepLast(1)).best_effort();
                 auto reliable_qos = rclcpp::QoS(rclcpp::KeepLast(1)).reliable();
 
@@ -150,8 +161,10 @@ namespace gazebo
                 wave.init(10,2.0,0.5,7.0);
 
                 _pose = _model.get()->WorldPose();
-                _prev_pose  = _pose;
-                _start_pose = _pose;
+                _prev_pose      = _pose;
+                _prev_prev_pose = _pose;
+                _start_pose     = _pose;
+                _imu_history_ready = false;
 
                 _got_t_offs = false;
                 _actual_sim_time = 0;
@@ -310,27 +323,69 @@ namespace gazebo
 
                 _pose_pub->publish(plat_pose);
 
-                // Publish IMU: heave acceleration via central difference + gravity bias.
-                // az_imu = z̈ − g  (Eq. 7 of Küchler et al., z-axis points down)
-                if (_dt > 1e-9) {
+                // ---- IMU publishing ----
+                // Derive readings from observed platform motion (three-point history):
+                //   linear acceleration = second finite difference of position / dt²
+                //   angular velocity    = first finite difference of Euler angles / dt
+                // Specific force: a_imu = a_world − g  (gravity subtracted on z, z-up frame).
+                // Enabled by the publish_imu parameter; noise magnitude by imu_noise_std.
+                if (_publish_imu && _imu_history_ready && _dt > 1e-9) {
                     constexpr double G = 9.81;
-                    constexpr double h = 1e-4;
-                    double x = _pose.Pos()[0];
-                    double y = _pose.Pos()[1];
-                    double z_p = wave.generateWaveHeightAtPoint(x, y, _actual_sim_time + h, 0);
-                    double z_0 = wave.generateWaveHeightAtPoint(x, y, _actual_sim_time,     0);
-                    double z_m = wave.generateWaveHeightAtPoint(x, y, _actual_sim_time - h, 0);
-                    double az  = (z_p - 2.0 * z_0 + z_m) / (h * h);
+                    double n = _imu_noise_std;
+
+                    // Linear acceleration via second finite difference of world position
+                    double ax = (_pose.Pos()[0] - 2.0*_prev_pose.Pos()[0] + _prev_prev_pose.Pos()[0]) / (_dt * _dt);
+                    double ay = (_pose.Pos()[1] - 2.0*_prev_pose.Pos()[1] + _prev_prev_pose.Pos()[1]) / (_dt * _dt);
+                    double az = (_pose.Pos()[2] - 2.0*_prev_pose.Pos()[2] + _prev_prev_pose.Pos()[2]) / (_dt * _dt);
+
+                    // Angular velocity via first finite difference of Euler angles
+                    double r0, p0, y0, r1, p1, y1;
+                    _pose.Rot().Euler(r0, p0, y0);
+                    _prev_pose.Rot().Euler(r1, p1, y1);
+
+                    // Wrap yaw difference to [-π, π]
+                    double dy = y0 - y1;
+                    while (dy >  M_PI) dy -= 2.0 * M_PI;
+                    while (dy < -M_PI) dy += 2.0 * M_PI;
+
+                    double wx = (r0 - r1) / _dt;
+                    double wy = (p0 - p1) / _dt;
+                    double wz =  dy        / _dt;
 
                     sensor_msgs::msg::Imu imu_msg;
                     imu_msg.header.stamp    = _ros_node->now();
                     imu_msg.header.frame_id = "vessel_imu";
-                    imu_msg.linear_acceleration.z = az - G;
-                    imu_msg.linear_acceleration_covariance[0] = -1;  // covariance unknown (REP-145)
+
+                    imu_msg.linear_acceleration.x = ax     + n * _noise(_rng);
+                    imu_msg.linear_acceleration.y = ay     + n * _noise(_rng);
+                    imu_msg.linear_acceleration.z = az - G + n * _noise(_rng);
+
+                    imu_msg.angular_velocity.x = wx + n * _noise(_rng);
+                    imu_msg.angular_velocity.y = wy + n * _noise(_rng);
+                    imu_msg.angular_velocity.z = wz + n * _noise(_rng);
+
+                    // Orientation from current pose (ground truth, no noise)
+                    imu_msg.orientation.w = _pose.Rot().W();
+                    imu_msg.orientation.x = _pose.Rot().X();
+                    imu_msg.orientation.y = _pose.Rot().Y();
+                    imu_msg.orientation.z = _pose.Rot().Z();
+
+                    // Diagonal covariance matrices (noise_std² per axis)
+                    double var = n * n;
+                    imu_msg.linear_acceleration_covariance[0] = var;
+                    imu_msg.linear_acceleration_covariance[4] = var;
+                    imu_msg.linear_acceleration_covariance[8] = var;
+                    imu_msg.angular_velocity_covariance[0]    = var;
+                    imu_msg.angular_velocity_covariance[4]    = var;
+                    imu_msg.angular_velocity_covariance[8]    = var;
+                    imu_msg.orientation_covariance[0]         = -1; // orientation is exact
+
                     _imu_pub->publish(imu_msg);
                 }
 
-                _prev_pose = _pose;
+                _prev_prev_pose    = _prev_pose;
+                _prev_pose         = _pose;
+                _imu_history_ready = true;
             }
 
             void positionSetpointCallback(const nav_msgs::msg::Odometry::SharedPtr msg)
