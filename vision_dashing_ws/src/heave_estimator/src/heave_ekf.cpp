@@ -1,111 +1,111 @@
 #include "heave_estimator/heave_ekf.hpp"
 
 #include <cmath>
+#include <algorithm>
 
 namespace heave_estimator {
 
-HeaveEKF::HeaveEKF(double dt, double q_scale, double q_off, double r_meas)
-    : dt_(dt), q_scale_(q_scale), q_off_(q_off), r_meas_(r_meas)
+HeaveEKF::HeaveEKF(double dt, double q_pos, double q_vel, double q_omega,
+                   double q_off, double r_meas)
+    : dt_(dt), q_pos_(q_pos), q_vel_(q_vel), q_omega_(q_omega),
+      q_off_(q_off), r_meas_(r_meas)
 {
 }
 
-// ---- Matrix builders -------------------------------------------------------
+// ---- Discrete mode dynamics ------------------------------------------------
 
-Eigen::MatrixXd HeaveEKF::buildPsi(const std::vector<HeaveMode>& modes) const
+// Exact solution of z̈ + ω²z = 0 over one dt step.
+// State: [z, ẑ, ω]; ω treated as constant within the step.
+Eigen::Vector3d HeaveEKF::modeTransition(const Eigen::Vector3d& xj) const
 {
-    int dim = 2 * static_cast<int>(modes.size()) + 1;
-    Eigen::MatrixXd Psi = Eigen::MatrixXd::Zero(dim, dim);
+    double z  = xj(0);
+    double zd = xj(1);
+    double w  = xj(2);
 
-    for (int i = 0; i < static_cast<int>(modes.size()); ++i) {
-        double omega = modes[i].frequency;   // already rad/s from FFT
-        double c = std::cos(omega * dt_);
-        double s = std::sin(omega * dt_);
-        int idx = 2 * i;
-
-        // Exact matrix exponential of [[0,1],[-omega²,0]] over dt
-        Psi(idx,     idx)     =  c;
-        Psi(idx,     idx + 1) =  s / omega;
-        Psi(idx + 1, idx)     = -omega * s;
-        Psi(idx + 1, idx + 1) =  c;
+    if (std::abs(w) < 1e-6) {
+        return Eigen::Vector3d(z + zd * dt_, zd, w);
     }
-    Psi(dim - 1, dim - 1) = 1.0;   // offset: slow random walk
-    return Psi;
+
+    double c = std::cos(w * dt_);
+    double s = std::sin(w * dt_);
+
+    return Eigen::Vector3d(
+         z * c + zd * s / w,
+        -z * w * s + zd * c,
+         w);
 }
 
-Eigen::RowVectorXd HeaveEKF::buildC(const std::vector<HeaveMode>& modes) const
+// Jacobian of modeTransition w.r.t. [z, ẑ, ω]
+Eigen::Matrix3d HeaveEKF::modeJacobian(const Eigen::Vector3d& xj) const
 {
-    // az_imu = sum_j(-omega_j^2 * z_j) + x_off
-    int dim = 2 * static_cast<int>(modes.size()) + 1;
-    Eigen::RowVectorXd C = Eigen::RowVectorXd::Zero(dim);
-    for (int i = 0; i < static_cast<int>(modes.size()); ++i) {
-        double omega = modes[i].frequency;
-        C(2 * i) = -omega * omega;  // coefficient of z_j in measurement
+    double z  = xj(0);
+    double zd = xj(1);
+    double w  = xj(2);
+
+    if (std::abs(w) < 1e-6) {
+        Eigen::Matrix3d F = Eigen::Matrix3d::Identity();
+        F(0, 1) = dt_;
+        return F;
     }
-    C(dim - 1) = 1.0;   // x_off
-    return C;
+
+    double c = std::cos(w * dt_);
+    double s = std::sin(w * dt_);
+
+    Eigen::Matrix3d F;
+    F(0, 0) =  c;
+    F(0, 1) =  s / w;
+    F(0, 2) = -z * dt_ * s + zd * (dt_ * c / w - s / (w * w));
+
+    F(1, 0) = -w * s;
+    F(1, 1) =  c;
+    F(1, 2) = -z * (s + w * dt_ * c) - zd * dt_ * s;
+
+    F(2, 0) = 0.0;
+    F(2, 1) = 0.0;
+    F(2, 2) = 1.0;
+
+    return F;
 }
 
-Eigen::MatrixXd HeaveEKF::buildQ(const std::vector<HeaveMode>& modes) const
+Eigen::MatrixXd HeaveEKF::buildQ() const
 {
-    int dim = 2 * static_cast<int>(modes.size()) + 1;
-    Eigen::MatrixXd Q = Eigen::MatrixXd::Zero(dim, dim);
-    for (int i = 0; i < static_cast<int>(modes.size()); ++i) {
-        Q(2 * i,     2 * i)     = q_scale_;
-        Q(2 * i + 1, 2 * i + 1) = q_scale_;
+    Eigen::MatrixXd Q = Eigen::MatrixXd::Zero(state_dim_, state_dim_);
+    for (int j = 0; j < nm_; ++j) {
+        int    idx        = modeOffset(j);
+        double omega      = x_(idx + 2);
+        double freq_scale = std::max(1.0, omega / (2.0 * M_PI));
+        Q(idx,     idx)     = q_pos_ * freq_scale;
+        Q(idx + 1, idx + 1) = q_vel_ * freq_scale;
+        Q(idx + 2, idx + 2) = q_omega_;
     }
-    Q(dim - 1, dim - 1) = q_off_;
+    Q(state_dim_ - 1, state_dim_ - 1) = q_off_;
     return Q;
 }
 
-// Iterative DARE solver — same structure as SPAObserver::solveDARE.
-Eigen::VectorXd HeaveEKF::solveDARE(const Eigen::MatrixXd& Psi,
-                                      const Eigen::MatrixXd& Q,
-                                      const Eigen::RowVectorXd& C) const
-{
-    Eigen::MatrixXd P = Q;
-
-    for (int iter = 0; iter < 500; ++iter) {
-        double S = (C * P * C.transpose())(0, 0) + r_meas_;
-        Eigen::VectorXd K  = P * C.transpose() / S;
-        Eigen::MatrixXd P_new = Psi * (P - K * C * P) * Psi.transpose() + Q;
-
-        if ((P_new - P).norm() < 1e-12) { P = P_new; break; }
-        P = P_new;
-    }
-
-    double S = (C * P * C.transpose())(0, 0) + r_meas_;
-    return Psi * P * C.transpose() / S;
-}
-
-// ---- Public interface -------------------------------------------------------
+// ---- Initialization --------------------------------------------------------
 
 void HeaveEKF::initialize(const std::vector<HeaveMode>& modes)
 {
     if (modes.empty()) return;
 
     int new_nm  = static_cast<int>(modes.size());
-    int new_dim = 2 * new_nm + 1;
+    int new_dim = 3 * new_nm + 1;
 
-    Eigen::MatrixXd    Psi_new = buildPsi(modes);
-    Eigen::RowVectorXd C_new   = buildC(modes);
-    Eigen::MatrixXd    Q_new   = buildQ(modes);
-    Eigen::VectorXd    L_new   = solveDARE(Psi_new, Q_new, C_new);
-
-    // Build initial state from FFT-identified parameters.
-    // Position convention: z_j(t) = A_j cos(omega_j * t + phi_j)
-    // So z_j(0) = A cos(phi), zdot_j(0) = -A*omega*sin(phi)
-    // phase from FFT is the position phase at t=0 of the buffer window.
     Eigen::VectorXd x_new = Eigen::VectorXd::Zero(new_dim);
+    Eigen::MatrixXd P_new = Eigen::MatrixXd::Identity(new_dim, new_dim);
 
-    for (int i = 0; i < new_nm; ++i) {
-        double omega = modes[i].frequency;
+    static constexpr double g = 9.81;
+
+    for (int j = 0; j < new_nm; ++j) {
+        const HeaveMode& m = modes[j];
+        int idx = modeOffset(j);
+
         bool reused = false;
-
-        // Reuse existing state if a matching frequency is found
         if (initialized_) {
-            for (int j = 0; j < nm_; ++j) {
-                if (std::abs(omegas_[j] - omega) < 0.05) {
-                    x_new.segment<2>(2 * i) = x_hat_.segment<2>(2 * j);
+            for (int i = 0; i < nm_; ++i) {
+                if (std::abs(x_(modeOffset(i) + 2) - m.frequency) < 0.05) {
+                    x_new.segment<3>(idx) = x_.segment<3>(modeOffset(i));
+                    P_new.block<3, 3>(idx, idx) = P_.block<3, 3>(modeOffset(i), modeOffset(i));
                     reused = true;
                     break;
                 }
@@ -113,48 +113,113 @@ void HeaveEKF::initialize(const std::vector<HeaveMode>& modes)
         }
 
         if (!reused) {
-            double phi = modes[i].phase;
-            x_new(2 * i)     = modes[i].amplitude * std::cos(phi);
-            x_new(2 * i + 1) = -modes[i].amplitude * omega * std::sin(phi);
+            // z_j(t) = A cos(ωt + φ); t=0 is the start of the FFT window
+            double phi = m.phase;
+            x_new(idx)     = m.amplitude * std::cos(phi);
+            x_new(idx + 1) = -m.amplitude * m.frequency * std::sin(phi);
+            x_new(idx + 2) = m.frequency;
+
+            double A2 = m.amplitude * m.amplitude;
+            P_new.block<3, 3>(idx, idx) = Eigen::DiagonalMatrix<double, 3>(
+                A2,
+                A2 * m.frequency * m.frequency,
+                0.01).toDenseMatrix();
         }
     }
 
-    // Preserve offset (absorbs gravity); init to -g on first run.
-    static constexpr double g = 9.81;
-    x_new(new_dim - 1) = initialized_ ? x_hat_(state_dim_ - 1) : -g;
-
-    Psi_   = Psi_new;
-    C_     = C_new;
-    L_     = L_new;
-    x_hat_ = x_new;
-
-    omegas_.resize(new_nm);
-    for (int i = 0; i < new_nm; ++i) omegas_[i] = modes[i].frequency;
+    // Preserve offset; init to -g on first call
+    x_new(new_dim - 1) = initialized_ ? x_(state_dim_ - 1) : -g;
+    P_new(new_dim - 1, new_dim - 1) = initialized_
+        ? P_(state_dim_ - 1, state_dim_ - 1) : 1.0;
 
     nm_          = new_nm;
     state_dim_   = new_dim;
+    x_           = x_new;
+    P_           = P_new;
     initialized_ = true;
 }
+
+// ---- EKF update step -------------------------------------------------------
 
 bool HeaveEKF::update(double az_imu)
 {
     if (!initialized_) return false;
 
-    double s_hat = (C_ * x_hat_)(0);
-    double innov = az_imu - s_hat;
+    // ---- Predict ----
+    Eigen::VectorXd x_pred = Eigen::VectorXd::Zero(state_dim_);
+    Eigen::MatrixXd F      = Eigen::MatrixXd::Zero(state_dim_, state_dim_);
 
-    // Observer step: x̂_{k+1} = Ψ x̂_k + L (y_k − ŷ_k)
-    x_hat_ = Psi_ * x_hat_ + L_ * innov;
+    for (int j = 0; j < nm_; ++j) {
+        int idx = modeOffset(j);
+        Eigen::Vector3d xj = x_.segment<3>(idx);
+        x_pred.segment<3>(idx)      = modeTransition(xj);
+        F.block<3, 3>(idx, idx)     = modeJacobian(xj);
+    }
+    x_pred(state_dim_ - 1) = x_(state_dim_ - 1);
+    F(state_dim_ - 1, state_dim_ - 1) = 1.0;
 
-    // Aggregate heave position and velocity over all modes
+    Eigen::MatrixXd P_pred = F * P_ * F.transpose() + buildQ();
+
+    // ---- Update ----
+    // Linearise measurement at x_pred:  y = sum_j(-omega_j^2 * z_j) + x_off
+    double y_pred = x_pred(state_dim_ - 1);
+    Eigen::RowVectorXd H = Eigen::RowVectorXd::Zero(state_dim_);
+    H(state_dim_ - 1) = 1.0;
+
+    for (int j = 0; j < nm_; ++j) {
+        int    idx = modeOffset(j);
+        double z_j = x_pred(idx);
+        double w_j = x_pred(idx + 2);
+        y_pred    += -w_j * w_j * z_j;
+        H(idx)     = -w_j * w_j;
+        H(idx + 2) = -2.0 * w_j * z_j;
+    }
+
+    double            innov = az_imu - y_pred;
+    double            S     = (H * P_pred * H.transpose())(0, 0) + r_meas_;
+    Eigen::VectorXd   K     = P_pred * H.transpose() / S;
+
+    x_ = x_pred + K * innov;
+
+    // Joseph form update to keep P symmetric positive-definite
+    Eigen::MatrixXd I_KH = Eigen::MatrixXd::Identity(state_dim_, state_dim_) - K * H;
+    P_ = I_KH * P_pred * I_KH.transpose() + r_meas_ * K * K.transpose();
+
+    checkObservability();
+
     heave_pos_ = 0.0;
     heave_vel_ = 0.0;
     for (int j = 0; j < nm_; ++j) {
-        heave_pos_ += x_hat_(2 * j);
-        heave_vel_ += x_hat_(2 * j + 1);
+        int idx = modeOffset(j);
+        heave_pos_ += x_(idx);
+        heave_vel_ += x_(idx + 1);
     }
 
     return true;
+}
+
+// ---- Observability guard ---------------------------------------------------
+
+void HeaveEKF::checkObservability()
+{
+    static constexpr double omega_min = 0.01;
+    static constexpr double omega_sep = 0.05;
+
+    for (int j = 0; j < nm_; ++j) {
+        double& w = x_(modeOffset(j) + 2);
+        if (w < omega_min) w = omega_min;
+    }
+
+    // Ensure distinct frequencies
+    for (int j = 0; j < nm_; ++j) {
+        for (int i = j + 1; i < nm_; ++i) {
+            double& wj = x_(modeOffset(j) + 2);
+            double& wi = x_(modeOffset(i) + 2);
+            if (std::abs(wi - wj) < omega_sep) {
+                wi = wj + omega_sep;
+            }
+        }
+    }
 }
 
 }  // namespace heave_estimator

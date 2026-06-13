@@ -6,24 +6,26 @@
 
 namespace heave_estimator {
 
-// Linear steady-state Kalman observer for heave position / velocity.
+// Extended Kalman Filter for heave estimation (Küchler et al., IFAC 2011).
 //
-// Frequencies are fixed from FFT identification (not estimated).
-// State per mode j (2 states): [z_j, zdot_j]
+// State per mode j (3 states): x_j = [z_j, zdot_j, omega_j]^T
+// omega_j modelled as random walk so the EKF can track slow frequency changes.
 // Plus one offset state: x_off  (absorbs gravity + sensor bias)
-// Total state dim = 2*Nm + 1
+// Total state dim = 3*Nm + 1
 //
-// Transition: block-diagonal harmonic oscillator (matrix exponential, exact)
 // Measurement (scalar): az_imu = sum_j(-omega_j^2 * z_j) + x_off
 //
-// DARE is solved once at initialization to get the steady-state Kalman gain.
+// Covariance update uses the symmetric Joseph form to maintain positive-
+// definiteness and prevent numerical divergence.
 class HeaveEKF {
 public:
-    HeaveEKF(double dt, double q_scale, double q_off, double r_meas);
+    HeaveEKF(double dt, double q_pos, double q_vel, double q_omega,
+             double q_off, double r_meas);
 
+    // (Re-)initialize with identified modes. Reuses existing states when possible.
     void initialize(const std::vector<HeaveMode>& modes);
 
-    // Observer predict + update step. Returns false if not initialized.
+    // EKF predict + update step. Returns false if not yet initialized.
     bool update(double az_imu);
 
     double heavePosision() const { return heave_pos_; }
@@ -32,27 +34,24 @@ public:
 
 private:
     double dt_;
-    double q_scale_, q_off_, r_meas_;
+    double q_pos_, q_vel_, q_omega_, q_off_, r_meas_;
 
     bool initialized_ = false;
-    int nm_ = 0;
+    int nm_        = 0;
     int state_dim_ = 0;
 
-    Eigen::MatrixXd    Psi_;   // full block-diagonal transition matrix
-    Eigen::RowVectorXd C_;     // measurement row: [-w1² 0 -w2² 0 ... 1]
-    Eigen::VectorXd    L_;     // steady-state Kalman gain (predictor form)
-    Eigen::VectorXd    x_hat_; // state estimate
-    std::vector<double> omegas_;
+    Eigen::VectorXd x_;   // state estimate
+    Eigen::MatrixXd P_;   // covariance (kept s.p.d. via Joseph form)
 
     double heave_pos_ = 0.0;
     double heave_vel_ = 0.0;
 
-    Eigen::MatrixXd    buildPsi(const std::vector<HeaveMode>& modes) const;
-    Eigen::RowVectorXd buildC(const std::vector<HeaveMode>& modes) const;
-    Eigen::MatrixXd    buildQ(const std::vector<HeaveMode>& modes) const;
-    Eigen::VectorXd    solveDARE(const Eigen::MatrixXd& Psi,
-                                  const Eigen::MatrixXd& Q,
-                                  const Eigen::RowVectorXd& C) const;
+    Eigen::Vector3d modeTransition(const Eigen::Vector3d& xj) const;
+    Eigen::Matrix3d modeJacobian(const Eigen::Vector3d& xj) const;
+    Eigen::MatrixXd buildQ() const;
+    void            checkObservability();
+
+    int modeOffset(int j) const { return j * 3; }
 };
 
 }  // namespace heave_estimator

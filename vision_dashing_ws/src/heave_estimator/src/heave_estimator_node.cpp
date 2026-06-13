@@ -18,15 +18,17 @@ public:
         int fft_window         = declare_parameter("fft_window_size", 1024);
         double peak_threshold  = declare_parameter("peak_threshold", 0.05);
         double reident_period  = declare_parameter("reidentification_period_s", 60.0);
-        double q_scale         = declare_parameter("q_scale", 1e-4);
-        double q_off           = declare_parameter("q_off",   1e-6);
-        double r_meas          = declare_parameter("r_meas",  1e-2);
+        double q_pos           = declare_parameter("q_pos",   1e-4);
+        double q_vel           = declare_parameter("q_vel",   1e-3);
+        double q_omega         = declare_parameter("q_omega", 1e-6);
+        double q_off           = declare_parameter("q_off",   1e-8);
+        double r_meas          = declare_parameter("r_meas",  1e-4);
 
         dt_ = 1.0 / sample_rate;
         reident_period_ = reident_period;
 
         identifier_ = std::make_unique<FFTIdentifier>(fft_window, sample_rate, peak_threshold);
-        ekf_ = std::make_unique<HeaveEKF>(dt_, q_scale, q_off, r_meas);
+        ekf_ = std::make_unique<HeaveEKF>(dt_, q_pos, q_vel, q_omega, q_off, r_meas);
 
         // Subscriptions
         imu_sub_ = create_subscription<sensor_msgs::msg::Imu>(
