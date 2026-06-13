@@ -18,11 +18,11 @@ public:
         int fft_window         = declare_parameter("fft_window_size", 1024);
         double peak_threshold  = declare_parameter("peak_threshold", 0.05);
         double reident_period  = declare_parameter("reidentification_period_s", 60.0);
-        double q_pos           = declare_parameter("q_pos", 1e-4);
-        double q_vel           = declare_parameter("q_vel", 1e-3);
+        double q_pos           = declare_parameter("q_pos",   1e-4);
+        double q_vel           = declare_parameter("q_vel",   1e-3);
         double q_omega         = declare_parameter("q_omega", 1e-6);
-        double q_off           = declare_parameter("q_off", 1e-8);
-        double r_meas          = declare_parameter("r_meas", 1e-4);
+        double q_off           = declare_parameter("q_off",   1e-8);
+        double r_meas          = declare_parameter("r_meas",  1e-4);
 
         dt_ = 1.0 / sample_rate;
         reident_period_ = reident_period;
@@ -59,9 +59,9 @@ private:
                 last_reident_time_ = now;
                 RCLCPP_INFO(get_logger(), "Identified %zu heave mode(s).", modes.size());
                 for (size_t i = 0; i < modes.size(); ++i) {
-                    RCLCPP_DEBUG(get_logger(),
-                                 "  Mode %zu: A=%.4f m, omega=%.4f rad/s, phi=%.4f rad",
-                                 i, modes[i].amplitude, modes[i].frequency, modes[i].phase);
+                    RCLCPP_INFO(get_logger(),
+                                "  Mode %zu: A=%.4f m, omega=%.4f rad/s, phi=%.4f rad",
+                                i, modes[i].amplitude, modes[i].frequency, modes[i].phase);
                 }
             }
         }
