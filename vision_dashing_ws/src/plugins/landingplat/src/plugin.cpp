@@ -386,6 +386,7 @@ namespace gazebo
                 _prev_prev_pose    = _prev_pose;
                 _prev_pose         = _pose;
                 _imu_history_ready = true;
+
             }
 
             void positionSetpointCallback(const nav_msgs::msg::Odometry::SharedPtr msg)
