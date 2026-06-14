@@ -4,8 +4,9 @@
 
 namespace spa_predictor {
 
-FFTIdentifier::FFTIdentifier(int window_size, double sample_rate, double peak_threshold)
-    : sample_rate_(sample_rate), peak_threshold_(peak_threshold)
+FFTIdentifier::FFTIdentifier(int window_size, double sample_rate,
+                             double peak_threshold, double min_freq_hz)
+    : sample_rate_(sample_rate), peak_threshold_(peak_threshold), min_freq_hz_(min_freq_hz)
 {
     // Round down to nearest power of 2 (required by Cooley-Tukey FFT)
     window_size_ = 1;
@@ -100,6 +101,7 @@ std::vector<Mode> FFTIdentifier::detectPeaks(const std::vector<double>& amp,
 
     int n = static_cast<int>(amp.size());
     for (int k = 1; k < n - 1; ++k) {
+        if (k * df_hz < min_freq_hz_) continue;   // reject DC/drift artifacts
         if (amp[k] > threshold &&
             amp[k] > amp[k - 1] &&
             amp[k] > amp[k + 1])
