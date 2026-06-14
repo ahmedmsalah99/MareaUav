@@ -13,7 +13,6 @@
 #include <nav_msgs/msg/odometry.hpp>
 #include <px4_msgs/msg/vehicle_odometry.hpp>
 #include <sensor_msgs/msg/imu.hpp>
-#include <geometry_msgs/msg/vector3_stamped.hpp>
 
 #include "WaveGen.h"
 
@@ -54,7 +53,6 @@ namespace gazebo
         rclcpp::Publisher<nav_msgs::msg::Odometry>::SharedPtr _pose_pub;
         rclcpp::Publisher<sensor_msgs::msg::Imu>::SharedPtr _imu_pub;
         rclcpp::Publisher<nav_msgs::msg::Odometry>::SharedPtr _gt_odom_pub;
-        rclcpp::Publisher<geometry_msgs::msg::Vector3Stamped>::SharedPtr _gt_rpy_pub;
         rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr _cmd_sub;
         rclcpp::Subscription<px4_msgs::msg::VehicleOdometry>::SharedPtr _drone_sub;
         rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr _nav_sub;
@@ -225,8 +223,6 @@ namespace gazebo
 
                 _gt_odom_pub = _ros_node->create_publisher<nav_msgs::msg::Odometry>(
                     "ground_truth/odometry", reliable_qos);
-                _gt_rpy_pub = _ros_node->create_publisher<geometry_msgs::msg::Vector3Stamped>(
-                    "ground_truth/rpy", reliable_qos);
 
                 _cmd_sub = _ros_node->create_subscription<nav_msgs::msg::Odometry>(
                     _cmd_pose_topic, reliable_qos,
@@ -305,7 +301,7 @@ namespace gazebo
                       double roll_w  = _roll_wave.generate(_actual_sim_time);
                       double pitch_w = _pitch_wave.generate(_actual_sim_time);
                       double yaw_w   = _yaw_wave.generate(_actual_sim_time);
-                      orientation.Euler(roll_w, pitch_w, yaw_w);
+                      orientation = ignition::math::Quaterniond(roll_w, pitch_w, yaw_w);
                   } else {
                       orientation.W(_nav_pos.orientation[0]);
                       orientation.X(_nav_pos.orientation[1]);
@@ -446,15 +442,6 @@ namespace gazebo
                     gt_odom.twist.twist.angular.y = (p0 - p1) / _dt;   // pitch rate
                     gt_odom.twist.twist.angular.z = dy         / _dt;   // yaw rate
                     _gt_odom_pub->publish(gt_odom);
-
-                    // Explicit RPY (rad) for easy comparison with spa_predictor output
-                    geometry_msgs::msg::Vector3Stamped gt_rpy;
-                    gt_rpy.header.stamp    = stamp;
-                    gt_rpy.header.frame_id = "world";
-                    gt_rpy.vector.x = r0;   // roll
-                    gt_rpy.vector.y = p0;   // pitch
-                    gt_rpy.vector.z = y0;   // yaw
-                    _gt_rpy_pub->publish(gt_rpy);
                 }
 
                 // ---- IMU publishing ----
