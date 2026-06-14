@@ -301,7 +301,8 @@ namespace gazebo
                       double roll_w  = _roll_wave.generate(_actual_sim_time);
                       double pitch_w = _pitch_wave.generate(_actual_sim_time);
                       double yaw_w   = _yaw_wave.generate(_actual_sim_time);
-                      orientation = ignition::math::Quaterniond(roll_w, pitch_w, yaw_w);
+                      orientation = ignition::math::Quaterniond(
+                          ignition::math::Vector3d(roll_w, pitch_w, yaw_w));
                   } else {
                       orientation.W(_nav_pos.orientation[0]);
                       orientation.X(_nav_pos.orientation[1]);

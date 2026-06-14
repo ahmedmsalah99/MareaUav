@@ -694,7 +694,21 @@
     </joint>
 
 
-    <plugin name="plugin" filename="libplatformPlugin.so"/>
+    <plugin name="plugin" filename="libplatformPlugin.so">
+      <enable_wave_rpy>true</enable_wave_rpy>
+      <roll_n_modes>3</roll_n_modes>
+      <roll_amplitude>0.15</roll_amplitude>
+      <roll_min_frequency>0.5</roll_min_frequency>
+      <roll_max_frequency>1.5</roll_max_frequency>
+      <pitch_n_modes>3</pitch_n_modes>
+      <pitch_amplitude>0.08</pitch_amplitude>
+      <pitch_min_frequency>0.4</pitch_min_frequency>
+      <pitch_max_frequency>1.2</pitch_max_frequency>
+      <yaw_n_modes>2</yaw_n_modes>
+      <yaw_amplitude>0.05</yaw_amplitude>
+      <yaw_min_frequency>0.1</yaw_min_frequency>
+      <yaw_max_frequency>0.5</yaw_max_frequency>
+    </plugin>
 
   </model> 
 </sdf>
