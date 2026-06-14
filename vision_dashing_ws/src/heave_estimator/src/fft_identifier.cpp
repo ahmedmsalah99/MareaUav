@@ -6,8 +6,9 @@
 
 namespace heave_estimator {
 
-FFTIdentifier::FFTIdentifier(int window_size, double sample_rate, double peak_threshold)
-    : sample_rate_(sample_rate), peak_threshold_(peak_threshold)
+FFTIdentifier::FFTIdentifier(int window_size, double sample_rate,
+                             double peak_threshold, double min_omega)
+    : sample_rate_(sample_rate), peak_threshold_(peak_threshold), min_omega_(min_omega)
 {
     // Round down to nearest power of 2 (required by Cooley-Tukey FFT)
     window_size_ = 1;
@@ -109,14 +110,17 @@ std::vector<HeaveMode> FFTIdentifier::detectPeaks(const std::vector<double>& amp
 
     int n = static_cast<int>(amp_pos.size());
     for (int k = 1; k < n - 1; ++k) {
+        double omega_k = k * df_rad;
+        if (omega_k < min_omega_) continue;   // reject DC/drift artifacts below wave range
+
         if (amp_pos[k] > threshold &&
             amp_pos[k] > amp_pos[k - 1] &&
             amp_pos[k] > amp_pos[k + 1])
         {
             HeaveMode m;
             m.amplitude = amp_pos[k];
-            m.frequency = k * df_rad;   // omega_j [rad/s]
-            m.phase = phase_pos[k];
+            m.frequency = omega_k;
+            m.phase     = phase_pos[k];
             modes.push_back(m);
         }
     }
