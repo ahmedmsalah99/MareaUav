@@ -69,6 +69,12 @@ void HoldState::handle(){
 
     bool descValid = _holding && (_setPoint.getZ()  > param.zMin + 0.1);
 
+    // After the slope approach (prev state was INIT), once the drone is centered
+    // at the zMax margin, hold there for the go/no-go decision before descending.
+    bool wait4goValid = (_prevStateId == AbstractLandState::states::INIT)
+                        && (_setPoint.getZ() <= param.zMax + 0.05)
+                        && _centered;
+
 	//if the  vision data are not available and the drone reaches the max height coming back to the initState
 
     bool InitValid = !_VisionPose.VisionDataUpdated && !(_setPoint.getZ() < param.zMax - 0.1);
@@ -90,6 +96,12 @@ void HoldState::handle(){
       this->_contextL->setStatePtr(_nextHoveringState); //set the next state (InitState)
       printStateTransition();
       return;
+    }
+
+    if(wait4goValid){
+        this->_contextL->setStatePtr(_nextWait4GoState); // wait for go/no-go at zMax margin
+        printStateTransition();
+        return;
     }
 
     if(descValid){
@@ -193,6 +205,25 @@ void RToLandState::handle() {
         return;
     }
 
+}
+
+void WaitForGoState::handle() {
+
+    getSignals();
+
+    if (!_VisionPose.IsValid) {
+        this->_contextL->setStatePtr(_nextHoveringState);
+        printStateTransition();
+        return;
+    }
+
+    // Hold position at zMax until the go signal is received.
+    // getLandingGoSignal() always returns false until wired up.
+    if (_contextL->getLandingGoSignal()) {
+        this->_contextL->setStatePtr(_nextState); // → HOLD (descent loop)
+        printStateTransition();
+    }
+    // No-go: stay in WAIT4GO; Lander::run() calls hold() to maintain position.
 }
 
 void LandState::handle() {

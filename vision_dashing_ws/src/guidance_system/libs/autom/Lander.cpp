@@ -169,7 +169,8 @@ void Lander::initStateMachine() {
   _machine._centered     =  &_centered;
   _machine._lost         =  &_lost;
   _machine._Inspection   =  &Inspection;
-  _machine._readyToLand  = &_readyToLand;
+  _machine._readyToLand  =  &_readyToLand;
+  _machine._prevState    =  &_prevState;
 
 
   //Link states
@@ -184,11 +185,15 @@ void Lander::initStateMachine() {
 
   _hoveringS._nextState = &_initS;
 
-  _holdS._nextAscState = &_asceS;
-  _holdS._nextDesState = &_descS;
-  _holdS._nextState    = &_rtolS;
-  _holdS._nextInitState = &_initS;
-	_holdS._nextHoveringState = &_hoveringS;
+  _holdS._nextAscState     = &_asceS;
+  _holdS._nextDesState     = &_descS;
+  _holdS._nextState        = &_rtolS;
+  _holdS._nextInitState    = &_initS;
+  _holdS._nextHoveringState = &_hoveringS;
+  _holdS._nextWait4GoState  = &_wait4goS;
+
+  _wait4goS._nextState         = &_holdS;       // go signal → descent loop
+  _wait4goS._nextHoveringState = &_hoveringS;   // vision lost → hovering
 
   _asceS._nextState    = &_holdS;
 
@@ -474,6 +479,14 @@ void Lander::run() {
 
 			hold(); //control the x and y position
       // align(); //controlling the yaw
+      break;
+
+    case (AbstractLandState::states::WAIT4GO):
+
+      if (print > 30) std::cout<<"WAIT4GO"<<std::endl;
+
+      clampZSP();
+      hold(); // maintain horizontal alignment while waiting for go/no-go
       break;
 
     case (AbstractLandState::states::DESC):
