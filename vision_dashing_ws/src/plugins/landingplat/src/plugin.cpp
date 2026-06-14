@@ -52,7 +52,6 @@ namespace gazebo
         gazebo_ros::Node::SharedPtr _ros_node;
         rclcpp::Publisher<nav_msgs::msg::Odometry>::SharedPtr _pose_pub;
         rclcpp::Publisher<sensor_msgs::msg::Imu>::SharedPtr _imu_pub;
-        rclcpp::Publisher<nav_msgs::msg::Odometry>::SharedPtr _gt_odom_pub;
         rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr _cmd_sub;
         rclcpp::Subscription<px4_msgs::msg::VehicleOdometry>::SharedPtr _drone_sub;
         rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr _nav_sub;
@@ -221,8 +220,6 @@ namespace gazebo
                     _local_pose_topic, reliable_qos);
                 _imu_pub = _ros_node->create_publisher<sensor_msgs::msg::Imu>("imu/data", 10);
 
-                _gt_odom_pub = _ros_node->create_publisher<nav_msgs::msg::Odometry>(
-                    "ground_truth/odometry", reliable_qos);
 
                 _cmd_sub = _ros_node->create_subscription<nav_msgs::msg::Odometry>(
                     _cmd_pose_topic, reliable_qos,
@@ -403,16 +400,11 @@ namespace gazebo
                 plat_pose.twist.twist.linear.y = vy;
                 plat_pose.twist.twist.linear.z = vz;
 
-                plat_pose.pose.pose.orientation.w = _pose.Rot().W(); // w
-                plat_pose.pose.pose.orientation.x = _pose.Rot().X(); // x
-                plat_pose.pose.pose.orientation.y = _pose.Rot().Y(); // y
-                plat_pose.pose.pose.orientation.z = _pose.Rot().Z(); // z
+                plat_pose.pose.pose.orientation.w = _pose.Rot().W();
+                plat_pose.pose.pose.orientation.x = _pose.Rot().X();
+                plat_pose.pose.pose.orientation.y = _pose.Rot().Y();
+                plat_pose.pose.pose.orientation.z = _pose.Rot().Z();
 
-                _pose_pub->publish(plat_pose);
-
-                // ---- Ground truth ----
-                // Odometry: exact position (surge/sway/heave) and velocity.
-                // Angular velocity from Euler-angle finite difference (same as IMU but no noise).
                 if (_dt > 1e-9) {
                     double r0, p0, y0, r1, p1, y1;
                     _pose.Rot().Euler(r0, p0, y0);
@@ -420,30 +412,12 @@ namespace gazebo
                     double dy = y0 - y1;
                     while (dy >  M_PI) dy -= 2.0 * M_PI;
                     while (dy < -M_PI) dy += 2.0 * M_PI;
-
-                    auto stamp = _ros_node->now();
-
-                    nav_msgs::msg::Odometry gt_odom;
-                    gt_odom.header.stamp    = stamp;
-                    gt_odom.header.frame_id = "world";
-                    gt_odom.child_frame_id  = "vessel_imu";
-
-                    gt_odom.pose.pose.position.x    = _pose.Pos()[0];   // surge
-                    gt_odom.pose.pose.position.y    = _pose.Pos()[1];   // sway
-                    gt_odom.pose.pose.position.z    = _pose.Pos()[2];   // heave
-                    gt_odom.pose.pose.orientation.w = _pose.Rot().W();
-                    gt_odom.pose.pose.orientation.x = _pose.Rot().X();
-                    gt_odom.pose.pose.orientation.y = _pose.Rot().Y();
-                    gt_odom.pose.pose.orientation.z = _pose.Rot().Z();
-
-                    gt_odom.twist.twist.linear.x  = vx;                 // surge velocity
-                    gt_odom.twist.twist.linear.y  = vy;                 // sway velocity
-                    gt_odom.twist.twist.linear.z  = vz;                 // heave velocity
-                    gt_odom.twist.twist.angular.x = (r0 - r1) / _dt;   // roll rate
-                    gt_odom.twist.twist.angular.y = (p0 - p1) / _dt;   // pitch rate
-                    gt_odom.twist.twist.angular.z = dy         / _dt;   // yaw rate
-                    _gt_odom_pub->publish(gt_odom);
+                    plat_pose.twist.twist.angular.x = (r0 - r1) / _dt;
+                    plat_pose.twist.twist.angular.y = (p0 - p1) / _dt;
+                    plat_pose.twist.twist.angular.z = dy         / _dt;
                 }
+
+                _pose_pub->publish(plat_pose);
 
                 // ---- IMU publishing ----
                 // Derive readings from observed platform motion (three-point history):
