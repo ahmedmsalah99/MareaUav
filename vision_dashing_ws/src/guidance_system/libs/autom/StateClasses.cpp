@@ -69,11 +69,14 @@ void HoldState::handle(){
 
     bool descValid = _holding && (_setPoint.getZ()  > param.zMin + 0.1);
 
-    // After the slope approach (prev state was INIT), once the drone is centered
-    // at the zMax margin, hold there for the go/no-go decision before descending.
-    bool wait4goValid = (_prevStateId == AbstractLandState::states::INIT)
+    // The slope approach drives the drone down (descValid/DESC) until it is
+    // aligned over the pad center and has reached the margin band (z <= zMax).
+    // At that point — exactly where compensation would normally begin — pause
+    // for the go/no-go decision instead. The _goGranted latch prevents bouncing
+    // back into WAIT4GO once the go signal has already been accepted.
+    bool wait4goValid = _holding && _centered
                         && (_setPoint.getZ() <= param.zMax + 0.05)
-                        && _centered;
+                        && !_goGranted;
 
 	//if the  vision data are not available and the drone reaches the max height coming back to the initState
 
@@ -217,10 +220,11 @@ void WaitForGoState::handle() {
         return;
     }
 
-    // Hold position at zMax until the go signal is received.
+    // Hold position at the margin until the go signal is received.
     // getLandingGoSignal() always returns false until wired up.
     if (_contextL->getLandingGoSignal()) {
-        this->_contextL->setStatePtr(_nextState); // → HOLD (descent loop)
+        *(_contextL->_goGranted) = true;          // latch so HOLD won't re-enter WAIT4GO
+        this->_contextL->setStatePtr(_nextState); // → HOLD (resume normal landing)
         printStateTransition();
     }
     // No-go: stay in WAIT4GO; Lander::run() calls hold() to maintain position.

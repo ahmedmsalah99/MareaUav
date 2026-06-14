@@ -127,6 +127,7 @@ void Lander::initStateMachine() {
 	print = 0;
 
   _hovering = false;
+  _goGranted = false;
 
 	_resetMachine = false;
   //reset variables
@@ -171,6 +172,7 @@ void Lander::initStateMachine() {
   _machine._Inspection   =  &Inspection;
   _machine._readyToLand  =  &_readyToLand;
   _machine._prevState    =  &_prevState;
+  _machine._goGranted    =  &_goGranted;
 
 
   //Link states
@@ -599,6 +601,9 @@ void Lander::init() {
     _NHold=0;
     _NComp=0;
     _NLost=0;
+
+    // Re-arm the go/no-go wait for this landing attempt.
+    _goGranted = false;
 
     //Go to max tracking height
     // _setPoint.setZ(param.zMax);

@@ -129,6 +129,10 @@ public:
     /** Previous state ID, mirrored from Lander::_prevState */
     int *_prevState;
 
+    /** Latched true once the go signal has been accepted in WAIT4GO,
+     *  so HOLD does not bounce back into WAIT4GO during the descent. */
+    bool *_goGranted;
+
     Parameters *param;
 
     /** Go/no-go signal for the WAIT4GO state. Returns false until wired up. */
@@ -211,6 +215,7 @@ public:
          _Inspection    = *(_contextL->_Inspection);
          _readyToLand   = *(_contextL->_readyToLand);
          _prevStateId   = *(_contextL->_prevState);
+         _goGranted     = *(_contextL->_goGranted);
     }
 
     /**
@@ -334,6 +339,9 @@ protected:
 
     /** Snapshot of the previous state ID, pulled from Lander::_prevState */
     int  _prevStateId;
+
+    /** Snapshot of the go-granted latch, pulled from Lander::_goGranted */
+    bool _goGranted;
 
     Parameters param;
 
