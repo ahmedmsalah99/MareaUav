@@ -322,9 +322,6 @@ private:
 
   	HoveringState _hoveringS;
 
-    /** Waits at zMax for the go/no-go signal before the descent loop. */
-    WaitForGoState _wait4goS;
-
     /**
      * Actual state of the machine state
      */
@@ -336,13 +333,6 @@ private:
      */
 
     int _prevState;
-
-    /**
-     * Latched true once the go signal is accepted in WAIT4GO; reset each
-     * time the landing sequence restarts (init()).
-     */
-
-    bool _goGranted;
 
     /**
      * Differential time

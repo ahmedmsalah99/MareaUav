@@ -12,7 +12,7 @@
 Lander::Lander()
         : _horizontaErr((double)0)    , _tauHold((double)0), _tauLost((double)0), _tauErr((double)0), _NHold(0),
           _NLost(0),_NComp(0) , _initS(&_machine) , _inspeS(&_machine) , _hoveringS(&_machine) , _holdS(&_machine)  , _asceS(&_machine)  , _descS(&_machine),_compS(&_machine),
-          _rtolS(&_machine),_landS(&_machine), _wait4goS(&_machine), _err(0,0,0), _err_int(0,0,0), _err_diff(0,0,0), _dt(0), _prevTime(0), _actualTime(0),
+          _rtolS(&_machine),_landS(&_machine), _err(0,0,0), _err_int(0,0,0), _err_diff(0,0,0), _dt(0), _prevTime(0), _actualTime(0),
           _actualState(0),_prevState(0), _verticalErr(0), _holdPIDX(0,0,0),
           _holdPIDY(0,0,0)
 {
@@ -127,7 +127,6 @@ void Lander::initStateMachine() {
 	print = 0;
 
   _hovering = false;
-  _goGranted = false;
 
 	_resetMachine = false;
   //reset variables
@@ -171,9 +170,6 @@ void Lander::initStateMachine() {
   _machine._lost         =  &_lost;
   _machine._Inspection   =  &Inspection;
   _machine._readyToLand  =  &_readyToLand;
-  _machine._prevState    =  &_prevState;
-  _machine._goGranted    =  &_goGranted;
-
 
   //Link states
   //keep in mind that _nextState object is inherited from the AbstractLandState class.
@@ -192,10 +188,6 @@ void Lander::initStateMachine() {
   _holdS._nextState        = &_rtolS;
   _holdS._nextInitState    = &_initS;
   _holdS._nextHoveringState = &_hoveringS;
-  _holdS._nextWait4GoState  = &_wait4goS;
-
-  _wait4goS._nextState         = &_holdS;       // go signal → descent loop
-  _wait4goS._nextHoveringState = &_hoveringS;   // vision lost → hovering
 
   _asceS._nextState    = &_holdS;
 
@@ -483,14 +475,6 @@ void Lander::run() {
       // align(); //controlling the yaw
       break;
 
-    case (AbstractLandState::states::WAIT4GO):
-
-      if (print > 30) std::cout<<"WAIT4GO"<<std::endl;
-
-      clampZSP();
-      hold(); // maintain horizontal alignment while waiting for go/no-go
-      break;
-
     case (AbstractLandState::states::DESC):
 
 			if (print > 30) std::cout<<"DESC"<<std::endl;
@@ -601,9 +585,6 @@ void Lander::init() {
     _NHold=0;
     _NComp=0;
     _NLost=0;
-
-    // Re-arm the go/no-go wait for this landing attempt.
-    _goGranted = false;
 
     //Go to max tracking height
     // _setPoint.setZ(param.zMax);
