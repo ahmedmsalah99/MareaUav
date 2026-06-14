@@ -64,25 +64,18 @@ void HoldState::handle(){
 
     getSignals();
 
-    //before compensation, this value should be above the minimum platform value.
-    //descending phase is valid if the horizontal error is under a given treshold and z distance above zMin.
+    // Descend only when holding AND go signal is active AND above zMin floor.
+    bool descValid = _holding && (_setPoint.getZ() > param.zMin + 0.1)
+                    && _contextL->getLandingGoSignal();
 
-    bool descValid = _holding && (_setPoint.getZ()  > param.zMin + 0.1);
+    // Ascend if platform is lost and we are still below zMax (original case).
+    bool asceValid = _lost && (_setPoint.getZ() < param.zMax - 0.1);
 
-    // After the slope approach (prev state was INIT), once the drone is centered
-    // at the zMax margin, hold there for the go/no-go decision before descending.
-    bool wait4goValid = (_prevStateId == AbstractLandState::states::INIT)
-                        && (_setPoint.getZ() <= param.zMax + 0.05)
-                        && _centered;
+    // Ascend if setpoint has drifted below zMin (safety floor).
+    bool asceUnderMin = (_setPoint.getZ() < param.zMin);
 
-	//if the  vision data are not available and the drone reaches the max height coming back to the initState
-
+    //if the vision data are not available and the drone is at or above zMax, go back to init.
     bool InitValid = !_VisionPose.VisionDataUpdated && !(_setPoint.getZ() < param.zMax - 0.1);
-	//std::cout<<"InitValid: "<<InitValid<<std::endl;
-
-    //coming up if the platform is lost and the z distance is under zMax
-
-   bool asceValid = _lost    && (_setPoint.getZ()  < param.zMax - 0.1);
 
     //comp is a middle state between land state and hold state.
     //if the UAV is holding ad is centered on the platform and is close to the platform(20 cm), will be accomplish.
@@ -98,8 +91,8 @@ void HoldState::handle(){
       return;
     }
 
-    if(wait4goValid){
-        this->_contextL->setStatePtr(_nextWait4GoState); // wait for go/no-go at zMax margin
+    if(asceUnderMin){
+        this->_contextL->setStatePtr(_nextAscState); // below zMin floor — ascend
         printStateTransition();
         return;
     }
@@ -207,24 +200,6 @@ void RToLandState::handle() {
 
 }
 
-void WaitForGoState::handle() {
-
-    getSignals();
-
-    if (!_VisionPose.IsValid) {
-        this->_contextL->setStatePtr(_nextHoveringState);
-        printStateTransition();
-        return;
-    }
-
-    // Hold position at zMax until the go signal is received.
-    // getLandingGoSignal() always returns false until wired up.
-    if (_contextL->getLandingGoSignal()) {
-        this->_contextL->setStatePtr(_nextState); // → HOLD (descent loop)
-        printStateTransition();
-    }
-    // No-go: stay in WAIT4GO; Lander::run() calls hold() to maintain position.
-}
 
 void LandState::handle() {
 

@@ -126,12 +126,9 @@ public:
 
     bool *_readyToLand;
 
-    /** Previous state ID, mirrored from Lander::_prevState */
-    int *_prevState;
-
     Parameters *param;
 
-    /** Go/no-go signal for the WAIT4GO state. Returns false until wired up. */
+    /** Go/no-go signal: gates the descent in HOLD. Returns false until wired up. */
     bool getLandingGoSignal() const { return false; }
 
 };
@@ -168,8 +165,7 @@ public:
         ASCE,
         R2LA,
         COMP,
-        LAND,
-        WAIT4GO
+        LAND
     };
 
     /**
@@ -210,7 +206,6 @@ public:
          _lost          = *(_contextL->_lost);
          _Inspection    = *(_contextL->_Inspection);
          _readyToLand   = *(_contextL->_readyToLand);
-         _prevStateId   = *(_contextL->_prevState);
     }
 
     /**
@@ -331,9 +326,6 @@ protected:
      */
 
     bool _readyToLand;
-
-    /** Snapshot of the previous state ID, pulled from Lander::_prevState */
-    int  _prevStateId;
 
     Parameters param;
 
@@ -473,13 +465,6 @@ public:
      */
 
   	AbstractLandState* _nextHoveringState;
-
-    /**
-     * Transition to WAIT4GO once the slope descent has placed the drone
-     * at zMax directly above the pad, before the go/no-go decision.
-     */
-
-    AbstractLandState* _nextWait4GoState;
 
     /**
      * @brief Constructor of the derived class
@@ -729,33 +714,6 @@ public:
      * different boolean variables and, based on those, it sets the next
      * state of the machine to the asce one or to the init one
      */
-
-    void handle();
-};
-
-
-/**
- * @brief WAIT4GO state — drone has completed the slope approach and is
- * hovering at zMax directly above the pad, waiting for the go/no-go signal.
- *
- * Transitions:
- *   - go signal true  → HOLD (normal descent loop begins)
- *   - vision lost      → HOVERING
- *   - (no-go)          → stays in WAIT4GO, Lander::run() calls hold()
- */
-class WaitForGoState : public AbstractLandState {
-
-public:
-
-    AbstractLandState* _nextHoveringState;
-
-    WaitForGoState(LandMachine *context) : AbstractLandState(context) {
-        setId();
-    }
-
-    void setId() override {
-        _id = WAIT4GO;
-    }
 
     void handle();
 };

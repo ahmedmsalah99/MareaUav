@@ -322,9 +322,6 @@ private:
 
   	HoveringState _hoveringS;
 
-    /** Waits at zMax for the go/no-go signal before the descent loop. */
-    WaitForGoState _wait4goS;
-
     /**
      * Actual state of the machine state
      */
