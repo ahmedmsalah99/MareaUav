@@ -20,6 +20,7 @@ public:
         double timer_rate     = declare_parameter("sample_rate",                30.0);
         int    fft_window     = declare_parameter("fft_window_size",           1024);
         double peak_threshold = declare_parameter("peak_threshold",            0.05);
+        double min_omega      = declare_parameter("min_omega_rad_s",           0.5);
         double reident_period = declare_parameter("reidentification_period_s", 40.0);
         double q_pos          = declare_parameter("q_pos",                     1e-4);
         double q_vel          = declare_parameter("q_vel",                     1e-3);
@@ -30,7 +31,7 @@ public:
         dt_             = 1.0 / timer_rate;
         reident_period_ = reident_period;
 
-        identifier_ = std::make_unique<FFTIdentifier>(fft_window, timer_rate, peak_threshold);
+        identifier_ = std::make_unique<FFTIdentifier>(fft_window, timer_rate, peak_threshold, min_omega);
         ekf_        = std::make_unique<HeaveEKF>(dt_, q_pos, q_vel, q_omega, q_off, r_meas);
 
         // Subscription: just buffer incoming az readings — no processing here.

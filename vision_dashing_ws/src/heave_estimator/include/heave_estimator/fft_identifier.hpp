@@ -16,10 +16,12 @@ struct HeaveMode {
 // Converts acceleration spectrum -> position spectrum, then peak-detects modes.
 class FFTIdentifier {
 public:
-    // window_size: number of samples per FFT (should be power of 2)
-    // sample_rate: Hz
-    // peak_threshold: fraction of max amplitude to consider a peak significant
-    FFTIdentifier(int window_size, double sample_rate, double peak_threshold = 0.05);
+    // window_size    : number of samples per FFT (should be power of 2)
+    // sample_rate    : Hz
+    // peak_threshold : fraction of max amplitude to consider a peak significant
+    // min_omega      : discard peaks below this frequency [rad/s] (rejects DC/drift artifacts)
+    FFTIdentifier(int window_size, double sample_rate,
+                  double peak_threshold = 0.05, double min_omega = 0.5);
 
     void addSample(double az_imu);
     bool isReady() const { return static_cast<int>(buffer_.size()) >= window_size_; }
@@ -28,9 +30,10 @@ public:
     bool identify(std::vector<HeaveMode>& modes);
 
 private:
-    int window_size_;
+    int    window_size_;
     double sample_rate_;
     double peak_threshold_;
+    double min_omega_;
     std::vector<double> buffer_;
 
     // Cooley-Tukey in-place FFT (N must be power of 2)
