@@ -406,15 +406,17 @@ namespace gazebo
                 plat_pose.pose.pose.orientation.z = _pose.Rot().Z();
 
                 if (_dt > 1e-9) {
-                    double r0, p0, y0, r1, p1, y1;
-                    _pose.Rot().Euler(r0, p0, y0);
-                    _prev_pose.Rot().Euler(r1, p1, y1);
-                    double dy = y0 - y1;
+                    // NOTE: Euler() with no args is the GETTER returning a Vector3d.
+                    // The 3-arg Euler(r,p,y) form is a SETTER and would leave these
+                    // uninitialized — which is why the rates were reading zero.
+                    ignition::math::Vector3d e0 = _pose.Rot().Euler();
+                    ignition::math::Vector3d e1 = _prev_pose.Rot().Euler();
+                    double dy = e0.Z() - e1.Z();
                     while (dy >  M_PI) dy -= 2.0 * M_PI;
                     while (dy < -M_PI) dy += 2.0 * M_PI;
-                    plat_pose.twist.twist.angular.x = (r0 - r1) / _dt;
-                    plat_pose.twist.twist.angular.y = (p0 - p1) / _dt;
-                    plat_pose.twist.twist.angular.z = dy         / _dt;
+                    plat_pose.twist.twist.angular.x = (e0.X() - e1.X()) / _dt;
+                    plat_pose.twist.twist.angular.y = (e0.Y() - e1.Y()) / _dt;
+                    plat_pose.twist.twist.angular.z = dy                / _dt;
                 }
 
                 _pose_pub->publish(plat_pose);
@@ -434,19 +436,20 @@ namespace gazebo
                     double ay = (_pose.Pos()[1] - 2.0*_prev_pose.Pos()[1] + _prev_prev_pose.Pos()[1]) / (_dt * _dt);
                     double az = (_pose.Pos()[2] - 2.0*_prev_pose.Pos()[2] + _prev_prev_pose.Pos()[2]) / (_dt * _dt);
 
-                    // Angular velocity via first finite difference of Euler angles
-                    double r0, p0, y0, r1, p1, y1;
-                    _pose.Rot().Euler(r0, p0, y0);
-                    _prev_pose.Rot().Euler(r1, p1, y1);
+                    // Angular velocity via first finite difference of Euler angles.
+                    // Use the no-arg Euler() getter (returns Vector3d); the 3-arg
+                    // form is a setter and would leave the values uninitialized.
+                    ignition::math::Vector3d e0 = _pose.Rot().Euler();
+                    ignition::math::Vector3d e1 = _prev_pose.Rot().Euler();
 
                     // Wrap yaw difference to [-π, π]
-                    double dy = y0 - y1;
+                    double dy = e0.Z() - e1.Z();
                     while (dy >  M_PI) dy -= 2.0 * M_PI;
                     while (dy < -M_PI) dy += 2.0 * M_PI;
 
-                    double wx = (r0 - r1) / _dt;
-                    double wy = (p0 - p1) / _dt;
-                    double wz =  dy        / _dt;
+                    double wx = (e0.X() - e1.X()) / _dt;
+                    double wy = (e0.Y() - e1.Y()) / _dt;
+                    double wz =  dy               / _dt;
 
                     sensor_msgs::msg::Imu imu_msg;
                     imu_msg.header.stamp    = _ros_node->now();
