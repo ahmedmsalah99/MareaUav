@@ -93,6 +93,43 @@ namespace gazebo
         bool _first_rb;
         double _nav_pos_0;
 
+        // ---- Roll / pitch / yaw wave simulation ----------------------------
+        // Each angle is driven by a sum of N sinusoids with random phases,
+        // configurable amplitude and frequency range from the SDF.
+        struct AngleWaveGen {
+            std::vector<double> freqs;
+            std::vector<double> phases;
+            double amplitude = 0.0;
+
+            void init(int n, double amp, double min_freq, double max_freq,
+                      std::mt19937& rng)
+            {
+                amplitude = amp;
+                freqs.resize(n);
+                phases.resize(n);
+                std::uniform_real_distribution<double> phase_dist(0.0, 2.0 * M_PI);
+                double step = (n > 1) ? (max_freq - min_freq) / (n - 1) : 0.0;
+                for (int i = 0; i < n; ++i) {
+                    freqs[i]  = min_freq + i * step;
+                    phases[i] = phase_dist(rng);
+                }
+            }
+
+            double generate(double t) const
+            {
+                if (freqs.empty()) return 0.0;
+                double sum = 0.0;
+                for (size_t i = 0; i < freqs.size(); ++i)
+                    sum += std::sin(freqs[i] * t + phases[i]);
+                return amplitude * sum / static_cast<double>(freqs.size());
+            }
+        };
+
+        bool         _enable_wave_rpy = false;
+        AngleWaveGen _roll_wave;
+        AngleWaveGen _pitch_wave;
+        AngleWaveGen _yaw_wave;
+
         void manageTime(const common::UpdateInfo & _info){
 
             double t = (double)_info.simTime.sec +  (double)_info.simTime.nsec / (double)_info.simTime.nsInSec;;
@@ -141,6 +178,43 @@ namespace gazebo
 
                 _publish_imu    = _ros_node->declare_parameter("publish_imu",    true);
                 _imu_noise_std  = _ros_node->declare_parameter("imu_noise_std",  0.01);
+
+                // ---- Roll / pitch / yaw wave motion (SDF-configurable) ----
+                _enable_wave_rpy = _sdf->Get<bool>("enable_wave_rpy", false).first;
+
+                if (_enable_wave_rpy) {
+                    auto getd = [&](const std::string& name, double def) {
+                        return _sdf->Get<double>(name, def).first;
+                    };
+                    auto geti = [&](const std::string& name, int def) {
+                        return _sdf->Get<int>(name, def).first;
+                    };
+
+                    _roll_wave.init(
+                        geti("roll_n_modes",        3),
+                        getd("roll_amplitude",       0.15),   // rad (~8.6°)
+                        getd("roll_min_frequency",   0.5),    // rad/s
+                        getd("roll_max_frequency",   1.5),
+                        _rng);
+
+                    _pitch_wave.init(
+                        geti("pitch_n_modes",        3),
+                        getd("pitch_amplitude",      0.08),   // rad (~4.6°)
+                        getd("pitch_min_frequency",  0.4),
+                        getd("pitch_max_frequency",  1.2),
+                        _rng);
+
+                    _yaw_wave.init(
+                        geti("yaw_n_modes",          2),
+                        getd("yaw_amplitude",        0.05),   // rad (~2.9°)
+                        getd("yaw_min_frequency",    0.1),
+                        getd("yaw_max_frequency",    0.5),
+                        _rng);
+
+                    RCLCPP_INFO(_ros_node->get_logger(),
+                        "Wave RPY enabled — roll: ±%.3f rad, pitch: ±%.3f rad, yaw: ±%.3f rad",
+                        _roll_wave.amplitude, _pitch_wave.amplitude, _yaw_wave.amplitude);
+                }
 
                 auto px4_qos      = rclcpp::QoS(rclcpp::KeepLast(1)).best_effort();
                 auto reliable_qos = rclcpp::QoS(rclcpp::KeepLast(1)).reliable();
@@ -226,10 +300,18 @@ namespace gazebo
                 {
                   ignition::math::Quaternion<double> orientation;
 
-                  orientation.W(_nav_pos.orientation[0]);
-                  orientation.X(_nav_pos.orientation[1]);
-                  orientation.Y(_nav_pos.orientation[2]);
-                  orientation.Z(_nav_pos.orientation[3]);
+                  if (_enable_wave_rpy) {
+                      // Generate wave-driven roll/pitch/yaw and convert to quaternion
+                      double roll_w  = _roll_wave.generate(_actual_sim_time);
+                      double pitch_w = _pitch_wave.generate(_actual_sim_time);
+                      double yaw_w   = _yaw_wave.generate(_actual_sim_time);
+                      orientation.Euler(roll_w, pitch_w, yaw_w);
+                  } else {
+                      orientation.W(_nav_pos.orientation[0]);
+                      orientation.X(_nav_pos.orientation[1]);
+                      orientation.Y(_nav_pos.orientation[2]);
+                      orientation.Z(_nav_pos.orientation[3]);
+                  }
 
                   if(_actual_sim_time <= 77.0)
                     _pose.Set(ignition::math::Vector3<double>(_nav_pos.position[0], _nav_pos.position[1], wave.generateWaveHeightAtPoint(_pose.Pos()[0],_pose.Pos()[1],_actual_sim_time,0)/2.0 + 2), orientation);
