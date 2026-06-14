@@ -20,7 +20,9 @@ public:
     // window_size    : number of samples per FFT (rounded down to power of 2)
     // sample_rate    : Hz
     // peak_threshold : fraction of the max amplitude bin to consider a peak
-    FFTIdentifier(int window_size, double sample_rate, double peak_threshold = 0.05);
+    // min_freq_hz    : discard peaks below this frequency [Hz] (rejects DC/drift artifacts)
+    FFTIdentifier(int window_size, double sample_rate,
+                  double peak_threshold = 0.05, double min_freq_hz = 0.05);
 
     void addSample(double s);
     bool isReady() const { return static_cast<int>(buffer_.size()) >= window_size_; }
@@ -32,6 +34,7 @@ private:
     int    window_size_;
     double sample_rate_;
     double peak_threshold_;
+    double min_freq_hz_;
     std::vector<double> buffer_;
 
     void fft(std::vector<std::complex<double>>& x);
