@@ -153,23 +153,32 @@ void CompState::handle() {
     if(!_VisionPose.IsValid){
       this->_contextL->setStatePtr(_nextHoveringState); //set the next state (InitState)
       printStateTransition();
+      std::cout << "out of comp because _VisionPose is not valid " << std::endl;
     }
     else if (!onTarget || !_centered){
         //if is not on the target or if is not centered..coming back!
 
         this->_contextL->setStatePtr(_nextState); //set the next state(AsceState)
         printStateTransition();
+        if(!onTarget){
+            std::cout << "out of comp because we are not on target " << std::endl;
+        }
+        if(!_centered){
+            std::cout << "out of comp because we are not _centered " << std::endl;
+        }
 
 	}else if ( !_UltraInfo.UltrasonicDataUpdated ){
         //if the ultrasonic sensor data are not available..
 
         this->_contextL->setStatePtr(_nextState); //set the next state(AsceState)
         printStateTransition();
+        std::cout << "out of comp because we UltrasonicDataUpdated is not true " << std::endl;
 
 	}else if ( fabs(_VisionPose.getRoll()) > param.RollThreshold || fabs(_VisionPose.getPitch()) > param.PitchThreshold ){
 
 		this->_contextL->setStatePtr(_nextState); //set the next state(AsceState)
         printStateTransition();
+        std::cout << "out of comp because fabs(_VisionPose.getRoll()) > param.RollThreshold " << (fabs(_VisionPose.getRoll()) > param.RollThreshold) << " or fabs(_VisionPose.getPitch()) > param.PitchThreshold " << (fabs(_VisionPose.getPitch()) > param.PitchThreshold)  << std::endl;
 
 	}
 
