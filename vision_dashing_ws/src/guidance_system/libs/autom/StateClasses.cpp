@@ -80,7 +80,7 @@ void HoldState::handle(){
     //comp is a middle state between land state and hold state.
     //if the UAV is holding ad is centered on the platform and is close to the platform(20 cm), will be accomplish.
 
-    bool compValid = _holding && (fabs(_UltraInfo.getZ()) < 0.75 - 0.2) && _centered;
+    bool compValid = _holding && (fabs(_UltraInfo.getZ()) < (0.75 - 0.2)) && _centered;
     // std::cout << compValid << std::endl;
 
     if(!_VisionPose.IsValid){
