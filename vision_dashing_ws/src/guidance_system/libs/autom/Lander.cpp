@@ -260,12 +260,18 @@ void Lander::updateSignals() {
   _err[2]       = dz;
   _verticalErr  = _err[2];
 
+  // Cone thresholds: linearly interpolate between min (at z=0) and max (at z=cone_z_ref).
+  double cone_t = common::clamp(fabs(_verticalErr) / param.cone_z_ref, 0.0, 1.0);
+  double tau_hold_cone = param.hold_threshold_min + (param.hold_threshold - param.hold_threshold_min) * cone_t;
+  double tau_lost_cone = param.lost_threshold_min + (param.lost_threshold - param.lost_threshold_min) * cone_t;
+  double tau_comp_cone = param.comp_threshold_min + (param.comp_threshold - param.comp_threshold_min) * cone_t;
+
   //Increment N if needed
-  if (_horizontaErr < _tauHold && _VisionPose.VisionDataUpdated) {
+  if (_horizontaErr < tau_hold_cone && _VisionPose.VisionDataUpdated) {
       _NLost = 0;
       _NHold++;
   }
-  else if (_horizontaErr > _tauLost && _VisionPose.VisionDataUpdated) {
+  else if (_horizontaErr > tau_lost_cone && _VisionPose.VisionDataUpdated) {
       _NHold = 0;
       _NComp = 0;
       _NLost++;
@@ -275,8 +281,7 @@ void Lander::updateSignals() {
 
   _lost     = (_NLost > param.NFramesLost || !_VisionPose.VisionDataUpdated );
 
-  //_centered = _horizontaErr < _tauHold * 0.5 && _VisionPose.VisionDataUpdated;
-  _centered = _horizontaErr < param.comp_threshold && _VisionPose.VisionDataUpdated;
+  _centered = _horizontaErr < tau_comp_cone && _VisionPose.VisionDataUpdated;
 
   //R2LA state is between hold and comp state
   if(_actualState == AbstractLandState::states::R2LA || _actualState == AbstractLandState::states::COMP || _actualState == AbstractLandState::states::LAND){
