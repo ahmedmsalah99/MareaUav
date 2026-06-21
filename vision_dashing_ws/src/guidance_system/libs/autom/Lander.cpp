@@ -766,10 +766,10 @@ void Lander::hold() {
     bool desc_v        = _holding && (_setPoint.getZ() > param.zMin + 0.1) && _machine.getLandingGoSignal();
     bool asce_v        = _lost    && (_verticalErr < param.zMax - 0.1);
     bool asce_min      = (_setPoint.getZ() < param.zMin);
-    bool asce_margin   = (_verticalErr < param.z_margin) && (_verticalErr < param.zMax - 0.1) && !desc_v;
+    bool asce_margin   = _holding && (_verticalErr < param.z_margin) && (_verticalErr < param.zMax - 0.1) && !desc_v;
 
     // if (_prevState == AbstractLandState::states::INIT)
-    if(!desc_v && !asce_v && !asce_min && !asce_margin && !_centered)
+    if(!desc_v && !asce_v && !asce_min && !asce_margin && !_holding)
     {
       double z_base = _platformState.getZ() + param.z_margin;
       double dot    = _VisionPose.getX() * _line_direction[0] + _VisionPose.getY() * _line_direction[1];

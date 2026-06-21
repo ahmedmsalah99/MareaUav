@@ -252,23 +252,23 @@ private:
     double meas_x = msg->transform.translation.x;
     double meas_y = msg->transform.translation.y;
 
-    if (vision_gate_primed_) {
-      double dx = std::fabs(meas_x - vision_gate_last_x_);
-      double dy = std::fabs(meas_y - vision_gate_last_y_);
-      if ((dx > VISION_GATE_STEP || dy > VISION_GATE_STEP)
-          && vision_gate_rejects_ < VISION_GATE_MAX_REJECT) {
-        // Reject: hold last good x/y, count the reject.
-        meas_x = vision_gate_last_x_;
-        meas_y = vision_gate_last_y_;
-        ++vision_gate_rejects_;
-      } else {
-        // Accept (either plausible step, or forced after too many rejects).
-        vision_gate_rejects_ = 0;
-      }
-    }
-    vision_gate_last_x_ = meas_x;
-    vision_gate_last_y_ = meas_y;
-    vision_gate_primed_ = true;
+    // if (vision_gate_primed_) {
+    //   double dx = std::fabs(meas_x - vision_gate_last_x_);
+    //   double dy = std::fabs(meas_y - vision_gate_last_y_);
+    //   if ((dx > VISION_GATE_STEP || dy > VISION_GATE_STEP)
+    //       && vision_gate_rejects_ < VISION_GATE_MAX_REJECT) {
+    //     // Reject: hold last good x/y, count the reject.
+    //     meas_x = vision_gate_last_x_;
+    //     meas_y = vision_gate_last_y_;
+    //     ++vision_gate_rejects_;
+    //   } else {
+    //     // Accept (either plausible step, or forced after too many rejects).
+    //     vision_gate_rejects_ = 0;
+    //   }
+    // }
+    // vision_gate_last_x_ = meas_x;
+    // vision_gate_last_y_ = meas_y;
+    // vision_gate_primed_ = true;
 
     vision_system_.setX(meas_x);
     vision_system_.setY(meas_y);
