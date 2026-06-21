@@ -68,10 +68,10 @@ void HoldState::handle(){
     bool descValid = _holding && (_setPoint.getZ() > param.zMin + 0.1)
                     && _contextL->getLandingGoSignal();
 
-    // Ascend if platform is lost and we are still below zMax (original case).
-    bool asceValid = _lost && (_setPoint.getZ() < param.zMax - 0.1);
+    // Ascend if platform is lost and we are still below zMax (relative to pad).
+    bool asceValid = _lost && (_verticalErr < param.zMax - 0.1);
 
-    // Ascend if setpoint has drifted below zMin (safety floor).
+    // Ascend if setpoint has drifted below zMin (absolute hard floor).
     bool asceUnderMin = (_setPoint.getZ() < param.zMin);
 
     // Ascend if drone is closer to the platform than z_margin and not actively descending.

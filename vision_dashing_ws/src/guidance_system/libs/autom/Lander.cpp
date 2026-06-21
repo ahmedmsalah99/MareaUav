@@ -763,7 +763,7 @@ void Lander::hold() {
   // or descend transition is pending. Mirrors the condition checks in HoldState::handle().
   {
     bool desc_v        = _holding && (_setPoint.getZ() > param.zMin + 0.1) && _machine.getLandingGoSignal();
-    bool asce_v        = _lost    && (_setPoint.getZ() < param.zMax - 0.1);
+    bool asce_v        = _lost    && (_verticalErr < param.zMax - 0.1);
     bool asce_min      = (_setPoint.getZ() < param.zMin);
     bool asce_margin   = (_verticalErr < param.z_margin) && (_setPoint.getZ() < param.zMax - 0.1);
 
@@ -874,7 +874,7 @@ void Lander::comp() {
 void Lander::clampZSP() {
 
     double temp;
-    temp = common::clamp(_setPoint.getZ(),param.zMin,param.zMax);
+    temp = common::clamp(_setPoint.getZ(), param.zMin, _platformState.getZ() + param.zMax);
 
     _setPoint.setZ(temp);
 }
