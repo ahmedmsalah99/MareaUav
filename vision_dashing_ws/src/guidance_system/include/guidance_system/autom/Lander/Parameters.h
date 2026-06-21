@@ -70,6 +70,16 @@ public:
     //vertical error allowed
     double lost_threshold;
 
+    // Minimum (tightest) values of the above thresholds, applied at z=0.
+    // At any relative z the threshold is linearly interpolated between
+    // the _min value (z=0) and the max value (z=cone_z_ref).
+    double hold_threshold_min;
+    double comp_threshold_min;
+    double lost_threshold_min;
+
+    // Relative Z at which thresholds reach their maximum (cone base radius).
+    double cone_z_ref;
+
     //switch off the motors
     double land_threshold;
     //Max altitude for landing procedure
