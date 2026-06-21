@@ -539,8 +539,9 @@ void Lander::run() {
 	if (print > 30){
 		// printSignals();
 		print = 0;
+    std::cout << "actual state " << _actualState << std::endl;
 	}
-  std::cout << "actual state " << _actualState << std::endl;
+  
 
 }
 
