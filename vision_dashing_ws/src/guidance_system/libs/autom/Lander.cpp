@@ -803,8 +803,16 @@ void Lander::hold() {
   // targetVect += param.KpHoldV * tempVel;
 
 
-  //Fill right fields
-  _setPoint.setPosition(targetVect(0),targetVect(1),_setPoint.getZ());
+  //Fill right fields — rate-limit the X/Y setpoint so a single bad vision
+  //frame can't kick the drone more than MAX_SP_STEP metres in one tick.
+  static constexpr double MAX_SP_STEP = 0.03; // 1.5 m/s max at 50 Hz
+  double spx = common::clamp(targetVect(0),
+                             _setPoint.getX() - MAX_SP_STEP,
+                             _setPoint.getX() + MAX_SP_STEP);
+  double spy = common::clamp(targetVect(1),
+                             _setPoint.getY() - MAX_SP_STEP,
+                             _setPoint.getY() + MAX_SP_STEP);
+  _setPoint.setPosition(spx, spy, _setPoint.getZ());
   _setPoint.setType(MavState::POSITION);
 
 }
