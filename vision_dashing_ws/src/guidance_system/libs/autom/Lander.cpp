@@ -790,6 +790,12 @@ void Lander::hold() {
 
 	Eigen::Vector2d targetVect(_state.getX() + xTarget , _state.getY() + yTarget);
 
+  std::cout << "t state=" << _actualState
+          << " sp=(" << _setPoint.getX() << "," << _setPoint.getY() << "," << _setPoint.getZ() << ")"
+          << " vis=(" << _VisionPose.getX() << "," << _VisionPose.getY() << ")"
+          << " visUpd=" << _VisionPose.VisionDataUpdated
+          << " holding=" << _holding << " lost=" << _lost << " centered=" << _centered
+          << " xT=" << xTarget << " yT=" << yTarget << std::endl;
 
   updateIntegrals();
   //PosSP = PlatPos + K * Vplat
