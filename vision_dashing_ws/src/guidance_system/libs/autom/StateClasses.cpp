@@ -75,10 +75,11 @@ void HoldState::handle(){
     bool asceUnderMin = (_setPoint.getZ() < param.zMin);
 
     // Ascend if drone is closer to the platform than z_margin and not actively descending.
-    bool asceUnderMargin = (_verticalErr < param.z_margin) && !descValid;
+    bool asceUnderMargin = (_verticalErr < param.z_margin) && (_setPoint.getZ() < param.zMax - 0.1);
 
     //if the vision data are not available and the drone is at or above zMax, go back to init.
-    bool InitValid = !_VisionPose.VisionDataUpdated && !(_setPoint.getZ() < param.zMax - 0.1);
+    // bool InitValid = !_VisionPose.VisionDataUpdated && !(_setPoint.getZ() < param.zMax - 0.1);
+    bool InitValid = !_VisionPose.VisionDataUpdated && (_setPoint.getZ() < param.zMax - 0.1);
 
     //comp is a middle state between land state and hold state.
     //if the UAV is holding ad is centered on the platform and is close to the platform(20 cm), will be accomplish.
@@ -86,8 +87,8 @@ void HoldState::handle(){
     bool compValid = _holding && (fabs(_UltraInfo.getZ()) < (0.75 - 0.2)) && _centered;
     // std::cout << compValid << std::endl;
 
-    if(!_VisionPose.IsValid){
-      this->_contextL->setStatePtr(_nextHoveringState); //set the next state (InitState)
+    if(InitValid){
+      this->_contextL->setStatePtr(_nextInitState); //set the next state (InitState)
       printStateTransition();
       return;
     }
@@ -123,11 +124,11 @@ void HoldState::handle(){
         return;
     }
 
-    if(InitValid){
-	      this->_contextL->setStatePtr(_nextInitState); //set the next state (InitState)
-        printStateTransition();
-        return;
-    }
+    // if(InitValid){
+	//       this->_contextL->setStatePtr(_nextInitState); //set the next state (InitState)
+    //     printStateTransition();
+    //     return;
+    // }
 
 
 
