@@ -768,17 +768,17 @@ void Lander::hold() {
     bool asce_min      = (_setPoint.getZ() < param.zMin);
     bool asce_margin   = (_verticalErr < param.z_margin) && (_setPoint.getZ() < param.zMax - 0.1);
 
-    if (!desc_v && !asce_v && !asce_min && !asce_margin && !_centered)
+    if (_prevState == AbstractLandState::states::INIT)
     {
-      if (fabs(_line_direction[0]) > 1e-6)
-      {
-        double z_base = _platformState.getZ() + param.z_margin;
-        double z_adj  = z_base + _line_direction[2] * _VisionPose.getX() / _line_direction[0];
-        _setPoint.setZ(z_adj);
+      double z_base = _platformState.getZ() + param.z_margin;
+      double dot    = _VisionPose.getX() * _line_direction[0] + _VisionPose.getY() * _line_direction[1];
+      double norm_sq = _line_direction[0] * _line_direction[0] + _line_direction[1] * _line_direction[1];
+      double z_adj  = z_base + _line_direction[2] * dot / norm_sq;
+      
+      _setPoint.setZ(z_adj);
         std::cout << "hold setting z pos !desc_v " << !desc_v << " !asce_v " << !asce_v
                   << " !asce_min " << !asce_min << " !asce_margin " << !asce_margin
                   << " z_adj " << z_adj << std::endl;
-      }
       clampZSP();
     }
   }

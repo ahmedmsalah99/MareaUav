@@ -75,11 +75,11 @@ void HoldState::handle(){
     bool asceUnderMin = (_setPoint.getZ() < param.zMin);
 
     // Ascend if drone is closer to the platform than z_margin and not actively descending.
-    bool asceUnderMargin = (_verticalErr < param.z_margin) && (_setPoint.getZ() < param.zMax - 0.1);
+    bool asceUnderMargin = (_verticalErr < param.z_margin) && (_verticalErr < param.zMax - 0.1);
 
     //if the vision data are not available and the drone is at or above zMax, go back to init.
     // bool InitValid = !_VisionPose.VisionDataUpdated && !(_setPoint.getZ() < param.zMax - 0.1);
-    bool InitValid = !_VisionPose.VisionDataUpdated && (_setPoint.getZ() < param.zMax - 0.1);
+    bool InitValid = !_VisionPose.VisionDataUpdated && (_verticalErr < param.zMax - 0.1);
 
     //comp is a middle state between land state and hold state.
     //if the UAV is holding ad is centered on the platform and is close to the platform(20 cm), will be accomplish.
