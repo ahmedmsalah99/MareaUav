@@ -656,7 +656,7 @@ bool Lander::setDroneInFront()
     // _platformState.getX() - (_platformState.getX() + gain*sinf(yaw_plat))
     _line_direction[0] = -gain*sinf(yaw_plat);
     _line_direction[1] = -gain*cosf(yaw_plat);
-    _line_direction[2] = _state.getZ() - (_platformState.getZ() + param.zMax);
+    _line_direction[2] = _state.getZ() - (_platformState.getZ() + param.z_margin);
     // and returning
     return true;
   }
@@ -771,7 +771,7 @@ void Lander::hold() {
     {
       if (fabs(_line_direction[0]) > 1e-6)
       {
-        double z_base = _platformState.getZ() + param.zMax;
+        double z_base = _platformState.getZ() + param.z_margin;
         double z_adj  = z_base + _line_direction[2] * _VisionPose.getX() / _line_direction[0];
         _setPoint.setZ(z_adj);
         std::cout << "hold setting z pos !desc_v " << !desc_v << " !asce_v " << !asce_v
