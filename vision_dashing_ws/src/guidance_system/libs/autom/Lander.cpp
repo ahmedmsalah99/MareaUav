@@ -765,10 +765,11 @@ void Lander::hold() {
     bool desc_v        = _holding && (_setPoint.getZ() > param.zMin + 0.1) && _machine.getLandingGoSignal();
     bool asce_v        = _lost    && (_verticalErr < param.zMax - 0.1);
     bool asce_min      = (_setPoint.getZ() < param.zMin);
-    bool asce_margin   = (_verticalErr < param.z_margin) && !desc_v && _VisionPose.VisionDataUpdated;
+    bool asce_margin   = (_verticalErr < param.z_margin) && (_setPoint.getZ() < param.zMax - 0.1);
 
-    if (!desc_v && !asce_v && !asce_min && !asce_margin)
+    if (!desc_v && !asce_v && !asce_min && !asce_margin && !_centered)
     {
+      std::cout << "hold setting z pos !desc_v  " << !desc_v << " !asce_v " << !asce_v << " !asce_min " << !asce_min << " !asce_margin " << !asce_margin << std::endl;
       double z_adj = _line_direction[2] * _VisionPose.getX() / _line_direction[0];
       _setPoint.setZ(z_adj);
       if (z_adj < param.zMax)

@@ -75,19 +75,20 @@ void HoldState::handle(){
     bool asceUnderMin = (_setPoint.getZ() < param.zMin);
 
     // Ascend if drone is closer to the platform than z_margin and not actively descending.
-    // Only fires when vision is available to avoid blind ascent on stale verticalErr.
-    bool asceUnderMargin = (_verticalErr < param.z_margin) && !descValid
-                           && _VisionPose.VisionDataUpdated;
+    bool asceUnderMargin = (_verticalErr < param.z_margin) && (_setPoint.getZ() < param.zMax - 0.1);
 
-    // If vision is lost, go back to init when drone is still below zMax above the pad.
-    bool InitValid = !_VisionPose.VisionDataUpdated && (_verticalErr < param.zMax - 0.1);
+    //if the vision data are not available and the drone is at or above zMax, go back to init.
+    // bool InitValid = !_VisionPose.VisionDataUpdated && !(_setPoint.getZ() < param.zMax - 0.1);
+    bool InitValid = !_VisionPose.VisionDataUpdated && (_setPoint.getZ() < param.zMax - 0.1);
 
-    // Enter compensation once the ultrasonic reads closer than zMax - 0.2 m to the pad.
-    bool compValid = _holding && (_UltraInfo.getZ() < param.zMax - 0.2) && _centered;
+    //comp is a middle state between land state and hold state.
+    //if the UAV is holding ad is centered on the platform and is close to the platform(20 cm), will be accomplish.
+
+    bool compValid = _holding && (fabs(_UltraInfo.getZ()) < (0.75 - 0.2)) && _centered;
     // std::cout << compValid << std::endl;
 
-    if(!_VisionPose.IsValid){
-      this->_contextL->setStatePtr(_nextHoveringState); //set the next state (InitState)
+    if(InitValid){
+      this->_contextL->setStatePtr(_nextInitState); //set the next state (InitState)
       printStateTransition();
       return;
     }
@@ -123,11 +124,11 @@ void HoldState::handle(){
         return;
     }
 
-    if(InitValid){
-	      this->_contextL->setStatePtr(_nextInitState); //set the next state (InitState)
-        printStateTransition();
-        return;
-    }
+    // if(InitValid){
+	//       this->_contextL->setStatePtr(_nextInitState); //set the next state (InitState)
+    //     printStateTransition();
+    //     return;
+    // }
 
 
 
@@ -160,23 +161,32 @@ void CompState::handle() {
     if(!_VisionPose.IsValid){
       this->_contextL->setStatePtr(_nextHoveringState); //set the next state (InitState)
       printStateTransition();
+      std::cout << "out of comp because _VisionPose is not valid " << std::endl;
     }
     else if (!onTarget || !_centered){
         //if is not on the target or if is not centered..coming back!
 
         this->_contextL->setStatePtr(_nextState); //set the next state(AsceState)
         printStateTransition();
+        if(!onTarget){
+            std::cout << "out of comp because we are not on target " << std::endl;
+        }
+        if(!_centered){
+            std::cout << "out of comp because we are not _centered " << std::endl;
+        }
 
 	}else if ( !_UltraInfo.UltrasonicDataUpdated ){
         //if the ultrasonic sensor data are not available..
 
         this->_contextL->setStatePtr(_nextState); //set the next state(AsceState)
         printStateTransition();
+        std::cout << "out of comp because we UltrasonicDataUpdated is not true " << std::endl;
 
 	}else if ( fabs(_VisionPose.getRoll()) > param.RollThreshold || fabs(_VisionPose.getPitch()) > param.PitchThreshold ){
 
 		this->_contextL->setStatePtr(_nextState); //set the next state(AsceState)
         printStateTransition();
+        std::cout << "out of comp because fabs(_VisionPose.getRoll()) > param.RollThreshold " << (fabs(_VisionPose.getRoll()) > param.RollThreshold) << " or fabs(_VisionPose.getPitch()) > param.PitchThreshold " << (fabs(_VisionPose.getPitch()) > param.PitchThreshold)  << std::endl;
 
 	}
 
