@@ -1,6 +1,7 @@
 // automatic_node.cpp — ROS 2 port with timer-driven control loop
 
 #include <chrono>
+#include <cmath>
 #include <iostream>
 #include <memory>
 #include <string>
@@ -245,10 +246,32 @@ private:
 
   void onPlatformCenter(const geometry_msgs::msg::TransformStamped::SharedPtr msg)
   {
-    // TODO: filtered euler angles (movingFilter) no longer provided here.
-    // See migration notes at the top for options.
-    vision_system_.setX(msg->transform.translation.x);
-    vision_system_.setY(msg->transform.translation.y);
+    // Outlier gate on x/y: reject readings that jump more than is physically
+    // possible in one frame (AprilTag head-on pose ambiguity) and hold the
+    // last good value, force-accepting after a run of rejects.
+    double meas_x = msg->transform.translation.x;
+    double meas_y = msg->transform.translation.y;
+
+    if (vision_gate_primed_) {
+      double dx = std::fabs(meas_x - vision_gate_last_x_);
+      double dy = std::fabs(meas_y - vision_gate_last_y_);
+      if ((dx > VISION_GATE_STEP || dy > VISION_GATE_STEP)
+          && vision_gate_rejects_ < VISION_GATE_MAX_REJECT) {
+        // Reject: hold last good x/y, count the reject.
+        meas_x = vision_gate_last_x_;
+        meas_y = vision_gate_last_y_;
+        ++vision_gate_rejects_;
+      } else {
+        // Accept (either plausible step, or forced after too many rejects).
+        vision_gate_rejects_ = 0;
+      }
+    }
+    vision_gate_last_x_ = meas_x;
+    vision_gate_last_y_ = meas_y;
+    vision_gate_primed_ = true;
+
+    vision_system_.setX(meas_x);
+    vision_system_.setY(meas_y);
     vision_system_.setZ(msg->transform.translation.z);
     vision_system_.setVx(0.0);
     vision_system_.setVy(0.0);
@@ -389,6 +412,19 @@ private:
   MavState    vision_system_;
   MavState    vision_rescue_;
   MavState    ultrasonic_pos_;
+
+  // Outlier gate state for the AprilTag platform-center vision feed.
+  // Near the centered pose the tag is viewed head-on and its pose estimate
+  // becomes ambiguous, producing physically-impossible one-frame jumps in
+  // x/y. We reject any reading whose step exceeds VISION_GATE_STEP and hold
+  // the last accepted x/y, force-accepting after VISION_GATE_MAX_REJECT
+  // consecutive rejects so a genuine move is not held forever.
+  static constexpr double VISION_GATE_STEP       = 0.12;  // metres per frame
+  static constexpr int    VISION_GATE_MAX_REJECT = 10;
+  double      vision_gate_last_x_  {0.0};
+  double      vision_gate_last_y_  {0.0};
+  bool        vision_gate_primed_  {false};
+  int         vision_gate_rejects_ {0};
 
   bool        waiting_        {true};
   int         current_action_ {actions::IDLE};
