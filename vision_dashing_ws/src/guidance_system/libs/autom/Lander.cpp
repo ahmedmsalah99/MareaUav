@@ -765,7 +765,7 @@ void Lander::hold() {
     bool desc_v        = _holding && (_setPoint.getZ() > param.zMin + 0.1) && _machine.getLandingGoSignal();
     bool asce_v        = _lost    && (_setPoint.getZ() < param.zMax - 0.1);
     bool asce_min      = (_setPoint.getZ() < param.zMin);
-    bool asce_margin   = (fabs(_verticalErr) < param.z_margin) && !desc_v;
+    bool asce_margin   = (_verticalErr < param.z_margin) && !desc_v;
 
     if (!desc_v && !asce_v && !asce_min && !asce_margin)
     {
