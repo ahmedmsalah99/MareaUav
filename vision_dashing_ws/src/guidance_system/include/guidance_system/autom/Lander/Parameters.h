@@ -70,6 +70,9 @@ public:
     //vertical error allowed
     double lost_threshold;
 
+    // Drone must stay at or above platformZ + z_margin when not actively descending.
+    double z_margin;
+
     // Minimum (tightest) values of the above thresholds, applied at z=0.
     // At any relative z the threshold is linearly interpolated between
     // the _min value (z=0) and the max value (z=cone_z_ref).
