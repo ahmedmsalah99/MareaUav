@@ -68,22 +68,22 @@ void HoldState::handle(){
     bool descValid = _holding && (_setPoint.getZ() > param.zMin + 0.1)
                     && _contextL->getLandingGoSignal();
 
-    // Ascend if platform is lost and we are still below zMax (original case).
-    bool asceValid = _lost && (_setPoint.getZ() < param.zMax - 0.1);
+    // Ascend if platform is lost and we are still below zMax (relative to pad).
+    bool asceValid = _lost && (_verticalErr < param.zMax - 0.1);
 
-    // Ascend if setpoint has drifted below zMin (safety floor).
+    // Ascend if setpoint has drifted below zMin (absolute hard floor).
     bool asceUnderMin = (_setPoint.getZ() < param.zMin);
 
     // Ascend if drone is closer to the platform than z_margin and not actively descending.
-    bool asceUnderMargin = (_verticalErr < param.z_margin) && !descValid;
+    // Only fires when vision is available to avoid blind ascent on stale verticalErr.
+    bool asceUnderMargin = (_verticalErr < param.z_margin) && !descValid
+                           && _VisionPose.VisionDataUpdated;
 
-    //if the vision data are not available and the drone is at or above zMax, go back to init.
-    bool InitValid = !_VisionPose.VisionDataUpdated && !(_setPoint.getZ() < param.zMax - 0.1);
+    // If vision is lost, go back to init when drone is still below zMax above the pad.
+    bool InitValid = !_VisionPose.VisionDataUpdated && (_verticalErr < param.zMax - 0.1);
 
-    //comp is a middle state between land state and hold state.
-    //if the UAV is holding ad is centered on the platform and is close to the platform(20 cm), will be accomplish.
-
-    bool compValid = _holding && (fabs(_UltraInfo.getZ()) < 0.75 - 0.2) && _centered;
+    // Enter compensation once the ultrasonic reads closer than zMax - 0.2 m to the pad.
+    bool compValid = _holding && (_UltraInfo.getZ() < param.zMax - 0.2) && _centered;
     // std::cout << compValid << std::endl;
 
     if(!_VisionPose.IsValid){
