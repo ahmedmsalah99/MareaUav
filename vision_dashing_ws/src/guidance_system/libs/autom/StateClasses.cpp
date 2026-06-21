@@ -74,6 +74,9 @@ void HoldState::handle(){
     // Ascend if setpoint has drifted below zMin (safety floor).
     bool asceUnderMin = (_setPoint.getZ() < param.zMin);
 
+    // Ascend if drone is closer to the platform than z_margin and not actively descending.
+    bool asceUnderMargin = (_verticalErr < param.z_margin) && !descValid;
+
     //if the vision data are not available and the drone is at or above zMax, go back to init.
     bool InitValid = !_VisionPose.VisionDataUpdated && !(_setPoint.getZ() < param.zMax - 0.1);
 
@@ -103,6 +106,12 @@ void HoldState::handle(){
 
     if (asceValid){
         this->_contextL->setStatePtr(_nextAscState); //set the next state (AsceState)
+        printStateTransition();
+        return;
+    }
+
+    if (asceUnderMargin){
+        this->_contextL->setStatePtr(_nextAscState); // below z_margin above pad — ascend
         printStateTransition();
         return;
     }

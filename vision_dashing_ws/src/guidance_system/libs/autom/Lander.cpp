@@ -759,16 +759,21 @@ void Lander::hold() {
   _holdPIDX.setDt(_dt);
   _holdPIDY.setDt(_dt);
 
-  if(_prevState == AbstractLandState::states::INIT)
+  // Apply slope Z adjustment only when HOLD is in a neutral state — no ascend
+  // or descend transition is pending. Mirrors the condition checks in HoldState::handle().
   {
-    // adjusting the target to follow a line depending on the current altitude
-    double z_adj = _line_direction[2]*_VisionPose.getX()/_line_direction[0];
-    // with a lower bound
-    // std::cout << "z_adj: " << z_adj << std::endl;
-    _setPoint.setZ(z_adj);
+    bool desc_v        = _holding && (_setPoint.getZ() > param.zMin + 0.1) && _machine.getLandingGoSignal();
+    bool asce_v        = _lost    && (_setPoint.getZ() < param.zMax - 0.1);
+    bool asce_min      = (_setPoint.getZ() < param.zMin);
+    bool asce_margin   = (_verticalErr < param.z_margin) && !desc_v;
 
-    if (z_adj < param.zMax)
-      clampZSP();
+    if (!desc_v && !asce_v && !asce_min && !asce_margin)
+    {
+      double z_adj = _line_direction[2] * _VisionPose.getX() / _line_direction[0];
+      _setPoint.setZ(z_adj);
+      if (z_adj < param.zMax)
+        clampZSP();
+    }
   }
 
 

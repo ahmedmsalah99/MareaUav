@@ -6,6 +6,7 @@
 #include "guidance_system/autom/Lander/Parameters.h"
 
 Parameters::Parameters() {
+    z_margin           = 1.0;
     hold_threshold_min = 0.60;
     comp_threshold_min = 0.30;
     lost_threshold_min = 0.80;
@@ -64,6 +65,9 @@ void Parameters::loadParamFile(const char *config_file) {
 
             else if( !param.compare("LOST_THRESHOLD") )
                 lost_threshold = value;
+
+            else if( !param.compare("Z_MARGIN") )
+                z_margin = value;
 
             else if( !param.compare("HOLD_THRESHOLD_MIN") )
                 hold_threshold_min = value;
