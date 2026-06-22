@@ -575,16 +575,18 @@ AprilTag2Node::pnp(apriltag_detection_t* const detection, const std::array<doubl
                         rvecs, tvecs, false, cv::SOLVEPNP_IPPE,
                         cv::noArray(), cv::noArray(), reprojErrors);
 
-    // The correct solution always has the tag in front of the camera (tvec Z > 0
-    // in camera frame). The wrong IPPE solution places the tag behind the camera
-    // (tvec Z <= 0). This is the canonical, viewing-angle-independent disambiguator.
+    // For the correct IPPE solution the tag faces the camera: the tag normal
+    // (Z-axis of tag frame, i.e. third column of R) has a negative Z-component
+    // in camera frame — it points back toward the camera origin.
+    // The wrong solution has R(2,2) > 0 (tag faces away). This check is valid
+    // at any viewing angle, not just nadir.
     int chosen = 0;
-    if (tvecs.size() >= 2) {
-        double z0 = tvecs[0].at<double>(2);
-        double z1 = tvecs[1].at<double>(2);
-        if (z1 > 0 && z0 <= 0)
-            chosen = 1;
-        else if (z0 > 0 && z1 > 0 && z1 < z0)
+    if (rvecs.size() >= 2) {
+        cv::Mat R0, R1;
+        cv::Rodrigues(rvecs[0], R0);
+        cv::Rodrigues(rvecs[1], R1);
+        // R(2,2) < 0  →  tag normal points toward camera  →  correct solution
+        if (R0.at<double>(2,2) >= 0 && R1.at<double>(2,2) < 0)
             chosen = 1;
     }
 
