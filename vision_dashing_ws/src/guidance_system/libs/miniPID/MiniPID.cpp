@@ -10,7 +10,7 @@
 */
 
 #include "MiniPID.h"
-
+#include <iostream>
 //**********************************
 //Constructor functions
 //**********************************
@@ -251,8 +251,8 @@ double MiniPID::getOutput(double actual, double setpoint){
 	}
 
 	//And, finally, we can just add the terms up
-	output=Foutput + Poutput + Ioutput + Doutput;
-
+	output=Foutput + Poutput + Doutput;
+	std::cout << "error " << error << "output " << output << " Ioutput " << Ioutput << " Doutput " << Doutput << " Foutput " << Foutput << std::endl;
 	//Figure out what we're doing with the error.
 	if(minOutput!=maxOutput && !bounded(output, minOutput,maxOutput) ){
 		errorSum=error;
@@ -283,7 +283,7 @@ double MiniPID::getOutput(double actual, double setpoint){
 	if(outputFilter!=0){
 		output=lastOutput*outputFilter+output*(1-outputFilter);
 	}
-
+	std::cout <<" output after restriction " << output << " errorSum " << errorSum << std::endl;
 	lastOutput=output;
 	return output;
 }

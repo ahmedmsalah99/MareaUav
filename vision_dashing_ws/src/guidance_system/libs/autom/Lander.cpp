@@ -393,6 +393,10 @@ void Lander::run() {
 
     //set the previous state with the actual one, initially is INIT.
    print++;
+  if(!_VisionPose.VisionDataUpdated){
+    _holdPIDX.reset();
+    _holdPIDY.reset();
+  }
 
 
   _prevState = _actualState;
@@ -763,13 +767,13 @@ void Lander::hold() {
   // Apply slope Z adjustment only when HOLD is in a neutral state — no ascend
   // or descend transition is pending. Mirrors the condition checks in HoldState::handle().
   {
-    bool desc_v        = _holding && (_setPoint.getZ() > param.zMin + 0.1) && _machine.getLandingGoSignal();
+    bool desc_v        = _centered && (_setPoint.getZ() > param.zMin + 0.1) && _machine.getLandingGoSignal();
     bool asce_v        = _lost    && (_verticalErr < param.zMax - 0.1);
     bool asce_min      = (_setPoint.getZ() < param.zMin);
-    bool asce_margin   = _holding && (_verticalErr < param.z_margin) && (_verticalErr < param.zMax - 0.1) && !desc_v;
+    bool asce_margin   = _centered && (_verticalErr < param.z_margin) && (_verticalErr < param.zMax - 0.1) && !desc_v;
 
     // if (_prevState == AbstractLandState::states::INIT)
-    if(!desc_v && !asce_v && !asce_min && !asce_margin && !_holding)
+    if(!desc_v && !asce_v && !asce_min && !asce_margin && !_centered)
     {
       double z_base = _platformState.getZ() + param.z_margin;
       double dot    = _VisionPose.getX() * _line_direction[0] + _VisionPose.getY() * _line_direction[1];
@@ -779,7 +783,7 @@ void Lander::hold() {
       _setPoint.setZ(z_adj);
         std::cout << "hold setting z pos !desc_v " << !desc_v << " !asce_v " << !asce_v
                   << " !asce_min " << !asce_min << " !asce_margin " << !asce_margin
-                  << " z_adj " << z_adj << std::endl;
+                  << " z_adj " << z_adj << " centered " << _centered << std::endl;
       clampZSP();
     }
   }
@@ -788,14 +792,15 @@ void Lander::hold() {
   double xTarget = _holdPIDX.getOutput(0, _VisionPose.getX()); //0 cause VisionPose is already a relative position.
   double yTarget = _holdPIDY.getOutput(0, _VisionPose.getY());
 
+
 	Eigen::Vector2d targetVect(_state.getX() + xTarget , _state.getY() + yTarget);
 
-  std::cout << "t state=" << _actualState
-          << " sp=(" << _setPoint.getX() << "," << _setPoint.getY() << "," << _setPoint.getZ() << ")"
-          << " vis=(" << _VisionPose.getX() << "," << _VisionPose.getY() << ")"
-          << " visUpd=" << _VisionPose.VisionDataUpdated
-          << " holding=" << _holding << " lost=" << _lost << " centered=" << _centered
-          << " xT=" << xTarget << " yT=" << yTarget << std::endl;
+  // std::cout << "t state=" << _actualState
+  //         << " sp=(" << _setPoint.getX() << "," << _setPoint.getY() << "," << _setPoint.getZ() << ")"
+  //         << " vis=(" << _VisionPose.getX() << "," << _VisionPose.getY() << ")"
+  //         << " visUpd=" << _VisionPose.VisionDataUpdated
+  //         << " holding=" << _holding << " lost=" << _lost << " centered=" << _centered
+  //         << " xT=" << xTarget << " yT=" << yTarget << std::endl;
 
   updateIntegrals();
   //PosSP = PlatPos + K * Vplat
@@ -804,7 +809,7 @@ void Lander::hold() {
 
 
   //Fill right fields
-  _setPoint.setPosition(targetVect(0),targetVect(1),_setPoint.getZ());
+  _setPoint.setPosition(targetVect(0), targetVect(1), _setPoint.getZ());
   _setPoint.setType(MavState::POSITION);
 
 }
