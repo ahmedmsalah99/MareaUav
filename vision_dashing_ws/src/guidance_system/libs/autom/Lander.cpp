@@ -789,8 +789,14 @@ void Lander::hold() {
   }
 
 
-  double xTarget = _holdPIDX.getOutput(0, _VisionPose.getX()); //0 cause VisionPose is already a relative position.
-  double yTarget = _holdPIDY.getOutput(0, _VisionPose.getY());
+  // When centered and close to the platform the tag is viewed nearly head-on,
+  // making single-tag pose unobservable. Freeze X/Y setpoint — the drone is
+  // already aligned and vision noise at this singularity would push it away.
+  double xTarget = 0.0, yTarget = 0.0;
+  if (!(_centered && _verticalErr < param.zMin)) {
+    xTarget = _holdPIDX.getOutput(0, _VisionPose.getX());
+    yTarget = _holdPIDY.getOutput(0, _VisionPose.getY());
+  }
 
 
 	Eigen::Vector2d targetVect(_state.getX() + xTarget , _state.getY() + yTarget);
