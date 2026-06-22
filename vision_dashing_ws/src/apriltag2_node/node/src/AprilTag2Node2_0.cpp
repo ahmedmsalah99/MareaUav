@@ -580,11 +580,21 @@ AprilTag2Node::pnp(apriltag_detection_t* const detection, const std::array<doubl
                         cv::noArray(), cv::noArray(), reprojErrors);
 
     int chosen = 0;
-    auto it = _prev_tvec_.find(tag_id);
-    if (it != _prev_tvec_.end() && tvecs.size() >= 2) {
-        double d0 = cv::norm(tvecs[0] - it->second);
-        double d1 = cv::norm(tvecs[1] - it->second);
-        if (d1 < d0) chosen = 1;
+    if (tvecs.size() >= 2) {
+        // IPPE ranks solutions by reprojection error (index 0 = best).
+        // If one solution is clearly better (>20% lower error), trust it unconditionally.
+        // Otherwise use temporal consistency to avoid inter-frame flipping.
+        const double reprojRatio = reprojErrors[1] / (reprojErrors[0] + 1e-9);
+        if (reprojRatio > 1.2) {
+            chosen = 0; // solution[0] is clearly better
+        } else {
+            auto it = _prev_tvec_.find(tag_id);
+            if (it != _prev_tvec_.end()) {
+                double d0 = cv::norm(tvecs[0] - it->second);
+                double d1 = cv::norm(tvecs[1] - it->second);
+                if (d1 < d0) chosen = 1;
+            }
+        }
     }
     _prev_tvec_[tag_id] = tvecs[chosen].clone();
 
