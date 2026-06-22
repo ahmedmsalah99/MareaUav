@@ -148,6 +148,13 @@ void AprilTag2Node::onImage(const sensor_msgs::msg::CompressedImage::SharedPtr m
 	// decode image
 	zarray_t* detections = apriltag_detector_detect(_tagDetector, im);
 
+	// If no tags visible this frame, the drone has lost the platform. Clear the
+	// stored tvec history so that when tags reappear the IPPE disambiguation
+	// starts fresh rather than picking a solution relative to a stale position.
+	if (zarray_size(detections) == 0) {
+		_prev_tvec_.clear();
+	}
+
 	apriltag_msgs::msg::AprilTagDetectionArray msg_detections;
 	msg_detections.header = msg_img->header;
 
