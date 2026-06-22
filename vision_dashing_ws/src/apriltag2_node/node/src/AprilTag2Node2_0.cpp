@@ -562,8 +562,27 @@ AprilTag2Node::pnp(apriltag_detection_t* const detection, const std::array<doubl
     cameraMatrix(0, 2) = intr[2];// cx
     cameraMatrix(1, 2) = intr[3];// cy
 
-    cv::Mat rvec, tvec;
-    cv::solvePnP(objectPoints, imagePoints, cameraMatrix, {}, rvec, tvec);
+    std::vector<cv::Mat> rvecs, tvecs;
+    std::vector<double> reprojErrors;
+    cv::solvePnPGeneric(objectPoints, imagePoints, cameraMatrix, cv::noArray(),
+                        rvecs, tvecs, false, cv::SOLVEPNP_IPPE,
+                        cv::noArray(), cv::noArray(), reprojErrors);
+
+    // The correct solution always has the tag in front of the camera (tvec Z > 0
+    // in camera frame). The wrong IPPE solution places the tag behind the camera
+    // (tvec Z <= 0). This is the canonical, viewing-angle-independent disambiguator.
+    int chosen = 0;
+    if (tvecs.size() >= 2) {
+        double z0 = tvecs[0].at<double>(2);
+        double z1 = tvecs[1].at<double>(2);
+        if (z1 > 0 && z0 <= 0)
+            chosen = 1;
+        else if (z0 > 0 && z1 > 0 && z1 < z0)
+            chosen = 1;
+    }
+
+    cv::Mat rvec = rvecs[chosen];
+    cv::Mat tvec = tvecs[chosen];
 	Eigen::Matrix4d pose;
 	cv::Mat R_cv;
 	cv::Rodrigues(rvec, R_cv);
