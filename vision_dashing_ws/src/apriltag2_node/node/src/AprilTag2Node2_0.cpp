@@ -148,6 +148,13 @@ void AprilTag2Node::onImage(const sensor_msgs::msg::CompressedImage::SharedPtr m
 	// decode image
 	zarray_t* detections = apriltag_detector_detect(_tagDetector, im);
 
+	// If no tags visible this frame, the drone has lost the platform. Clear the
+	// stored tvec history so that when tags reappear the IPPE disambiguation
+	// starts fresh rather than picking a solution relative to a stale position.
+	if (zarray_size(detections) == 0) {
+		_prev_tvec_.clear();
+	}
+
 	apriltag_msgs::msg::AprilTagDetectionArray msg_detections;
 	msg_detections.header = msg_img->header;
 
@@ -185,7 +192,7 @@ void AprilTag2Node::onImage(const sensor_msgs::msg::CompressedImage::SharedPtr m
 		//This function computes the relative translation and rotation of each tag in the scene w.r.t the camera.
 		//Then, it projects this information in the centre of the platform (related to the tag in the centre).
 		try{
-			tagTransform.transform = pnp(det, intrinsics, platform_tags[det->id]);
+			tagTransform.transform = pnp(det, intrinsics, platform_tags[det->id], det->id);
 		}catch (const cv::Exception& e) {
 			continue;
 		}
@@ -540,7 +547,7 @@ double AprilTag2Node::getMedian(std::deque<double> buffer) {
 }
 
 geometry_msgs::msg::Transform
-AprilTag2Node::pnp(apriltag_detection_t* const detection, const std::array<double, 4>& intr, double tagsize)
+AprilTag2Node::pnp(apriltag_detection_t* const detection, const std::array<double, 4>& intr, double tagsize, int tag_id)
 {
     const std::vector<cv::Point3d> objectPoints{
         {-tagsize / 2, -tagsize / 2, 0},
