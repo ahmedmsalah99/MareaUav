@@ -767,10 +767,10 @@ void Lander::hold() {
   // Apply slope Z adjustment only when HOLD is in a neutral state — no ascend
   // or descend transition is pending. Mirrors the condition checks in HoldState::handle().
   {
-    bool desc_v        = _centered && (_setPoint.getZ() > param.zMin + 0.1) && _machine.getLandingGoSignal();
+    bool desc_v        = _centered && _holding && (_setPoint.getZ() > param.zMin + 0.1) && _machine.getLandingGoSignal();
     bool asce_v        = _lost    && (_verticalErr < param.zMax - 0.1);
     bool asce_min      = (_setPoint.getZ() < param.zMin);
-    bool asce_margin   = _centered && (_verticalErr < param.z_margin) && (_verticalErr < param.zMax - 0.1) && !desc_v;
+    bool asce_margin   = _holding && _centered && (_verticalErr < param.z_margin) && (_verticalErr < param.zMax - 0.1) && !desc_v;
 
     // if (_prevState == AbstractLandState::states::INIT)
     if(!desc_v && !asce_v && !asce_min && !asce_margin && !_centered)
@@ -809,7 +809,7 @@ void Lander::hold() {
 
 
   //Fill right fields
-  _setPoint.setPosition(targetVect(0), targetVect(1), _setPoint.getZ());
+  _setPoint.setPosition(targetVect(0),targetVect(1),_setPoint.getZ());
   _setPoint.setType(MavState::POSITION);
 
 }

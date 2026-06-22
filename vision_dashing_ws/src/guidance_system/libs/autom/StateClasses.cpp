@@ -65,7 +65,7 @@ void HoldState::handle(){
     getSignals();
 
     // Descend only when holding AND go signal is active AND above zMin floor.
-    bool descValid = _holding && (_setPoint.getZ() > param.zMin + 0.1)
+    bool descValid = _centered && _holding && (_setPoint.getZ() > param.zMin + 0.1)
                     && _contextL->getLandingGoSignal();
 
     // Ascend if platform is lost and we are still below zMax (relative to pad).
@@ -75,18 +75,23 @@ void HoldState::handle(){
     bool asceUnderMin = (_setPoint.getZ() < param.zMin);
 
     // Ascend if drone is closer to the platform than z_margin and not actively descending.
-    bool asceUnderMargin = _holding &&  (_verticalErr < param.z_margin) && (_verticalErr < param.zMax - 0.1) && !descValid;
+    bool asceUnderMargin = _centered && _holding &&  (_verticalErr < param.z_margin) && (_verticalErr < param.zMax - 0.1) && !descValid;
 
     //if the vision data are not available and the drone is at or above zMax, go back to init.
     // bool InitValid = !_VisionPose.VisionDataUpdated && !(_setPoint.getZ() < param.zMax - 0.1);
-    bool InitValid = !_VisionPose.VisionDataUpdated && (_verticalErr < param.zMax - 0.1);
+    bool InitValid = !_VisionPose.VisionDataUpdated;
 
     //comp is a middle state between land state and hold state.
     //if the UAV is holding ad is centered on the platform and is close to the platform(20 cm), will be accomplish.
 
     bool compValid = _holding && (fabs(_UltraInfo.getZ()) < (0.75 - 0.2)) && _centered;
     // std::cout << compValid << std::endl;
-
+    
+    std::cout << "asceUnderMargin is " << asceUnderMargin << " and asceUnderMin " << asceUnderMin << " and asceValid " << asceValid << std::endl;
+    
+    
+    
+    
     if(InitValid){
       this->_contextL->setStatePtr(_nextInitState); //set the next state (InitState)
       printStateTransition();

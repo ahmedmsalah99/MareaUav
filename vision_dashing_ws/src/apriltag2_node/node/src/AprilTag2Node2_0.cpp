@@ -164,6 +164,8 @@ void AprilTag2Node::onImage(const sensor_msgs::msg::CompressedImage::SharedPtr m
 	{
 		apriltag_detection_t *det;
 		zarray_get(detections, i, &det);
+		// RCLCPP_INFO(get_logger(), "[det] id=%d size=%.3f margin=%.1f", det->id, platform_tags.count(det->id) ? platform_tags[det->id] : -1.0, det->decision_margin);
+
 
 		// ignore untracked tags
 		if (tracked_tags.size() > 0 && !tracked_tags.count(det->id)) { continue; }
@@ -580,23 +582,14 @@ AprilTag2Node::pnp(apriltag_detection_t* const detection, const std::array<doubl
                         cv::noArray(), cv::noArray(), reprojErrors);
 
     int chosen = 0;
-    if (tvecs.size() >= 2) {
-        // IPPE ranks solutions by reprojection error (index 0 = best).
-        // If one solution is clearly better (>20% lower error), trust it unconditionally.
-        // Otherwise use temporal consistency to avoid inter-frame flipping.
-        const double reprojRatio = reprojErrors[1] / (reprojErrors[0] + 1e-9);
-        if (reprojRatio > 1.2) {
-            chosen = 0; // solution[0] is clearly better
-        } else {
-            auto it = _prev_tvec_.find(tag_id);
-            if (it != _prev_tvec_.end()) {
-                double d0 = cv::norm(tvecs[0] - it->second);
-                double d1 = cv::norm(tvecs[1] - it->second);
-                if (d1 < d0) chosen = 1;
-            }
-        }
+    if (rvecs.size() >= 2) {
+        cv::Mat R0, R1;
+        cv::Rodrigues(rvecs[0], R0);
+        cv::Rodrigues(rvecs[1], R1);
+        // R(2,2) < 0  →  tag normal points toward camera  →  correct solution
+        if (R0.at<double>(2,2) >= 0 && R1.at<double>(2,2) < 0)
+            chosen = 1;
     }
-    _prev_tvec_[tag_id] = tvecs[chosen].clone();
 
     cv::Mat rvec = rvecs[chosen];
     cv::Mat tvec = tvecs[chosen];
@@ -608,6 +601,9 @@ AprilTag2Node::pnp(apriltag_detection_t* const detection, const std::array<doubl
 		R_cv.col(1) *= -1;
     	R_cv.col(2) *= -1;
 	}
+	double cos_angle = std::fabs(R_cv.at<double>(2, 2));
+	RCLCPP_INFO(get_logger(), "[ippe] id=%d cos_angle=%.3f reproj_err1=%.3f reproj_err2=%.3f chosen=%d",
+    tag_id, cos_angle, reprojErrors[1], reprojErrors[2], chosen);
 
 	pose = Eigen::Matrix4d::Identity();
 	for (int i = 0; i < 3; i++) {

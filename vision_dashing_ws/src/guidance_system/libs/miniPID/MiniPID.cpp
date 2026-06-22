@@ -252,7 +252,7 @@ double MiniPID::getOutput(double actual, double setpoint){
 
 	//And, finally, we can just add the terms up
 	output=Foutput + Poutput + Doutput;
-	std::cout << "error " << error << "output " << output << " Ioutput " << Ioutput << " Doutput " << Doutput << " Foutput " << Foutput << std::endl;
+	// std::cout << "error " << error << "output " << output << " Ioutput " << Ioutput << " Doutput " << Doutput << " Foutput " << Foutput << std::endl;
 	//Figure out what we're doing with the error.
 	if(minOutput!=maxOutput && !bounded(output, minOutput,maxOutput) ){
 		errorSum=error;
