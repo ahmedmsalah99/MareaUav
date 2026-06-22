@@ -111,7 +111,9 @@ private:
 	void publish_data_center(const apriltag_msgs::msg::AprilTagDetectionArray& detections, const tf2_msgs::msg::TFMessage& transforms);
 	geometry_msgs::msg::Transform
 	// homography(apriltag_detection_t* const detection, const std::array<double, 4>& intr, double tagsize);
-	pnp(apriltag_detection_t* const detection, const std::array<double, 4>& intr, double tagsize);
+	pnp(apriltag_detection_t* const detection, const std::array<double, 4>& intr, double tagsize, int tag_id);
+	// Previous tvec per tag for IPPE solution disambiguation (temporal consistency).
+	std::map<int, cv::Mat> _prev_tvec_;
 	// ... inside your class ...
 	std::deque<double> _buffer_x, _buffer_y, _buffer_z;
 	const size_t _median_window_size = 5; // Use an odd number (5-9 is usually best)
