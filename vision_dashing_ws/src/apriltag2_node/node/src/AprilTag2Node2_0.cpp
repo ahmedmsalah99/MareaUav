@@ -148,6 +148,13 @@ void AprilTag2Node::onImage(const sensor_msgs::msg::CompressedImage::SharedPtr m
 	// decode image
 	zarray_t* detections = apriltag_detector_detect(_tagDetector, im);
 
+	// If no tags visible this frame, the drone has lost the platform. Clear the
+	// stored tvec history so that when tags reappear the IPPE disambiguation
+	// starts fresh rather than picking a solution relative to a stale position.
+	if (zarray_size(detections) == 0) {
+		_prev_tvec_.clear();
+	}
+
 	apriltag_msgs::msg::AprilTagDetectionArray msg_detections;
 	msg_detections.header = msg_img->header;
 
@@ -185,7 +192,7 @@ void AprilTag2Node::onImage(const sensor_msgs::msg::CompressedImage::SharedPtr m
 		//This function computes the relative translation and rotation of each tag in the scene w.r.t the camera.
 		//Then, it projects this information in the centre of the platform (related to the tag in the centre).
 		try{
-			tagTransform.transform = pnp(det, intrinsics, platform_tags[det->id]);
+			tagTransform.transform = pnp(det, intrinsics, platform_tags[det->id], det->id);
 		}catch (const cv::Exception& e) {
 			continue;
 		}
@@ -540,7 +547,7 @@ double AprilTag2Node::getMedian(std::deque<double> buffer) {
 }
 
 geometry_msgs::msg::Transform
-AprilTag2Node::pnp(apriltag_detection_t* const detection, const std::array<double, 4>& intr, double tagsize)
+AprilTag2Node::pnp(apriltag_detection_t* const detection, const std::array<double, 4>& intr, double tagsize, int tag_id)
 {
     const std::vector<cv::Point3d> objectPoints{
         {-tagsize / 2, -tagsize / 2, 0},
@@ -562,8 +569,27 @@ AprilTag2Node::pnp(apriltag_detection_t* const detection, const std::array<doubl
     cameraMatrix(0, 2) = intr[2];// cx
     cameraMatrix(1, 2) = intr[3];// cy
 
-    cv::Mat rvec, tvec;
-    cv::solvePnP(objectPoints, imagePoints, cameraMatrix, {}, rvec, tvec);
+    // IPPE returns both solutions for the planar-target ambiguity, ranked by
+    // reprojection error. We then pick the solution closest to the previous
+    // tvec for this tag (temporal consistency), falling back to solution[0]
+    // on the first frame.
+    std::vector<cv::Mat> rvecs, tvecs;
+    std::vector<double> reprojErrors;
+    cv::solvePnPGeneric(objectPoints, imagePoints, cameraMatrix, cv::noArray(),
+                        rvecs, tvecs, false, cv::SOLVEPNP_IPPE,
+                        cv::noArray(), cv::noArray(), reprojErrors);
+
+    int chosen = 0;
+    auto it = _prev_tvec_.find(tag_id);
+    if (it != _prev_tvec_.end() && tvecs.size() >= 2) {
+        double d0 = cv::norm(tvecs[0] - it->second);
+        double d1 = cv::norm(tvecs[1] - it->second);
+        if (d1 < d0) chosen = 1;
+    }
+    _prev_tvec_[tag_id] = tvecs[chosen].clone();
+
+    cv::Mat rvec = rvecs[chosen];
+    cv::Mat tvec = tvecs[chosen];
 	Eigen::Matrix4d pose;
 	cv::Mat R_cv;
 	cv::Rodrigues(rvec, R_cv);
