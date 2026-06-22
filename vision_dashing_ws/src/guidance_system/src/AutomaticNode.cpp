@@ -389,18 +389,6 @@ private:
   MavState    vision_rescue_;
   MavState    ultrasonic_pos_;
 
-  // Outlier gate state for the AprilTag platform-center vision feed.
-  // Near the centered pose the tag is viewed head-on and its pose estimate
-  // becomes ambiguous, producing physically-impossible one-frame jumps in
-  // x/y. We reject any reading whose step exceeds VISION_GATE_STEP and hold
-  // the last accepted x/y, force-accepting after VISION_GATE_MAX_REJECT
-  // consecutive rejects so a genuine move is not held forever.
-  static constexpr double VISION_GATE_STEP       = 0.12;  // metres per frame
-  static constexpr int    VISION_GATE_MAX_REJECT = 60;   // ~2 s at 30 Hz
-  double      vision_gate_last_x_  {0.0};
-  double      vision_gate_last_y_  {0.0};
-  bool        vision_gate_primed_  {false};
-  int         vision_gate_rejects_ {0};
 
   bool        waiting_        {true};
   int         current_action_ {actions::IDLE};
