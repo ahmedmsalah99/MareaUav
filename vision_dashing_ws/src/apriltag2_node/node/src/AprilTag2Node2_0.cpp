@@ -562,8 +562,24 @@ AprilTag2Node::pnp(apriltag_detection_t* const detection, const std::array<doubl
     cameraMatrix(0, 2) = intr[2];// cx
     cameraMatrix(1, 2) = intr[3];// cy
 
-    cv::Mat rvec, tvec;
-    cv::solvePnP(objectPoints, imagePoints, cameraMatrix, {}, rvec, tvec);
+    // IPPE returns both solutions for the planar-target pose ambiguity.
+    // Disambiguate by picking the solution with the smaller rvec norm:
+    // when the camera points straight down at the tag the correct solution
+    // has a near-zero rotation vector; the flipped solution has a large one.
+    // This is robust at the head-on singularity where reprojection errors
+    // are equal and temporal consistency is unreliable.
+    std::vector<cv::Mat> rvecs, tvecs;
+    std::vector<double> reprojErrors;
+    cv::solvePnPGeneric(objectPoints, imagePoints, cameraMatrix, cv::noArray(),
+                        rvecs, tvecs, false, cv::SOLVEPNP_IPPE,
+                        cv::noArray(), cv::noArray(), reprojErrors);
+
+    int chosen = 0;
+    if (rvecs.size() >= 2 && cv::norm(rvecs[1]) < cv::norm(rvecs[0]))
+        chosen = 1;
+
+    cv::Mat rvec = rvecs[chosen];
+    cv::Mat tvec = tvecs[chosen];
 	Eigen::Matrix4d pose;
 	cv::Mat R_cv;
 	cv::Rodrigues(rvec, R_cv);
