@@ -392,10 +392,74 @@ void AprilTag2Node::publish_data_center(const apriltag_msgs::msg::AprilTagDetect
 		
 		// _handler.publish("apriltag_vision_system",&vision_pose);
 		geometry_msgs::msg::TransformStamped msg_tf;
+		const double fx = std::isnan(vision_pose.transform.translation.x) ? -1.0 : vision_pose.transform.translation.x;
+		const double fy = std::isnan(vision_pose.transform.translation.y) ? -1.0 : vision_pose.transform.translation.y;
+		const double fz = std::isnan(vision_pose.transform.translation.z) ? -1.0 : vision_pose.transform.translation.z;
+
+		// ── Validity detection: max velocity + shaking ──────────────────────────
+		// We always publish the position; validity is signalled in rotation.w
+		// (1.0 = valid, 0.0 = invalid) and consumed downstream as MavState.IsValid.
+		bool valid = true;
+		const rclcpp::Time now = this->now();
+
+		// (1) Max velocity: reject if the platform position jumps faster than the limit.
+		if(!_first_vision_run)
+		{
+			const double dt = (now - _last_vision_time).seconds();
+			if(dt > 0.001)
+			{
+				const double vel = sqrt(pow(fx - _prev_vision_x, 2) +
+				                             pow(fy - _prev_vision_y, 2)) / dt;
+				if(vel > _max_vision_velocity)
+				{
+					valid = false;
+					RCLCPP_WARN(get_logger(),
+						"[vision] invalid: velocity %.2f m/s > %.2f", vel, _max_vision_velocity);
+				}
+			}
+		}
+
+		// (2) Shaking: reject if the positional spread over a short window is too high.
+		_shake_buf_x.push_back(fx);
+		_shake_buf_y.push_back(fy);
+		if(_shake_buf_x.size() > _shake_window)
+		{
+			_shake_buf_x.pop_front();
+			_shake_buf_y.pop_front();
+		}
+		if(_shake_buf_x.size() == _shake_window)
+		{
+			auto stddev = [](const std::deque<double>& b)
+			{
+				double mean = 0.0;
+				for(double v : b) mean += v;
+				mean /= b.size();
+				double var = 0.0;
+				for(double v : b) var += (v - mean) * (v - mean);
+				return sqrt(var / b.size());
+			};
+			const double spread = sqrt(pow(stddev(_shake_buf_x), 2) +
+			                                pow(stddev(_shake_buf_y), 2));
+			if(spread > _shake_std_thld)
+			{
+				valid = false;
+				RCLCPP_WARN(get_logger(),
+					"[vision] invalid: shaking, positional std %.3f m > %.3f", spread, _shake_std_thld);
+			}
+		}
+
+		_prev_vision_x    = fx;
+		_prev_vision_y    = fy;
+		_last_vision_time = now;
+		_first_vision_run = false;
+
+		msg_tf.transform.translation.x = fx;
+		msg_tf.transform.translation.y = fy;
+		msg_tf.transform.translation.z = fz;
+		msg_tf.transform.rotation.w    = valid ? 1.0 : 0.0;  // IsValid carrier
+		pub_platformCenter->publish(msg_tf);
+
 		geometry_msgs::msg::TransformStamped gt_msg_tf;
-		msg_tf.transform.translation.x = std::isnan(vision_pose.transform.translation.x) ? -1.0 : vision_pose.transform.translation.x;
-		msg_tf.transform.translation.y = std::isnan(vision_pose.transform.translation.y) ? -1.0 : vision_pose.transform.translation.y;
-		msg_tf.transform.translation.z = std::isnan(vision_pose.transform.translation.z) ? -1.0 : vision_pose.transform.translation.z;
 		pub_platformCenter->publish(msg_tf);
 		gt_msg_tf.transform.translation.x = 2 - _drone_pose.transform.translation.x;
 		gt_msg_tf.transform.translation.y = -2 - _drone_pose.transform.translation.y;

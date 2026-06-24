@@ -88,7 +88,18 @@ private:
 
 	// Filter configuration (Adjust cutoff as needed)
 	const double _vision_cutoff_freq = 0.05;
-	const double _max_vision_velocity = 1.0;
+	// ── Vision validity detection (velocity + shaking) ───────────────────────
+	// A measurement is flagged invalid (IsValid=false, carried in rotation.w of
+	// the published TransformStamped) when the platform position either jumps
+	// faster than the max velocity, or shakes (high positional spread) over a
+	// short window. Always published regardless — only the validity flag changes.
+	double _prev_vision_x = 0.0;
+	double _prev_vision_y = 0.0;
+	const double _max_vision_velocity = 2.0;   // m/s — reject faster jumps than this
+	std::deque<double> _shake_buf_x;
+	std::deque<double> _shake_buf_y;
+	const size_t _shake_window = 10;           // frames in the shaking window
+	const double _shake_std_thld = 0.15;       // m — reject if positional std exceeds this
 
 	// function pointer for tag family creation / destruction
 	static std::map<std::string, apriltag_family_t *(*)(void)> tag_create;

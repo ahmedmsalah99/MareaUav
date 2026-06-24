@@ -766,9 +766,14 @@ void Lander::hold() {
 
   // Eigen::Vector2d tempVel(_platformState.getVx(),_platformState.getVy());
 
-
+  if(_VisionPose.getOrientation().w() == 0){
+    _setPoint.setPosition(_state.getX(),_state.getY(),_setPoint.getZ());
+    _setPoint.setType(MavState::POSITION);
+    return;
+  }
   _holdPIDX.setDt(_dt);
   _holdPIDY.setDt(_dt);
+
 
   // Apply slope Z adjustment only when HOLD is in a neutral state — no ascend
   // or descend transition is pending. Mirrors the condition checks in HoldState::handle().
