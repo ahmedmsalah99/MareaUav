@@ -761,9 +761,6 @@ void Lander::hold() {
   // Eigen::Vector2d tempVel(_platformState.getVx(),_platformState.getVy());
 
 
-  _holdPIDX.setDt(_dt);
-  _holdPIDY.setDt(_dt);
-
   // Apply slope Z adjustment only when HOLD is in a neutral state — no ascend
   // or descend transition is pending. Mirrors the condition checks in HoldState::handle().
   {
@@ -789,11 +786,13 @@ void Lander::hold() {
   }
 
 
-  double xTarget = _holdPIDX.getOutput(0, _VisionPose.getX()); //0 cause VisionPose is already a relative position.
-  double yTarget = _holdPIDY.getOutput(0, _VisionPose.getY());
-
-
-	Eigen::Vector2d targetVect(_state.getX() + xTarget , _state.getY() + yTarget);
+  // Vision is already in world/NED frame (rotated by drone yaw in the apriltag node).
+  // Platform world position = drone world pos - vision offset (drone relative to platform).
+  // Anchoring to the estimated platform location prevents the setpoint from drifting
+  // with the drone when corrections are small.
+  double platform_x = _state.getX() - _VisionPose.getX();
+  double platform_y = _state.getY() - _VisionPose.getY();
+	Eigen::Vector2d targetVect(platform_x, platform_y);
 
   // std::cout << "t state=" << _actualState
   //         << " sp=(" << _setPoint.getX() << "," << _setPoint.getY() << "," << _setPoint.getZ() << ")"
@@ -802,10 +801,7 @@ void Lander::hold() {
   //         << " holding=" << _holding << " lost=" << _lost << " centered=" << _centered
   //         << " xT=" << xTarget << " yT=" << yTarget << std::endl;
 
-  updateIntegrals();
-  //PosSP = PlatPos + K * Vplat
-  //targetVect += params_automatic::KpHoldV * tempVel;
-  // targetVect += param.KpHoldV * tempVel;
+  //targetVect += param.KpHoldV * tempVel;
 
 
   //Fill right fields
