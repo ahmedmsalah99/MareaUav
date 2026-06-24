@@ -48,14 +48,6 @@ public:
 
     virtual void execute() = 0;
 
-    /**
-     * @brief Go/NoGo prediction horizon, only meaningful for the Land command.
-     * @return Horizon in seconds, or a negative sentinel when not applicable.
-     */
-
-    virtual double getPredictionHorizon() const { return -1.0; }
-
-
     void init(MavState* s, MavState* c){
         this->_state = s;
         this->_comm = c;

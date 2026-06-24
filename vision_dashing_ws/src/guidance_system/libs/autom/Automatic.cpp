@@ -117,7 +117,8 @@ void Automatic::executeCommand() {
 }
 
 double Automatic::getPredictionHorizon() const {
-    if (_actualCommand) return _actualCommand->getPredictionHorizon();
+    if (auto* land = dynamic_cast<Land*>(_actualCommand.get()))
+        return land->getPredictionHorizon();
     return -1.0;
 }
 

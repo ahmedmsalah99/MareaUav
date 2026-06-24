@@ -207,7 +207,7 @@ public:
         land();
     }
 
-    double getPredictionHorizon() const override {
+    double getPredictionHorizon() const {
         return _lander.getPredictionHorizon();
     }
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
