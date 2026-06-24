@@ -666,8 +666,8 @@ AprilTag2Node::pnp(apriltag_detection_t* const detection, const std::array<doubl
     	R_cv.col(2) *= -1;
 	}
 	double cos_angle = std::fabs(R_cv.at<double>(2, 2));
-	RCLCPP_INFO(get_logger(), "[ippe] id=%d cos_angle=%.3f reproj_err1=%.3f reproj_err2=%.3f chosen=%d",
-    tag_id, cos_angle, reprojErrors[1], reprojErrors[2], chosen);
+	// RCLCPP_INFO(get_logger(), "[ippe] id=%d cos_angle=%.3f reproj_err1=%.3f reproj_err2=%.3f chosen=%d",
+    // tag_id, cos_angle, reprojErrors[1], reprojErrors[2], chosen);
 
 	pose = Eigen::Matrix4d::Identity();
 	for (int i = 0; i < 3; i++) {

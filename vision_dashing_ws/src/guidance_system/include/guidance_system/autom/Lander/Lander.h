@@ -255,6 +255,10 @@ private:
 
     MavState _VisionPose;
 
+    static constexpr double kInvalidVisionHoldSecs = 3.0;
+    double _invalidVisionTimer {0.0};  // seconds elapsed since vision went invalid
+    bool   _inInvalidVisionHold {false};
+
     /**
      * Relative z position and velocity of the drone respect to the platform
      */

@@ -768,9 +768,35 @@ void Lander::hold() {
 
   if(_VisionPose.getOrientation().w() == 0){
     _setPoint.setPosition(_state.getX(),_state.getY(),_setPoint.getZ());
+    // Vision is invalid (shaking / too fast). Start or extend the freeze timer.
+    if(!_inInvalidVisionHold) {
+      _inInvalidVisionHold = true;
+      _invalidVisionTimer  = 0.0;
+      std::cout << "[hold] vision invalid — starting " << kInvalidVisionHoldSecs << "s freeze" << std::endl;
+    }
+    _invalidVisionTimer += _dt;
+    _setPoint.setPosition(_state.getX(), _state.getY(), _setPoint.getZ());
     _setPoint.setType(MavState::POSITION);
     return;
   }
+
+
+  if(_inInvalidVisionHold) {
+    // Vision recovered. Check if it stayed invalid for the full window.
+    if(_invalidVisionTimer < kInvalidVisionHoldSecs) {
+      _invalidVisionTimer += _dt;
+      _setPoint.setPosition(_state.getX(), _state.getY(), _setPoint.getZ());
+      _setPoint.setType(MavState::POSITION);
+      std::cout << "time is " << _invalidVisionTimer << std::endl;
+      return;
+    }
+    // If the full 3 seconds elapsed, the state machine will have already handled
+    // the loss (VisionDataUpdated timeout → INIT); we just reset the flag here.
+    _inInvalidVisionHold = false;
+    _invalidVisionTimer  = 0.0;
+  }
+
+
   _holdPIDX.setDt(_dt);
   _holdPIDY.setDt(_dt);
 
