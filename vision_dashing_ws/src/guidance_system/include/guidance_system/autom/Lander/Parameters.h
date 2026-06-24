@@ -114,12 +114,18 @@ public:
     double maxOutput;
 
     // Distance from the center of the platform where to initialize landing
-    
+
     double distanceFromCenter;
 
     // Drone altitude when initializing the landing
-    
+
     double prelandAltitude;
+
+    // Descent velocity (m per tick) applied in desc()
+    double descVelocity;
+
+    // Ascent velocity (m per tick) applied in asce()
+    double asceVelocity;
 
 };
 

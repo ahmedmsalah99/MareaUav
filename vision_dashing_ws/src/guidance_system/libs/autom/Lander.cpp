@@ -818,13 +818,13 @@ void Lander::asce() {
 
   _holdPIDX.reset();
   _holdPIDY.reset();
-  _setPoint.setZ(_setPoint.getZ() + 0.1);
+  _setPoint.setZ(_setPoint.getZ() + param.asceVelocity);
 
 }
 
 void Lander::desc() {
 
-  _setPoint.setZ(_setPoint.getZ() - 0.1);
+  _setPoint.setZ(_setPoint.getZ() - param.descVelocity);
 }
 
 void Lander::comp() {
