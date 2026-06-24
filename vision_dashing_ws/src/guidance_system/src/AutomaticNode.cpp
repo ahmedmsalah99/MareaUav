@@ -246,8 +246,32 @@ private:
 
   void onPlatformCenter(const geometry_msgs::msg::TransformStamped::SharedPtr msg)
   {
-    vision_system_.setX(msg->transform.translation.x);
-    vision_system_.setY(msg->transform.translation.y);
+    const double vx = msg->transform.translation.x;
+    const double vy = msg->transform.translation.y;
+
+    // Validity check: if the platform position is shaking or moving faster than
+    // the allowed limit between consecutive frames, flag the measurement invalid.
+    const rclcpp::Time now = this->now();
+    bool is_valid = true;
+    if (!first_vision_) {
+      const double dt = (now - last_vision_time_).seconds();
+      if (dt > 0.001 && dt < 1.0) {
+        const double vel = std::sqrt(std::pow(vx - prev_vision_x_, 2) +
+                                     std::pow(vy - prev_vision_y_, 2)) / dt;
+        if (vel > kMaxVisionVelocity) {
+          is_valid = false;
+          RCLCPP_WARN(get_logger(), "[vision] IsValid=false: vel=%.2f m/s", vel);
+        }
+      }
+    }
+    first_vision_ = false;
+    if (is_valid) {
+      prev_vision_x_ = vx;
+      prev_vision_y_ = vy;
+    }
+
+    vision_system_.setX(vx);
+    vision_system_.setY(vy);
     vision_system_.setZ(msg->transform.translation.z);
     vision_system_.setVx(0.0);
     vision_system_.setVy(0.0);
@@ -258,11 +282,10 @@ private:
       msg->transform.rotation.y,
       msg->transform.rotation.z);
     vision_system_.setOrientation(q);
-    // std::cout << "onPlatformCenter VisionDataUpdated set to true " << std::endl; 
     vision_system_.VisionDataUpdated = true;
-    vision_system_.IsValid = true;
+    vision_system_.IsValid = is_valid;
     autom_.setVisionFeedback(vision_system_);
-    last_vision_time_ = this->now();
+    last_vision_time_ = now;
   }
 
   void onRescue(const geometry_msgs::msg::TransformStamped::SharedPtr msg)
@@ -389,6 +412,12 @@ private:
   MavState    vision_rescue_;
   MavState    ultrasonic_pos_;
 
+  // Vision validity gate: reject platform measurements that move/shake faster
+  // than this between consecutive frames.
+  static constexpr double kMaxVisionVelocity = 2.0;  // m/s
+  double      prev_vision_x_  {0.0};
+  double      prev_vision_y_  {0.0};
+  bool        first_vision_   {true};
 
   bool        waiting_        {true};
   int         current_action_ {actions::IDLE};

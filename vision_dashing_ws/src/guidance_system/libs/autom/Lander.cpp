@@ -260,7 +260,6 @@ void Lander::updateSignals() {
   _err[2]       = dz;
   _verticalErr  = _err[2];
 
-  // Shake detection: rolling variance of vision X/Y (only on fresh measurements).
   // Cone thresholds: linearly interpolate between min (at z=0) and max (at z=cone_z_ref).
   double cone_t = common::clamp(fabs(_verticalErr) / param.cone_z_ref, 0.0, 1.0);
   double tau_hold_cone = param.hold_threshold_min + (param.hold_threshold - param.hold_threshold_min) * cone_t;

@@ -390,42 +390,12 @@ void AprilTag2Node::publish_data_center(const apriltag_msgs::msg::AprilTagDetect
 			_z_err_count = 0;
 		}
 		
-		double vx = vision_pose.transform.translation.x;
-		double vy = vision_pose.transform.translation.y;
-		double vz = vision_pose.transform.translation.z;
-
-		// Velocity validity check: reject if position moved faster than the configured
-		// limit between consecutive frames. This catches both sudden spikes and
-		// high-frequency shaking that would otherwise corrupt the landing controller.
-		bool valid = true;
-		if (!_first_vision_run) {
-			double dt = (this->now() - _last_vision_time).seconds();
-			if (dt > 0.001) {  // guard against zero/negative dt at startup
-				double vel = std::sqrt(
-					std::pow(vx - _previous_x_err, 2) +
-					std::pow(vy - _previous_y_err, 2)) / dt;
-				if (vel > _max_vision_velocity) {
-					RCLCPP_WARN(get_logger(),
-						"[vision] rejected: vel=%.2f m/s > limit=%.2f (dx=%.3f dy=%.3f dt=%.4f)",
-						vel, _max_vision_velocity, vx - _previous_x_err, vy - _previous_y_err, dt);
-					valid = false;
-				}
-			}
-		}
-
-		if (valid) {
-			_previous_x_err  = vx;
-			_previous_y_err  = vy;
-			_last_vision_time = this->now();
-			_first_vision_run = false;
-
-			// _handler.publish("apriltag_vision_system",&vision_pose);
-			geometry_msgs::msg::TransformStamped msg_tf;
-			msg_tf.transform.translation.x = std::isnan(vx) ? -1.0 : vx;
-			msg_tf.transform.translation.y = std::isnan(vy) ? -1.0 : vy;
-			msg_tf.transform.translation.z = std::isnan(vz) ? -1.0 : vz;
-			pub_platformCenter->publish(msg_tf);
-		}
+		// _handler.publish("apriltag_vision_system",&vision_pose);
+		geometry_msgs::msg::TransformStamped msg_tf;
+		msg_tf.transform.translation.x = std::isnan(vision_pose.transform.translation.x) ? -1.0 : vision_pose.transform.translation.x;
+		msg_tf.transform.translation.y = std::isnan(vision_pose.transform.translation.y) ? -1.0 : vision_pose.transform.translation.y;
+		msg_tf.transform.translation.z = std::isnan(vision_pose.transform.translation.z) ? -1.0 : vision_pose.transform.translation.z;
+		pub_platformCenter->publish(msg_tf);
 
 		geometry_msgs::msg::TransformStamped gt_msg_tf;
 		gt_msg_tf.transform.translation.x = 2 - _drone_pose.transform.translation.x;
