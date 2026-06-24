@@ -435,6 +435,13 @@ private:
 
     bool _readyToLand;
 
+    // When vision turns invalid in hold(), we freeze XY for up to
+    // kInvalidVisionHoldSecs seconds. If vision stays valid for that entire
+    // window we resume; otherwise the state machine handles loss of vision.
+    static constexpr double kInvalidVisionHoldSecs = 3.0;
+    double _invalidVisionTimer {0.0};  // seconds elapsed since vision went invalid
+    bool   _inInvalidVisionHold {false};
+
     /**
      * Integral error of the drone respect to the platform
      */
