@@ -116,6 +116,12 @@ void Automatic::executeCommand() {
     this->_actualCommand->execute();
 }
 
+double Automatic::getPredictionHorizon() const {
+    if (auto* land = dynamic_cast<Land*>(_actualCommand.get()))
+        return land->getPredictionHorizon();
+    return -1.0;
+}
+
 /*
 Inside the Command class there is a function 'virtual void execute() = 0'.
 In this way, adding the specificator virtual, it is possible to guarantee a dynamic association.

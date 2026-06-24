@@ -47,7 +47,6 @@ public:
      */
 
     virtual void execute() = 0;
-    
 
     void init(MavState* s, MavState* c){
         this->_state = s;

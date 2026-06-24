@@ -16,6 +16,7 @@
 #include <nav_msgs/msg/odometry.hpp>
 #include <geometry_msgs/msg/transform_stamped.hpp>
 #include <std_msgs/msg/string.hpp>
+#include <std_msgs/msg/float64.hpp>
 #include <ultrasonic_sensor/msg/ultrasonic_msg.hpp>
 #include <ulisse_msgs/msg/actual_task.hpp>
 #include <ulisse_msgs/msg/safety_ack.hpp>
@@ -97,6 +98,8 @@ public:
       create_publisher<nav_msgs::msg::Odometry>("Landing_Site/pose_cmd",   reliable_qos);
     plat_rob_pub_              =
       create_publisher<nav_msgs::msg::Odometry>("platRob",                 reliable_qos);
+    pred_horizon_pub_          =
+      create_publisher<std_msgs::msg::Float64>("spa/prediction_horizon",   reliable_qos);
 
     // ── Subscriptions ───────────────────────────────────────────────────────
 
@@ -208,6 +211,16 @@ private:
     auto plat_rob = odomFromMavState(platform_state_);
     plat_rob.header.stamp = this->now();
     plat_rob_pub_->publish(plat_rob);
+
+    // Publish the Go/NoGo prediction horizon T = l/v so the SPA predictor can
+    // adjust its prediction window to how far we are from the platform.
+    // Negative sentinel means no Land command is active — skip publishing then.
+    double horizon = autom_.getPredictionHorizon();
+    if (horizon >= 0.0) {
+      std_msgs::msg::Float64 horizon_msg;
+      horizon_msg.data = horizon;
+      pred_horizon_pub_->publish(horizon_msg);
+    }
   }
 
   // ══════════════════════════════════════════════════════════════════════════
@@ -412,6 +425,7 @@ private:
   rclcpp::Publisher<nav_msgs::msg::Odometry>::SharedPtr local_position_sp_pub_;
   rclcpp::Publisher<nav_msgs::msg::Odometry>::SharedPtr landing_site_pose_cmd_pub_;
   rclcpp::Publisher<nav_msgs::msg::Odometry>::SharedPtr plat_rob_pub_;
+  rclcpp::Publisher<std_msgs::msg::Float64>::SharedPtr  pred_horizon_pub_;
 
   // Subscriptions
   rclcpp::Subscription<px4_msgs::msg::VehicleOdometry>::SharedPtr       vision_sub_;
