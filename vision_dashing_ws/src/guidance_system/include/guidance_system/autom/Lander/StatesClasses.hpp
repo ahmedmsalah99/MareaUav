@@ -131,9 +131,6 @@ public:
     /** Go/no-go signal: gates the descent in HOLD. Returns false until wired up. */
     bool getLandingGoSignal() const { return false; }
 
-    // True when vision X/Y variance over the rolling window exceeds the shake threshold.
-    bool *_visionShaking;
-
 };
 
 /** @ingroup Automatic
@@ -204,12 +201,11 @@ public:
 		     _UltraInfo    = *(_contextL->_UltraInfo);
          param         = *(_contextL->param);
 		     //New Signals
-         _holding        = *(_contextL->_holding);
-         _centered       = *(_contextL->_centered);
-         _lost           = *(_contextL->_lost);
-         _Inspection     = *(_contextL->_Inspection);
-         _readyToLand    = *(_contextL->_readyToLand);
-         _visionShaking  = *(_contextL->_visionShaking);
+         _holding       = *(_contextL->_holding);
+         _centered      = *(_contextL->_centered);
+         _lost          = *(_contextL->_lost);
+         _Inspection    = *(_contextL->_Inspection);
+         _readyToLand   = *(_contextL->_readyToLand);
     }
 
     /**
@@ -330,9 +326,6 @@ protected:
      */
 
     bool _readyToLand;
-
-    // True when vision X/Y variance over the rolling window exceeds the shake threshold.
-    bool _visionShaking;
 
     Parameters param;
 

@@ -79,7 +79,7 @@ void HoldState::handle(){
 
     //if the vision data are not available and the drone is at or above zMax, go back to init.
     // bool InitValid = !_VisionPose.VisionDataUpdated && !(_setPoint.getZ() < param.zMax - 0.1);
-    bool InitValid = !_VisionPose.VisionDataUpdated || _visionShaking;
+    bool InitValid = !_VisionPose.VisionDataUpdated;
 
     //comp is a middle state between land state and hold state.
     //if the UAV is holding ad is centered on the platform and is close to the platform(20 cm), will be accomplish.

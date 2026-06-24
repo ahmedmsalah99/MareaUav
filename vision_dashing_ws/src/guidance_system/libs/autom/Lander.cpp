@@ -144,12 +144,9 @@ void Lander::initStateMachine() {
 	_dt 		 = 0;
 	_prevTime    = 0;
 	_actualTime  = 0;
-	_verticalErr   = 0;
-	_actualState   = 0;
-	_prevState     = 0;
-	_visionShaking = false;
-	_visionXWindow.clear();
-	_visionYWindow.clear();
+	_verticalErr = 0;
+	_actualState = 0;
+	_prevState   = 0;
 
   //Link signals
   //assign initialized errors of the Lander class with
@@ -172,8 +169,7 @@ void Lander::initStateMachine() {
   _machine._centered     =  &_centered;
   _machine._lost         =  &_lost;
   _machine._Inspection   =  &Inspection;
-  _machine._readyToLand   =  &_readyToLand;
-  _machine._visionShaking =  &_visionShaking;
+  _machine._readyToLand  =  &_readyToLand;
 
   //Link states
   //keep in mind that _nextState object is inherited from the AbstractLandState class.
@@ -265,38 +261,6 @@ void Lander::updateSignals() {
   _verticalErr  = _err[2];
 
   // Shake detection: rolling variance of vision X/Y (only on fresh measurements).
-  if (_VisionPose.VisionDataUpdated) {
-      _visionXWindow.push_back(dx);
-      _visionYWindow.push_back(dy);
-      if ((int)_visionXWindow.size() > param.shakeWindowSize) {
-          _visionXWindow.pop_front();
-          _visionYWindow.pop_front();
-      }
-  } else {
-      // Vision lost — clear window so old data doesn't bias the next detection.
-      _visionXWindow.clear();
-      _visionYWindow.clear();
-  }
-
-  if ((int)_visionXWindow.size() == param.shakeWindowSize) {
-      double sumX = 0, sumY = 0;
-      for (double v : _visionXWindow) sumX += v;
-      for (double v : _visionYWindow) sumY += v;
-      double mX = sumX / param.shakeWindowSize;
-      double mY = sumY / param.shakeWindowSize;
-      double varX = 0, varY = 0;
-      for (double v : _visionXWindow) varX += (v - mX) * (v - mX);
-      for (double v : _visionYWindow) varY += (v - mY) * (v - mY);
-      varX /= param.shakeWindowSize;
-      varY /= param.shakeWindowSize;
-      _visionShaking = (varX + varY) > param.shakeVarianceThreshold;
-      if (_visionShaking)
-          std::cout << "[shake] varX=" << varX << " varY=" << varY
-                    << " sum=" << (varX + varY) << " thr=" << param.shakeVarianceThreshold << std::endl;
-  } else {
-      _visionShaking = false;
-  }
-
   // Cone thresholds: linearly interpolate between min (at z=0) and max (at z=cone_z_ref).
   double cone_t = common::clamp(fabs(_verticalErr) / param.cone_z_ref, 0.0, 1.0);
   double tau_hold_cone = param.hold_threshold_min + (param.hold_threshold - param.hold_threshold_min) * cone_t;

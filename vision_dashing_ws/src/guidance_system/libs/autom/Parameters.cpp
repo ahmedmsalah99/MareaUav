@@ -11,10 +11,8 @@ Parameters::Parameters() {
     comp_threshold_min = 0.30;
     lost_threshold_min = 0.80;
     cone_z_ref         = 5.0;
-    descVelocity            = 0.1;
-    asceVelocity            = 0.1;
-    shakeWindowSize         = 30;    // 0.6 s at 50 Hz
-    shakeVarianceThreshold  = 0.05;  // ~0.3 m amplitude
+    descVelocity = 0.1;
+    asceVelocity = 0.1;
 }
 
 void Parameters::loadConfigFile(const char *config_file) {
@@ -135,12 +133,6 @@ void Parameters::loadParamFile(const char *config_file) {
 
             else if( !param.compare("ASCE_VELOCITY") )
                 asceVelocity = value;
-
-            else if( !param.compare("SHAKE_WINDOW_SIZE") )
-                shakeWindowSize = static_cast<int>(value);
-
-            else if( !param.compare("SHAKE_VARIANCE_THRESHOLD") )
-                shakeVarianceThreshold = value;
 
         }
 		cFile.close();

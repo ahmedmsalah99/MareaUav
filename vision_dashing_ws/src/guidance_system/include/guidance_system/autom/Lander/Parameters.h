@@ -127,11 +127,6 @@ public:
     // Ascent velocity (m per tick) applied in asce()
     double asceVelocity;
 
-    // Shake detection: rolling window size (samples) and variance threshold (m²).
-    // Vision is flagged as shaking when the combined X+Y variance over the window exceeds this.
-    int    shakeWindowSize;
-    double shakeVarianceThreshold;
-
 };
 
 

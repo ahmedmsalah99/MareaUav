@@ -88,7 +88,7 @@ private:
 
 	// Filter configuration (Adjust cutoff as needed)
 	const double _vision_cutoff_freq = 0.05;
-	const double _max_vision_velocity = 1.0;
+	const double _max_vision_velocity = 2.0;  // m/s — reject if position jumps faster than this
 
 	// function pointer for tag family creation / destruction
 	static std::map<std::string, apriltag_family_t *(*)(void)> tag_create;

@@ -11,7 +11,6 @@
 #include "common/common.h"
 #include "miniPID/MiniPID.h"
 #include "Parameters.h"
-#include <deque>
 
 #define DEBUG
 #define PI              3.141592653589
@@ -425,13 +424,6 @@ private:
      */
 
     bool _readyToLand;
-
-    // True when rolling-window variance of vision X/Y exceeds the shake threshold.
-    bool _visionShaking;
-
-    // Sliding windows for shake detection (updated only on fresh vision ticks).
-    std::deque<double> _visionXWindow;
-    std::deque<double> _visionYWindow;
 
     /**
      * Integral error of the drone respect to the platform
