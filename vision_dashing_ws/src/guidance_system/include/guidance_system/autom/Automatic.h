@@ -143,6 +143,13 @@ public:
   void executeCommand();
 
   /**
+   * @brief Returns the active command's Go/NoGo prediction horizon.
+   * @return Horizon in seconds, or a negative sentinel when no Land command is active.
+   */
+
+  double getPredictionHorizon() const;
+
+  /**
    * @brief M2M_SIM Environment variable value
    */
 

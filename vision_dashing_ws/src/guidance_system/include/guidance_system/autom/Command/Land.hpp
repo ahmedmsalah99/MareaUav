@@ -206,6 +206,10 @@ public:
         // std::cout << "executing landing " << std::endl;
         land();
     }
+
+    double getPredictionHorizon() const override {
+        return _lander.getPredictionHorizon();
+    }
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
 };

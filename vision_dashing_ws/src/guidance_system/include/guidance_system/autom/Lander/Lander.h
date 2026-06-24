@@ -139,6 +139,13 @@ public:
     MavState getCommand();
 
     /**
+     * @brief Returns the Go/NoGo prediction horizon T = min(|vertErr|/descVel, cap)
+     * @return Prediction horizon in seconds, updated every tick in updateSignals()
+     */
+
+    double getPredictionHorizon() const { return _predictionHorizon; }
+
+    /**
      * @brief The core function of the landing procedure. Mainly, it is
      * a switch based on the actual state.
      */

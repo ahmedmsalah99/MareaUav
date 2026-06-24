@@ -4,6 +4,7 @@
 #include <rclcpp/rclcpp.hpp>
 #include <sensor_msgs/msg/imu.hpp>
 #include <geometry_msgs/msg/vector3_stamped.hpp>
+#include <std_msgs/msg/float64.hpp>
 #include <cmath>
 
 #include "spa_predictor/fft_identifier.hpp"
@@ -37,6 +38,8 @@ public:
         double reident_period = declare_parameter("reidentification_period_s",   60.0);
         double q_scale        = declare_parameter("q_scale",                     1e-4);
         double r_meas         = declare_parameter("r_meas",                      1e-4);
+        // Static fallback horizon, used until the guidance node starts publishing
+        // a dynamic one on spa/prediction_horizon.
         T_pred_               = declare_parameter("prediction_horizon_s",        1.0);
 
         dt_             = 1.0 / timer_rate;
@@ -55,6 +58,15 @@ public:
                 buf_quat_ = {msg->orientation.w, msg->orientation.x,
                              msg->orientation.y, msg->orientation.z};
                 buf_has_data_ = true;
+            });
+
+        // Dynamic prediction horizon T = l/v published by the guidance node.
+        // When fresh, it overrides the static prediction_horizon_s parameter.
+        horizon_sub_ = create_subscription<std_msgs::msg::Float64>(
+            "spa/prediction_horizon", rclcpp::QoS(rclcpp::KeepLast(1)).reliable(),
+            [this](const std_msgs::msg::Float64::SharedPtr msg) {
+                std::lock_guard<std::mutex> lk(buf_mutex_);
+                if (msg->data >= 0.0) T_pred_ = msg->data;
             });
 
         estimate_pub_ = create_publisher<geometry_msgs::msg::Vector3Stamped>(
@@ -77,10 +89,12 @@ private:
     void timerCallback()
     {
         std::array<double, 4> q;
+        double T_pred;
         {
             std::lock_guard<std::mutex> lk(buf_mutex_);
             if (!buf_has_data_) return;
             q = buf_quat_;
+            T_pred = T_pred_;
         }
 
         double roll, pitch, yaw;
@@ -116,7 +130,7 @@ private:
         for (int i = 0; i < 3; ++i) {
             if (observers_[i].update(angles[i], now)) {
                 est[i]  = observers_[i].estimate();
-                pred[i] = observers_[i].predict(T_pred_);
+                pred[i] = observers_[i].predict(T_pred);
                 any_ready = true;
             }
         }
@@ -143,6 +157,7 @@ private:
     }
 
     rclcpp::Subscription<sensor_msgs::msg::Imu>::SharedPtr imu_sub_;
+    rclcpp::Subscription<std_msgs::msg::Float64>::SharedPtr horizon_sub_;
     rclcpp::Publisher<geometry_msgs::msg::Vector3Stamped>::SharedPtr estimate_pub_;
     rclcpp::Publisher<geometry_msgs::msg::Vector3Stamped>::SharedPtr predict_pub_;
     rclcpp::TimerBase::SharedPtr timer_;
@@ -157,7 +172,7 @@ private:
     double dt_                = 1.0 / 30.0;
     double reident_period_    = 60.0;
     double last_reident_time_ = 0.0;
-    double T_pred_            = 1.0;
+    double T_pred_            = 1.0;   // active horizon (dynamic once guidance publishes)
 };
 
 int main(int argc, char** argv)
