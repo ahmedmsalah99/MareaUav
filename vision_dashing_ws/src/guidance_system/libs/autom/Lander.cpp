@@ -3,6 +3,7 @@
 //
 
 #include <iostream>
+#include <algorithm>
 #include "guidance_system/autom/Lander/StatesClasses.hpp"
 #include "guidance_system/autom/Lander/Lander.h"
 #include "common/conversions.h"
@@ -26,6 +27,7 @@ Lander::Lander()
 	// std::cout<<"Params: "<<param.zMax<<std::endl;
 
 	desc_velocity = 0;
+	_predictionHorizon = 0;
 
 	_holdPIDX.reset();
 	_holdPIDY.reset();
@@ -260,6 +262,9 @@ void Lander::updateSignals() {
   _err[2]       = dz;
   _verticalErr  = _err[2];
 
+  // Prediction horizon: time to reach platform at current descent velocity, capped.
+  _predictionHorizon = std::min(fabs(_verticalErr) / param.descVelocity, param.predHorizonMax);
+
   // Cone thresholds: linearly interpolate between min (at z=0) and max (at z=cone_z_ref).
   double cone_t = common::clamp(fabs(_verticalErr) / param.cone_z_ref, 0.0, 1.0);
   double tau_hold_cone = param.hold_threshold_min + (param.hold_threshold - param.hold_threshold_min) * cone_t;
@@ -315,6 +320,7 @@ void Lander::printSignals() {
 
 	#ifdef DEBUG
   std::cout<<"Descending velocity: "<<desc_velocity<<std::endl;
+  std::cout<<"Prediction horizon T: "<<_predictionHorizon<<" s"<<std::endl;
   std::cout << "**********************************" << std::endl;
   std::cout << "STATE: " << _actualState<< std::endl;
   std::cout << "HERRO: " << _horizontaErr<< std::endl;

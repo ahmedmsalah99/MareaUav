@@ -13,6 +13,7 @@ Parameters::Parameters() {
     cone_z_ref         = 5.0;
     descVelocity       = 0.1;
     asceVelocity       = 0.1;
+    predHorizonMax     = 3.0;
 }
 
 void Parameters::loadConfigFile(const char *config_file) {
@@ -133,6 +134,9 @@ void Parameters::loadParamFile(const char *config_file) {
 
             else if( !param.compare("ASCE_VELOCITY") )
                 asceVelocity = value;
+
+            else if( !param.compare("PRED_HORIZON_MAX") )
+                predHorizonMax = value;
 
         }
 		cFile.close();

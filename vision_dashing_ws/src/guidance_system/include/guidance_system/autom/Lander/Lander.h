@@ -200,6 +200,9 @@ public:
 
   	double desc_velocity;
 
+    // T = min(|verticalErr| / descVelocity, predHorizonMax) — updated every tick
+    double _predictionHorizon;
+
     bool startFromBeginning;
 
 
