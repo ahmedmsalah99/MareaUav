@@ -263,7 +263,8 @@ void Lander::updateSignals() {
   _verticalErr  = _err[2];
 
   // Prediction horizon: time to reach platform at current descent velocity, capped.
-  _predictionHorizon = std::min(fabs(_verticalErr) / param.descVelocity, param.predHorizonMax);
+  double predHorizonMax = param.zMax / param.descVelocity;
+  _predictionHorizon = std::min(fabs(_verticalErr) / param.descVelocity, predHorizonMax);
 
   // Cone thresholds: linearly interpolate between min (at z=0) and max (at z=cone_z_ref).
   double cone_t = common::clamp(fabs(_verticalErr) / param.cone_z_ref, 0.0, 1.0);

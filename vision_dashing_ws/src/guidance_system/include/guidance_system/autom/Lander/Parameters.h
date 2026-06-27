@@ -127,8 +127,7 @@ public:
     // Ascent velocity (m per tick) applied in asce()
     double asceVelocity;
 
-    // Maximum prediction horizon (seconds) for Go/NoGo
-    double predHorizonMax;
+
 
 };
 
