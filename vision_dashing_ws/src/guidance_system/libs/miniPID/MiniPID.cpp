@@ -283,7 +283,7 @@ double MiniPID::getOutput(double actual, double setpoint){
 	if(outputFilter!=0){
 		output=lastOutput*outputFilter+output*(1-outputFilter);
 	}
-	std::cout <<" output after restriction " << output << " errorSum " << errorSum << std::endl;
+	// std::cout <<" output after restriction " << output << " errorSum " << errorSum << std::endl;
 	lastOutput=output;
 	return output;
 }

@@ -61,21 +61,21 @@ void HoldState::handle(){
 
     static int waitComp = 0;
     //copy the values of the LandMachine class into the ones of the AbstractLandState class.
-
     getSignals();
+    double downDist = -_verticalErr;
 
     // Descend only when holding AND go signal is active AND above zMin floor.
     bool descValid = _centered && _holding && (_setPoint.getZ() > param.zMin + 0.1)
                     && _contextL->getLandingGoSignal();
 
     // Ascend if platform is lost and we are still below zMax (relative to pad).
-    bool asceValid = _lost && (_verticalErr < param.zMax - 0.1);
+    bool asceValid = _lost && (downDist < param.zMax - 0.1);
 
     // Ascend if setpoint has drifted below zMin (absolute hard floor).
     bool asceUnderMin = (_setPoint.getZ() < param.zMin);
 
     // Ascend if drone is closer to the platform than z_margin and not actively descending.
-    bool asceUnderMargin = _centered && _holding &&  (_verticalErr < param.z_margin) && (_verticalErr < param.zMax - 0.1) && !descValid;
+    bool asceUnderMargin = _centered && _holding &&  (downDist < param.z_margin) && (downDist < param.zMax - 0.1) && !descValid;
 
     //if the vision data are not available and the drone is at or above zMax, go back to init.
     // bool InitValid = !_VisionPose.VisionDataUpdated && !(_setPoint.getZ() < param.zMax - 0.1);
@@ -87,10 +87,7 @@ void HoldState::handle(){
     bool compValid = _holding && (fabs(_UltraInfo.getZ()) < (0.75 - 0.2)) && _centered;
     // std::cout << compValid << std::endl;
     
-    std::cout << "asceUnderMargin is " << asceUnderMargin << " and asceUnderMin " << asceUnderMin << " and asceValid " << asceValid << std::endl;
-    
-    
-    
+    std::cout << "downDist " << downDist << "compValid " << compValid << " InitValid " << InitValid << " descValid " << descValid << " asceUnderMargin is " << asceUnderMargin << " and asceUnderMin " << asceUnderMin << " and asceValid " << asceValid << std::endl;
     
     if(InitValid){
       this->_contextL->setStatePtr(_nextInitState); //set the next state (InitState)
@@ -154,6 +151,7 @@ void AsceState::handle() {
 void CompState::handle() {
 
     getSignals();
+    double downDist = -_verticalErr;
 
     /*
     NComp is incremented every time the variable centered is true.
@@ -195,10 +193,7 @@ void CompState::handle() {
 
 	}
 
-
-  // std::cout << "VERRRRRRRR: " << _verticalErr << std::endl;
-
-    if(onTarget && _centered && (fabs(_verticalErr) < param.land_threshold)){
+    if(onTarget && _centered && (downDist < param.land_threshold)){
 	   //if is on the target and is centered and the vertical error is under 25cm, set next state to LandState.
 
         this->_contextL->setStatePtr(_nextLanState);
