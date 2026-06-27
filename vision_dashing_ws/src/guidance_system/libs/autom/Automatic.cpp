@@ -91,7 +91,7 @@ void Automatic::handleCommands() {
             break;
 
         case actions::LAND:
-            _actualCommand = std::unique_ptr<Command>(new Land(&_state,&_comm,&_actualTask,&_platformState,&_visionFeedbackPose,&_UltrasonicInfo));
+            _actualCommand = std::unique_ptr<Command>(new Land(&_state,&_comm,&_actualTask,&_platformState,&_visionFeedbackPose,&_UltrasonicInfo,&_seaState));
             std::cout << "Actual command: Land" << std::endl;
             break;
         case actions::ROTATE:
@@ -161,4 +161,8 @@ void Automatic::setVisionRescue(MavState pose) {
 
 void Automatic::setUltrasonicInfo(MavState pose) {
 	_UltrasonicInfo = pose;
+}
+
+void Automatic::setSeaState(SeaState seaState) {
+	_seaState = seaState;
 }

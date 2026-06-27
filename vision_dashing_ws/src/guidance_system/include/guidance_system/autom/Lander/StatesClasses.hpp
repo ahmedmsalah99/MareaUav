@@ -4,8 +4,10 @@
 #define MOCAP2MAV_STATESCLASSES_HPP
 
 #include <iostream>
+#include <cmath>
 #include "StateMachine/include/Machine.h"
 #include "common/MavState.h"
+#include "common/SeaState.h"
 #include "Parameters.h"
 
 /** @ingroup Automatic
@@ -128,8 +130,56 @@ public:
 
     Parameters *param;
 
+    /**
+     * Aggregated sea-state estimate (SPA prediction + heave) used by
+     * safeInitialLanding() to decide whether the sea is calm enough to land.
+     */
+    SeaState *_seaState;
+
+    /** Control loop dt [s], used to accumulate the calm-sea timer. */
+    double *_dt;
+
     /** Go/no-go signal: gates the descent in HOLD. Returns false until wired up. */
     bool getLandingGoSignal() const { return false; }
+
+    /**
+     * @brief Decides whether it is safe to begin the landing on a calm sea.
+     * @details Returns true only when:
+     *   1. The SPA prediction and the heave estimate are both active and fresh
+     *      (not outdated).
+     *   2. The platform heave velocity and the roll/pitch angular rates have all
+     *      stayed within their configured limits continuously for calmDuration
+     *      seconds — after which the sea is considered calm.
+     * Any frame that breaks a condition resets the calm timer.
+     */
+    bool safeInitialLanding() const {
+
+        // 1. Both estimators must be active and not outdated.
+        if (!_seaState->spaValid || !_seaState->heaveValid) {
+            _calmTimer = 0.0;
+            return false;
+        }
+
+        // 2. Instantaneous calm check: heave velocity and roll/pitch rates within limits.
+        bool calmNow = (std::fabs(_seaState->heaveVel)  < param->heaveVelLimit)
+                    && (std::fabs(_seaState->rollRate)  < param->rollRateLimit)
+                    && (std::fabs(_seaState->pitchRate) < param->pitchRateLimit);
+
+        if (!calmNow) {
+            _calmTimer = 0.0;
+            return false;
+        }
+
+        // Calm conditions held this tick — accumulate and require it to be
+        // sustained for calmDuration before declaring the sea calm.
+        _calmTimer += *_dt;
+        return _calmTimer >= param->calmDuration;
+    }
+
+private:
+    /** Time [s] the calm conditions have held continuously (mutable: updated
+     *  from the const safeInitialLanding() accessor). */
+    mutable double _calmTimer = 0.0;
 
 };
 

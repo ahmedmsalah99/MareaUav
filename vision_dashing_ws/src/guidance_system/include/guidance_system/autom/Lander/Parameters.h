@@ -127,7 +127,15 @@ public:
     // Ascent velocity (m per tick) applied in asce()
     double asceVelocity;
 
-
+    // ── Calm-sea gate (safeInitialLanding) ───────────────────────────────────
+    // Max platform heave velocity [m/s] allowed for the sea to be "calm".
+    double heaveVelLimit;
+    // Max platform roll rate [rad/s] allowed for the sea to be "calm".
+    double rollRateLimit;
+    // Max platform pitch rate [rad/s] allowed for the sea to be "calm".
+    double pitchRateLimit;
+    // Time [s] the calm conditions must hold continuously before landing is allowed.
+    double calmDuration;
 
 };
 

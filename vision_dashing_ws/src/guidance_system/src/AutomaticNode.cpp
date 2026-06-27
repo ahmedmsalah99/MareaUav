@@ -15,6 +15,7 @@
 #include <px4_msgs/msg/sensor_gps.hpp>
 #include <nav_msgs/msg/odometry.hpp>
 #include <geometry_msgs/msg/transform_stamped.hpp>
+#include <geometry_msgs/msg/vector3_stamped.hpp>
 #include <std_msgs/msg/string.hpp>
 #include <std_msgs/msg/float64.hpp>
 #include <ultrasonic_sensor/msg/ultrasonic_msg.hpp>
@@ -140,6 +141,23 @@ public:
       "release_payload_feedback", reliable_qos,
       std::bind(&AutomaticNode::onReleasePayloadFeedback, this, std::placeholders::_1));
 
+    // ── Sea-state (SPA predictor + heave estimator) ──────────────────────────
+    spa_estimate_sub_ = create_subscription<geometry_msgs::msg::Vector3Stamped>(
+      "spa/estimate", rclcpp::QoS(rclcpp::KeepLast(1)),
+      std::bind(&AutomaticNode::onSpaEstimate, this, std::placeholders::_1));
+
+    spa_prediction_sub_ = create_subscription<geometry_msgs::msg::Vector3Stamped>(
+      "spa/prediction", rclcpp::QoS(rclcpp::KeepLast(1)),
+      std::bind(&AutomaticNode::onSpaPrediction, this, std::placeholders::_1));
+
+    heave_pos_sub_ = create_subscription<std_msgs::msg::Float64>(
+      "heave/position", rclcpp::QoS(rclcpp::KeepLast(1)),
+      std::bind(&AutomaticNode::onHeavePosition, this, std::placeholders::_1));
+
+    heave_vel_sub_ = create_subscription<std_msgs::msg::Float64>(
+      "heave/velocity", rclcpp::QoS(rclcpp::KeepLast(1)),
+      std::bind(&AutomaticNode::onHeaveVelocity, this, std::placeholders::_1));
+
     // ── Sensor-staleness timer (1 Hz — matches the original 1-second Duration) ──
     //
     // In the LCM loop the "else { if isExpired() }" branches ran on every loop
@@ -173,6 +191,9 @@ public:
     last_vision_time_     = epoch;
     last_rescue_time_     = epoch;
     last_ultrasonic_time_ = epoch;
+    last_spa_time_        = epoch;
+    last_heave_time_      = epoch;
+    last_spa_est_stamp_   = epoch;
 
     RCLCPP_INFO(get_logger(), "Automatic node ready (control loop 50 Hz)");
   }
@@ -198,6 +219,15 @@ private:
       autom_._actualTask.x = platform_state_.getX();
       autom_._actualTask.y = platform_state_.getY();
     }
+    // Refresh sea-state freshness (SPA prediction + heave) against the staleness
+    // window, then hand it to the guidance for the calm-sea landing gate.
+    {
+      const rclcpp::Time now = this->now();
+      sea_state_.spaValid   = (now - last_spa_time_).seconds()   < kSeaStale;
+      sea_state_.heaveValid = (now - last_heave_time_).seconds() < kSeaStale;
+      autom_.setSeaState(sea_state_);
+    }
+
     // std::cout << "executing commands" << std::endl;
     // Tick the active command's state machine.
     autom_.executeCommand();
@@ -333,6 +363,50 @@ private:
     autom_.setRelPayFeedback(msg->data);
   }
 
+  // ── Sea-state callbacks (SPA predictor + heave estimator) ───────────────────
+
+  // spa/estimate carries the current roll/pitch/yaw estimate. We finite-difference
+  // roll and pitch here to obtain the angular rates used by the calm-sea gate.
+  void onSpaEstimate(const geometry_msgs::msg::Vector3Stamped::SharedPtr msg)
+  {
+    const double roll  = msg->vector.x;
+    const double pitch = msg->vector.y;
+    const rclcpp::Time stamp(msg->header.stamp);
+
+    if (spa_est_init_) {
+      const double dt = (stamp - last_spa_est_stamp_).seconds();
+      if (dt > 1e-3) {
+        sea_state_.rollRate  = (roll  - prev_spa_roll_)  / dt;
+        sea_state_.pitchRate = (pitch - prev_spa_pitch_) / dt;
+      }
+    }
+    spa_est_init_       = true;
+    prev_spa_roll_      = roll;
+    prev_spa_pitch_     = pitch;
+    last_spa_est_stamp_ = stamp;
+
+    sea_state_.roll  = roll;
+    sea_state_.pitch = pitch;
+  }
+
+  // spa/prediction marks the SPA pipeline as active; used for the freshness check.
+  void onSpaPrediction(const geometry_msgs::msg::Vector3Stamped::SharedPtr /*msg*/)
+  {
+    last_spa_time_ = this->now();
+  }
+
+  void onHeavePosition(const std_msgs::msg::Float64::SharedPtr msg)
+  {
+    sea_state_.heavePos = msg->data;
+    last_heave_time_    = this->now();
+  }
+
+  void onHeaveVelocity(const std_msgs::msg::Float64::SharedPtr msg)
+  {
+    sea_state_.heaveVel = msg->data;
+    last_heave_time_    = this->now();
+  }
+
   // ══════════════════════════════════════════════════════════════════════════
   // Staleness checks — runs at 1 Hz via staleness_timer_
   // ══════════════════════════════════════════════════════════════════════════
@@ -401,7 +475,14 @@ private:
   MavState    vision_system_;
   MavState    vision_rescue_;
   MavState    ultrasonic_pos_;
+  SeaState    sea_state_;
 
+  // Sea-state freshness window [s]: SPA/heave data older than this is "outdated".
+  static constexpr double kSeaStale = 0.5;
+  bool         spa_est_init_   {false};
+  double       prev_spa_roll_  {0.0};
+  double       prev_spa_pitch_ {0.0};
+  rclcpp::Time last_spa_est_stamp_;
 
   bool        waiting_        {true};
   int         current_action_ {actions::IDLE};
@@ -416,6 +497,8 @@ private:
   rclcpp::Time last_vision_time_;
   rclcpp::Time last_rescue_time_;
   rclcpp::Time last_ultrasonic_time_;
+  rclcpp::Time last_spa_time_;
+  rclcpp::Time last_heave_time_;
 
   // Timers
   rclcpp::TimerBase::SharedPtr control_timer_;    ///< 50 Hz — main control tick
@@ -437,6 +520,10 @@ private:
   rclcpp::Subscription<ulisse_msgs::msg::SafetyAck>::SharedPtr          safety_ack_sub_;
   rclcpp::Subscription<px4_msgs::msg::SensorGps>::SharedPtr             gps_sub_;
   rclcpp::Subscription<std_msgs::msg::String>::SharedPtr                rel_pay_fb_sub_;
+  rclcpp::Subscription<geometry_msgs::msg::Vector3Stamped>::SharedPtr   spa_estimate_sub_;
+  rclcpp::Subscription<geometry_msgs::msg::Vector3Stamped>::SharedPtr   spa_prediction_sub_;
+  rclcpp::Subscription<std_msgs::msg::Float64>::SharedPtr               heave_pos_sub_;
+  rclcpp::Subscription<std_msgs::msg::Float64>::SharedPtr               heave_vel_sub_;
 };
 
 // ─────────────────────────── main ───────────────────────────────────────────

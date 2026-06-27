@@ -13,6 +13,10 @@ Parameters::Parameters() {
     cone_z_ref         = 5.0;
     descVelocity       = 0.1;
     asceVelocity       = 0.1;
+    heaveVelLimit      = 0.3;
+    rollRateLimit      = 0.1;
+    pitchRateLimit     = 0.1;
+    calmDuration       = 5.0;
 }
 
 void Parameters::loadConfigFile(const char *config_file) {
@@ -133,6 +137,18 @@ void Parameters::loadParamFile(const char *config_file) {
 
             else if( !param.compare("ASCE_VELOCITY") )
                 asceVelocity = value;
+
+            else if( !param.compare("HEAVE_VEL_LIMIT") )
+                heaveVelLimit = value;
+
+            else if( !param.compare("ROLL_RATE_LIMIT") )
+                rollRateLimit = value;
+
+            else if( !param.compare("PITCH_RATE_LIMIT") )
+                pitchRateLimit = value;
+
+            else if( !param.compare("CALM_DURATION_S") )
+                calmDuration = value;
 
         }
 		cFile.close();

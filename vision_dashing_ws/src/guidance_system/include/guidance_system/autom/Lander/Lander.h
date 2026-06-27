@@ -7,6 +7,7 @@
 
 #include "StateMachine/include/Machine.h"
 #include "common/MavState.h"
+#include "common/SeaState.h"
 #include "StatesClasses.hpp"
 #include "common/common.h"
 #include "miniPID/MiniPID.h"
@@ -61,6 +62,14 @@ public:
      */
 
     void setUltrasonicInfo(const MavState UltraInfo);
+
+    /**
+     * @brief It feeds the aggregated sea-state estimate (SPA prediction + heave)
+     * used by the calm-sea landing gate.
+     * @param seaState SPA/heave freshness, heave velocity and roll/pitch rates
+     */
+
+    void setSeaState(const SeaState seaState);
 
     /**
      * @brief It initialize the state Machine for the landing procedure
@@ -254,6 +263,13 @@ private:
      */
 
     MavState _VisionPose;
+
+    /**
+     * Aggregated sea-state estimate (SPA prediction + heave) fed from the
+     * guidance node and shared with the LandMachine for the calm-sea gate.
+     */
+
+    SeaState _seaState;
 
     static constexpr double kInvalidVisionHoldSecs = 3.0;
     double _invalidVisionTimer {0.0};  // seconds elapsed since vision went invalid
