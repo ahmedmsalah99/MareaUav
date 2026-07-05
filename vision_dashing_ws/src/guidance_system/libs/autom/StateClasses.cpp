@@ -63,10 +63,11 @@ void HoldState::handle(){
     //copy the values of the LandMachine class into the ones of the AbstractLandState class.
     getSignals();
     double downDist = -_verticalErr;
-
+    
+    bool compValid = _holding && (fabs(_UltraInfo.getZ()) < (0.75 - 0.2)) && _centered;
     // Descend only when holding AND go signal is active AND above zMin floor.
     bool descValid = _centered && _holding && (_setPoint.getZ() > param.zMin)
-                    && _contextL->safeInitialLanding();
+                    && _contextL->safeInitialLanding() && !compValid;
 
     // Ascend if platform is lost and we are still below zMax (relative to pad).
     bool asceValid = _lost && (downDist < param.zMax - 0.1);
@@ -84,7 +85,7 @@ void HoldState::handle(){
     //comp is a middle state between land state and hold state.
     //if the UAV is holding ad is centered on the platform and is close to the platform(20 cm), will be accomplish.
 
-    bool compValid = _holding && (fabs(_UltraInfo.getZ()) < (0.75 - 0.2)) && _centered;
+    
     // std::cout << compValid << std::endl;
     
     // std::cout << "downDist " << downDist << "compValid " << compValid << " InitValid " << InitValid << " descValid " << descValid << " asceUnderMargin is " << asceUnderMargin << " and asceUnderMin " << asceUnderMin << " and asceValid " << asceValid << std::endl;
@@ -99,6 +100,12 @@ void HoldState::handle(){
         this->_contextL->setStatePtr(_nextAscState); // below zMin floor — ascend
         printStateTransition();
         std::cout << "asceUnderMin " << " _setPoint.getZ() " << _setPoint.getZ() << std::endl;
+        return;
+    }
+    if(compValid && waitComp++ > 10){
+        this->_contextL->setStatePtr(_nextState); //set the next state (RToLandState)
+        printStateTransition();
+        waitComp = 0;
         return;
     }
 
@@ -125,12 +132,7 @@ void HoldState::handle(){
         return;
     }
 
-    if(compValid && waitComp++ > 10){
-        this->_contextL->setStatePtr(_nextState); //set the next state (RToLandState)
-        printStateTransition();
-        waitComp = 0;
-        return;
-    }
+    
 
     // if(InitValid){
 	//       this->_contextL->setStatePtr(_nextInitState); //set the next state (InitState)
