@@ -32,14 +32,13 @@ public:
         double omega_max      = declare_parameter("omega_max_rad_s",           3.0);
         double nis_gate       = declare_parameter("nis_gate",                  25.0);
         double vel_limit      = declare_parameter("heave_vel_limit_mps",       5.0);
-        double pos_limit      = declare_parameter("heave_pos_limit_m",         5.0);
 
         dt_             = 1.0 / timer_rate;
         reident_period_ = reident_period;
 
         identifier_ = std::make_unique<FFTIdentifier>(fft_window, timer_rate, peak_threshold, min_omega);
         ekf_        = std::make_unique<HeaveEKF>(dt_, q_pos, q_vel, q_omega, q_off, r_meas,
-                                                 omega_max, nis_gate, vel_limit, pos_limit);
+                                                 omega_max, nis_gate, vel_limit);
 
         // Subscription: just buffer incoming az readings — no processing here.
         imu_sub_ = create_subscription<sensor_msgs::msg::Imu>(

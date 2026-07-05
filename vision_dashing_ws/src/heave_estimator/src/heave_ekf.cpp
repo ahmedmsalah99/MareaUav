@@ -8,11 +8,11 @@ namespace heave_estimator {
 HeaveEKF::HeaveEKF(double dt, double q_pos, double q_vel, double q_omega,
                    double q_off, double r_meas,
                    double omega_max, double nis_gate,
-                   double vel_limit, double pos_limit)
+                   double vel_limit)
     : dt_(dt), q_pos_(q_pos), q_vel_(q_vel), q_omega_(q_omega),
       q_off_(q_off), r_meas_(r_meas),
       omega_max_(omega_max), nis_gate_(nis_gate),
-      vel_limit_(vel_limit), pos_limit_(pos_limit)
+      vel_limit_(vel_limit)
 {
 }
 
@@ -207,12 +207,12 @@ bool HeaveEKF::update(double az_imu)
         heave_vel_ += x_(idx + 1);
     }
 
-    // Divergence guard: flag when the output is non-finite or beyond any
-    // physically plausible heave. The node withholds the estimate and forces a
+    // Divergence guard: flag when the output is non-finite or the heave velocity
+    // is beyond any physically plausible value. Heave position is left unbounded
+    // (it is not range-limited). The node withholds the estimate and forces a
     // re-identification when this trips.
     healthy_ = std::isfinite(heave_pos_) && std::isfinite(heave_vel_)
-            && std::fabs(heave_vel_) <= vel_limit_
-            && std::fabs(heave_pos_) <= pos_limit_;
+            && std::fabs(heave_vel_) <= vel_limit_;
 
     return true;
 }

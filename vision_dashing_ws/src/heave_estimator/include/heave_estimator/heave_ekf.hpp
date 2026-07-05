@@ -22,7 +22,7 @@ public:
     HeaveEKF(double dt, double q_pos, double q_vel, double q_omega,
              double q_off, double r_meas,
              double omega_max = 3.0, double nis_gate = 25.0,
-             double vel_limit = 5.0, double pos_limit = 5.0);
+             double vel_limit = 5.0);
 
     // (Re-)initialize with identified modes. Reuses existing states when possible.
     void initialize(const std::vector<HeaveMode>& modes);
@@ -51,7 +51,6 @@ private:
     double omega_max_;   // max mode frequency [rad/s] — swell is well under this
     double nis_gate_;    // reject a measurement if innov^2/S exceeds this
     double vel_limit_;   // |heave velocity| beyond this [m/s] => diverged
-    double pos_limit_;   // |heave position| beyond this [m]   => diverged
     bool   healthy_ = true;
 
     bool initialized_ = false;
