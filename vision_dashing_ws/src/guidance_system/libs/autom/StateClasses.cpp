@@ -237,6 +237,7 @@ void LandState::handle() {
         printStateTransition();
         wait = 0;
     }
+    _setPoint.setZ(_setPoint.getZ() - 0.1);
 
     //Restart the procedure
     //if(wait++ > 100) {

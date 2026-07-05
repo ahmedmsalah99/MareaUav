@@ -294,7 +294,7 @@ void Lander::updateSignals() {
 
   _centered = _horizontaErr < tau_comp_cone && _VisionPose.VisionDataUpdated;
   if(!_centered){
-    std::cout << "_horizontaErr " << _horizontaErr << " tau_comp_cone " << tau_comp_cone << " _VisionPose.VisionDataUpdated " << _VisionPose.VisionDataUpdated << std::endl;
+    std::cout << "_vertical_Err" << _verticalErr << "_horizontaErr " << _horizontaErr << " tau_comp_cone " << tau_comp_cone << " _VisionPose.VisionDataUpdated " << _VisionPose.VisionDataUpdated << std::endl;
   }
   //R2LA state is between hold and comp state
   if(_actualState == AbstractLandState::states::R2LA || _actualState == AbstractLandState::states::COMP || _actualState == AbstractLandState::states::LAND){
