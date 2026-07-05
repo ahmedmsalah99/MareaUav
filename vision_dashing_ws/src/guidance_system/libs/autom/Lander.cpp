@@ -532,6 +532,13 @@ void Lander::run() {
 			if (print > 30) std::cout<<"COMP"<<std::endl;
 
       // align(); //controlling the yaw
+      // Pure-proportional XY in COMP. hold() anchors the setpoint to the drone
+      // position each tick, so the integral term winds up on the small persistent
+      // close-range vision bias and walks the drone off centre. Clearing the
+      // integrators every COMP tick keeps XY tracking on P only (which centres)
+      // without the windup drift.
+      _holdPIDX.reset();
+      _holdPIDY.reset();
       hold();
       comp();
       //compensation of the altitude
