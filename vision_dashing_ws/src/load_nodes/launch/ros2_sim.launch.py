@@ -90,6 +90,18 @@ def generate_launch_description():
     	# ,prefix='xterm -e gdb -ex run --args'
     )
 
+    spa_node = Node(
+        package='spa_predictor',
+        executable='spa_predictor_node',
+        output='screen',
+    )
+
+    heave_node = Node(
+        package='heave_estimator',
+        executable='heave_estimator_node',
+        output='screen',
+    )
+
     return LaunchDescription([
         SetEnvironmentVariable(
 			name='M2M_SIM',
@@ -103,5 +115,7 @@ def generate_launch_description():
         rescue_node,
         safety_node,
         exec_node,
-        autom_node
+        autom_node,
+        spa_node,
+        heave_node
     ])

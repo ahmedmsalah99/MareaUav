@@ -293,7 +293,9 @@ void Lander::updateSignals() {
   _lost     = (_NLost > param.NFramesLost || !_VisionPose.VisionDataUpdated );
 
   _centered = _horizontaErr < tau_comp_cone && _VisionPose.VisionDataUpdated;
-
+  if(!_centered){
+    std::cout << "_horizontaErr " << _horizontaErr << " tau_comp_cone " << tau_comp_cone << " _VisionPose.VisionDataUpdated " << _VisionPose.VisionDataUpdated << std::endl;
+  }
   //R2LA state is between hold and comp state
   if(_actualState == AbstractLandState::states::R2LA || _actualState == AbstractLandState::states::COMP || _actualState == AbstractLandState::states::LAND){
 
@@ -810,7 +812,7 @@ void Lander::hold() {
   // Apply slope Z adjustment only when HOLD is in a neutral state — no ascend
   // or descend transition is pending. Mirrors the condition checks in HoldState::handle().
   {
-    bool desc_v        = _centered && _holding && (_setPoint.getZ() > param.zMin + 0.1) && _machine.getLandingGoSignal();
+    bool desc_v        = _centered && _holding && (_setPoint.getZ() > param.zMin + 0.1) && _machine.safeInitialLanding();
     bool asce_v        = _lost    && (_verticalErr < param.zMax - 0.1);
     bool asce_min      = (_setPoint.getZ() < param.zMin);
     bool asce_margin   = _holding && _centered && (_verticalErr < param.z_margin) && (_verticalErr < param.zMax - 0.1) && !desc_v;
@@ -861,13 +863,15 @@ void Lander::asce() {
 
   _holdPIDX.reset();
   _holdPIDY.reset();
-  _setPoint.setZ(_setPoint.getZ() + param.asceVelocity);
+  double new_z = std::min(_setPoint.getZ() + param.asceVelocity,_state.getZ() + param.asceVelocity*2);
+  _setPoint.setZ(new_z);
 
 }
 
 void Lander::desc() {
   std::cout << "In desc " << std::endl;
-  _setPoint.setZ(_setPoint.getZ() - param.descVelocity);
+  double new_z = std::max(_setPoint.getZ() - param.descVelocity,_state.getZ() - param.descVelocity*2);
+  _setPoint.setZ(new_z);
 }
 
 void Lander::comp() {
@@ -936,7 +940,7 @@ void Lander::clampZSP() {
 
     double temp;
     temp = common::clamp(_setPoint.getZ(), param.zMin, _platformState.getZ() + param.zMax);
-    std::cout << "_platformState.getZ() " << _platformState.getZ() << " _platformState.getZ() + param.zMax " << _platformState.getZ() + param.zMax << std::endl;
+    // std::cout << "_platformState.getZ() " << _platformState.getZ() << " _platformState.getZ() + param.zMax " << _platformState.getZ() + param.zMax << std::endl;
     _setPoint.setZ(temp);
 }
 

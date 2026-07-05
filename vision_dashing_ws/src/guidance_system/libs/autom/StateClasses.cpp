@@ -65,8 +65,8 @@ void HoldState::handle(){
     double downDist = -_verticalErr;
 
     // Descend only when holding AND go signal is active AND above zMin floor.
-    bool descValid = _centered && _holding && (_setPoint.getZ() > param.zMin + 0.1)
-                    && _contextL->getLandingGoSignal();
+    bool descValid = _centered && _holding && (_setPoint.getZ() > param.zMin)
+                    && _contextL->safeInitialLanding();
 
     // Ascend if platform is lost and we are still below zMax (relative to pad).
     bool asceValid = _lost && (downDist < param.zMax - 0.1);
@@ -87,7 +87,7 @@ void HoldState::handle(){
     bool compValid = _holding && (fabs(_UltraInfo.getZ()) < (0.75 - 0.2)) && _centered;
     // std::cout << compValid << std::endl;
     
-    std::cout << "downDist " << downDist << "compValid " << compValid << " InitValid " << InitValid << " descValid " << descValid << " asceUnderMargin is " << asceUnderMargin << " and asceUnderMin " << asceUnderMin << " and asceValid " << asceValid << std::endl;
+    // std::cout << "downDist " << downDist << "compValid " << compValid << " InitValid " << InitValid << " descValid " << descValid << " asceUnderMargin is " << asceUnderMargin << " and asceUnderMin " << asceUnderMin << " and asceValid " << asceValid << std::endl;
     
     if(InitValid){
       this->_contextL->setStatePtr(_nextInitState); //set the next state (InitState)
@@ -98,6 +98,7 @@ void HoldState::handle(){
     if(asceUnderMin){
         this->_contextL->setStatePtr(_nextAscState); // below zMin floor — ascend
         printStateTransition();
+        std::cout << "asceUnderMin " << " _setPoint.getZ() " << _setPoint.getZ() << std::endl;
         return;
     }
 
@@ -110,12 +111,17 @@ void HoldState::handle(){
     if (asceValid){
         this->_contextL->setStatePtr(_nextAscState); //set the next state (AsceState)
         printStateTransition();
+        std::cout << "asceValid " << asceValid << std::endl;
         return;
     }
 
     if (asceUnderMargin){
         this->_contextL->setStatePtr(_nextAscState); // below z_margin above pad — ascend
         printStateTransition();
+        std::cout << "asceUnderMargin " << asceUnderMargin << std::endl;
+        std::cout << "_centered " << _centered << " _holding " << _holding << " z cond " << (_setPoint.getZ() > param.zMin + 0.1) << " _setPoint.getZ() "
+        << _setPoint.getZ() << " param.zMin + 0.1 " << param.zMin + 0.1 << " safe landing "<<
+                     _contextL->safeInitialLanding();
         return;
     }
 

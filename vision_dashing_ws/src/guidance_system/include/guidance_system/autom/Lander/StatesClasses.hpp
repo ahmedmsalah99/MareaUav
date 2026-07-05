@@ -153,10 +153,11 @@ public:
      * accumulated with the control-loop dt supplied in the SeaState.
      */
     bool safeInitialLanding() const {
-
+        
         // 1. Both estimators must be active and not outdated.
         if (!_seaState->spaValid || !_seaState->heaveValid) {
             _calmTimer = 0.0;
+            std::cout << "_seaState->spaValid " << _seaState->spaValid << " _seaState->heaveValid " << _seaState->heaveValid << std::endl;
             return false;
         }
 
@@ -168,15 +169,20 @@ public:
         bool ratesCalm = (std::fabs(_seaState->heaveVel)  < param->heaveVelLimit)
                       && (std::fabs(_seaState->rollRate)  < param->rollRateLimit)
                       && (std::fabs(_seaState->pitchRate) < param->pitchRateLimit);
-
+        
         if (!attitudeCalm || !ratesCalm) {
             _calmTimer = 0.0;
+            std::cout << "roll lim " << (std::fabs(_seaState->roll)  < param->rollLimit) << " pitch lim " << (std::fabs(_seaState->pitch) < param->pitchLimit) << std::endl;
+            std::cout << "roll rate lim " << (std::fabs(_seaState->rollRate)  < param->rollRateLimit)
+            << " pitch rate lim " << (std::fabs(_seaState->pitchRate) < param->pitchRateLimit)
+            << " heave vel limit " << (std::fabs(_seaState->heaveVel)  < param->heaveVelLimit) << " heaveVel " << _seaState->heaveVel << std::endl;
             return false;
         }
 
         // Calm conditions held this tick — accumulate and require it to be
         // sustained for calmDuration before declaring the sea calm.
         _calmTimer += _seaState->dt;
+        std::cout << "_calmTimer " << _calmTimer << std::endl;
         return _calmTimer >= param->calmDuration;
     }
 
