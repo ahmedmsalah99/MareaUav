@@ -859,18 +859,27 @@ void Lander::hold() {
 
 }
 
+// Bound dt so a scheduler hiccup can't produce a single oversized step.
+static inline double boundedDt(double dt) { return std::min(std::max(dt, 0.0), 0.1); }
+
 void Lander::asce() {
 
   _holdPIDX.reset();
   _holdPIDY.reset();
-  double new_z = std::min(_setPoint.getZ() + param.asceVelocity,_state.getZ() + param.asceVelocity);
+  // asceVelocity is a true velocity [m/s]: step = v * dt makes the ascent rate
+  // independent of the control-loop frequency. Anchored to the drone position so
+  // the setpoint can never lead by more than one step.
+  double step  = param.asceVelocity * boundedDt(_dt);
+  double new_z = std::min(_setPoint.getZ() + step, _state.getZ() + step);
   _setPoint.setZ(new_z);
 
 }
 
 void Lander::desc() {
-  std::cout << "In desc " << std::endl;
-  double new_z = std::max(_setPoint.getZ() - param.descVelocity,_state.getZ() - param.descVelocity);
+  // descVelocity is a true velocity [m/s]: step = v * dt (frequency-independent),
+  // anchored to the drone position so the setpoint can't run away downward.
+  double step  = param.descVelocity * boundedDt(_dt);
+  double new_z = std::max(_setPoint.getZ() - step, _state.getZ() - step);
   _setPoint.setZ(new_z);
 }
 
@@ -886,54 +895,18 @@ void Lander::comp() {
 		//std::cout<<"ULTRASENSOR"<<std::endl;
 	}
 
-  //Calculate desired vertical velocity in order to compensate oscillations
+  // Adaptive descent rate [m/s]: slower as we close on the pad (interpolated on
+  // the remaining vertical distance dz).
   desc_velocity = common::interpolate(fabs(dz), DRATE_MAX, DRATE_MIN, TMAX, TMIN);
 
-	//FIRST
-    //double z_target_v = _platformState.getVz() - desc;
-    //double err_v = z_target_v - _state.getVz();
-    //z_target_v += params_automatic::KPCompV * (err_v);
-
-
-	// SECOND
-	//double Z_target_v = ( _UltraInfo.getVz() + _state.getVz() ) - desc;
-	//double Err_v = Z_target_v - _state.getVz();
-	//Z_target_v += params_automatic::KPCompV * (Err_v);
-
-	// std::cout<<"Target: "<< _UltraInfo.getVz() << std::endl;
-	//std::cout<<"MyTarget: "<< Z_target_v << std::endl;
-
-	// double Err_v = desc_velocity - _UltraInfo.getVz();
-	// double Z_target_v = param.KPCompV * (Err_v);
-  desc_velocity = 0.1;
-  // double Z_target_v = _UltraInfo.getVz() - desc_velocity;
-  // double Err_v = Z_target_v - _state.getVz();
-  // Z_target_v += param.KPCompV * (Err_v);
-
-  double v_des_q = desc_velocity + (_state.getVz() - _UltraInfo.getVz());
-  double e_v =  v_des_q +_state.getVz();
-  double v_star_q =  _state.getVz() + param.KPCompV * e_v;
-
-
-
-
-
-    // std::cout<<"Old: "<< Z_target_v << std::endl;
-    // std::cout<<"NEWt: "<<  0.5 * v_star_q<< std::endl;
-
-  //Now we need to transform this velocity in a position setpoint since in Firmware:
-  // VelSP = Kp * PosError then PosSP = ( VelSP / Kp ) + RobotPos
-
-  _setPoint.setZ( 0.5 * (v_star_q) + _state.getZ());
-
-
-  if(_setPoint.getZ() > param.zMax)
-  {
-    _setPoint.setZ(param.zMax);
-
-  }
-
-  // std::cout << _setPoint.getZ() << std::endl;
+  // Stable, frequency-independent descent, anchored to the drone position — same
+  // form as desc(). The setpoint can never lead the aircraft by more than one
+  // step, so there is no positive-velocity feedback and no runaway climb.
+  // (The old law fed back +1.1*Vz_state and caused the "goes up fast" behaviour.)
+  double step  = desc_velocity * boundedDt(_dt);
+  double new_z = std::max(_setPoint.getZ() - step, _state.getZ() - step);
+  if(new_z > param.zMax) new_z = param.zMax;
+  _setPoint.setZ(new_z);
 }
 
 void Lander::clampZSP() {

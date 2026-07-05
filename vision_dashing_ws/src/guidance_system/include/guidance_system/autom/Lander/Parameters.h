@@ -121,10 +121,12 @@ public:
 
     double prelandAltitude;
 
-    // Descent velocity (m per tick) applied in desc()
+    // Descent velocity [m/s] applied in desc() as step = descVelocity * dt
+    // (frequency-independent).
     double descVelocity;
 
-    // Ascent velocity (m per tick) applied in asce()
+    // Ascent velocity [m/s] applied in asce() as step = asceVelocity * dt
+    // (frequency-independent).
     double asceVelocity;
 
     // ── Calm-sea gate (safeInitialLanding) ───────────────────────────────────
