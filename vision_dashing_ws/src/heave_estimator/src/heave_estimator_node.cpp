@@ -27,12 +27,18 @@ public:
         double q_omega        = declare_parameter("q_omega",                   1e-6);
         double q_off          = declare_parameter("q_off",                     1e-8);
         double r_meas         = declare_parameter("r_meas",                    1e-4);
+        // Divergence safeguards (see HeaveEKF): physical frequency cap, innovation
+        // gate, and output sanity limits.
+        double omega_max      = declare_parameter("omega_max_rad_s",           3.0);
+        double nis_gate       = declare_parameter("nis_gate",                  25.0);
+        double vel_limit      = declare_parameter("heave_vel_limit_mps",       5.0);
 
         dt_             = 1.0 / timer_rate;
         reident_period_ = reident_period;
 
         identifier_ = std::make_unique<FFTIdentifier>(fft_window, timer_rate, peak_threshold, min_omega);
-        ekf_        = std::make_unique<HeaveEKF>(dt_, q_pos, q_vel, q_omega, q_off, r_meas);
+        ekf_        = std::make_unique<HeaveEKF>(dt_, q_pos, q_vel, q_omega, q_off, r_meas,
+                                                 omega_max, nis_gate, vel_limit);
 
         // Subscription: just buffer incoming az readings — no processing here.
         imu_sub_ = create_subscription<sensor_msgs::msg::Imu>(
@@ -92,6 +98,18 @@ private:
         }
 
         if (!ekf_->update(az)) return;
+
+        // Divergence self-heal: if the EKF output is implausible, do NOT publish
+        // (downstream freshness turns heaveValid false), and force an immediate
+        // re-identification instead of waiting for the periodic one.
+        if (!ekf_->isHealthy()) {
+            RCLCPP_WARN(get_logger(),
+                "Heave EKF diverged (pos=%.2f vel=%.2f) — withholding estimate and re-identifying.",
+                ekf_->heavePosision(), ekf_->heaveVelocity());
+            ekf_->reset();                               // discard diverged state (no reuse)
+            last_reident_time_ = now - reident_period_;  // trip the re-ident branch next tick
+            return;
+        }
 
         std_msgs::msg::Float64 pos_msg, vel_msg;
         pos_msg.data = ekf_->heavePosision();
