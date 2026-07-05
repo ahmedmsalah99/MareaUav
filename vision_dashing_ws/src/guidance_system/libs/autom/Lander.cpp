@@ -863,14 +863,14 @@ void Lander::asce() {
 
   _holdPIDX.reset();
   _holdPIDY.reset();
-  double new_z = std::min(_setPoint.getZ() + param.asceVelocity,_state.getZ() + param.asceVelocity*2);
+  double new_z = std::min(_setPoint.getZ() + param.asceVelocity,_state.getZ() + param.asceVelocity);
   _setPoint.setZ(new_z);
 
 }
 
 void Lander::desc() {
   std::cout << "In desc " << std::endl;
-  double new_z = std::max(_setPoint.getZ() - param.descVelocity,_state.getZ() - param.descVelocity*2);
+  double new_z = std::max(_setPoint.getZ() - param.descVelocity,_state.getZ() - param.descVelocity);
   _setPoint.setZ(new_z);
 }
 
