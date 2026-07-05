@@ -6,9 +6,13 @@
 namespace heave_estimator {
 
 HeaveEKF::HeaveEKF(double dt, double q_pos, double q_vel, double q_omega,
-                   double q_off, double r_meas)
+                   double q_off, double r_meas,
+                   double omega_max, double nis_gate,
+                   double vel_limit, double pos_limit)
     : dt_(dt), q_pos_(q_pos), q_vel_(q_vel), q_omega_(q_omega),
-      q_off_(q_off), r_meas_(r_meas)
+      q_off_(q_off), r_meas_(r_meas),
+      omega_max_(omega_max), nis_gate_(nis_gate),
+      vel_limit_(vel_limit), pos_limit_(pos_limit)
 {
 }
 
@@ -175,15 +179,23 @@ bool HeaveEKF::update(double az_imu)
         H(idx + 2) = -2.0 * w_j * z_j;
     }
 
-    double            innov = az_imu - y_pred;
-    double            S     = (H * P_pred * H.transpose())(0, 0) + r_meas_;
-    Eigen::VectorXd   K     = P_pred * H.transpose() / S;
+    double innov = az_imu - y_pred;
+    double S     = (H * P_pred * H.transpose())(0, 0) + r_meas_;
 
-    x_ = x_pred + K * innov;
+    // Innovation (NIS) gate: reject an implausible measurement so a single bad
+    // IMU sample cannot kick the filter into divergence. Predict-only this step.
+    double nis = (S > 0.0) ? (innov * innov / S) : 0.0;
+    if (nis > nis_gate_) {
+        x_ = x_pred;
+        P_ = P_pred;
+    } else {
+        Eigen::VectorXd K = P_pred * H.transpose() / S;
+        x_ = x_pred + K * innov;
 
-    // Joseph form update to keep P symmetric positive-definite
-    Eigen::MatrixXd I_KH = Eigen::MatrixXd::Identity(state_dim_, state_dim_) - K * H;
-    P_ = I_KH * P_pred * I_KH.transpose() + r_meas_ * K * K.transpose();
+        // Joseph form update to keep P symmetric positive-definite
+        Eigen::MatrixXd I_KH = Eigen::MatrixXd::Identity(state_dim_, state_dim_) - K * H;
+        P_ = I_KH * P_pred * I_KH.transpose() + r_meas_ * K * K.transpose();
+    }
 
     checkObservability();
 
@@ -195,6 +207,13 @@ bool HeaveEKF::update(double az_imu)
         heave_vel_ += x_(idx + 1);
     }
 
+    // Divergence guard: flag when the output is non-finite or beyond any
+    // physically plausible heave. The node withholds the estimate and forces a
+    // re-identification when this trips.
+    healthy_ = std::isfinite(heave_pos_) && std::isfinite(heave_vel_)
+            && std::fabs(heave_vel_) <= vel_limit_
+            && std::fabs(heave_pos_) <= pos_limit_;
+
     return true;
 }
 
@@ -205,9 +224,13 @@ void HeaveEKF::checkObservability()
     static constexpr double omega_min = 0.01;
     static constexpr double omega_sep = 0.05;
 
+    // Clamp each mode frequency to a physical band. Without the upper bound a
+    // drifting omega makes the -omega^2 measurement terms explode and the filter
+    // diverges (the "heave velocity > 200" failure).
     for (int j = 0; j < nm_; ++j) {
         double& w = x_(modeOffset(j) + 2);
-        if (w < omega_min) w = omega_min;
+        if (w < omega_min)  w = omega_min;
+        if (w > omega_max_) w = omega_max_;
     }
 
     // Ensure distinct frequencies
