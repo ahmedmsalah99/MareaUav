@@ -204,7 +204,7 @@ void CompState::handle() {
     if(onTarget && _centered && (downDist < param.land_threshold)){
 	   //if is on the target and is centered and the vertical error is under 25cm, set next state to LandState.
 
-        this->_contextL->setStatePtr(_nextLanState);
+        // this->_contextL->setStatePtr(_nextLanState);
         printStateTransition();
     }
 

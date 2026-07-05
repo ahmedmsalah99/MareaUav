@@ -886,54 +886,28 @@ void Lander::comp() {
 		//std::cout<<"ULTRASENSOR"<<std::endl;
 	}
 
-  //Calculate desired vertical velocity in order to compensate oscillations
-  desc_velocity = common::interpolate(fabs(dz), DRATE_MAX, DRATE_MIN, TMAX, TMIN);
-
-	//FIRST
-    //double z_target_v = _platformState.getVz() - desc;
-    //double err_v = z_target_v - _state.getVz();
-    //z_target_v += params_automatic::KPCompV * (err_v);
+  // //Calculate desired vertical velocity in order to compensate oscillations
+  // desc_velocity = common::interpolate(fabs(dz), DRATE_MAX, DRATE_MIN, TMAX, TMIN);
 
 
-	// SECOND
-	//double Z_target_v = ( _UltraInfo.getVz() + _state.getVz() ) - desc;
-	//double Err_v = Z_target_v - _state.getVz();
-	//Z_target_v += params_automatic::KPCompV * (Err_v);
+  // desc_velocity = 0.1;
 
-	// std::cout<<"Target: "<< _UltraInfo.getVz() << std::endl;
-	//std::cout<<"MyTarget: "<< Z_target_v << std::endl;
-
-	// double Err_v = desc_velocity - _UltraInfo.getVz();
-	// double Z_target_v = param.KPCompV * (Err_v);
-  desc_velocity = 0.1;
-  // double Z_target_v = _UltraInfo.getVz() - desc_velocity;
-  // double Err_v = Z_target_v - _state.getVz();
-  // Z_target_v += param.KPCompV * (Err_v);
-
-  double v_des_q = desc_velocity + (_state.getVz() - _UltraInfo.getVz());
-  double e_v =  v_des_q +_state.getVz();
-  double v_star_q =  _state.getVz() + param.KPCompV * e_v;
+  // double v_des_q = desc_velocity + (_state.getVz() - _UltraInfo.getVz());
+  // double e_v =  v_des_q +_state.getVz();
+  // double v_star_q =  _state.getVz() + param.KPCompV * e_v;
 
 
 
 
-
-    // std::cout<<"Old: "<< Z_target_v << std::endl;
-    // std::cout<<"NEWt: "<<  0.5 * v_star_q<< std::endl;
-
-  //Now we need to transform this velocity in a position setpoint since in Firmware:
-  // VelSP = Kp * PosError then PosSP = ( VelSP / Kp ) + RobotPos
-
-  _setPoint.setZ( 0.5 * (v_star_q) + _state.getZ());
+  // _setPoint.setZ( 0.5 * (v_star_q) + _state.getZ());
 
 
-  if(_setPoint.getZ() > param.zMax)
-  {
-    _setPoint.setZ(param.zMax);
+  // if(_setPoint.getZ() > param.zMax)
+  // {
+  //   _setPoint.setZ(param.zMax);
 
-  }
-
-  // std::cout << _setPoint.getZ() << std::endl;
+  // }
+  _setPoint.setZ(_state.getZ() + _UltraInfo.getVz());
 }
 
 void Lander::clampZSP() {
