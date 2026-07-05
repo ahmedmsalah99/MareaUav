@@ -165,6 +165,7 @@ void Lander::initStateMachine() {
   _machine._setPoint     =  &_setPoint;
   _machine._VisionPose   =  &_VisionPose;
   _machine._UltraInfo    =  &_UltraInfo;
+  _machine._seaState     =  &_seaState;
 	_machine.param		     =  &param;
 	//New signals
   _machine._holding      =  &_holding;
@@ -223,6 +224,10 @@ void Lander::setVisionPose(const MavState VisionPose){
 
 void Lander::setUltrasonicInfo(const MavState UltraInfo) {
 	_UltraInfo = UltraInfo;
+}
+
+void Lander::setSeaState(const SeaState seaState) {
+	_seaState = seaState;
 }
 
 

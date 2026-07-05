@@ -65,6 +65,12 @@ private:
     MavState* _UltrasonicInfo;
 
     /**
+     *  Aggregated sea-state estimate (SPA prediction + heave)
+     */
+
+    SeaState* _seaState;
+
+    /**
      * @brief Lander object
      */
 
@@ -184,6 +190,10 @@ private:
 
       			_lander.setUltrasonicInfo(*_UltrasonicInfo);
 
+            //passing the aggregated sea-state estimate (SPA prediction + heave).
+
+            _lander.setSeaState(*_seaState);
+
             // passing the desired yaw before landing
             _lander.setYaw(_actualTask->yaw);
       			//here, we can divide the function run() to obtain the actual state of the machine
@@ -196,7 +206,7 @@ private:
     }
 
 public:
-    Land(MavState *_state, MavState *_comm,exec::task *_actualTask, MavState* _platform, MavState* _Vision, MavState* _Ultrasonic) : Command(_state, _comm, _actualTask) , _plat(_plat), _platformPose(_platform), _VisionPose(_Vision),_UltrasonicInfo(_Ultrasonic){}
+    Land(MavState *_state, MavState *_comm,exec::task *_actualTask, MavState* _platform, MavState* _Vision, MavState* _Ultrasonic, SeaState* _Sea) : Command(_state, _comm, _actualTask) , _plat(_plat), _platformPose(_platform), _VisionPose(_Vision),_UltrasonicInfo(_Ultrasonic),_seaState(_Sea){}
 
     /**
      * @brief Method inherited from the base class

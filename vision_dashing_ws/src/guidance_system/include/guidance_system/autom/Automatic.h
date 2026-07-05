@@ -84,6 +84,13 @@ public:
   void setUltrasonicInfo(MavState pose);
 
   /**
+   * @brief Such method sets the aggregated sea-state estimate (SPA prediction + heave)
+   * @param seaState SeaState Object
+   */
+
+  void setSeaState(SeaState seaState);
+
+  /**
    * @brief Such method sets the feedback coming from the release payload node
    * @param string feedback
    */
@@ -186,6 +193,12 @@ private:
      */
 
 	MavState _UltrasonicInfo;
+
+    /**
+     * aggregated sea-state estimate (SPA prediction + heave)
+     */
+
+	SeaState _seaState;
 
     /**
      * feedback values from the release payload node
