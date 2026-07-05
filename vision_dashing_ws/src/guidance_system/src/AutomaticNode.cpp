@@ -2,6 +2,7 @@
 
 #include <chrono>
 #include <cmath>
+#include <deque>
 #include <iostream>
 #include <memory>
 #include <string>
@@ -194,6 +195,7 @@ public:
     last_spa_time_        = epoch;
     last_heave_time_      = epoch;
     last_spa_est_stamp_   = epoch;
+    last_loop_time_       = epoch;
 
     RCLCPP_INFO(get_logger(), "Automatic node ready (control loop 50 Hz)");
   }
@@ -219,12 +221,18 @@ private:
       autom_._actualTask.x = platform_state_.getX();
       autom_._actualTask.y = platform_state_.getY();
     }
-    // Refresh sea-state freshness (SPA prediction + heave) against the staleness
-    // window, then hand it to the guidance for the calm-sea landing gate.
+    // Refresh sea-state every control tick (50 Hz) and hand it to the guidance
+    // for the calm-sea landing gate:
+    //   - spaValid / heaveValid are recomputed live from message freshness, so
+    //     they flip to false as soon as either estimator stops publishing.
+    //   - dt is the measured control-loop period, used by the calm-sea timer.
     {
       const rclcpp::Time now = this->now();
       sea_state_.spaValid   = (now - last_spa_time_).seconds()   < kSeaStale;
       sea_state_.heaveValid = (now - last_heave_time_).seconds() < kSeaStale;
+      sea_state_.dt = (last_loop_time_.nanoseconds() == 0)
+                        ? 0.0 : (now - last_loop_time_).seconds();
+      last_loop_time_ = now;
       autom_.setSeaState(sea_state_);
     }
 
@@ -376,8 +384,9 @@ private:
     if (spa_est_init_) {
       const double dt = (stamp - last_spa_est_stamp_).seconds();
       if (dt > 1e-3) {
-        sea_state_.rollRate  = (roll  - prev_spa_roll_)  / dt;
-        sea_state_.pitchRate = (pitch - prev_spa_pitch_) / dt;
+        // Raw finite-difference rates are noisy — smooth each with a moving average.
+        sea_state_.rollRate  = movingAverage(roll_rate_buf_,  (roll  - prev_spa_roll_)  / dt);
+        sea_state_.pitchRate = movingAverage(pitch_rate_buf_, (pitch - prev_spa_pitch_) / dt);
       }
     }
     spa_est_init_       = true;
@@ -387,6 +396,16 @@ private:
 
     sea_state_.roll  = roll;
     sea_state_.pitch = pitch;
+  }
+
+  // Push a sample into a fixed-length window and return its mean.
+  double movingAverage(std::deque<double> & buf, double sample)
+  {
+    buf.push_back(sample);
+    if (buf.size() > kRateWindow) buf.pop_front();
+    double sum = 0.0;
+    for (double v : buf) sum += v;
+    return sum / static_cast<double>(buf.size());
   }
 
   // spa/prediction marks the SPA pipeline as active; used for the freshness check.
@@ -479,10 +498,15 @@ private:
 
   // Sea-state freshness window [s]: SPA/heave data older than this is "outdated".
   static constexpr double kSeaStale = 0.5;
-  bool         spa_est_init_   {false};
-  double       prev_spa_roll_  {0.0};
-  double       prev_spa_pitch_ {0.0};
-  rclcpp::Time last_spa_est_stamp_;
+  // Moving-average window for the (noisy) finite-differenced roll/pitch rates.
+  static constexpr std::size_t kRateWindow = 10;
+  bool             spa_est_init_   {false};
+  double           prev_spa_roll_  {0.0};
+  double           prev_spa_pitch_ {0.0};
+  rclcpp::Time     last_spa_est_stamp_;
+  rclcpp::Time     last_loop_time_;
+  std::deque<double> roll_rate_buf_;
+  std::deque<double> pitch_rate_buf_;
 
   bool        waiting_        {true};
   int         current_action_ {actions::IDLE};

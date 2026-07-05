@@ -128,6 +128,10 @@ public:
     double asceVelocity;
 
     // ── Calm-sea gate (safeInitialLanding) ───────────────────────────────────
+    // Max platform roll angle [rad] (estimation) allowed for the sea to be "calm".
+    double rollLimit;
+    // Max platform pitch angle [rad] (estimation) allowed for the sea to be "calm".
+    double pitchLimit;
     // Max platform heave velocity [m/s] allowed for the sea to be "calm".
     double heaveVelLimit;
     // Max platform roll rate [rad/s] allowed for the sea to be "calm".

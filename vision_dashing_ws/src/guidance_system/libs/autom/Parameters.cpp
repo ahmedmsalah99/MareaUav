@@ -13,6 +13,8 @@ Parameters::Parameters() {
     cone_z_ref         = 5.0;
     descVelocity       = 0.1;
     asceVelocity       = 0.1;
+    rollLimit          = 0.35;
+    pitchLimit         = 0.35;
     heaveVelLimit      = 0.3;
     rollRateLimit      = 0.1;
     pitchRateLimit     = 0.1;
@@ -137,6 +139,12 @@ void Parameters::loadParamFile(const char *config_file) {
 
             else if( !param.compare("ASCE_VELOCITY") )
                 asceVelocity = value;
+
+            else if( !param.compare("ROLL_LIMIT") )
+                rollLimit = value;
+
+            else if( !param.compare("PITCH_LIMIT") )
+                pitchLimit = value;
 
             else if( !param.compare("HEAVE_VEL_LIMIT") )
                 heaveVelLimit = value;

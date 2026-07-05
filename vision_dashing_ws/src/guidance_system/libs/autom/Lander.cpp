@@ -166,7 +166,6 @@ void Lander::initStateMachine() {
   _machine._VisionPose   =  &_VisionPose;
   _machine._UltraInfo    =  &_UltraInfo;
   _machine._seaState     =  &_seaState;
-  _machine._dt           =  &_dt;
 	_machine.param		     =  &param;
 	//New signals
   _machine._holding      =  &_holding;

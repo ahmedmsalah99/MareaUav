@@ -136,9 +136,6 @@ public:
      */
     SeaState *_seaState;
 
-    /** Control loop dt [s], used to accumulate the calm-sea timer. */
-    double *_dt;
-
     /** Go/no-go signal: gates the descent in HOLD. Returns false until wired up. */
     bool getLandingGoSignal() const { return false; }
 
@@ -147,10 +144,13 @@ public:
      * @details Returns true only when:
      *   1. The SPA prediction and the heave estimate are both active and fresh
      *      (not outdated).
-     *   2. The platform heave velocity and the roll/pitch angular rates have all
+     *   2. The platform roll/pitch angles (estimation) are within their
+     *      (generous) calm-sea limits.
+     *   3. The platform heave velocity and the roll/pitch angular rates have all
      *      stayed within their configured limits continuously for calmDuration
      *      seconds — after which the sea is considered calm.
-     * Any frame that breaks a condition resets the calm timer.
+     * Any frame that breaks a condition resets the calm timer. The calm timer is
+     * accumulated with the control-loop dt supplied in the SeaState.
      */
     bool safeInitialLanding() const {
 
@@ -160,19 +160,23 @@ public:
             return false;
         }
 
-        // 2. Instantaneous calm check: heave velocity and roll/pitch rates within limits.
-        bool calmNow = (std::fabs(_seaState->heaveVel)  < param->heaveVelLimit)
-                    && (std::fabs(_seaState->rollRate)  < param->rollRateLimit)
-                    && (std::fabs(_seaState->pitchRate) < param->pitchRateLimit);
+        // 2. Roll/pitch attitude (estimation) within the calm-sea limits.
+        bool attitudeCalm = (std::fabs(_seaState->roll)  < param->rollLimit)
+                         && (std::fabs(_seaState->pitch) < param->pitchLimit);
 
-        if (!calmNow) {
+        // 3. Heave velocity and roll/pitch angular rates within limits.
+        bool ratesCalm = (std::fabs(_seaState->heaveVel)  < param->heaveVelLimit)
+                      && (std::fabs(_seaState->rollRate)  < param->rollRateLimit)
+                      && (std::fabs(_seaState->pitchRate) < param->pitchRateLimit);
+
+        if (!attitudeCalm || !ratesCalm) {
             _calmTimer = 0.0;
             return false;
         }
 
         // Calm conditions held this tick — accumulate and require it to be
         // sustained for calmDuration before declaring the sea calm.
-        _calmTimer += *_dt;
+        _calmTimer += _seaState->dt;
         return _calmTimer >= param->calmDuration;
     }
 
