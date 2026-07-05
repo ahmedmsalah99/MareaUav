@@ -121,12 +121,12 @@ public:
 
     double prelandAltitude;
 
-    // Descent velocity [m/s] applied in desc() as step = descVelocity * dt
-    // (frequency-independent).
+    // Descent lead [m] applied in desc(): the setpoint is planted this far below
+    // the drone each tick (position lead, not a per-tick accumulation). The
+    // actual descent rate is the flight controller tracking this lead.
     double descVelocity;
 
-    // Ascent velocity [m/s] applied in asce() as step = asceVelocity * dt
-    // (frequency-independent).
+    // Ascent lead [m] applied in asce(): setpoint planted this far above the drone.
     double asceVelocity;
 
     // ── Calm-sea gate (safeInitialLanding) ───────────────────────────────────

@@ -859,27 +859,22 @@ void Lander::hold() {
 
 }
 
-// Bound dt so a scheduler hiccup can't produce a single oversized step.
-static inline double boundedDt(double dt) { return std::min(std::max(dt, 0.0), 0.1); }
-
 void Lander::asce() {
 
   _holdPIDX.reset();
   _holdPIDY.reset();
-  // asceVelocity is a true velocity [m/s]: step = v * dt makes the ascent rate
-  // independent of the control-loop frequency. Anchored to the drone position so
-  // the setpoint can never lead by more than one step.
-  double step  = param.asceVelocity * boundedDt(_dt);
-  double new_z = std::min(_setPoint.getZ() + step, _state.getZ() + step);
+  // asceVelocity is a position lead [m]: the setpoint is planted this far above
+  // the drone and re-anchored every tick, so it can never run away and the climb
+  // rate is set by the flight controller tracking that lead.
+  double new_z = std::min(_setPoint.getZ() + param.asceVelocity, _state.getZ() + param.asceVelocity);
   _setPoint.setZ(new_z);
 
 }
 
 void Lander::desc() {
-  // descVelocity is a true velocity [m/s]: step = v * dt (frequency-independent),
-  // anchored to the drone position so the setpoint can't run away downward.
-  double step  = param.descVelocity * boundedDt(_dt);
-  double new_z = std::max(_setPoint.getZ() - step, _state.getZ() - step);
+  // descVelocity is a position lead [m]: the setpoint is planted this far below
+  // the drone and re-anchored every tick (no accumulation, no runaway).
+  double new_z = std::max(_setPoint.getZ() - param.descVelocity, _state.getZ() - param.descVelocity);
   _setPoint.setZ(new_z);
 }
 
@@ -895,16 +890,15 @@ void Lander::comp() {
 		//std::cout<<"ULTRASENSOR"<<std::endl;
 	}
 
-  // Adaptive descent rate [m/s]: slower as we close on the pad (interpolated on
-  // the remaining vertical distance dz).
+  // Adaptive descent lead [m]: smaller as we close on the pad (interpolated on
+  // the remaining vertical distance dz), so the descent gentles near touchdown.
   desc_velocity = common::interpolate(fabs(dz), DRATE_MAX, DRATE_MIN, TMAX, TMIN);
 
-  // Stable, frequency-independent descent, anchored to the drone position — same
-  // form as desc(). The setpoint can never lead the aircraft by more than one
-  // step, so there is no positive-velocity feedback and no runaway climb.
+  // Stable descent, anchored to the drone position — same form as desc(). The
+  // setpoint is planted `desc_velocity` below the aircraft and re-anchored each
+  // tick, so there is no positive-velocity feedback and no runaway climb.
   // (The old law fed back +1.1*Vz_state and caused the "goes up fast" behaviour.)
-  double step  = desc_velocity * boundedDt(_dt);
-  double new_z = std::max(_setPoint.getZ() - step, _state.getZ() - step);
+  double new_z = std::max(_setPoint.getZ() - desc_velocity, _state.getZ() - desc_velocity);
   if(new_z > param.zMax) new_z = param.zMax;
   _setPoint.setZ(new_z);
 }
