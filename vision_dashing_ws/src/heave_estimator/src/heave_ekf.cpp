@@ -217,6 +217,33 @@ bool HeaveEKF::update(double az_imu)
     return true;
 }
 
+// ---- Forward prediction ----------------------------------------------------
+
+void HeaveEKF::predict(double T, double& pos_pred, double& vel_pred) const
+{
+    pos_pred = 0.0;
+    vel_pred = 0.0;
+    if (!initialized_) return;
+
+    // Propagate each harmonic mode T seconds forward: z(T) = z·cos(ωT) + (ż/ω)·sin(ωT)
+    for (int j = 0; j < nm_; ++j) {
+        int    idx = modeOffset(j);
+        double z   = x_(idx);
+        double zd  = x_(idx + 1);
+        double w   = x_(idx + 2);
+
+        if (std::abs(w) < 1e-6) {
+            pos_pred += z + zd * T;
+            vel_pred += zd;
+        } else {
+            double c = std::cos(w * T);
+            double s = std::sin(w * T);
+            pos_pred += z * c + zd * s / w;
+            vel_pred += -z * w * s + zd * c;
+        }
+    }
+}
+
 // ---- Observability guard ---------------------------------------------------
 
 void HeaveEKF::checkObservability()
