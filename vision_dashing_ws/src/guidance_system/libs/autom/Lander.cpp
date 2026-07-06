@@ -919,14 +919,8 @@ void Lander::comp() {
 
   double new_z;
   if (_compTracking) {
-    // Setpoint lead, anchored to the drone (no dt — a lead distance, like desc/asce):
-    //   position term  : (compHoldDist - gap) drives the gap to the hold distance,
-    //   velocity term  : predicted pad velocity * compVelGain leads the pad so the
-    //                    relative velocity goes to zero (uses heaveVelPred).
     double vff  = _seaState.heaveValid ? _seaState.heaveVelPred : 0.0;
-    double lead = (param.compHoldDist - gap) + vff * param.compVelGain;
-    // Max lead bounds the effective vertical speed.
-    lead = common::clamp(lead, -param.compMaxLead, param.compMaxLead);
+    double lead = (param.compHoldDist - gap) + vff ;
     new_z = _state.getZ() + lead;
   } else {
     // Backing off: ascend (anchored, bounded) until the gap recovers.

@@ -26,8 +26,6 @@ Parameters::Parameters() {
     compHoldDist       = 1.5;
     compMinDist        = 1.0;
     compResumeDist     = 1.3;
-    compVelGain        = 0.3;
-    compMaxLead        = 0.5;
 }
 
 void Parameters::loadConfigFile(const char *config_file) {
@@ -188,11 +186,6 @@ void Parameters::loadParamFile(const char *config_file) {
             else if( !param.compare("COMP_RESUME_DIST") )
                 compResumeDist = value;
 
-            else if( !param.compare("COMP_VEL_GAIN") )
-                compVelGain = value;
-
-            else if( !param.compare("COMP_MAX_LEAD") )
-                compMaxLead = value;
 
         }
 		cFile.close();
