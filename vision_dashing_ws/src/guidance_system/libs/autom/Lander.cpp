@@ -938,7 +938,7 @@ void Lander::comp() {
     std::cout << "ez " << ez << std::endl;
   }
   std::cout << "_setPoint " << _setPoint.getX() << " " << _setPoint.getY() << std::endl;
-  _setPoint.setZ(_state.getZ() + _UltraInfo.getVz() + ez);
+  _setPoint.setZ(_state.getZ() + _state.getVz() + _UltraInfo.getVz() + ez);
 }
 
 void Lander::clampZSP() {

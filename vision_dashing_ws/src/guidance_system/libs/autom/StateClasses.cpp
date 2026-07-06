@@ -64,8 +64,8 @@ void HoldState::handle(){
     getSignals();
     double downDist = -_verticalErr;
     
-    double ultra_limit = 0.83 - 0.1;
-    bool compValid = _holding && (fabs(_UltraInfo.getZ()) < ultra_limit) && _centered;
+    double ultra_limit = 0.83 - 0.2;
+    bool compValid = _holding && (fabs(_UltraInfo.getZ()) < ultra_limit+0.1) && _centered;
     // Descend only when holding AND go signal is active AND above zMin floor.
     bool descValid = _centered && _holding && (_setPoint.getZ() > param.zMin) && (fabs(_UltraInfo.getZ()) > ultra_limit)
                     && _contextL->safeInitialLanding() && !compValid;
@@ -103,7 +103,7 @@ void HoldState::handle(){
         std::cout << "asceUnderMin " << " _setPoint.getZ() " << _setPoint.getZ() << std::endl;
         return;
     }
-    if(compValid && waitComp++ > 10){
+    if(compValid){
         this->_contextL->setStatePtr(_nextState); //set the next state (RToLandState)
         printStateTransition();
         waitComp = 0;
