@@ -39,6 +39,12 @@ public:
     double *_verticalErr;
 
     /**
+     * Clean drone->pad vertical distance (gap) [m], positive above the pad.
+     */
+
+    double *_gap;
+
+    /**
      * Threshold value for the horizontal error to allow the hold state
      */
 
@@ -249,6 +255,7 @@ public:
 
          _horizontaErr = *(_contextL->_horizontaErr);
          _verticalErr  = *(_contextL->_verticalErr);
+         _gap          = *(_contextL->_gap);
          _tauHold      = *(_contextL->_tauHold);
          _tauLost      = *(_contextL->_tauLost);
          _tauErr       = *(_contextL->_tauErr);
@@ -290,6 +297,12 @@ protected:
      */
 
     double   _verticalErr;
+
+    /**
+     * Clean drone->pad vertical distance (gap) [m], positive above the pad.
+     */
+
+    double   _gap;
 
     /**
      * Threshold value for the horizontal error to allow the hold state

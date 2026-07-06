@@ -147,6 +147,7 @@ void Lander::initStateMachine() {
 	_prevTime    = 0;
 	_actualTime  = 0;
 	_verticalErr = 0;
+	_gap         = 0;
 	_actualState = 0;
 	_prevState   = 0;
 	_spSeeded    = false;   // re-seed the XY platform-hold filter on (re)init
@@ -156,6 +157,7 @@ void Lander::initStateMachine() {
   //the one of the LandMachine.
   _machine._horizontaErr =  &_horizontaErr;
   _machine._verticalErr  =  &_verticalErr;
+  _machine._gap          =  &_gap;
   _machine._tauErr       =  &_tauErr;
   _machine._tauHold      =  &_tauHold;
   _machine._tauLost      =  &_tauLost;
@@ -267,6 +269,10 @@ void Lander::updateSignals() {
   _horizontaErr = _err.norm();
   _err[2]       = dz;
   _verticalErr  = _err[2];
+
+  // Single clean drone->pad vertical distance (gap), positive above the pad.
+  // Same convention the states use as downDist = -_verticalErr.
+  _gap = -_verticalErr;
 
   // Prediction horizon: time to reach platform at current descent velocity, capped.
   double predHorizonMax = param.zMax / param.descVelocity;
@@ -558,7 +564,8 @@ void Lander::run() {
 	if (print > 30){
 		// printSignals();
 		print = 0;
-    std::cout << "actual state " << _actualState << std::endl;
+    std::cout << "actual state " << _actualState << " gap " << _gap
+              << " (switchSensor " << switchSensor << ")" << std::endl;
 	}
   
 

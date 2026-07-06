@@ -154,6 +154,9 @@ public:
 
     double getPredictionHorizon() const { return _predictionHorizon; }
 
+    /** Drone->pad vertical distance (gap) [m], positive above the pad. */
+    double getGap() const { return _gap; }
+
     /**
      * @brief The core function of the landing procedure. Mainly, it is
      * a switch based on the actual state.
@@ -403,6 +406,14 @@ private:
      */
 
     double _verticalErr;
+
+    /**
+     * Clean drone->pad vertical distance (gap) [m], positive when the drone is
+     * above the pad. Derived from the active sensor (vision far / ultrasonic
+     * near) as -_verticalErr. Single signal shared with the state machine.
+     */
+
+    double _gap;
 
     /**
      * Threshold value for the horizontal error to allow the hold state
