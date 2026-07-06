@@ -32,6 +32,9 @@ public:
         double omega_max      = declare_parameter("omega_max_rad_s",           3.0);
         double nis_gate       = declare_parameter("nis_gate",                  25.0);
         double vel_limit      = declare_parameter("heave_vel_limit_mps",       5.0);
+        // Forward-prediction horizon [s] for heave/prediction_* (used downstream
+        // to lead the pad by the drone's reaction lag).
+        pred_horizon_       = declare_parameter("prediction_horizon_s",        0.3);
 
         dt_             = 1.0 / timer_rate;
         reident_period_ = reident_period;
@@ -50,6 +53,8 @@ public:
 
         pos_pub_ = create_publisher<std_msgs::msg::Float64>("heave/position", 10);
         vel_pub_ = create_publisher<std_msgs::msg::Float64>("heave/velocity", 10);
+        pred_pos_pub_ = create_publisher<std_msgs::msg::Float64>("heave/prediction_position", 10);
+        pred_vel_pub_ = create_publisher<std_msgs::msg::Float64>("heave/prediction_velocity", 10);
 
         // Wall timer drives all processing at `timer_rate` Hz.
         auto period = std::chrono::nanoseconds(static_cast<int64_t>(1e9 / timer_rate));
@@ -116,11 +121,22 @@ private:
         vel_msg.data = ekf_->heaveVelocity();
         pos_pub_->publish(pos_msg);
         vel_pub_->publish(vel_msg);
+
+        // Forward prediction: where the pad heave will be pred_horizon_ s from now.
+        double pred_pos, pred_vel;
+        ekf_->predict(pred_horizon_, pred_pos, pred_vel);
+        std_msgs::msg::Float64 pred_pos_msg, pred_vel_msg;
+        pred_pos_msg.data = pred_pos;
+        pred_vel_msg.data = pred_vel;
+        pred_pos_pub_->publish(pred_pos_msg);
+        pred_vel_pub_->publish(pred_vel_msg);
     }
 
     rclcpp::Subscription<sensor_msgs::msg::Imu>::SharedPtr imu_sub_;
     rclcpp::Publisher<std_msgs::msg::Float64>::SharedPtr    pos_pub_;
     rclcpp::Publisher<std_msgs::msg::Float64>::SharedPtr    vel_pub_;
+    rclcpp::Publisher<std_msgs::msg::Float64>::SharedPtr    pred_pos_pub_;
+    rclcpp::Publisher<std_msgs::msg::Float64>::SharedPtr    pred_vel_pub_;
     rclcpp::TimerBase::SharedPtr                            timer_;
 
     std::unique_ptr<FFTIdentifier> identifier_;
@@ -132,6 +148,7 @@ private:
     double dt_                  = 1.0 / 30.0;
     double reident_period_      = 40.0;
     double last_reident_time_   = 0.0;
+    double pred_horizon_        = 0.3;
 };
 
 int main(int argc, char** argv)

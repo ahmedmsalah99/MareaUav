@@ -38,6 +38,12 @@ public:
     double heaveVelocity() const { return heave_vel_; }
     bool isInitialized() const { return initialized_; }
 
+    // Predict the heave position and velocity T seconds into the future by
+    // propagating the identified harmonic modes forward in closed form
+    // (same z̈ + ω²z = 0 solution as the one-step transition, with dt -> T).
+    // Outputs 0 and does nothing if not yet initialized.
+    void predict(double T, double& pos_pred, double& vel_pred) const;
+
     // False when the filter has diverged this step (output non-finite or beyond
     // physical limits). The node uses this to withhold the estimate and force a
     // re-identification instead of publishing garbage.
