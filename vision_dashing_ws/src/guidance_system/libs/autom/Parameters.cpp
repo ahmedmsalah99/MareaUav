@@ -21,6 +21,7 @@ Parameters::Parameters() {
     calmDuration       = 5.0;
     spFilterAlpha      = 0.9;
     spMaxVelXY         = 0.3;
+    reactionLag        = 0.3;
 }
 
 void Parameters::loadConfigFile(const char *config_file) {
@@ -165,6 +166,9 @@ void Parameters::loadParamFile(const char *config_file) {
 
             else if( !param.compare("SP_XY_MAX_VEL") )
                 spMaxVelXY = value;
+
+            else if( !param.compare("REACTION_LAG_S") )
+                reactionLag = value;
 
         }
 		cFile.close();

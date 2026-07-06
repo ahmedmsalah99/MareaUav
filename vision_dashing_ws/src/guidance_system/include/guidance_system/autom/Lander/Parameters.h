@@ -148,6 +148,12 @@ public:
     // Max speed [m/s] the XY setpoint is allowed to move (rate limit).
     double spMaxVelXY;
 
+    // ── Heave-predictive landing ─────────────────────────────────────────────
+    // Drone vertical reaction lag [s]: how far ahead to lead the pad using the
+    // heave prediction. Should match the heave_estimator's prediction_horizon_s.
+    // Fixed for now; estimated online in a later step.
+    double reactionLag;
+
 };
 
 
