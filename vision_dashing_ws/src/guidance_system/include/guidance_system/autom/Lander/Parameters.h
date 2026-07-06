@@ -154,6 +154,10 @@ public:
     // Fixed for now; estimated online in a later step.
     double reactionLag;
 
+    // Drone->pad vertical distance [m] to descend to and hold before starting
+    // the compensated / aggressive landing (the "standoff").
+    double standoffDistance;
+
 };
 
 
