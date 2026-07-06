@@ -64,10 +64,10 @@ void HoldState::handle(){
     getSignals();
     double downDist = -_verticalErr;
     
-    
-    bool compValid = _holding && (fabs(_UltraInfo.getZ()) < (0.75 - 0.1)) && _centered;
+    double ultra_limit = 0.75 - 0.1;
+    bool compValid = _holding && (fabs(_UltraInfo.getZ()) < ultra_limit) && _centered;
     // Descend only when holding AND go signal is active AND above zMin floor.
-    bool descValid = _centered && _holding && (_setPoint.getZ() > param.zMin)
+    bool descValid = _centered && _holding && (_setPoint.getZ() > param.zMin) && (fabs(_UltraInfo.getZ()) > ultra_limit)
                     && _contextL->safeInitialLanding() && !compValid;
 
     // Ascend if platform is lost and we are still below zMax (relative to pad).
