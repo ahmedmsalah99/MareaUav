@@ -22,6 +22,7 @@ Parameters::Parameters() {
     spFilterAlpha      = 0.9;
     spMaxVelXY         = 0.3;
     reactionLag        = 0.3;
+    standoffDistance   = 2.0;
 }
 
 void Parameters::loadConfigFile(const char *config_file) {
@@ -169,6 +170,9 @@ void Parameters::loadParamFile(const char *config_file) {
 
             else if( !param.compare("REACTION_LAG_S") )
                 reactionLag = value;
+
+            else if( !param.compare("STANDOFF_DISTANCE") )
+                standoffDistance = value;
 
         }
 		cFile.close();
