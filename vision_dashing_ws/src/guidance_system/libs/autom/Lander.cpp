@@ -151,6 +151,7 @@ void Lander::initStateMachine() {
 	_actualState = 0;
 	_prevState   = 0;
 	_spSeeded    = false;   // re-seed the XY platform-hold filter on (re)init
+	_compTracking = true;   // COMP starts in tracking mode
 
   //Link signals
   //assign initialized errors of the Lander class with
@@ -901,45 +902,37 @@ void Lander::desc() {
 
 void Lander::comp() {
 
-	double dz;
+  // COMP standoff hold: keep the drone at compHoldDist above the pad while
+  // centred (XY is held by hold(), which runs before comp() in the COMP tick).
+  //
+  // Hysteresis safety: if the gap drops below compMinDist the pad is coming up
+  // too close — stop tracking and back off (ascend) until the gap climbs back
+  // above compResumeDist, then resume tracking.
+  //
+  // B2 is reactive: it uses the CURRENT measured gap. C1 adds the predicted
+  // pad motion (lead by REACTION_LAG_S) to drive the relative velocity to zero.
 
-	if(switchSensor)
-  	dz = _VisionPose.getZ() + PLATFORM_OFFSET;
-	else{
+  double gap = -_verticalErr;   // measured drone->pad vertical distance
 
-		dz = (_UltraInfo.getZ() - params_automatic::OffsetUltraSensor);
-		//std::cout<<"ULTRASENSOR"<<std::endl;
-	}
+  if (gap < param.compMinDist)    _compTracking = false;   // too close — back off
+  if (gap > param.compResumeDist) _compTracking = true;    // safe again — track
 
-  // //Calculate desired vertical velocity in order to compensate oscillations
-  // desc_velocity = common::interpolate(fabs(dz), DRATE_MAX, DRATE_MIN, TMAX, TMIN);
-
-
-  // desc_velocity = 0.1;
-
-  // double v_des_q = desc_velocity + (_state.getVz() - _UltraInfo.getVz());
-  // double e_v =  v_des_q +_state.getVz();
-  // double v_star_q =  _state.getVz() + param.KPCompV * e_v;
-
-
-
-
-  // _setPoint.setZ( 0.5 * (v_star_q) + _state.getZ());
-
-
-  // if(_setPoint.getZ() > param.zMax)
-  // {
-  //   _setPoint.setZ(param.zMax);
-
-  // }
-  double ez = 0;
-  std::cout << "dz " << dz << std::endl;
-  if(dz < 0.75){
-    ez = 0.75 - dz;
-    std::cout << "ez " << ez << std::endl;
+  double new_z;
+  if (_compTracking) {
+    double pad_z    = _state.getZ() - gap;                 // measured pad altitude
+    double target_z = pad_z + param.compHoldDist;          // hold compHoldDist above pad
+    double maxStep  = param.compZMaxVel * _dt;             // rate limit for stability
+    new_z = common::clamp(target_z, _setPoint.getZ() - maxStep, _setPoint.getZ() + maxStep);
+  } else {
+    // Backing off: ascend (anchored, bounded) until the gap recovers.
+    new_z = std::min(_setPoint.getZ() + param.asceVelocity, _state.getZ() + param.asceVelocity);
   }
-  std::cout << "_setPoint " << _setPoint.getX() << " " << _setPoint.getY() << std::endl;
-  _setPoint.setZ(_state.getZ() + _state.getVz() + _UltraInfo.getVz() + ez);
+
+  std::cout << "comp gap " << gap << " tracking " << _compTracking
+            << " new_z " << new_z << std::endl;
+
+  _setPoint.setZ(new_z);
+  clampZSP();
 }
 
 void Lander::clampZSP() {

@@ -64,8 +64,10 @@ void HoldState::handle(){
     getSignals();
     double downDist = -_verticalErr;
     
-    double ultra_limit = 0.83 - 0.2;
-    bool compValid = _holding && (fabs(_UltraInfo.getZ()) < ultra_limit+0.1) && _centered;
+    // Enter COMP once we are within the standoff distance (2 m) of the pad,
+    // centred, holding and on a calm sea. COMP then holds compHoldDist (1.5 m).
+    bool compValid = _holding && _centered && (downDist < param.standoffDistance)
+                    && _contextL->safeInitialLanding();
     // B1: descend only while farther than the standoff distance (2 m) from the
     // pad. Once within the standoff we stop descending and hold there; the
     // compensated/aggressive landing from the standoff comes in later phases.
@@ -163,55 +165,30 @@ void AsceState::handle() {
 void CompState::handle() {
 
     getSignals();
-    double downDist = -_verticalErr;
 
-    /*
-    NComp is incremented every time the variable centered is true.
-    NframesComp is the number of consecutive frames in which tracking is considered valid
-    and robot is ready for compensation.
-    */
+    // COMP holds compHoldDist (1.5 m) above the pad — well within vision range and
+    // beyond the ultrasonic's range, so the old ultrasonic-based exits no longer
+    // apply. Stay in COMP while the platform is tracked and the sea is not too
+    // rough; the standoff hold + hysteresis back-off live in Lander::comp().
 
-    bool onTarget = _NComp > param.NFramesComp;
-
-    if(!_VisionPose.IsValid){
-      this->_contextL->setStatePtr(_nextHoveringState); //set the next state (InitState)
+    if(!_VisionPose.IsValid || !_VisionPose.VisionDataUpdated){
+      // Lost a trustworthy platform fix — recover via hovering.
+      this->_contextL->setStatePtr(_nextHoveringState);
       printStateTransition();
-      std::cout << "out of comp because _VisionPose is not valid " << std::endl;
+      std::cout << "out of comp: vision not valid/updated" << std::endl;
+      return;
     }
-    // else if (!onTarget || !_centered){
-    //     //if is not on the target or if is not centered..coming back!
 
-    //     this->_contextL->setStatePtr(_nextState); //set the next state(AsceState)
-    //     printStateTransition();
-    //     if(!onTarget){
-    //         std::cout << "out of comp because we are not on target " << std::endl;
-    //     }
-    //     if(!_centered){
-    //         std::cout << "out of comp because we are not _centered " << std::endl;
-    //     }
-
-	// }
-    else if ( !_UltraInfo.UltrasonicDataUpdated || _UltraInfo.getZ() > 0.83 - 0.1){
-        //if the ultrasonic sensor data are not available..
-
-        this->_contextL->setStatePtr(_nextState); //set the next state(AsceState)
-        printStateTransition();
-        std::cout << "out of comp because we UltrasonicDataUpdated is not true " << std::endl;
-
-	}else if ( fabs(_VisionPose.getRoll()) > param.RollThreshold || fabs(_VisionPose.getPitch()) > param.PitchThreshold ){
-
-		this->_contextL->setStatePtr(_nextState); //set the next state(AsceState)
-        printStateTransition();
-        std::cout << "out of comp because fabs(_VisionPose.getRoll()) > param.RollThreshold " << (fabs(_VisionPose.getRoll()) > param.RollThreshold) << " or fabs(_VisionPose.getPitch()) > param.PitchThreshold " << (fabs(_VisionPose.getPitch()) > param.PitchThreshold)  << std::endl;
-
-	}
-
-    if(onTarget && _centered && (downDist < param.land_threshold)){
-	   //if is on the target and is centered and the vertical error is under 25cm, set next state to LandState.
-
-        // this->_contextL->setStatePtr(_nextLanState);
-        printStateTransition();
+    if( fabs(_VisionPose.getRoll()) > param.RollThreshold
+     || fabs(_VisionPose.getPitch()) > param.PitchThreshold ){
+      // Platform attitude too rough — back off (ascend).
+      this->_contextL->setStatePtr(_nextState);
+      printStateTransition();
+      std::cout << "out of comp: platform attitude too rough" << std::endl;
+      return;
     }
+
+    // otherwise stay in COMP.
 
 }
 

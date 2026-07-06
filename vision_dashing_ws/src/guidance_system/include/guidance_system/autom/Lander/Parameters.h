@@ -155,8 +155,19 @@ public:
     double reactionLag;
 
     // Drone->pad vertical distance [m] to descend to and hold before starting
-    // the compensated / aggressive landing (the "standoff").
+    // the compensated / aggressive landing (the "standoff"). Also the gap at
+    // which HOLD hands off to COMP.
     double standoffDistance;
+
+    // ── COMP standoff (comp()) ───────────────────────────────────────────────
+    // Drone->pad distance [m] COMP holds while compensating (below standoffDistance).
+    double compHoldDist;
+    // If the gap drops below this [m], COMP stops tracking and backs off (ascends).
+    double compMinDist;
+    // COMP resumes tracking once the gap climbs back above this [m] (hysteresis).
+    double compResumeDist;
+    // Max speed [m/s] the COMP Z setpoint may move (rate limit).
+    double compZMaxVel;
 
 };
 
