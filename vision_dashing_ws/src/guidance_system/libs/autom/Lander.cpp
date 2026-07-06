@@ -149,6 +149,7 @@ void Lander::initStateMachine() {
 	_verticalErr = 0;
 	_actualState = 0;
 	_prevState   = 0;
+	_spSeeded    = false;   // re-seed the XY platform-hold filter on (re)init
 
   //Link signals
   //assign initialized errors of the Lander class with
@@ -834,24 +835,44 @@ void Lander::hold() {
   }
 
 
-  double xTarget = _holdPIDX.getOutput(0, _VisionPose.getX()); //0 cause VisionPose is already a relative position.
-  double yTarget = _holdPIDY.getOutput(0, _VisionPose.getY());
+  // ── XY: absolute platform-position hold ──────────────────────────────────
+  // Command the platform's estimated WORLD position, not "drone position + gain*
+  // vision". vision = platform - drone, so platform_world = state + vision. This
+  // is an absolute target (no walk), low-pass filtered and rate-limited so the
+  // vision delay/jitter can't drive the sinusoidal limit cycle that unity-gain
+  // "state + vision" produced.
+  const bool visionOk = _VisionPose.IsValid && _VisionPose.VisionDataUpdated;
 
+  double sp_x, sp_y;
+  if (!visionOk) {
+    // No trustworthy vision: freeze XY at the current position and re-seed the
+    // filter when vision returns.
+    sp_x = _state.getX();
+    sp_y = _state.getY();
+    _spSeeded = false;
+  } else {
+    double plat_x = _state.getX() + _VisionPose.getX();
+    double plat_y = _state.getY() + _VisionPose.getY();
 
-	Eigen::Vector2d targetVect(_state.getX() + xTarget , _state.getY() + yTarget);
+    if (!_spSeeded) {
+      _platFiltX = plat_x;  _platFiltY = plat_y;
+      _prevSpX   = plat_x;  _prevSpY   = plat_y;
+      _spSeeded  = true;
+    }
 
-  // std::cout << "t state=" << _actualState
-  //         << " sp=(" << _setPoint.getX() << "," << _setPoint.getY() << "," << _setPoint.getZ() << ")"
-  //         << " vis=(" << _VisionPose.getX() << "," << _VisionPose.getY() << ")"
-  //         << " visUpd=" << _VisionPose.VisionDataUpdated
-  //         << " holding=" << _holding << " lost=" << _lost << " centered=" << _centered
-  //         << " xT=" << xTarget << " yT=" << yTarget << std::endl;
+    // EMA low-pass — the platform's horizontal position is quasi-stationary.
+    _platFiltX = param.spFilterAlpha * _platFiltX + (1.0 - param.spFilterAlpha) * plat_x;
+    _platFiltY = param.spFilterAlpha * _platFiltY + (1.0 - param.spFilterAlpha) * plat_y;
 
-  updateIntegrals();
-  //PosSP = PlatPos + K * Vplat
-  //targetVect += params_automatic::KpHoldV * tempVel;
-  // targetVect += param.KpHoldV * tempVel;
+    // Rate limit so a vision glitch can't fling the setpoint.
+    double maxStep = param.spMaxVelXY * _dt;
+    sp_x = common::clamp(_platFiltX, _prevSpX - maxStep, _prevSpX + maxStep);
+    sp_y = common::clamp(_platFiltY, _prevSpY - maxStep, _prevSpY + maxStep);
+  }
 
+  _prevSpX = sp_x;
+  _prevSpY = sp_y;
+  Eigen::Vector2d targetVect(sp_x, sp_y);
 
   //Fill right fields
   _setPoint.setPosition(targetVect(0),targetVect(1),_setPoint.getZ());
