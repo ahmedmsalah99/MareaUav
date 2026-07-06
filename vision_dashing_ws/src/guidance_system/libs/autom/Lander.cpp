@@ -933,8 +933,8 @@ void Lander::comp() {
   // }
   double ez = 0;
   std::cout << "dz " << dz << std::endl;
-  if(dz < 0.5){
-    ez = 0.5 - dz;
+  if(dz < 0.75){
+    ez = 0.75 - dz;
     std::cout << "ez " << ez << std::endl;
   }
   std::cout << "_setPoint " << _setPoint.getX() << " " << _setPoint.getY() << std::endl;

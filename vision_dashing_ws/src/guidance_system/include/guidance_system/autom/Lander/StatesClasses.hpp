@@ -182,7 +182,7 @@ public:
         // Calm conditions held this tick — accumulate and require it to be
         // sustained for calmDuration before declaring the sea calm.
         _calmTimer += _seaState->dt;
-        std::cout << "_calmTimer " << _calmTimer << std::endl;
+        // std::cout << "_calmTimer " << _calmTimer << std::endl;
         return _calmTimer >= param->calmDuration;
     }
 

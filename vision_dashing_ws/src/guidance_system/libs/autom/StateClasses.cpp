@@ -64,7 +64,7 @@ void HoldState::handle(){
     getSignals();
     double downDist = -_verticalErr;
     
-    double ultra_limit = 0.75 - 0.1;
+    double ultra_limit = 0.83 - 0.1;
     bool compValid = _holding && (fabs(_UltraInfo.getZ()) < ultra_limit) && _centered;
     // Descend only when holding AND go signal is active AND above zMin floor.
     bool descValid = _centered && _holding && (_setPoint.getZ() > param.zMin) && (fabs(_UltraInfo.getZ()) > ultra_limit)
@@ -127,9 +127,9 @@ void HoldState::handle(){
         this->_contextL->setStatePtr(_nextAscState); // below z_margin above pad — ascend
         printStateTransition();
         std::cout << "asceUnderMargin " << asceUnderMargin << std::endl;
-        std::cout << "_centered " << _centered << " _holding " << _holding << " z cond " << (_setPoint.getZ() > param.zMin + 0.1) << " _setPoint.getZ() "
-        << _setPoint.getZ() << " param.zMin + 0.1 " << param.zMin + 0.1 << " safe landing "<<
-                     _contextL->safeInitialLanding();
+        // std::cout << "_centered " << _centered << " _holding " << _holding << " z cond " << (_setPoint.getZ() > param.zMin + 0.1) << " _setPoint.getZ() "
+        // << _setPoint.getZ() << " param.zMin + 0.1 " << param.zMin + 0.1 << " safe landing "<<
+        //              _contextL->safeInitialLanding();
         return;
     }
 
@@ -188,7 +188,7 @@ void CompState::handle() {
     //     }
 
 	// }
-    else if ( !_UltraInfo.UltrasonicDataUpdated || _UltraInfo.getZ() > 0.75 - 0.1){
+    else if ( !_UltraInfo.UltrasonicDataUpdated || _UltraInfo.getZ() > 0.83 - 0.1){
         //if the ultrasonic sensor data are not available..
 
         this->_contextL->setStatePtr(_nextState); //set the next state(AsceState)
