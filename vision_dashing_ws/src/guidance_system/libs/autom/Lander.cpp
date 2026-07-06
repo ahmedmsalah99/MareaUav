@@ -202,7 +202,7 @@ void Lander::initStateMachine() {
   _rtolS._nextComState = &_compS;
   _rtolS._nextState    = &_holdS;
 
-  _compS._nextState    = &_asceS;
+  _compS._nextState    = &_holdS;   // gap drifted back above standoff -> HOLD
   _compS._nextLanState = &_landS;
 	_compS._nextHoveringState = &_hoveringS;
 
@@ -919,17 +919,22 @@ void Lander::comp() {
 
   double new_z;
   if (_compTracking) {
-    double pad_z    = _state.getZ() - gap;                 // measured pad altitude
-    double target_z = pad_z + param.compHoldDist;          // hold compHoldDist above pad
-    double maxStep  = param.compZMaxVel * _dt;             // rate limit for stability
-    new_z = common::clamp(target_z, _setPoint.getZ() - maxStep, _setPoint.getZ() + maxStep);
+    // Setpoint lead, anchored to the drone (no dt — a lead distance, like desc/asce):
+    //   position term  : (compHoldDist - gap) drives the gap to the hold distance,
+    //   velocity term  : predicted pad velocity * compVelGain leads the pad so the
+    //                    relative velocity goes to zero (uses heaveVelPred).
+    double vff  = _seaState.heaveValid ? _seaState.heaveVelPred : 0.0;
+    double lead = (param.compHoldDist - gap) + vff * param.compVelGain;
+    // Max lead bounds the effective vertical speed.
+    lead = common::clamp(lead, -param.compMaxLead, param.compMaxLead);
+    new_z = _state.getZ() + lead;
   } else {
     // Backing off: ascend (anchored, bounded) until the gap recovers.
     new_z = std::min(_setPoint.getZ() + param.asceVelocity, _state.getZ() + param.asceVelocity);
   }
 
   std::cout << "comp gap " << gap << " tracking " << _compTracking
-            << " new_z " << new_z << std::endl;
+            << " heaveVelPred " << _seaState.heaveVelPred << " new_z " << new_z << std::endl;
 
   _setPoint.setZ(new_z);
   clampZSP();

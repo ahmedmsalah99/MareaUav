@@ -64,6 +64,12 @@ void HoldState::handle(){
     getSignals();
     double downDist = -_verticalErr;
     
+    double ultra_limit = 0.83 - 0.2;
+    // Old close-range (ultrasonic) condition, kept under a new name for the final
+    // landing phase.
+    bool ultraCompValid = _holding && (fabs(_UltraInfo.getZ()) < ultra_limit+0.1) && _centered;
+    (void)ultraCompValid;   // reserved for the final landing phase
+
     // Enter COMP once we are within the standoff distance (2 m) of the pad,
     // centred, holding and on a calm sea. COMP then holds compHoldDist (1.5 m).
     bool compValid = _holding && _centered && (downDist < param.standoffDistance)
@@ -165,11 +171,13 @@ void AsceState::handle() {
 void CompState::handle() {
 
     getSignals();
+    double downDist = -_verticalErr;
+    bool onTarget = _NComp > param.NFramesComp;
 
-    // COMP holds compHoldDist (1.5 m) above the pad — well within vision range and
-    // beyond the ultrasonic's range, so the old ultrasonic-based exits no longer
-    // apply. Stay in COMP while the platform is tracked and the sea is not too
-    // rough; the standoff hold + hysteresis back-off live in Lander::comp().
+    // COMP holds compHoldDist (1.5 m) above the pad and compensates the heave.
+    // Rough platform attitude does NOT leave COMP (that's the aggressive-landing
+    // abort, a later phase). Only a lost platform fix, or drifting back above the
+    // standoff, leaves COMP.
 
     if(!_VisionPose.IsValid || !_VisionPose.VisionDataUpdated){
       // Lost a trustworthy platform fix — recover via hovering.
@@ -179,16 +187,16 @@ void CompState::handle() {
       return;
     }
 
-    if( fabs(_VisionPose.getRoll()) > param.RollThreshold
-     || fabs(_VisionPose.getPitch()) > param.PitchThreshold ){
-      // Platform attitude too rough — back off (ascend).
+    if(downDist > param.standoffDistance){
+      // Drifted back above the standoff — return to HOLD.
       this->_contextL->setStatePtr(_nextState);
       printStateTransition();
-      std::cout << "out of comp: platform attitude too rough" << std::endl;
+      std::cout << "out of comp: gap above standoff, back to hold" << std::endl;
       return;
     }
 
     // otherwise stay in COMP.
+    (void)onTarget;
 
 }
 
