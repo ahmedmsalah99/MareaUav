@@ -870,6 +870,9 @@ void Lander::asce() {
 
 void Lander::desc() {
   std::cout << "In desc " << std::endl;
+  double v_hor_calm = std::fabs(_state.getVx()) < 0.1 && std::fabs(_state.getVy()) < 0.1;
+  if (!v_hor_calm)
+    return;
   double new_z = std::max(_setPoint.getZ() - param.descVelocity,_state.getZ() - param.descVelocity);
   _setPoint.setZ(new_z);
 }
@@ -907,7 +910,14 @@ void Lander::comp() {
   //   _setPoint.setZ(param.zMax);
 
   // }
-  _setPoint.setZ(_state.getZ() + _UltraInfo.getVz());
+  double ez = 0;
+  std::cout << "dz " << dz << std::endl;
+  if(dz < 0.5){
+    ez = 0.5 - dz;
+    std::cout << "ez " << ez << std::endl;
+  }
+  std::cout << "_setPoint " << _setPoint.getX() << " " << _setPoint.getY() << std::endl;
+  _setPoint.setZ(_state.getZ() + _UltraInfo.getVz() + ez);
 }
 
 void Lander::clampZSP() {

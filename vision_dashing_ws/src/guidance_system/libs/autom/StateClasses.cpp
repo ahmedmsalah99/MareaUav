@@ -64,7 +64,8 @@ void HoldState::handle(){
     getSignals();
     double downDist = -_verticalErr;
     
-    bool compValid = _holding && (fabs(_UltraInfo.getZ()) < (0.75 - 0.2)) && _centered;
+    
+    bool compValid = _holding && (fabs(_UltraInfo.getZ()) < (0.75 - 0.1)) && _centered;
     // Descend only when holding AND go signal is active AND above zMin floor.
     bool descValid = _centered && _holding && (_setPoint.getZ() > param.zMin)
                     && _contextL->safeInitialLanding() && !compValid;
@@ -174,19 +175,20 @@ void CompState::handle() {
       printStateTransition();
       std::cout << "out of comp because _VisionPose is not valid " << std::endl;
     }
-    else if (!onTarget || !_centered){
-        //if is not on the target or if is not centered..coming back!
+    // else if (!onTarget || !_centered){
+    //     //if is not on the target or if is not centered..coming back!
 
-        this->_contextL->setStatePtr(_nextState); //set the next state(AsceState)
-        printStateTransition();
-        if(!onTarget){
-            std::cout << "out of comp because we are not on target " << std::endl;
-        }
-        if(!_centered){
-            std::cout << "out of comp because we are not _centered " << std::endl;
-        }
+    //     this->_contextL->setStatePtr(_nextState); //set the next state(AsceState)
+    //     printStateTransition();
+    //     if(!onTarget){
+    //         std::cout << "out of comp because we are not on target " << std::endl;
+    //     }
+    //     if(!_centered){
+    //         std::cout << "out of comp because we are not _centered " << std::endl;
+    //     }
 
-	}else if ( !_UltraInfo.UltrasonicDataUpdated ){
+	// }
+    else if ( !_UltraInfo.UltrasonicDataUpdated || _UltraInfo.getZ() > 0.75 - 0.1){
         //if the ultrasonic sensor data are not available..
 
         this->_contextL->setStatePtr(_nextState); //set the next state(AsceState)
