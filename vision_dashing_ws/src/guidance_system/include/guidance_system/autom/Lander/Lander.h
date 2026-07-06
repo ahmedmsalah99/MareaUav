@@ -295,6 +295,15 @@ private:
 
     MiniPID  _holdPIDY;
 
+    // ── XY platform-position hold state (hold()) ─────────────────────────────
+    // Low-pass-filtered platform XY setpoint and the previously commanded XY
+    // setpoint (for rate limiting). Seeded on entry / after a vision dropout.
+    double _platFiltX = 0.0;
+    double _platFiltY = 0.0;
+    double _prevSpX   = 0.0;
+    double _prevSpY   = 0.0;
+    bool   _spSeeded  = false;
+
 private:
 
 	/**

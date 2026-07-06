@@ -141,6 +141,13 @@ public:
     // Time [s] the calm conditions must hold continuously before landing is allowed.
     double calmDuration;
 
+    // ── XY platform-position hold (hold()) ───────────────────────────────────
+    // EMA smoothing factor [0..1) for the platform XY setpoint. Higher = smoother
+    // / slower (rejects vision jitter and the delay-driven limit cycle).
+    double spFilterAlpha;
+    // Max speed [m/s] the XY setpoint is allowed to move (rate limit).
+    double spMaxVelXY;
+
 };
 
 
