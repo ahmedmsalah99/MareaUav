@@ -69,7 +69,7 @@ void HoldState::handle(){
     // B1: descend only while farther than the standoff distance (2 m) from the
     // pad. Once within the standoff we stop descending and hold there; the
     // compensated/aggressive landing from the standoff comes in later phases.
-    bool descValid = _centered && _holding && (_setPoint.getZ() > param.zMin) && (downDist > param.standoffDistance)
+    bool descValid = _centered && _holding && (_setPoint.getZ() > param.zMin) && (downDist > param.standoffDistance + param.standoffBand)
                     && _contextL->safeInitialLanding();
 
     // Ascend if platform is lost and we are still below zMax (relative to pad).
@@ -80,7 +80,7 @@ void HoldState::handle(){
 
     // Ascend if the drone is closer than the standoff distance and not actively
     // descending — together with descValid this parks the drone at the standoff.
-    bool asceUnderMargin = _centered && _holding &&  (downDist > param.standoffDistance) && (downDist < param.zMax - 0.1) && !descValid;
+    bool asceUnderMargin = _centered && _holding &&  (downDist > param.standoffDistance + param.standoffBand) && (downDist < param.zMax - 0.1) && !descValid;
 
     //if the vision data are not available and the drone is at or above zMax, go back to init.
     // bool InitValid = !_VisionPose.VisionDataUpdated && !(_setPoint.getZ() < param.zMax - 0.1);

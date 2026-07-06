@@ -835,6 +835,20 @@ void Lander::hold() {
     }
   }
 
+  // ── Z: reactive standoff hold (B2) ───────────────────────────────────────
+  // When parked at the standoff (centered & holding), actively track the pad so
+  // the gap stays at standoffDistance. Uses the CURRENT measured gap only, so it
+  // lags the pad heave — the predicted feed-forward that removes the lag is C1.
+  if (_centered && _holding) {
+    double gap      = -_verticalErr;                    // measured drone->pad gap
+    double pad_z    = _state.getZ() - gap;              // measured pad altitude
+    double target_z = pad_z + param.standoffDistance;   // hold standoff above pad
+    double maxStep  = param.standoffZMaxVel * _dt;       // rate limit for stability
+    double new_z    = common::clamp(target_z, _setPoint.getZ() - maxStep, _setPoint.getZ() + maxStep);
+    _setPoint.setZ(new_z);
+    clampZSP();
+  }
+
 
   // ── XY: absolute platform-position hold ──────────────────────────────────
   // Command the platform's estimated WORLD position, not "drone position + gain*

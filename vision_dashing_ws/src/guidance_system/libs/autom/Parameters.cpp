@@ -23,6 +23,8 @@ Parameters::Parameters() {
     spMaxVelXY         = 0.3;
     reactionLag        = 0.3;
     standoffDistance   = 2.0;
+    standoffBand       = 0.4;
+    standoffZMaxVel    = 0.5;
 }
 
 void Parameters::loadConfigFile(const char *config_file) {
@@ -173,6 +175,12 @@ void Parameters::loadParamFile(const char *config_file) {
 
             else if( !param.compare("STANDOFF_DISTANCE") )
                 standoffDistance = value;
+
+            else if( !param.compare("STANDOFF_BAND") )
+                standoffBand = value;
+
+            else if( !param.compare("STANDOFF_Z_MAX_VEL") )
+                standoffZMaxVel = value;
 
         }
 		cFile.close();

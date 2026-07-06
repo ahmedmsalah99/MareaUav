@@ -158,6 +158,14 @@ public:
     // the compensated / aggressive landing (the "standoff").
     double standoffDistance;
 
+    // Deadband [m] around the standoff in which the drone stays in HOLD (no
+    // DESC/ASCE kicks) so the reactive standoff Z-hold owns the tracking.
+    double standoffBand;
+
+    // Max speed [m/s] the standoff Z setpoint may move (rate limit for the
+    // reactive standoff hold).
+    double standoffZMaxVel;
+
 };
 
 
