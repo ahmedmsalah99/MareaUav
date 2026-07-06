@@ -89,6 +89,7 @@ void Lander::loadMachine() {
   std::string pkg_path = ament_index_cpp::get_package_share_directory("guidance_system");
   std::string params_path = pkg_path + "/params/Landing_params.txt";
 	param.loadConfigFile(params_path.c_str());
+	std::cout << "REACTION_LAG_S " << param.reactionLag << std::endl;
 
 	_holdPIDX.reset();
 	_holdPIDY.reset();
