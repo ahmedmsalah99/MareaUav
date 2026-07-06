@@ -166,8 +166,11 @@ public:
     double compMinDist;
     // COMP resumes tracking once the gap climbs back above this [m] (hysteresis).
     double compResumeDist;
-    // Max speed [m/s] the COMP Z setpoint may move (rate limit).
-    double compZMaxVel;
+    // Velocity feed-forward gain [s]: predicted pad velocity -> extra setpoint lead
+    // (leads the pad so the relative velocity goes to zero).
+    double compVelGain;
+    // Max setpoint lead [m] in COMP (bounds the effective vertical speed).
+    double compMaxLead;
 
 };
 
