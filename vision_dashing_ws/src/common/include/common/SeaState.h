@@ -22,6 +22,11 @@ struct SeaState {
     // Heave vertical position of the platform [m].
     double heavePos = 0.0;
 
+    // Forward-predicted heave (heave_estimator's prediction_horizon_s ahead):
+    // where the pad will be, used to lead it by the drone's reaction lag.
+    double heaveVelPred = 0.0;
+    double heavePosPred = 0.0;
+
     // Roll/pitch angular rates [rad/s], finite-differenced from spa/estimate
     // and smoothed with a moving average.
     double rollRate = 0.0;

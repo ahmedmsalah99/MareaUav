@@ -159,6 +159,14 @@ public:
       "heave/velocity", rclcpp::QoS(rclcpp::KeepLast(1)),
       std::bind(&AutomaticNode::onHeaveVelocity, this, std::placeholders::_1));
 
+    heave_pred_pos_sub_ = create_subscription<std_msgs::msg::Float64>(
+      "heave/prediction_position", rclcpp::QoS(rclcpp::KeepLast(1)),
+      std::bind(&AutomaticNode::onHeavePredPosition, this, std::placeholders::_1));
+
+    heave_pred_vel_sub_ = create_subscription<std_msgs::msg::Float64>(
+      "heave/prediction_velocity", rclcpp::QoS(rclcpp::KeepLast(1)),
+      std::bind(&AutomaticNode::onHeavePredVelocity, this, std::placeholders::_1));
+
     // ── Sensor-staleness timer (1 Hz — matches the original 1-second Duration) ──
     //
     // In the LCM loop the "else { if isExpired() }" branches ran on every loop
@@ -234,6 +242,12 @@ private:
                         ? 0.0 : (now - last_loop_time_).seconds();
       last_loop_time_ = now;
       autom_.setSeaState(sea_state_);
+
+      // A2 verification: confirm predicted heave arrives and is fresh.
+      RCLCPP_INFO_THROTTLE(get_logger(), *get_clock(), 1000,
+        "[sea] heaveValid=%d pos=%.3f vel=%.3f  pred(pos=%.3f vel=%.3f)",
+        sea_state_.heaveValid, sea_state_.heavePos, sea_state_.heaveVel,
+        sea_state_.heavePosPred, sea_state_.heaveVelPred);
     }
 
     // std::cout << "executing commands" << std::endl;
@@ -426,6 +440,18 @@ private:
     last_heave_time_    = this->now();
   }
 
+  // Forward-predicted heave (published in lockstep with heave/velocity, so its
+  // freshness is already covered by heaveValid).
+  void onHeavePredPosition(const std_msgs::msg::Float64::SharedPtr msg)
+  {
+    sea_state_.heavePosPred = msg->data;
+  }
+
+  void onHeavePredVelocity(const std_msgs::msg::Float64::SharedPtr msg)
+  {
+    sea_state_.heaveVelPred = msg->data;
+  }
+
   // ══════════════════════════════════════════════════════════════════════════
   // Staleness checks — runs at 1 Hz via staleness_timer_
   // ══════════════════════════════════════════════════════════════════════════
@@ -548,6 +574,8 @@ private:
   rclcpp::Subscription<geometry_msgs::msg::Vector3Stamped>::SharedPtr   spa_prediction_sub_;
   rclcpp::Subscription<std_msgs::msg::Float64>::SharedPtr               heave_pos_sub_;
   rclcpp::Subscription<std_msgs::msg::Float64>::SharedPtr               heave_vel_sub_;
+  rclcpp::Subscription<std_msgs::msg::Float64>::SharedPtr               heave_pred_pos_sub_;
+  rclcpp::Subscription<std_msgs::msg::Float64>::SharedPtr               heave_pred_vel_sub_;
 };
 
 // ─────────────────────────── main ───────────────────────────────────────────
