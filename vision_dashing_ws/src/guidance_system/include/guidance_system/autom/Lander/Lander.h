@@ -308,6 +308,12 @@ private:
     // (ascending) because the gap dropped below compMinDist.
     bool   _compTracking = true;
 
+    // Landing GO/NO-GO window (computed each tick in updateSignals()).
+    bool   _landingGo   = false;   // latched GO signal
+    bool   _goLatched   = false;   // internal latch state
+    double _goLatchTimer = 0.0;    // time [s] since the last GO<->NO-GO switch
+    bool   _goLogPrev   = false;   // for edge-triggered logging
+
 private:
 
 	/**

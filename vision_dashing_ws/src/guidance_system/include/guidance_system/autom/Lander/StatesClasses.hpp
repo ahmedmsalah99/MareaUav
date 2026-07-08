@@ -136,8 +136,11 @@ public:
      */
     SeaState *_seaState;
 
-    /** Go/no-go signal: gates the descent in HOLD. Returns false until wired up. */
-    bool getLandingGoSignal() const { return false; }
+    /** Latched landing GO/NO-GO window, computed each tick in Lander::updateSignals(). */
+    bool *_landingGo;
+
+    /** Landing GO/NO-GO: true when the landing window is open (COMP -> LAND). */
+    bool getLandingGoSignal() const { return *_landingGo; }
 
     /**
      * @brief Decides whether it is safe to begin the landing on a calm sea.

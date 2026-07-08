@@ -152,6 +152,10 @@ void Lander::initStateMachine() {
 	_prevState   = 0;
 	_spSeeded    = false;   // re-seed the XY platform-hold filter on (re)init
 	_compTracking = true;   // COMP starts in tracking mode
+	_landingGo    = false;  // GO/NO-GO window
+	_goLatched    = false;
+	_goLatchTimer = 0.0;
+	_goLogPrev    = false;
 
   //Link signals
   //assign initialized errors of the Lander class with
@@ -169,6 +173,7 @@ void Lander::initStateMachine() {
   _machine._VisionPose   =  &_VisionPose;
   _machine._UltraInfo    =  &_UltraInfo;
   _machine._seaState     =  &_seaState;
+  _machine._landingGo    =  &_landingGo;
 	_machine.param		     =  &param;
 	//New signals
   _machine._holding      =  &_holding;
@@ -206,7 +211,7 @@ void Lander::initStateMachine() {
   _compS._nextLanState = &_landS;
 	_compS._nextHoveringState = &_hoveringS;
 
-  _landS._nextState    = &_asceS;
+  _landS._nextState    = &_compS;   // NO-GO or vision lost during landing -> back to COMP
   _landS._restartState = &_initS;
 
   _machine.setStatePtr(&_initS); //set the state with the INIT one.
@@ -322,6 +327,36 @@ void Lander::updateSignals() {
       _NHold = 0;
   }
 
+  // ── Landing GO/NO-GO window ────────────────────────────────────────────────
+  // GO when the SPA prediction and heave estimate are active, the predicted
+  // roll/pitch and the roll/pitch rates are within the LANDING limits, and the
+  // pad is descending from a peak (above its mean and moving down). A latch holds
+  // each decision for at least landLatchTime before accepting the opposite.
+  {
+    bool anglesOk = std::fabs(_seaState.spaRollPred)  < param.landRollLimit
+                 && std::fabs(_seaState.spaPitchPred) < param.landPitchLimit;
+    bool ratesOk  = std::fabs(_seaState.rollRate)  < param.landRollRateLimit
+                 && std::fabs(_seaState.pitchRate) < param.landPitchRateLimit;
+    bool descFromPeak = (_seaState.heavePos > 0.0) && (_seaState.heaveVel < 0.0);
+    bool rawGo = _seaState.spaValid && _seaState.heaveValid
+              && anglesOk && ratesOk && descFromPeak;
+
+    _goLatchTimer += _seaState.dt;
+    if (rawGo != _goLatched && _goLatchTimer >= param.landLatchTime) {
+      _goLatched   = rawGo;
+      _goLatchTimer = 0.0;
+    }
+    _landingGo = _goLatched;
+
+    if (_landingGo != _goLogPrev) {
+      std::cout << "[GO] " << (_landingGo ? "GO" : "NO-GO")
+                << " spaPred(r=" << _seaState.spaRollPred << ",p=" << _seaState.spaPitchPred << ")"
+                << " rates(r=" << _seaState.rollRate << ",p=" << _seaState.pitchRate << ")"
+                << " heave(pos=" << _seaState.heavePos << ",vel=" << _seaState.heaveVel << ")"
+                << std::endl;
+      _goLogPrev = _landingGo;
+    }
+  }
 
   _err_prev = _err;
 
@@ -546,6 +581,7 @@ void Lander::run() {
 
       // align(); //controlling the yaw
       // initDone = false;
+      hold();   // keep XY centred on the pad during the committed descent
       land();
       //landing phase.
       break;
@@ -944,8 +980,13 @@ void Lander::clampZSP() {
 
 void Lander::land() {
 
-    resetSetPoint();
-    _setPoint.setZ(_state.getZ()-20);
+    // Committed aggressive descent toward the pad (GO window). XY is held centred
+    // by hold() (runs before land() in the LAND tick); here we only drive Z down,
+    // anchored to the drone so the setpoint can't run away. No zMin clamp — we are
+    // committing to touch down.
+    double new_z = std::min(_setPoint.getZ() - param.landDescLead, _state.getZ() - param.landDescLead);
+    _setPoint.setZ(new_z);
+    _setPoint.setType(MavState::POSITION);
 
 }
 

@@ -423,8 +423,10 @@ private:
   }
 
   // spa/prediction marks the SPA pipeline as active; used for the freshness check.
-  void onSpaPrediction(const geometry_msgs::msg::Vector3Stamped::SharedPtr /*msg*/)
+  void onSpaPrediction(const geometry_msgs::msg::Vector3Stamped::SharedPtr msg)
   {
+    sea_state_.spaRollPred  = msg->vector.x;   // predicted roll  [rad]
+    sea_state_.spaPitchPred = msg->vector.y;   // predicted pitch [rad]
     last_spa_time_ = this->now();
   }
 
