@@ -227,11 +227,11 @@ void RToLandState::handle() {
 void LandState::handle() {
 
     getSignals();
-
+    bool onTarget = _NComp > param.NFramesComp;
     // Abort the landing and go back to COMP if the GO window closes (NO-GO) or we
     // lose the platform fix. Otherwise stay in LAND — the committed descent is
     // issued in Lander::land() (XY stays centred via hold()).
-    if(!_contextL->getLandingGoSignal() || !_VisionPose.VisionDataUpdated){
+    if(!_contextL->getLandingGoSignal() || !_VisionPose.VisionDataUpdated || !onTarget || !_centered){
       this->_contextL->setStatePtr(_nextState);   // -> COMP
       printStateTransition();
       std::cout << "LAND -> COMP: "

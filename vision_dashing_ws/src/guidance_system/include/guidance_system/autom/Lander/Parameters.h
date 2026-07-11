@@ -180,7 +180,7 @@ public:
     double landLatchTime;
 
     // Setpoint lead [m] for the committed (aggressive) descent in land().
-    double landDescLead;
+    double landDescVel;
 
 };
 

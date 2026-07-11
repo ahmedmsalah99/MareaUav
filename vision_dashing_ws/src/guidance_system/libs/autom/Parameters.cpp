@@ -31,7 +31,7 @@ Parameters::Parameters() {
     landRollRateLimit  = 0.10;
     landPitchRateLimit = 0.10;
     landLatchTime      = 0.25;
-    landDescLead       = 0.8;
+    landDescVel       = 0.8;
 }
 
 void Parameters::loadConfigFile(const char *config_file) {
@@ -208,7 +208,7 @@ void Parameters::loadParamFile(const char *config_file) {
                 landLatchTime = value;
 
             else if( !param.compare("LAND_DESC_LEAD") )
-                landDescLead = value;
+                landDescVel = value;
 
         }
 		cFile.close();

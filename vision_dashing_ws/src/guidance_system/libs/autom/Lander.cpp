@@ -337,7 +337,7 @@ void Lander::updateSignals() {
                  && std::fabs(_seaState.spaPitchPred) < param.landPitchLimit;
     bool ratesOk  = std::fabs(_seaState.rollRate)  < param.landRollRateLimit
                  && std::fabs(_seaState.pitchRate) < param.landPitchRateLimit;
-    bool descFromPeak = (_seaState.heavePos > 0.0) && (_seaState.heaveVel < 0.0);
+    bool descFromPeak = (_seaState.heaveVel < 0.1);
     bool rawGo = _seaState.spaValid && _seaState.heaveValid
               && anglesOk && ratesOk && descFromPeak;
 
@@ -984,7 +984,7 @@ void Lander::land() {
     // by hold() (runs before land() in the LAND tick); here we only drive Z down,
     // anchored to the drone so the setpoint can't run away. No zMin clamp — we are
     // committing to touch down.
-    double new_z = std::min(_setPoint.getZ() - param.landDescLead, _state.getZ() - param.landDescLead);
+    double new_z = std::min(_setPoint.getZ() - param.landDescVel, _state.getZ() - param.landDescVel);
     _setPoint.setZ(new_z);
     _setPoint.setType(MavState::POSITION);
 
