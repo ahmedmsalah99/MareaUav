@@ -190,24 +190,30 @@ public:
     double landDescVel;
 
     // ── Touchdown detection (LAND -> LANDING_DONE) ────────────────────────────
-    // Adapted from PX4's own multicopter land detector (a staged-hysteresis state
-    // machine: the same condition held for progressively longer). NOT based on
-    // relative vertical velocity (drone vz - pad heaveVel) — PX4's odometry/EKF
-    // velocity output degrades once the drone stops moving smoothly (near/at
-    // touchdown), so a "velocity ~= 0 relative to the pad" test is unreliable
-    // exactly when it matters most. Instead: once resting on the pad the drone's
-    // vertical ACCELERATION must match the pad's (both move together), which is
-    // still meaningful even if the absolute velocity numbers are noisy.
+    // Adapted from PX4's own multicopter land detector (staged hysteresis:
+    // contact then confirm). NOT based on relative vertical velocity (drone vz -
+    // pad heaveVel) — PX4's odometry/EKF velocity output degrades once the drone
+    // stops moving smoothly (near/at touchdown), so "velocity ~= 0 relative to
+    // the pad" is unreliable exactly when it matters most. Instead both
+    // conditions below are driven from real IMU accelerations (pad: imu/data:
+    // drone: /fmu/out/vehicle_acceleration — see SeaState.h), not derivatives of
+    // velocity, which stays meaningful even when the raw velocity is noisy.
     //
-    // Stage 1 (contact): |drone vertical accel - pad vertical accel| below
-    // touchAccelMatchTol AND horizontal velocity below touchVelRelMax, sustained
-    // touchContactTime.
+    // Stage 1 (contact): |drone vertical accel - pad vertical accel| (both
+    // converted to true kinematic acceleration — see updateSignals()) below
+    // touchAccelMatchTol, AND horizontal velocity below touchVelRelMax,
+    // sustained touchContactTime.
     double touchAccelMatchTol;
     // Max horizontal (x/y) velocity [m/s] for stage 1.
     double touchVelRelMax;
     double touchContactTime;
-    // Stage 2 (confirm): stage 1's condition held for this much longer again
-    // (PX4-style: same signal, tighter dwell time) before declaring touchdown.
+    // Stage 2 (confirm): stage 1 held AND a POSITIVE impact-deceleration spike on
+    // the drone's own vertical acceleration (touching down arrests the descent,
+    // producing a brief positive acceleration bump in the up-positive
+    // convention) exceeded touchAccelSpike within the last touchAccelSpikeWindow
+    // seconds — sustained touchConfirmTime.
+    double touchAccelSpike;
+    double touchAccelSpikeWindow;
     double touchConfirmTime;
 
 };

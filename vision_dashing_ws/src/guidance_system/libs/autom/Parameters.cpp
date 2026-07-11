@@ -37,6 +37,8 @@ Parameters::Parameters() {
     touchAccelMatchTol    = 1.0;
     touchVelRelMax        = 0.15;
     touchContactTime      = 0.15;
+    touchAccelSpike       = 3.0;
+    touchAccelSpikeWindow = 0.5;
     touchConfirmTime      = 0.3;
 }
 
@@ -230,6 +232,12 @@ void Parameters::loadParamFile(const char *config_file) {
 
             else if( !param.compare("TOUCH_CONTACT_TIME") )
                 touchContactTime = value;
+
+            else if( !param.compare("TOUCH_ACCEL_SPIKE") )
+                touchAccelSpike = value;
+
+            else if( !param.compare("TOUCH_ACCEL_SPIKE_WINDOW") )
+                touchAccelSpikeWindow = value;
 
             else if( !param.compare("TOUCH_CONFIRM_TIME") )
                 touchConfirmTime = value;

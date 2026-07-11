@@ -2,11 +2,13 @@
 #define MOCAP2MAV_SEASTATE_H
 
 /**
- * @brief Aggregated sea-state estimate fed to the landing state machine.
+ * @brief Aggregated sea-state/sensor feed for the landing state machine.
  * @details Populated by the guidance node from the SPA predictor
- * (spa/estimate, spa/prediction) and the heave estimator (heave/position,
- * heave/velocity). Used by LandMachine::safeInitialLanding() to decide whether
- * the sea is calm enough to begin the landing.
+ * (spa/estimate, spa/prediction), the heave estimator (heave/position,
+ * heave/velocity), the pad's raw IMU (imu/data) and the drone's own PX4
+ * acceleration estimate (/fmu/out/vehicle_acceleration). Used by
+ * LandMachine::safeInitialLanding() to decide whether the sea is calm enough
+ * to begin the landing, and by Lander's touchdown detector (accel matching).
  */
 struct SeaState {
 
@@ -45,6 +47,19 @@ struct SeaState {
     // calm-sea gate to accumulate its "sea has been calm for N seconds" timer,
     // so the timing does not depend on the Lander's internal dt bookkeeping.
     double dt = 0.0;
+
+    // ── Raw IMU accelerations, for the touchdown detector's accel-matching test ──
+    // Pad: raw imu/data linear_acceleration.z, whatever sign/gravity convention
+    // that source uses (see the landingplat plugin — it happens to publish
+    // az_true - g). Drone: /fmu/out/vehicle_acceleration.xyz[2], sign-flipped
+    // from PX4's FRD (Z down) to an up-positive convention (still includes the
+    // real +g gravity reaction of a physical accelerometer). Both are raw —
+    // Lander::updateSignals() removes each convention's known additive gravity
+    // constant before comparing them.
+    double padAccelZ = 0.0;
+    bool   padImuValid = false;
+    double droneAccelZ = 0.0;
+    bool   droneAccelValid = false;
 };
 
 #endif //MOCAP2MAV_SEASTATE_H

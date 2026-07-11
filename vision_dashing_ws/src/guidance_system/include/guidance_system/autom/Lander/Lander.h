@@ -25,12 +25,18 @@
 #define TMIN            0.7
 #define PLATFORM_OFFSET 0.0
 
-// Touchdown-detector accel-estimate smoothing (updateAccelEstimate()): clip each
-// raw finite-difference sample to this magnitude [m/s^2] before it enters the
-// moving average — no real drone/pad acceleration should exceed this, so a
-// clipped value only ever means "an odometry glitch", not a real event.
-#define kAccelEstimateClip   15.0
-#define kAccelEstimateWindow 7
+// Touchdown-detector accel-estimate smoothing (smoothAccel()): clip each raw IMU
+// sample to this magnitude [m/s^2] before it enters the moving average — no real
+// drone/pad acceleration should exceed this, so a clipped value only ever means
+// "a sensor glitch/dropout", not a real event.
+#define kAccelEstimateClip   20.0
+#define kAccelEstimateWindow 5
+
+// Standard gravity [m/s^2], used to remove each accel source's own known
+// constant gravity-reaction offset before comparing drone vs pad acceleration
+// (see updateSignals()'s touchdown detector and SeaState.h for the two
+// different raw conventions involved).
+#define kGravityMs2 9.81
 
 /**
  * @brief All the variables behind the landing GO/NO-GO decision, snapshotted every
@@ -69,16 +75,18 @@ struct LandGoDiagnostics {
     bool   landingGo      = false;  // final latched GO/NO-GO (== getLandingGoSignal())
 
     // Touchdown detection (only evaluated in LAND — see updateSignals()). Based on
-    // matching the drone's and pad's vertical acceleration, not relative velocity
+    // matching the drone's and pad's vertical acceleration (both from real IMU
+    // sources, gravity-corrected to true kinematic accel), not relative velocity
     // (PX4's odometry velocity output is unreliable near/at touchdown).
-    double touchAccelZ    = 0.0;    // drone: finite-differenced + smoothed vertical accel [m/s^2]
-    double touchPadAccelZ = 0.0;    // pad: finite-differenced + smoothed vertical accel [m/s^2]
+    double touchAccelZ    = 0.0;    // drone: smoothed true vertical accel [m/s^2]
+    double touchPadAccelZ = 0.0;    // pad: smoothed true vertical accel [m/s^2]
     bool   touchGroundContact = false;  // stage 1: drone/pad accel matched + xy velocity settled
-    bool   touchConfirmed     = false;  // stage 2: stage 1 held for touchConfirmTime longer
+    bool   touchConfirmed     = false;  // stage 2: contact + a recent positive impact spike
     bool   touchedDown        = false;  // latched final verdict (== getTouchedDown())
     // Timers driving the two stages above (seconds) — how close each is to tripping.
-    double touchContactTimer = 0.0;  // time accel-matched + xy-settled has held (-> touchContactTime)
-    double touchConfirmTimer = 0.0;  // time stage 1 has held on top of that (-> touchConfirmTime)
+    double touchContactTimer   = 0.0;  // time accel-matched + xy-settled has held (-> touchContactTime)
+    double touchConfirmTimer   = 0.0;  // time contact+recent-spike has held (-> touchConfirmTime)
+    double touchTimeSinceSpike = 0.0;  // time since the last positive impact spike (vs touchAccelSpikeWindow)
 };
 
 
@@ -397,22 +405,21 @@ private:
     LandGoDiagnostics _goDiag;
 
     // ── Touchdown detection (LAND -> LANDING_DONE) ────────────────────────────
-    // Staged hysteresis (contact -> confirm, same condition held progressively
-    // longer — see Parameters.h touch* fields for the rationale). The drone and
-    // pad vertical-acceleration estimates run every tick regardless of state, so
-    // both are already warm and settled by the time LAND starts (see
-    // updateSignals()) — only the stage timers below are LAND/per-attempt scoped.
-    double _touchPrevVz = 0.0;             // previous tick's drone vz, for finite-differencing accel
+    // Staged hysteresis (contact -> confirm — see Parameters.h touch* fields for
+    // the rationale). Both accel estimates (from real IMU sources, see SeaState.h)
+    // are smoothed every tick regardless of state, so they're already warm and
+    // settled by the time LAND starts — only the stage timers below are
+    // LAND/per-attempt scoped.
     std::deque<double> _touchAccelBuf;     // small moving-average window for the drone accel estimate
-    double _touchAccelZSmoothed = 0.0;     // latest smoothed drone vertical accel estimate [m/s^2]
+    double _touchAccelZSmoothed = 0.0;     // latest smoothed drone true vertical accel [m/s^2]
 
-    double _padPrevHeaveVel = 0.0;         // previous tick's pad heaveVel, for finite-differencing accel
     std::deque<double> _padAccelBuf;       // small moving-average window for the pad accel estimate
-    double _padAccelZSmoothed = 0.0;       // latest smoothed pad vertical accel estimate [m/s^2]
+    double _padAccelZSmoothed = 0.0;       // latest smoothed pad true vertical accel [m/s^2]
 
     bool   _wasInLand = false;             // for detecting a fresh entry into LAND
     double _touchContactTimer = 0.0;       // time [s] drone/pad accel have matched + xy settled
-    double _touchConfirmTimer = 0.0;       // time [s] stage 1 has held on top of touchContactTime
+    double _touchTimeSinceSpike = 1e9;     // time [s] since the last positive impact spike
+    double _touchConfirmTimer = 0.0;       // time [s] contact+recent-spike has held
     bool   _touchedDown = false;           // latched final verdict — never resets on its own
 
 private:
@@ -715,19 +722,17 @@ private:
    	void initInspection(); //initialize variables to perform inspection
 
     /**
-     * @brief Finite-differences `signal` against its previous value, smooths the
-     * result with a moving-average window, and clips each raw sample to a sane
-     * range first — a single odometry glitch (PX4's velocity output is noisy
-     * near/at touchdown) would otherwise dominate a short moving-average window
-     * and read out as a wildly oversized "acceleration". Used for both the
-     * drone's and the pad's vertical-acceleration estimate in updateSignals().
-     * @param signal Current sample of the velocity being differentiated.
-     * @param prevSignal Previous sample (updated in place).
+     * @brief Clips a raw IMU acceleration sample to a sane range and smooths it
+     * with a moving-average window. A single sensor glitch/dropout would
+     * otherwise dominate the short window and read out as a wildly oversized
+     * "acceleration" — a clipped sample only ever means "a glitch", never a real
+     * reading. Used for both the drone's and the pad's vertical-acceleration
+     * estimate in updateSignals().
+     * @param rawSample Current raw (already gravity-corrected) accel sample.
      * @param buf Moving-average window (updated in place).
-     * @param dt Time since the previous sample [s].
      */
 
-    double updateAccelEstimate(double signal, double &prevSignal, std::deque<double> &buf, double dt);
+    double smoothAccel(double rawSample, std::deque<double> &buf);
 
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
