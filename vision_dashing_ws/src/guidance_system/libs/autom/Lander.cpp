@@ -913,6 +913,7 @@ void Lander::hold() {
                   << " z_adj " << z_adj << " centered " << _centered << std::endl;
       clampZSP();
     }
+    _setPoint.setType(MavState::POSITION);
   }
 
 
@@ -967,6 +968,7 @@ void Lander::asce() {
   _holdPIDY.reset();
   double new_z = std::min(_setPoint.getZ() + param.asceVelocity,_state.getZ() + param.asceVelocity);
   _setPoint.setZ(new_z);
+  _setPoint.setType(MavState::POSITION);
 
 }
 
@@ -977,6 +979,7 @@ void Lander::desc() {
     return;
   double new_z = std::max(_setPoint.getZ() - param.descVelocity,_state.getZ() - param.descVelocity);
   _setPoint.setZ(new_z);
+  _setPoint.setType(MavState::POSITION);
 }
 
 void Lander::comp() {
@@ -1011,6 +1014,7 @@ void Lander::comp() {
 
   _setPoint.setZ(new_z);
   clampZSP();
+  _setPoint.setType(MavState::POSITION);
 }
 
 void Lander::clampZSP() {
@@ -1019,6 +1023,7 @@ void Lander::clampZSP() {
     temp = common::clamp(_setPoint.getZ(), param.zMin, _platformState.getZ() + param.zMax);
     // std::cout << "_platformState.getZ() " << _platformState.getZ() << " _platformState.getZ() + param.zMax " << _platformState.getZ() + param.zMax << std::endl;
     _setPoint.setZ(temp);
+    _setPoint.setType(MavState::POSITION);
 }
 
 void Lander::land() {
@@ -1027,7 +1032,7 @@ void Lander::land() {
     // by hold() (runs before land() in the LAND tick); here we only drive Z down,
     // anchored to the drone so the setpoint can't run away. No zMin clamp — we are
     // committing to touch down.
-    
+
     // double new_z = std::min(_setPoint.getZ() - param.landDescVel, _state.getZ() - param.landDescVel);
     // _setPoint.setZ(new_z);
     // _setPoint.setType(MavState::POSITION);
@@ -1046,5 +1051,6 @@ void Lander::align() {
     Eigen::Quaterniond q_interm = yawToQuaternion(_yaw_des);
     // std::cout << _yaw_des*180.0/3.14 << std::endl;
     _setPoint.setOrientation(q_interm);
+    _setPoint.setType(MavState::POSITION);
 
 }
