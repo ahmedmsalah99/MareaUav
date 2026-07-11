@@ -31,6 +31,8 @@ Parameters::Parameters() {
     landRollRateLimit  = 0.10;
     landPitchRateLimit = 0.10;
     landLatchTime      = 0.25;
+    landVoteWindow     = 1.5;
+    landVoteThreshold  = 0.6;
     landDescVel       = 0.8;
 }
 
@@ -206,6 +208,12 @@ void Parameters::loadParamFile(const char *config_file) {
 
             else if( !param.compare("LAND_LATCH_TIME") )
                 landLatchTime = value;
+
+            else if( !param.compare("LAND_VOTE_WINDOW_S") )
+                landVoteWindow = value;
+
+            else if( !param.compare("LAND_VOTE_THRESHOLD") )
+                landVoteThreshold = value;
 
             else if( !param.compare("LAND_DESC_LEAD") )
                 landDescVel = value;

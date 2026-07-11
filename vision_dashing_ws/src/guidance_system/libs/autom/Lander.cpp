@@ -156,6 +156,8 @@ void Lander::initStateMachine() {
 	_goLatched    = false;
 	_goLatchTimer = 0.0;
 	_goLogPrev    = false;
+	_goVoteHistory.clear();
+	_goDiag       = LandGoDiagnostics();
 
   //Link signals
   //assign initialized errors of the Lander class with
@@ -330,8 +332,11 @@ void Lander::updateSignals() {
   // ── Landing GO/NO-GO window ────────────────────────────────────────────────
   // GO when the SPA prediction and heave estimate are active, the predicted
   // roll/pitch and the roll/pitch rates are within the LANDING limits, and the
-  // pad is descending from a peak (above its mean and moving down). A latch holds
-  // each decision for at least landLatchTime before accepting the opposite.
+  // pad is descending from a peak. The raw (instantaneous) decision is noisy —
+  // it's smoothed by a majority vote over the last landVoteWindow seconds before
+  // it feeds the latch, so a single bad sample can't flip the landing decision.
+  // The latch then holds each (voted) decision for at least landLatchTime before
+  // accepting the opposite.
   {
     bool anglesOk = std::fabs(_seaState.spaRollPred)  < param.landRollLimit
                  && std::fabs(_seaState.spaPitchPred) < param.landPitchLimit;
@@ -341,15 +346,53 @@ void Lander::updateSignals() {
     bool rawGo = _seaState.spaValid && _seaState.heaveValid
               && anglesOk && ratesOk && descFromPeak;
 
+    // Majority vote over the last landVoteWindow seconds.
+    _goVoteHistory.emplace_back(_seaState.dt, rawGo);
+    double windowSpan = 0.0;
+    for (auto &s : _goVoteHistory) windowSpan += s.first;
+    while (_goVoteHistory.size() > 1 && windowSpan > param.landVoteWindow) {
+      windowSpan -= _goVoteHistory.front().first;
+      _goVoteHistory.pop_front();
+    }
+    int voteCount = 0;
+    for (auto &s : _goVoteHistory) if (s.second) voteCount++;
+    double voteFraction = _goVoteHistory.empty() ? 0.0
+                         : static_cast<double>(voteCount) / _goVoteHistory.size();
+    bool votedGo = voteFraction >= param.landVoteThreshold;
+
     _goLatchTimer += _seaState.dt;
-    if (rawGo != _goLatched && _goLatchTimer >= param.landLatchTime) {
-      _goLatched   = rawGo;
+    if (votedGo != _goLatched && _goLatchTimer >= param.landLatchTime) {
+      _goLatched   = votedGo;
       _goLatchTimer = 0.0;
     }
     _landingGo = _goLatched;
 
+    _goDiag.spaValid       = _seaState.spaValid;
+    _goDiag.heaveValid     = _seaState.heaveValid;
+    _goDiag.spaRollPred    = _seaState.spaRollPred;
+    _goDiag.spaPitchPred   = _seaState.spaPitchPred;
+    _goDiag.rollRate       = _seaState.rollRate;
+    _goDiag.pitchRate      = _seaState.pitchRate;
+    _goDiag.heavePos       = _seaState.heavePos;
+    _goDiag.heaveVel       = _seaState.heaveVel;
+    _goDiag.heaveVelPred   = _seaState.heaveVelPred;
+    _goDiag.rollLimit      = param.landRollLimit;
+    _goDiag.pitchLimit     = param.landPitchLimit;
+    _goDiag.rollRateLimit  = param.landRollRateLimit;
+    _goDiag.pitchRateLimit = param.landPitchRateLimit;
+    _goDiag.anglesOk       = anglesOk;
+    _goDiag.ratesOk        = ratesOk;
+    _goDiag.descFromPeak   = descFromPeak;
+    _goDiag.rawGo          = rawGo;
+    _goDiag.voteFraction   = voteFraction;
+    _goDiag.voteWindowSize = static_cast<int>(_goVoteHistory.size());
+    _goDiag.votedGo        = votedGo;
+    _goDiag.latchTimer     = _goLatchTimer;
+    _goDiag.landingGo      = _landingGo;
+
     if (_landingGo != _goLogPrev) {
       std::cout << "[GO] " << (_landingGo ? "GO" : "NO-GO")
+                << " vote=" << voteFraction << "/" << param.landVoteThreshold
                 << " spaPred(r=" << _seaState.spaRollPred << ",p=" << _seaState.spaPitchPred << ")"
                 << " rates(r=" << _seaState.rollRate << ",p=" << _seaState.pitchRate << ")"
                 << " heave(pos=" << _seaState.heavePos << ",vel=" << _seaState.heaveVel << ")"

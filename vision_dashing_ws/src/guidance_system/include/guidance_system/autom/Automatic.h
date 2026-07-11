@@ -157,6 +157,14 @@ public:
   double getPredictionHorizon() const;
 
   /**
+   * @brief Returns the active command's landing GO/NO-GO decision variables.
+   * @return LandGoDiagnostics, or a default-constructed (all-false/zero) one when
+   * no Land command is active — check landingGo/spaValid/heaveValid before use.
+   */
+
+  LandGoDiagnostics getGoDiagnostics() const;
+
+  /**
    * @brief M2M_SIM Environment variable value
    */
 

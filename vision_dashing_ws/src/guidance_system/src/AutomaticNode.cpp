@@ -19,6 +19,9 @@
 #include <geometry_msgs/msg/vector3_stamped.hpp>
 #include <std_msgs/msg/string.hpp>
 #include <std_msgs/msg/float64.hpp>
+#include <diagnostic_msgs/msg/diagnostic_array.hpp>
+#include <diagnostic_msgs/msg/diagnostic_status.hpp>
+#include <diagnostic_msgs/msg/key_value.hpp>
 #include <ultrasonic_sensor/msg/ultrasonic_msg.hpp>
 #include <ulisse_msgs/msg/actual_task.hpp>
 #include <ulisse_msgs/msg/safety_ack.hpp>
@@ -102,6 +105,8 @@ public:
       create_publisher<nav_msgs::msg::Odometry>("platRob",                 reliable_qos);
     pred_horizon_pub_          =
       create_publisher<std_msgs::msg::Float64>("spa/prediction_horizon",   reliable_qos);
+    landing_diag_pub_          =
+      create_publisher<diagnostic_msgs::msg::DiagnosticArray>("landing/diagnostics", reliable_qos);
 
     // ── Subscriptions ───────────────────────────────────────────────────────
 
@@ -272,6 +277,55 @@ private:
       std_msgs::msg::Float64 horizon_msg;
       horizon_msg.data = horizon;
       pred_horizon_pub_->publish(horizon_msg);
+    }
+
+    // Publish every variable behind the landing GO/NO-GO decision, so it can be
+    // logged/plotted (e.g. in PlotJuggler, which parses DiagnosticArray natively).
+    // Only meaningful while a Land command is active.
+    if (horizon >= 0.0) {
+      LandGoDiagnostics d = autom_.getGoDiagnostics();
+
+      diagnostic_msgs::msg::DiagnosticStatus status;
+      status.name    = "landing_go_nogo";
+      status.message = d.landingGo ? "GO" : "NO-GO";
+      status.level   = d.landingGo ? diagnostic_msgs::msg::DiagnosticStatus::OK
+                                    : diagnostic_msgs::msg::DiagnosticStatus::WARN;
+
+      auto kv = [](const std::string & key, double value) {
+        diagnostic_msgs::msg::KeyValue e;
+        e.key   = key;
+        e.value = std::to_string(value);
+        return e;
+      };
+      status.values = {
+        kv("spa_valid",         d.spaValid),
+        kv("heave_valid",       d.heaveValid),
+        kv("spa_roll_pred",     d.spaRollPred),
+        kv("spa_pitch_pred",    d.spaPitchPred),
+        kv("roll_rate",         d.rollRate),
+        kv("pitch_rate",        d.pitchRate),
+        kv("heave_pos",         d.heavePos),
+        kv("heave_vel",         d.heaveVel),
+        kv("heave_vel_pred",    d.heaveVelPred),
+        kv("roll_limit",        d.rollLimit),
+        kv("pitch_limit",       d.pitchLimit),
+        kv("roll_rate_limit",   d.rollRateLimit),
+        kv("pitch_rate_limit",  d.pitchRateLimit),
+        kv("angles_ok",         d.anglesOk),
+        kv("rates_ok",          d.ratesOk),
+        kv("desc_from_peak",    d.descFromPeak),
+        kv("raw_go",            d.rawGo),
+        kv("vote_fraction",     d.voteFraction),
+        kv("vote_window_size",  d.voteWindowSize),
+        kv("voted_go",          d.votedGo),
+        kv("latch_timer_s",     d.latchTimer),
+        kv("landing_go",        d.landingGo),
+      };
+
+      diagnostic_msgs::msg::DiagnosticArray diag_msg;
+      diag_msg.header.stamp = this->now();
+      diag_msg.status.push_back(status);
+      landing_diag_pub_->publish(diag_msg);
     }
   }
 
@@ -561,6 +615,7 @@ private:
   rclcpp::Publisher<nav_msgs::msg::Odometry>::SharedPtr landing_site_pose_cmd_pub_;
   rclcpp::Publisher<nav_msgs::msg::Odometry>::SharedPtr plat_rob_pub_;
   rclcpp::Publisher<std_msgs::msg::Float64>::SharedPtr  pred_horizon_pub_;
+  rclcpp::Publisher<diagnostic_msgs::msg::DiagnosticArray>::SharedPtr landing_diag_pub_;
 
   // Subscriptions
   rclcpp::Subscription<px4_msgs::msg::VehicleOdometry>::SharedPtr       vision_sub_;
