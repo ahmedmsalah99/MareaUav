@@ -325,6 +325,9 @@ private:
         kv("touch_ground_contact",  d.touchGroundContact),
         kv("touch_confirmed",       d.touchConfirmed),
         kv("touched_down",          d.touchedDown),
+        kv("touch_contact_timer_s",     d.touchContactTimer),
+        kv("touch_confirm_timer_s",     d.touchConfirmTimer),
+        kv("touch_time_since_spike_s",  d.touchTimeSinceSpike),
       };
 
       diagnostic_msgs::msg::DiagnosticArray diag_msg;

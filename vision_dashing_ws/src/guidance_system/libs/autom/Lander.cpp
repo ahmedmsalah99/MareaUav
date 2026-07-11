@@ -455,6 +455,9 @@ void Lander::updateSignals() {
     _goDiag.touchGroundContact = groundContact;
     _goDiag.touchConfirmed     = confirmed;
     _goDiag.touchedDown        = _touchedDown;
+    _goDiag.touchContactTimer   = _touchContactTimer;
+    _goDiag.touchConfirmTimer   = _touchConfirmTimer;
+    _goDiag.touchTimeSinceSpike = _touchTimeSinceSpike;
   }
 
   _err_prev = _err;
