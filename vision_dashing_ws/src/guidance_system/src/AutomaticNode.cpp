@@ -14,9 +14,11 @@
 
 #include <px4_msgs/msg/vehicle_odometry.hpp>
 #include <px4_msgs/msg/sensor_gps.hpp>
+#include <px4_msgs/msg/vehicle_acceleration.hpp>
 #include <nav_msgs/msg/odometry.hpp>
 #include <geometry_msgs/msg/transform_stamped.hpp>
 #include <geometry_msgs/msg/vector3_stamped.hpp>
+#include <sensor_msgs/msg/imu.hpp>
 #include <std_msgs/msg/string.hpp>
 #include <std_msgs/msg/float64.hpp>
 #include <diagnostic_msgs/msg/diagnostic_array.hpp>
@@ -172,6 +174,18 @@ public:
       "heave/prediction_velocity", rclcpp::QoS(rclcpp::KeepLast(1)),
       std::bind(&AutomaticNode::onHeavePredVelocity, this, std::placeholders::_1));
 
+    // Pad's raw IMU (published by the landing-pad simulator plugin, already
+    // consumed the same way by heave_estimator) — used by the touchdown
+    // detector's accel-matching test.
+    pad_imu_sub_ = create_subscription<sensor_msgs::msg::Imu>(
+      "imu/data", rclcpp::SensorDataQoS(),
+      std::bind(&AutomaticNode::onPadImu, this, std::placeholders::_1));
+
+    // Drone's own PX4 acceleration estimate — same purpose.
+    drone_accel_sub_ = create_subscription<px4_msgs::msg::VehicleAcceleration>(
+      "/fmu/out/vehicle_acceleration", px4_qos,
+      std::bind(&AutomaticNode::onDroneAccel, this, std::placeholders::_1));
+
     // ── Sensor-staleness timer (1 Hz — matches the original 1-second Duration) ──
     //
     // In the LCM loop the "else { if isExpired() }" branches ran on every loop
@@ -209,6 +223,8 @@ public:
     last_heave_time_      = epoch;
     last_spa_est_stamp_   = epoch;
     last_loop_time_       = epoch;
+    last_pad_imu_time_    = epoch;
+    last_drone_accel_time_ = epoch;
 
     RCLCPP_INFO(get_logger(), "Automatic node ready (control loop 50 Hz)");
   }
@@ -243,6 +259,8 @@ private:
       const rclcpp::Time now = this->now();
       sea_state_.spaValid   = (now - last_spa_time_).seconds()   < kSeaStale;
       sea_state_.heaveValid = (now - last_heave_time_).seconds() < kSeaStale;
+      sea_state_.padImuValid     = (now - last_pad_imu_time_).seconds()     < kSeaStale;
+      sea_state_.droneAccelValid = (now - last_drone_accel_time_).seconds() < kSeaStale;
       sea_state_.dt = (last_loop_time_.nanoseconds() == 0)
                         ? 0.0 : (now - last_loop_time_).seconds();
       last_loop_time_ = now;
@@ -320,8 +338,8 @@ private:
         kv("voted_go",          d.votedGo),
         kv("latch_timer_s",     d.latchTimer),
         kv("landing_go",        d.landingGo),
-        kv("touch_vel_rel_z",       d.touchVelRelZ),
         kv("touch_accel_z",         d.touchAccelZ),
+        kv("touch_pad_accel_z",     d.touchPadAccelZ),
         kv("touch_ground_contact",  d.touchGroundContact),
         kv("touch_confirmed",       d.touchConfirmed),
         kv("touched_down",          d.touchedDown),
@@ -516,6 +534,25 @@ private:
     sea_state_.heaveVelPred = msg->data;
   }
 
+  // Pad's raw IMU — same topic/field heave_estimator already consumes. Raw,
+  // whatever gravity/sign convention the source uses (see SeaState.h) — the
+  // touchdown detector removes the known constant before comparing.
+  void onPadImu(const sensor_msgs::msg::Imu::SharedPtr msg)
+  {
+    sea_state_.padAccelZ = msg->linear_acceleration.z;
+    last_pad_imu_time_   = this->now();
+  }
+
+  // Drone's PX4 acceleration estimate. xyz is FRD (Z down), "bias corrected
+  // including gravity" per px4_msgs — flip to up-positive so it at least has
+  // the same sign sense as a conventional accelerometer; the touchdown detector
+  // removes the +g reaction before comparing to the pad.
+  void onDroneAccel(const px4_msgs::msg::VehicleAcceleration::SharedPtr msg)
+  {
+    sea_state_.droneAccelZ = -msg->xyz[2];
+    last_drone_accel_time_ = this->now();
+  }
+
   // ══════════════════════════════════════════════════════════════════════════
   // Staleness checks — runs at 1 Hz via staleness_timer_
   // ══════════════════════════════════════════════════════════════════════════
@@ -613,6 +650,8 @@ private:
   rclcpp::Time last_ultrasonic_time_;
   rclcpp::Time last_spa_time_;
   rclcpp::Time last_heave_time_;
+  rclcpp::Time last_pad_imu_time_;
+  rclcpp::Time last_drone_accel_time_;
 
   // Timers
   rclcpp::TimerBase::SharedPtr control_timer_;    ///< 50 Hz — main control tick
@@ -641,6 +680,8 @@ private:
   rclcpp::Subscription<std_msgs::msg::Float64>::SharedPtr               heave_vel_sub_;
   rclcpp::Subscription<std_msgs::msg::Float64>::SharedPtr               heave_pred_pos_sub_;
   rclcpp::Subscription<std_msgs::msg::Float64>::SharedPtr               heave_pred_vel_sub_;
+  rclcpp::Subscription<sensor_msgs::msg::Imu>::SharedPtr                pad_imu_sub_;
+  rclcpp::Subscription<px4_msgs::msg::VehicleAcceleration>::SharedPtr   drone_accel_sub_;
 };
 
 // ─────────────────────────── main ───────────────────────────────────────────
