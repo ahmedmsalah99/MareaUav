@@ -342,7 +342,7 @@ void Lander::updateSignals() {
                  && std::fabs(_seaState.spaPitchPred) < param.landPitchLimit;
     bool ratesOk  = std::fabs(_seaState.rollRate)  < param.landRollRateLimit
                  && std::fabs(_seaState.pitchRate) < param.landPitchRateLimit;
-    bool descFromPeak = (_seaState.heaveVel < 0.1);
+    bool descFromPeak = (_seaState.heaveVelPred < 0.7);
     bool rawGo = _seaState.spaValid && _seaState.heaveValid
               && anglesOk && ratesOk && descFromPeak;
 
