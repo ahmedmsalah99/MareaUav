@@ -60,6 +60,13 @@ struct LandGoDiagnostics {
     bool   votedGo        = false;  // majority vote over landVoteWindow
     double latchTimer     = 0.0;    // time since the latch last flipped
     bool   landingGo      = false;  // final latched GO/NO-GO (== getLandingGoSignal())
+
+    // Touchdown detection (only evaluated in LAND — see updateSignals()).
+    double touchVelRelZ   = 0.0;    // drone vz - pad heaveVel [m/s]
+    double touchAccelZ    = 0.0;    // finite-differenced + smoothed vertical accel [m/s^2]
+    bool   touchGroundContact = false;  // stage 1: relative velocity settled
+    bool   touchConfirmed     = false;  // stage 2: contact + recent impact spike
+    bool   touchedDown        = false;  // latched final verdict (== getTouchedDown())
 };
 
 
@@ -199,6 +206,14 @@ public:
      */
 
     LandGoDiagnostics getGoDiagnostics() const { return _goDiag; }
+
+    /**
+     * @brief Touchdown detection: true once the drone has landed on the pad
+     * (only evaluated in LAND — see updateSignals()). Latched: never resets on
+     * its own, only initStateMachine() clears it.
+     */
+
+    bool getTouchedDown() const { return _touchedDown; }
 
     /**
      * @brief The core function of the landing procedure. Mainly, it is
@@ -369,6 +384,17 @@ private:
     // Snapshot of the GO decision variables, published for plotting/debugging.
     LandGoDiagnostics _goDiag;
 
+    // ── Touchdown detection (LAND -> LANDING_DONE) ────────────────────────────
+    // Staged hysteresis (contact -> confirm), adapted from PX4's own land
+    // detector but checked relative to the pad, not the world frame — see
+    // Parameters.h touch* fields for the rationale.
+    double _touchPrevVz = 0.0;             // previous tick's drone vz, for finite-differencing accel
+    std::deque<double> _touchAccelBuf;     // small moving-average window for the accel estimate
+    double _touchContactTimer = 0.0;       // time [s] the relative velocity has stayed settled
+    double _touchTimeSinceSpike = 1e9;     // time [s] since the last impact-deceleration spike
+    double _touchConfirmTimer = 0.0;       // time [s] contact+recent-spike has held
+    bool   _touchedDown = false;           // latched final verdict — never resets on its own
+
 private:
 
 	/**
@@ -417,6 +443,12 @@ private:
      */
 
     LandState       _landS;
+
+    /**
+     * Terminal state reached once touchdown is detected. No transitions out.
+     */
+
+    LandingDoneState _landingDoneS;
 
     InspectionState _inspeS;    //its constructor set its ID to INSPE
     // HomingState     _homingS;   //its constructor set its ID to HOMING

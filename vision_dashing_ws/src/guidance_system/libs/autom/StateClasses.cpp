@@ -228,6 +228,17 @@ void LandState::handle() {
 
     getSignals();
     bool onTarget = _NComp > param.NFramesComp;
+
+    // Touchdown takes priority over everything else — once detected we commit
+    // permanently to LANDING_DONE, even if the GO window happens to close or
+    // vision drops the same tick (that's expected once sitting on the pad).
+    if(_contextL->getTouchedDown()){
+      this->_contextL->setStatePtr(_nextDoneState);   // -> LANDING_DONE (terminal)
+      printStateTransition();
+      std::cout << "LAND -> LANDING_DONE: touchdown detected" << std::endl;
+      return;
+    }
+
     // Abort the landing and go back to COMP if the GO window closes (NO-GO) or we
     // lose the platform fix. Otherwise stay in LAND — the committed descent is
     // issued in Lander::land() (XY stays centred via hold()).
@@ -241,4 +252,10 @@ void LandState::handle() {
 
     // otherwise stay in LAND (committed descent).
 
+}
+
+void LandingDoneState::handle() {
+    // Terminal: no transitions out. The drone stays put (Lander::run() freezes
+    // the setpoint at the current position for this state) until an external
+    // reset reinitialises the whole state machine.
 }

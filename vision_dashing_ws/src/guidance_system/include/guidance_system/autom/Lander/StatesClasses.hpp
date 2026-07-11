@@ -142,6 +142,13 @@ public:
     /** Landing GO/NO-GO: true when the landing window is open (COMP -> LAND). */
     bool getLandingGoSignal() const { return *_landingGo; }
 
+    /** Latched touchdown detection, computed each tick in Lander::updateSignals()
+     * while in LAND. Never resets on its own — only initStateMachine() clears it. */
+    bool *_touchedDown;
+
+    /** Touchdown detected: true once the drone has landed on the pad (LAND -> LANDING_DONE). */
+    bool getTouchedDown() const { return *_touchedDown; }
+
     /**
      * @brief Decides whether it is safe to begin the landing on a calm sea.
      * @details Returns true only when:
@@ -228,7 +235,8 @@ public:
         ASCE,
         R2LA,
         COMP,
-        LAND
+        LAND,
+        LANDING_DONE
     };
 
     /**
@@ -752,6 +760,12 @@ public:
     AbstractLandState* _restartState;
 
     /**
+     * Terminal state reached once touchdown is detected — the landing is done.
+     */
+
+    AbstractLandState* _nextDoneState;
+
+    /**
      * @brief Constructor of the derived class
      */
 
@@ -776,6 +790,36 @@ public:
      * @details In this case, the handle() method for LandState checks
      * different boolean variables and, based on those, it sets the next
      * state of the machine to the asce one or to the init one
+     */
+
+    void handle();
+};
+
+/** @ingroup Automatic
+ * @brief Derived class of the AbstractLandState
+ * @details Terminal state: reached once touchdown is detected. Deliberately has
+ * NO next-state pointer of any kind — there is no transition out of it. The
+ * drone stays put (see Lander::run()'s LANDING_DONE case) until an external
+ * reset (e.g. a fresh landing task) reinitialises the whole state machine via
+ * Lander::initStateMachine().
+ */
+
+class LandingDoneState : public AbstractLandState {
+
+public:
+
+    LandingDoneState(LandMachine *context) : AbstractLandState(context) {
+        setId();
+    }
+
+    void setId() override {
+
+        _id = LANDING_DONE;
+
+    }
+
+    /**
+     * @brief No-op: this state never transitions anywhere.
      */
 
     void handle();
