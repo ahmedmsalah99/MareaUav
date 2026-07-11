@@ -67,6 +67,10 @@ struct LandGoDiagnostics {
     bool   touchGroundContact = false;  // stage 1: relative velocity settled
     bool   touchConfirmed     = false;  // stage 2: contact + recent impact spike
     bool   touchedDown        = false;  // latched final verdict (== getTouchedDown())
+    // Timers driving the two stages above (seconds) — how close each is to tripping.
+    double touchContactTimer    = 0.0;  // time the relative velocity has stayed settled (-> touchContactTime)
+    double touchConfirmTimer    = 0.0;  // time contact+recent-spike has held (-> touchConfirmTime)
+    double touchTimeSinceSpike  = 0.0;  // time since the last impact-deceleration spike (vs touchAccelSpikeWindow)
 };
 
 
