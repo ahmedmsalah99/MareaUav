@@ -392,8 +392,14 @@ private:
     // Staged hysteresis (contact -> confirm), adapted from PX4's own land
     // detector but checked relative to the pad, not the world frame — see
     // Parameters.h touch* fields for the rationale.
+    // vz/acceleration tracking runs every tick regardless of state, so the
+    // estimate is already warm and settled by the time LAND starts (see
+    // updateSignals()) — only the stage timers below are LAND/per-attempt scoped.
     double _touchPrevVz = 0.0;             // previous tick's drone vz, for finite-differencing accel
     std::deque<double> _touchAccelBuf;     // small moving-average window for the accel estimate
+    double _touchAccelZSmoothed = 0.0;     // latest smoothed vertical accel estimate [m/s^2]
+    bool   _wasInLand = false;             // for detecting a fresh entry into LAND
+
     double _touchContactTimer = 0.0;       // time [s] the relative velocity has stayed settled
     double _touchTimeSinceSpike = 1e9;     // time [s] since the last impact-deceleration spike
     double _touchConfirmTimer = 0.0;       // time [s] contact+recent-spike has held

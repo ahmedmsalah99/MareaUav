@@ -160,6 +160,8 @@ void Lander::initStateMachine() {
 	_goDiag       = LandGoDiagnostics();
 	_touchPrevVz         = 0.0;
 	_touchAccelBuf.clear();
+	_touchAccelZSmoothed = 0.0;
+	_wasInLand           = false;
 	_touchContactTimer   = 0.0;
 	_touchTimeSinceSpike = 1e9;
 	_touchConfirmTimer   = 0.0;
@@ -414,26 +416,49 @@ void Lander::updateSignals() {
   // then confirm), corrected for a moving/heaving pad by checking velocity
   // RELATIVE to the pad rather than in the world frame — a drone resting on the
   // pad still has non-zero world-frame velocity because the pad is moving.
-  // Only evaluated while actually committed to landing (LAND); _touchedDown
-  // latches permanently once confirmed and is only cleared by initStateMachine().
-  if (_actualState == AbstractLandState::states::LAND && !_touchedDown) {
-    double vRelZ = _state.getVz() - _seaState.heaveVel;
-    bool velSettled = std::fabs(vRelZ)          < param.touchVelRelMax
-                    && std::fabs(_state.getVx()) < param.touchVelRelMax
-                    && std::fabs(_state.getVy()) < param.touchVelRelMax;
-
-    // Impact deceleration: finite-difference vz, smoothed (a single noisy IMU
-    // sample shouldn't count as an impact spike).
+  //
+  // The vz finite-difference/acceleration estimate is tracked UNCONDITIONALLY,
+  // every tick in every state — not just while in LAND. Gating it to LAND meant
+  // _touchPrevVz sat stale (0, or whatever vz was left over from before) until
+  // the first LAND tick, so the very first sample produced a huge bogus
+  // derivative that looked exactly like an impact spike, and kept contaminating
+  // the accel moving-average window for several ticks after — flipping
+  // accelSpike/spikeRecent on and off and resetting _touchConfirmTimer before it
+  // could ever accumulate. Tracking continuously keeps the estimate warm and
+  // genuinely settled by the time LAND (and its terminal touchdown check) starts.
+  {
     double az = (_seaState.dt > 1e-3) ? (_state.getVz() - _touchPrevVz) / _seaState.dt : 0.0;
     _touchPrevVz = _state.getVz();
     _touchAccelBuf.push_back(az);
     if (_touchAccelBuf.size() > 5) _touchAccelBuf.pop_front();
     double azSum = 0.0;
     for (double v : _touchAccelBuf) azSum += v;
-    double azSmoothed = azSum / static_cast<double>(_touchAccelBuf.size());
+    _touchAccelZSmoothed = azSum / static_cast<double>(_touchAccelBuf.size());
 
-    bool accelSpike = std::fabs(azSmoothed) > param.touchAccelSpike;
+    bool accelSpike = std::fabs(_touchAccelZSmoothed) > param.touchAccelSpike;
     _touchTimeSinceSpike = accelSpike ? 0.0 : (_touchTimeSinceSpike + _seaState.dt);
+  }
+
+  bool inLand = (_actualState == AbstractLandState::states::LAND);
+  if (inLand && !_wasInLand) {
+    // Fresh entry into LAND (including a GO -> NO-GO -> GO round trip): start the
+    // per-attempt stage timers clean, so a stale "recent spike"/partial contact
+    // time from a previous attempt (or from flight before LAND even started)
+    // can't cause an instant or confused touchdown verdict this time around.
+    // _touchPrevVz/_touchAccelBuf are deliberately NOT reset — they stay warm.
+    _touchContactTimer   = 0.0;
+    _touchConfirmTimer   = 0.0;
+    _touchTimeSinceSpike = 1e9;
+  }
+  _wasInLand = inLand;
+
+  // Only evaluated while actually committed to landing (LAND); _touchedDown
+  // latches permanently once confirmed and is only cleared by initStateMachine().
+  if (inLand && !_touchedDown) {
+    double vRelZ = _state.getVz() - _seaState.heaveVel;
+    bool velSettled = std::fabs(vRelZ)          < param.touchVelRelMax
+                    && std::fabs(_state.getVx()) < param.touchVelRelMax
+                    && std::fabs(_state.getVy()) < param.touchVelRelMax;
 
     // Stage 1: relative velocity settled, sustained.
     _touchContactTimer = velSettled ? (_touchContactTimer + _seaState.dt) : 0.0;
@@ -446,12 +471,12 @@ void Lander::updateSignals() {
 
     if (confirmed) {
       _touchedDown = true;
-      std::cout << "[TOUCHDOWN] confirmed: vRelZ=" << vRelZ << " azSmoothed=" << azSmoothed
+      std::cout << "[TOUCHDOWN] confirmed: vRelZ=" << vRelZ << " azSmoothed=" << _touchAccelZSmoothed
                 << " groundContact=" << groundContact << std::endl;
     }
 
     _goDiag.touchVelRelZ       = vRelZ;
-    _goDiag.touchAccelZ        = azSmoothed;
+    _goDiag.touchAccelZ        = _touchAccelZSmoothed;
     _goDiag.touchGroundContact = groundContact;
     _goDiag.touchConfirmed     = confirmed;
     _goDiag.touchedDown        = _touchedDown;
