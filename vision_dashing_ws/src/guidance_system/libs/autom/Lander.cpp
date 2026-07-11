@@ -161,9 +161,11 @@ void Lander::initStateMachine() {
 	_touchPrevVz         = 0.0;
 	_touchAccelBuf.clear();
 	_touchAccelZSmoothed = 0.0;
+	_padPrevHeaveVel     = 0.0;
+	_padAccelBuf.clear();
+	_padAccelZSmoothed   = 0.0;
 	_wasInLand           = false;
 	_touchContactTimer   = 0.0;
-	_touchTimeSinceSpike = 1e9;
 	_touchConfirmTimer   = 0.0;
 	_touchedDown         = false;
 
@@ -250,6 +252,22 @@ void Lander::setSeaState(const SeaState seaState) {
 	_seaState = seaState;
 }
 
+double Lander::updateAccelEstimate(double signal, double &prevSignal, std::deque<double> &buf, double dt) {
+  // A too-small dt blows up the derivative for no physical reason; skip those
+  // samples (0.0 contribution) rather than dividing by them.
+  double raw = (dt > 5e-3) ? (signal - prevSignal) / dt : 0.0;
+  prevSignal = signal;
+
+  // Clip before averaging: a single odometry glitch would otherwise dominate the
+  // short window below and read out as a wildly oversized "acceleration".
+  raw = common::clamp(raw, -kAccelEstimateClip, kAccelEstimateClip);
+
+  buf.push_back(raw);
+  if (buf.size() > kAccelEstimateWindow) buf.pop_front();
+  double sum = 0.0;
+  for (double v : buf) sum += v;
+  return sum / static_cast<double>(buf.size());
+}
 
 void Lander::updateSignals() {
 
@@ -412,77 +430,68 @@ void Lander::updateSignals() {
   }
 
   // ── Touchdown detection (LAND -> LANDING_DONE) ─────────────────────────────
-  // Adapted from PX4's own multicopter land detector (staged hysteresis: contact
-  // then confirm), corrected for a moving/heaving pad by checking velocity
-  // RELATIVE to the pad rather than in the world frame — a drone resting on the
-  // pad still has non-zero world-frame velocity because the pad is moving.
+  // Adapted from PX4's own multicopter land detector: a staged-hysteresis state
+  // machine where each stage is the SAME condition held for progressively longer
+  // (not a distinct signal per stage). NOT based on relative vertical velocity
+  // (drone vz - pad heaveVel) — PX4's odometry/EKF velocity output degrades once
+  // the drone stops moving smoothly, i.e. exactly near/at touchdown, so "velocity
+  // ~= 0 relative to the pad" is unreliable when it matters most. Instead: once
+  // resting on the pad, the drone's vertical ACCELERATION must match the pad's
+  // (both move together) — a meaningful test even when the raw velocity numbers
+  // are noisy. Horizontal (x/y) velocity ~= 0 is still a fine test as-is.
   //
-  // The vz finite-difference/acceleration estimate is tracked UNCONDITIONALLY,
-  // every tick in every state — not just while in LAND. Gating it to LAND meant
-  // _touchPrevVz sat stale (0, or whatever vz was left over from before) until
-  // the first LAND tick, so the very first sample produced a huge bogus
-  // derivative that looked exactly like an impact spike, and kept contaminating
-  // the accel moving-average window for several ticks after — flipping
-  // accelSpike/spikeRecent on and off and resetting _touchConfirmTimer before it
-  // could ever accumulate. Tracking continuously keeps the estimate warm and
-  // genuinely settled by the time LAND (and its terminal touchdown check) starts.
-  {
-    double az = (_seaState.dt > 1e-3) ? (_state.getVz() - _touchPrevVz) / _seaState.dt : 0.0;
-    _touchPrevVz = _state.getVz();
-    _touchAccelBuf.push_back(az);
-    if (_touchAccelBuf.size() > 5) _touchAccelBuf.pop_front();
-    double azSum = 0.0;
-    for (double v : _touchAccelBuf) azSum += v;
-    _touchAccelZSmoothed = azSum / static_cast<double>(_touchAccelBuf.size());
-
-    bool accelSpike = std::fabs(_touchAccelZSmoothed) > param.touchAccelSpike;
-    _touchTimeSinceSpike = accelSpike ? 0.0 : (_touchTimeSinceSpike + _seaState.dt);
-  }
+  // Both accel estimates are tracked UNCONDITIONALLY, every tick in every state —
+  // not just while in LAND — via updateAccelEstimate(), which also clips each raw
+  // sample before smoothing (a single odometry glitch would otherwise dominate
+  // the short moving-average window and read out as a wildly oversized
+  // "acceleration" — the bug behind the too-large numbers seen in sim). Tracking
+  // continuously (instead of only gating this to LAND) also keeps both estimates
+  // warm and genuinely settled by the time LAND starts, instead of computing the
+  // very first sample against a stale/zero previous value.
+  _touchAccelZSmoothed = updateAccelEstimate(_state.getVz(),      _touchPrevVz,     _touchAccelBuf, _seaState.dt);
+  _padAccelZSmoothed   = updateAccelEstimate(_seaState.heaveVel,  _padPrevHeaveVel, _padAccelBuf,   _seaState.dt);
 
   bool inLand = (_actualState == AbstractLandState::states::LAND);
   if (inLand && !_wasInLand) {
     // Fresh entry into LAND (including a GO -> NO-GO -> GO round trip): start the
-    // per-attempt stage timers clean, so a stale "recent spike"/partial contact
-    // time from a previous attempt (or from flight before LAND even started)
-    // can't cause an instant or confused touchdown verdict this time around.
-    // _touchPrevVz/_touchAccelBuf are deliberately NOT reset — they stay warm.
-    _touchContactTimer   = 0.0;
-    _touchConfirmTimer   = 0.0;
-    _touchTimeSinceSpike = 1e9;
+    // per-attempt stage timers clean, so partial contact time from a previous
+    // attempt (or from flight before LAND even started) can't cause a confused
+    // touchdown verdict this time around. The accel estimates themselves are
+    // deliberately NOT reset here — they stay warm across attempts.
+    _touchContactTimer = 0.0;
+    _touchConfirmTimer = 0.0;
   }
   _wasInLand = inLand;
 
   // Only evaluated while actually committed to landing (LAND); _touchedDown
   // latches permanently once confirmed and is only cleared by initStateMachine().
   if (inLand && !_touchedDown) {
-    double vRelZ = _state.getVz() - _seaState.heaveVel;
-    bool velSettled = std::fabs(vRelZ)          < param.touchVelRelMax
-                    && std::fabs(_state.getVx()) < param.touchVelRelMax
-                    && std::fabs(_state.getVy()) < param.touchVelRelMax;
+    bool accelMatches = std::fabs(_touchAccelZSmoothed - _padAccelZSmoothed) < param.touchAccelMatchTol;
+    bool xyStill      = std::fabs(_state.getVx()) < param.touchVelRelMax
+                      && std::fabs(_state.getVy()) < param.touchVelRelMax;
+    bool contactCond  = accelMatches && xyStill;
 
-    // Stage 1: relative velocity settled, sustained.
-    _touchContactTimer = velSettled ? (_touchContactTimer + _seaState.dt) : 0.0;
+    // Stage 1: drone/pad accel matched + xy settled, sustained touchContactTime.
+    _touchContactTimer = contactCond ? (_touchContactTimer + _seaState.dt) : 0.0;
     bool groundContact = _touchContactTimer >= param.touchContactTime;
 
-    // Stage 2: contact + a recent impact spike, sustained.
-    bool spikeRecent = _touchTimeSinceSpike <= param.touchAccelSpikeWindow;
-    _touchConfirmTimer = (groundContact && spikeRecent) ? (_touchConfirmTimer + _seaState.dt) : 0.0;
+    // Stage 2: stage 1's condition held touchConfirmTime longer again.
+    _touchConfirmTimer = (groundContact && contactCond) ? (_touchConfirmTimer + _seaState.dt) : 0.0;
     bool confirmed = _touchConfirmTimer >= param.touchConfirmTime;
 
     if (confirmed) {
       _touchedDown = true;
-      std::cout << "[TOUCHDOWN] confirmed: vRelZ=" << vRelZ << " azSmoothed=" << _touchAccelZSmoothed
-                << " groundContact=" << groundContact << std::endl;
+      std::cout << "[TOUCHDOWN] confirmed: droneAz=" << _touchAccelZSmoothed
+                << " padAz=" << _padAccelZSmoothed << " groundContact=" << groundContact << std::endl;
     }
 
-    _goDiag.touchVelRelZ       = vRelZ;
     _goDiag.touchAccelZ        = _touchAccelZSmoothed;
+    _goDiag.touchPadAccelZ     = _padAccelZSmoothed;
     _goDiag.touchGroundContact = groundContact;
     _goDiag.touchConfirmed     = confirmed;
     _goDiag.touchedDown        = _touchedDown;
-    _goDiag.touchContactTimer   = _touchContactTimer;
-    _goDiag.touchConfirmTimer   = _touchConfirmTimer;
-    _goDiag.touchTimeSinceSpike = _touchTimeSinceSpike;
+    _goDiag.touchContactTimer  = _touchContactTimer;
+    _goDiag.touchConfirmTimer  = _touchConfirmTimer;
   }
 
   _err_prev = _err;

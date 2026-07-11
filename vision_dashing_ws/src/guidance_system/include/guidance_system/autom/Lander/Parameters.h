@@ -190,20 +190,24 @@ public:
     double landDescVel;
 
     // ── Touchdown detection (LAND -> LANDING_DONE) ────────────────────────────
-    // Adapted from PX4's own multicopter land detector (ground_contact / maybe_landed
-    // / landed staged-hysteresis state machine), corrected for a moving/heaving pad:
-    // velocity is checked RELATIVE to the pad (drone vz - pad heaveVel), not in the
-    // world frame, since a drone resting on the pad still moves with it.
+    // Adapted from PX4's own multicopter land detector (a staged-hysteresis state
+    // machine: the same condition held for progressively longer). NOT based on
+    // relative vertical velocity (drone vz - pad heaveVel) — PX4's odometry/EKF
+    // velocity output degrades once the drone stops moving smoothly (near/at
+    // touchdown), so a "velocity ~= 0 relative to the pad" test is unreliable
+    // exactly when it matters most. Instead: once resting on the pad the drone's
+    // vertical ACCELERATION must match the pad's (both move together), which is
+    // still meaningful even if the absolute velocity numbers are noisy.
     //
-    // Stage 1 (contact): |relative vertical velocity| and horizontal velocity below
-    // this [m/s], sustained touchContactTime.
+    // Stage 1 (contact): |drone vertical accel - pad vertical accel| below
+    // touchAccelMatchTol AND horizontal velocity below touchVelRelMax, sustained
+    // touchContactTime.
+    double touchAccelMatchTol;
+    // Max horizontal (x/y) velocity [m/s] for stage 1.
     double touchVelRelMax;
-    // Stage 2 (confirm): stage 1 held AND an impact deceleration spike (vertical
-    // acceleration magnitude, finite-differenced from vz) above this [m/s^2] was
-    // seen within touchAccelSpikeWindow seconds — sustained touchConfirmTime.
-    double touchAccelSpike;
-    double touchAccelSpikeWindow;
     double touchContactTime;
+    // Stage 2 (confirm): stage 1's condition held for this much longer again
+    // (PX4-style: same signal, tighter dwell time) before declaring touchdown.
     double touchConfirmTime;
 
 };

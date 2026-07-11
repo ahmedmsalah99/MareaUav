@@ -320,14 +320,13 @@ private:
         kv("voted_go",          d.votedGo),
         kv("latch_timer_s",     d.latchTimer),
         kv("landing_go",        d.landingGo),
-        kv("touch_vel_rel_z",       d.touchVelRelZ),
         kv("touch_accel_z",         d.touchAccelZ),
+        kv("touch_pad_accel_z",     d.touchPadAccelZ),
         kv("touch_ground_contact",  d.touchGroundContact),
         kv("touch_confirmed",       d.touchConfirmed),
         kv("touched_down",          d.touchedDown),
-        kv("touch_contact_timer_s",     d.touchContactTimer),
-        kv("touch_confirm_timer_s",     d.touchConfirmTimer),
-        kv("touch_time_since_spike_s",  d.touchTimeSinceSpike),
+        kv("touch_contact_timer_s", d.touchContactTimer),
+        kv("touch_confirm_timer_s", d.touchConfirmTimer),
       };
 
       diagnostic_msgs::msg::DiagnosticArray diag_msg;
