@@ -320,6 +320,11 @@ private:
         kv("voted_go",          d.votedGo),
         kv("latch_timer_s",     d.latchTimer),
         kv("landing_go",        d.landingGo),
+        kv("touch_vel_rel_z",       d.touchVelRelZ),
+        kv("touch_accel_z",         d.touchAccelZ),
+        kv("touch_ground_contact",  d.touchGroundContact),
+        kv("touch_confirmed",       d.touchConfirmed),
+        kv("touched_down",          d.touchedDown),
       };
 
       diagnostic_msgs::msg::DiagnosticArray diag_msg;

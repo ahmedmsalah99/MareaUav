@@ -13,7 +13,7 @@
 Lander::Lander()
         : _horizontaErr((double)0)    , _tauHold((double)0), _tauLost((double)0), _tauErr((double)0), _NHold(0),
           _NLost(0),_NComp(0) , _initS(&_machine) , _inspeS(&_machine) , _hoveringS(&_machine) , _holdS(&_machine)  , _asceS(&_machine)  , _descS(&_machine),_compS(&_machine),
-          _rtolS(&_machine),_landS(&_machine), _err(0,0,0), _err_int(0,0,0), _err_diff(0,0,0), _dt(0), _prevTime(0), _actualTime(0),
+          _rtolS(&_machine),_landS(&_machine),_landingDoneS(&_machine), _err(0,0,0), _err_int(0,0,0), _err_diff(0,0,0), _dt(0), _prevTime(0), _actualTime(0),
           _actualState(0),_prevState(0), _verticalErr(0), _holdPIDX(0,0,0),
           _holdPIDY(0,0,0)
 {
@@ -158,6 +158,12 @@ void Lander::initStateMachine() {
 	_goLogPrev    = false;
 	_goVoteHistory.clear();
 	_goDiag       = LandGoDiagnostics();
+	_touchPrevVz         = 0.0;
+	_touchAccelBuf.clear();
+	_touchContactTimer   = 0.0;
+	_touchTimeSinceSpike = 1e9;
+	_touchConfirmTimer   = 0.0;
+	_touchedDown         = false;
 
   //Link signals
   //assign initialized errors of the Lander class with
@@ -176,6 +182,7 @@ void Lander::initStateMachine() {
   _machine._UltraInfo    =  &_UltraInfo;
   _machine._seaState     =  &_seaState;
   _machine._landingGo    =  &_landingGo;
+  _machine._touchedDown  =  &_touchedDown;
 	_machine.param		     =  &param;
 	//New signals
   _machine._holding      =  &_holding;
@@ -215,6 +222,7 @@ void Lander::initStateMachine() {
 
   _landS._nextState    = &_compS;   // NO-GO or vision lost during landing -> back to COMP
   _landS._restartState = &_initS;
+  _landS._nextDoneState = &_landingDoneS;   // touchdown detected -> terminal
 
   _machine.setStatePtr(&_initS); //set the state with the INIT one.
 
@@ -399,6 +407,54 @@ void Lander::updateSignals() {
                 << std::endl;
       _goLogPrev = _landingGo;
     }
+  }
+
+  // ── Touchdown detection (LAND -> LANDING_DONE) ─────────────────────────────
+  // Adapted from PX4's own multicopter land detector (staged hysteresis: contact
+  // then confirm), corrected for a moving/heaving pad by checking velocity
+  // RELATIVE to the pad rather than in the world frame — a drone resting on the
+  // pad still has non-zero world-frame velocity because the pad is moving.
+  // Only evaluated while actually committed to landing (LAND); _touchedDown
+  // latches permanently once confirmed and is only cleared by initStateMachine().
+  if (_actualState == AbstractLandState::states::LAND && !_touchedDown) {
+    double vRelZ = _state.getVz() - _seaState.heaveVel;
+    bool velSettled = std::fabs(vRelZ)          < param.touchVelRelMax
+                    && std::fabs(_state.getVx()) < param.touchVelRelMax
+                    && std::fabs(_state.getVy()) < param.touchVelRelMax;
+
+    // Impact deceleration: finite-difference vz, smoothed (a single noisy IMU
+    // sample shouldn't count as an impact spike).
+    double az = (_seaState.dt > 1e-3) ? (_state.getVz() - _touchPrevVz) / _seaState.dt : 0.0;
+    _touchPrevVz = _state.getVz();
+    _touchAccelBuf.push_back(az);
+    if (_touchAccelBuf.size() > 5) _touchAccelBuf.pop_front();
+    double azSum = 0.0;
+    for (double v : _touchAccelBuf) azSum += v;
+    double azSmoothed = azSum / static_cast<double>(_touchAccelBuf.size());
+
+    bool accelSpike = std::fabs(azSmoothed) > param.touchAccelSpike;
+    _touchTimeSinceSpike = accelSpike ? 0.0 : (_touchTimeSinceSpike + _seaState.dt);
+
+    // Stage 1: relative velocity settled, sustained.
+    _touchContactTimer = velSettled ? (_touchContactTimer + _seaState.dt) : 0.0;
+    bool groundContact = _touchContactTimer >= param.touchContactTime;
+
+    // Stage 2: contact + a recent impact spike, sustained.
+    bool spikeRecent = _touchTimeSinceSpike <= param.touchAccelSpikeWindow;
+    _touchConfirmTimer = (groundContact && spikeRecent) ? (_touchConfirmTimer + _seaState.dt) : 0.0;
+    bool confirmed = _touchConfirmTimer >= param.touchConfirmTime;
+
+    if (confirmed) {
+      _touchedDown = true;
+      std::cout << "[TOUCHDOWN] confirmed: vRelZ=" << vRelZ << " azSmoothed=" << azSmoothed
+                << " groundContact=" << groundContact << std::endl;
+    }
+
+    _goDiag.touchVelRelZ       = vRelZ;
+    _goDiag.touchAccelZ        = azSmoothed;
+    _goDiag.touchGroundContact = groundContact;
+    _goDiag.touchConfirmed     = confirmed;
+    _goDiag.touchedDown        = _touchedDown;
   }
 
   _err_prev = _err;
@@ -627,6 +683,18 @@ void Lander::run() {
       hold();   // keep XY centred on the pad during the committed descent
       land();
       //landing phase.
+      break;
+
+    case (AbstractLandState::states::LANDING_DONE):
+
+			if (print > 30) std::cout<<"LANDING_DONE"<<std::endl;
+
+      // Terminal: touchdown confirmed. Freeze the setpoint at the current
+      // (already-landed) position every tick — no more tracking, no descent,
+      // no way back to flying. A fresh landing task (initStateMachine()) is the
+      // only way out.
+      _setPoint = _state;
+      _setPoint.setType(MavState::POSITION);
       break;
 
     default:

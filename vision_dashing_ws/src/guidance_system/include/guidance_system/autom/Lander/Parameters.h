@@ -189,6 +189,23 @@ public:
     // Setpoint lead [m] for the committed (aggressive) descent in land().
     double landDescVel;
 
+    // ── Touchdown detection (LAND -> LANDING_DONE) ────────────────────────────
+    // Adapted from PX4's own multicopter land detector (ground_contact / maybe_landed
+    // / landed staged-hysteresis state machine), corrected for a moving/heaving pad:
+    // velocity is checked RELATIVE to the pad (drone vz - pad heaveVel), not in the
+    // world frame, since a drone resting on the pad still moves with it.
+    //
+    // Stage 1 (contact): |relative vertical velocity| and horizontal velocity below
+    // this [m/s], sustained touchContactTime.
+    double touchVelRelMax;
+    // Stage 2 (confirm): stage 1 held AND an impact deceleration spike (vertical
+    // acceleration magnitude, finite-differenced from vz) above this [m/s^2] was
+    // seen within touchAccelSpikeWindow seconds — sustained touchConfirmTime.
+    double touchAccelSpike;
+    double touchAccelSpikeWindow;
+    double touchContactTime;
+    double touchConfirmTime;
+
 };
 
 
