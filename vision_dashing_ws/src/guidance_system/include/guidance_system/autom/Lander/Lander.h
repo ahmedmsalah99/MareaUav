@@ -5,6 +5,8 @@
 #ifndef MOCAP2MAV_LANDER_H
 #define MOCAP2MAV_LANDER_H
 
+#include <deque>
+#include <utility>
 #include "StateMachine/include/Machine.h"
 #include "common/MavState.h"
 #include "common/SeaState.h"
@@ -22,6 +24,43 @@
 #define TMAX            1.6
 #define TMIN            0.7
 #define PLATFORM_OFFSET 0.0
+
+/**
+ * @brief All the variables behind the landing GO/NO-GO decision, snapshotted every
+ * tick in Lander::updateSignals() for logging/plotting (see getGoDiagnostics()).
+ */
+struct LandGoDiagnostics {
+    // Inputs
+    bool   spaValid       = false;
+    bool   heaveValid     = false;
+    double spaRollPred    = 0.0;
+    double spaPitchPred   = 0.0;
+    double rollRate       = 0.0;
+    double pitchRate      = 0.0;
+    double heavePos       = 0.0;
+    double heaveVel       = 0.0;
+    double heaveVelPred   = 0.0;
+
+    // Limits applied to the inputs above (LAND_* params, logged so plots are
+    // self-contained — no need to cross-reference the param file).
+    double rollLimit      = 0.0;
+    double pitchLimit     = 0.0;
+    double rollRateLimit  = 0.0;
+    double pitchRateLimit = 0.0;
+
+    // Per-condition verdicts
+    bool anglesOk      = false;
+    bool ratesOk       = false;
+    bool descFromPeak  = false;
+
+    // Decision pipeline: instantaneous -> majority vote over a window -> latch
+    bool   rawGo         = false;   // this tick's instantaneous decision
+    double voteFraction  = 0.0;     // fraction of the vote window that was GO
+    int    voteWindowSize = 0;      // number of samples in the vote window
+    bool   votedGo        = false;  // majority vote over landVoteWindow
+    double latchTimer     = 0.0;    // time since the latch last flipped
+    bool   landingGo      = false;  // final latched GO/NO-GO (== getLandingGoSignal())
+};
 
 
 /** @ingroup Automatic
@@ -153,6 +192,13 @@ public:
      */
 
     double getPredictionHorizon() const { return _predictionHorizon; }
+
+    /**
+     * @brief Snapshot of all the variables behind the landing GO/NO-GO decision,
+     * updated every tick in updateSignals(). Published for plotting/debugging.
+     */
+
+    LandGoDiagnostics getGoDiagnostics() const { return _goDiag; }
 
     /**
      * @brief The core function of the landing procedure. Mainly, it is
@@ -313,6 +359,15 @@ private:
     bool   _goLatched   = false;   // internal latch state
     double _goLatchTimer = 0.0;    // time [s] since the last GO<->NO-GO switch
     bool   _goLogPrev   = false;   // for edge-triggered logging
+
+    // Rolling window of the raw (instantaneous) GO decision, used to majority-vote
+    // a smoothed decision before it feeds the latch — a single noisy sample must
+    // not be able to flip the landing decision. Each entry is (dt, rawGo) for that
+    // tick; the window covers the last landVoteWindow seconds.
+    std::deque<std::pair<double,bool>> _goVoteHistory;
+
+    // Snapshot of the GO decision variables, published for plotting/debugging.
+    LandGoDiagnostics _goDiag;
 
 private:
 

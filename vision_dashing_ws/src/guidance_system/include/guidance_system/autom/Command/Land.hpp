@@ -220,6 +220,10 @@ public:
     double getPredictionHorizon() const {
         return _lander.getPredictionHorizon();
     }
+
+    LandGoDiagnostics getGoDiagnostics() const {
+        return _lander.getGoDiagnostics();
+    }
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
 };

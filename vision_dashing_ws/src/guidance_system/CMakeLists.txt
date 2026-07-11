@@ -12,6 +12,7 @@ find_package(std_msgs REQUIRED)
 find_package(sensor_msgs REQUIRED)
 find_package(nav_msgs REQUIRED)
 find_package(geometry_msgs REQUIRED)
+find_package(diagnostic_msgs REQUIRED)
 find_package(px4_msgs REQUIRED)
 find_package(ulisse_msgs REQUIRED)
 find_package(Eigen3 REQUIRED)# uncomment the following section in order to fill in
@@ -95,6 +96,7 @@ ament_target_dependencies(Automlib
   sensor_msgs
   nav_msgs
   geometry_msgs
+  diagnostic_msgs
   px4_msgs
   ultrasonic_sensor
   ulisse_msgs
@@ -146,6 +148,7 @@ ament_target_dependencies(autom_node
   sensor_msgs
   nav_msgs
   geometry_msgs
+  diagnostic_msgs
   px4_msgs
   ulisse_msgs
   ultrasonic_sensor

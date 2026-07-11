@@ -179,6 +179,13 @@ public:
     // long before accepting the opposite (debounce, 0.25 s).
     double landLatchTime;
 
+    // Majority-vote window [s] applied to the raw (instantaneous) GO decision
+    // before it feeds the latch, so a single noisy sample can't flip the landing
+    // decision — smooths/robustifies the discrete signal the latch reacts to.
+    double landVoteWindow;
+    // Fraction (0..1] of the vote window that must be GO for the vote to be GO.
+    double landVoteThreshold;
+
     // Setpoint lead [m] for the committed (aggressive) descent in land().
     double landDescVel;
 
