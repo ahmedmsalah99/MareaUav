@@ -195,6 +195,14 @@ void CompState::handle() {
       return;
     }
 
+    if(_contextL->getLandingGoSignal()){
+      // Landing window is open — commit to the (aggressive) landing.
+      this->_contextL->setStatePtr(_nextLanState);
+      printStateTransition();
+      std::cout << "COMP -> LAND: GO window open" << std::endl;
+      return;
+    }
+
     // otherwise stay in COMP.
     (void)onTarget;
 
@@ -219,21 +227,18 @@ void RToLandState::handle() {
 void LandState::handle() {
 
     getSignals();
-    static int wait = 0;
-    bool onTarget = _NComp > param.NFramesComp;
 
-    if (!onTarget || !_centered){ //set the next state(AsceState)
-        //this->_contextL->setStatePtr(_nextState);
-        printStateTransition();
-        wait = 0;
+    // Abort the landing and go back to COMP if the GO window closes (NO-GO) or we
+    // lose the platform fix. Otherwise stay in LAND — the committed descent is
+    // issued in Lander::land() (XY stays centred via hold()).
+    if(!_contextL->getLandingGoSignal() || !_VisionPose.VisionDataUpdated){
+      this->_contextL->setStatePtr(_nextState);   // -> COMP
+      printStateTransition();
+      std::cout << "LAND -> COMP: "
+                << (!_contextL->getLandingGoSignal() ? "NO-GO" : "vision lost") << std::endl;
+      return;
     }
-    _setPoint.setZ(_setPoint.getZ() - 0.1);
 
-    //Restart the procedure
-    //if(wait++ > 100) {
-     //   this->_contextL->setStatePtr(_restartState); //set the next state(InitState)
-       // printStateTransition();
-        //wait=0;
-    //}
+    // otherwise stay in LAND (committed descent).
 
 }

@@ -26,6 +26,12 @@ Parameters::Parameters() {
     compHoldDist       = 1.5;
     compMinDist        = 1.0;
     compResumeDist     = 1.3;
+    landRollLimit      = 0.20;
+    landPitchLimit     = 0.20;
+    landRollRateLimit  = 0.10;
+    landPitchRateLimit = 0.10;
+    landLatchTime      = 0.25;
+    landDescLead       = 0.8;
 }
 
 void Parameters::loadConfigFile(const char *config_file) {
@@ -186,6 +192,23 @@ void Parameters::loadParamFile(const char *config_file) {
             else if( !param.compare("COMP_RESUME_DIST") )
                 compResumeDist = value;
 
+            else if( !param.compare("LAND_ROLL_LIMIT") )
+                landRollLimit = value;
+
+            else if( !param.compare("LAND_PITCH_LIMIT") )
+                landPitchLimit = value;
+
+            else if( !param.compare("LAND_ROLL_RATE_LIMIT") )
+                landRollRateLimit = value;
+
+            else if( !param.compare("LAND_PITCH_RATE_LIMIT") )
+                landPitchRateLimit = value;
+
+            else if( !param.compare("LAND_LATCH_TIME") )
+                landLatchTime = value;
+
+            else if( !param.compare("LAND_DESC_LEAD") )
+                landDescLead = value;
 
         }
 		cFile.close();

@@ -36,6 +36,11 @@ struct SeaState {
     double roll = 0.0;
     double pitch = 0.0;
 
+    // SPA predicted roll/pitch [rad] (spa/prediction, prediction_horizon ahead)
+    // — used by the landing GO/NO-GO window.
+    double spaRollPred = 0.0;
+    double spaPitchPred = 0.0;
+
     // Control-loop period [s] measured by the guidance node. Used by the
     // calm-sea gate to accumulate its "sea has been calm for N seconds" timer,
     // so the timing does not depend on the Lander's internal dt bookkeeping.

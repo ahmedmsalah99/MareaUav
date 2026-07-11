@@ -167,6 +167,21 @@ public:
     // COMP resumes tracking once the gap climbs back above this [m] (hysteresis).
     double compResumeDist;
 
+    // ── Landing GO/NO-GO window (aggressive-landing trigger) ─────────────────
+    // These are the LANDING limits (distinct from the calm-sea limits above).
+    // Max SPA predicted roll/pitch [rad] for a GO.
+    double landRollLimit;
+    double landPitchLimit;
+    // Max roll/pitch rate [rad/s] for a GO.
+    double landRollRateLimit;
+    double landPitchRateLimit;
+    // Latch time [s]: after switching GO<->NO-GO, hold that decision at least this
+    // long before accepting the opposite (debounce, 0.25 s).
+    double landLatchTime;
+
+    // Setpoint lead [m] for the committed (aggressive) descent in land().
+    double landDescLead;
+
 };
 
 
