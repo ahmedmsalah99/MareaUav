@@ -33,7 +33,7 @@ Parameters::Parameters() {
     landLatchTime      = 0.25;
     landVoteWindow     = 1.5;
     landVoteThreshold  = 0.6;
-    landDescVel       = 4.0;
+    landDescVel       = 2.5;
 }
 
 void Parameters::loadConfigFile(const char *config_file) {

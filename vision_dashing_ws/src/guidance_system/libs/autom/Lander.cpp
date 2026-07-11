@@ -1027,9 +1027,13 @@ void Lander::land() {
     // by hold() (runs before land() in the LAND tick); here we only drive Z down,
     // anchored to the drone so the setpoint can't run away. No zMin clamp — we are
     // committing to touch down.
-    double new_z = std::min(_setPoint.getZ() - param.landDescVel, _state.getZ() - param.landDescVel);
-    _setPoint.setZ(new_z);
-    _setPoint.setType(MavState::POSITION);
+    
+    // double new_z = std::min(_setPoint.getZ() - param.landDescVel, _state.getZ() - param.landDescVel);
+    // _setPoint.setZ(new_z);
+    // _setPoint.setType(MavState::POSITION);
+
+    _setPoint.setVz(-param.landDescVel);
+    _setPoint.setType(MavState::VELOCITY);
 
 }
 
