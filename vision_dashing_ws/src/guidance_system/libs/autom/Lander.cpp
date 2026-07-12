@@ -4,6 +4,11 @@
 
 #include <iostream>
 #include <algorithm>
+#include <fstream>
+#include <chrono>
+#include <ctime>
+#include <iomanip>
+#include <sstream>
 #include "guidance_system/autom/Lander/StatesClasses.hpp"
 #include "guidance_system/autom/Lander/Lander.h"
 #include "common/conversions.h"
@@ -167,6 +172,11 @@ void Lander::initStateMachine() {
 	_touchTimeSinceSpike = 1e9;
 	_touchConfirmTimer   = 0.0;
 	_touchedDown         = false;
+	_touchdownLogged     = false;
+	_predHistRoll.clear();
+	_predHistPitch.clear();
+	_predHistHeavePos.clear();
+	_predHistHeaveVel.clear();
 
   //Link signals
   //assign initialized errors of the Lander class with
@@ -263,7 +273,122 @@ double Lander::smoothAccel(double rawSample, std::deque<double> &buf) {
   return sum / static_cast<double>(buf.size());
 }
 
+void Lander::pushPredHistory(std::deque<std::pair<double,double>> &buf, double value, double dt, double maxAge) {
+  buf.emplace_back(dt, value);
+  double span = 0.0;
+  for (auto &s : buf) span += s.first;
+  while (buf.size() > 1 && span > maxAge) {
+    span -= buf.front().first;
+    buf.pop_front();
+  }
+}
+
+double Lander::lookupPredHistory(const std::deque<std::pair<double,double>> &buf, double lookback, double &achievedLookback) const {
+  achievedLookback = 0.0;
+  if (buf.empty()) return 0.0;
+
+  double age = 0.0;
+  for (auto it = buf.rbegin(); it != buf.rend(); ++it) {
+    age += it->first;
+    if (age >= lookback) {
+      achievedLookback = age;
+      return it->second;
+    }
+  }
+  // History doesn't extend far enough back yet — return the oldest we have.
+  achievedLookback = age;
+  return buf.front().second;
+}
+
+void Lander::logTouchdownCsv() {
+
+  // Named by wall-clock creation time (down to the millisecond) so repeated
+  // landing attempts/sim runs never clash.
+  auto now = std::chrono::system_clock::now();
+  std::time_t now_c = std::chrono::system_clock::to_time_t(now);
+  auto now_ms = std::chrono::duration_cast<std::chrono::milliseconds>(
+                  now.time_since_epoch()) % 1000;
+
+  std::ostringstream fname;
+  fname << "touchdown_"
+        << std::put_time(std::localtime(&now_c), "%Y%m%d_%H%M%S")
+        << "_" << std::setfill('0') << std::setw(3) << now_ms.count()
+        << ".csv";
+
+  std::string pkg_path   = ament_index_cpp::get_package_share_directory("guidance_system");
+  std::string results_dir = pkg_path + "/results";
+  std::string file_path   = results_dir + "/" + fname.str();
+
+  std::ofstream csv(file_path);
+  if (!csv.is_open()) {
+    std::cout << "[TOUCHDOWN] failed to open " << file_path
+              << " for the touchdown CSV dump (does " << results_dir << " exist?)" << std::endl;
+    return;
+  }
+
+  double droneRoll, dronePitch, droneYaw;
+  _state.getOrientationRPY(droneRoll, dronePitch, droneYaw);
+
+  // What the SPA/heave predictors said touchPredLookback seconds before this
+  // exact touchdown moment — compare against the raw (actual) columns above to
+  // see how accurate the prediction pipeline actually was.
+  // The four lookups all land at (~) the same age (they're pushed in lockstep
+  // every tick) — only the roll one's age is kept, as the representative
+  // "how far back did we actually manage to look".
+  double rollAge = 0.0, unusedAge = 0.0;
+  double rollPredLookback     = lookupPredHistory(_predHistRoll,     param.touchPredLookback, rollAge);
+  double pitchPredLookback    = lookupPredHistory(_predHistPitch,    param.touchPredLookback, unusedAge);
+  double heavePosPredLookback = lookupPredHistory(_predHistHeavePos, param.touchPredLookback, unusedAge);
+  double heaveVelPredLookback = lookupPredHistory(_predHistHeaveVel, param.touchPredLookback, unusedAge);
+
+  csv << "horizontal_error_x_m,horizontal_error_y_m,horizontal_error_norm_m,vertical_error_m,"
+      << "drone_x_m,drone_y_m,drone_z_m,drone_vx_mps,drone_vy_mps,drone_vz_mps,"
+      << "drone_roll_rad,drone_pitch_rad,drone_yaw_rad,"
+      << "platform_roll_rad,platform_pitch_rad,platform_roll_pred_rad,platform_pitch_pred_rad,"
+      << "platform_roll_rate_radps,platform_pitch_rate_radps,"
+      << "heave_pos_m,heave_vel_mps,heave_pos_pred_m,heave_vel_pred_mps,"
+      << "platform_roll_pred_lookback_rad,platform_pitch_pred_lookback_rad,"
+      << "heave_pos_pred_lookback_m,heave_vel_pred_lookback_mps,pred_lookback_actual_s,"
+      << "ultrasonic_z_m,"
+      << "drone_accel_z_mps2,pad_accel_z_mps2,"
+      << "touch_contact_timer_s,touch_confirm_timer_s,touch_time_since_spike_s,"
+      << "land_vote_fraction,land_latch_timer_s,landing_go\n";
+
+  csv << _VisionPose.getX()   << "," << _VisionPose.getY()   << "," << _horizontaErr << "," << _verticalErr << ","
+      << _state.getX()        << "," << _state.getY()        << "," << _state.getZ()        << ","
+      << _state.getVx()       << "," << _state.getVy()       << "," << _state.getVz()       << ","
+      << droneRoll             << "," << dronePitch           << "," << droneYaw             << ","
+      << _seaState.roll        << "," << _seaState.pitch      << ","
+      << _seaState.spaRollPred << "," << _seaState.spaPitchPred << ","
+      << _seaState.rollRate    << "," << _seaState.pitchRate  << ","
+      << _seaState.heavePos    << "," << _seaState.heaveVel   << ","
+      << _seaState.heavePosPred << "," << _seaState.heaveVelPred << ","
+      << rollPredLookback << "," << pitchPredLookback << ","
+      << heavePosPredLookback << "," << heaveVelPredLookback << ","
+      << rollAge << ","
+      << _UltraInfo.getZ()     << ","
+      << _goDiag.touchAccelZ   << "," << _goDiag.touchPadAccelZ << ","
+      << _goDiag.touchContactTimer << "," << _goDiag.touchConfirmTimer << "," << _goDiag.touchTimeSinceSpike << ","
+      << _goDiag.voteFraction  << "," << _goDiag.latchTimer   << "," << _goDiag.landingGo
+      << "\n";
+
+  csv.close();
+  std::cout << "[TOUCHDOWN] stats written to " << file_path << std::endl;
+}
+
 void Lander::updateSignals() {
+
+  // Keep a rolling history of the SPA/heave PREDICTIONS (touchPredLookback
+  // seconds, plus margin), regardless of state, so logTouchdownCsv() can look
+  // back into "what the predictor said touchPredLookback seconds before
+  // touchdown" once touchdown actually happens.
+  {
+    double maxAge = param.touchPredLookback + 1.0;
+    pushPredHistory(_predHistRoll,     _seaState.spaRollPred,   _seaState.dt, maxAge);
+    pushPredHistory(_predHistPitch,    _seaState.spaPitchPred,  _seaState.dt, maxAge);
+    pushPredHistory(_predHistHeavePos, _seaState.heavePosPred,  _seaState.dt, maxAge);
+    pushPredHistory(_predHistHeaveVel, _seaState.heaveVelPred,  _seaState.dt, maxAge);
+  }
 
 	if( _VisionPose.VisionDataUpdated )
     Inspection = false;
@@ -502,6 +627,11 @@ void Lander::updateSignals() {
     _goDiag.touchContactTimer   = _touchContactTimer;
     _goDiag.touchConfirmTimer   = _touchConfirmTimer;
     _goDiag.touchTimeSinceSpike = _touchTimeSinceSpike;
+
+    if (_touchedDown && !_touchdownLogged) {
+      logTouchdownCsv();
+      _touchdownLogged = true;
+    }
   }
 
   _err_prev = _err;

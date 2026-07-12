@@ -216,6 +216,14 @@ public:
     double touchAccelSpikeWindow;
     double touchConfirmTime;
 
+    // How far back [s] logTouchdownCsv() looks up the SPA/heave PREDICTIONS that
+    // were current before touchdown, so they can be compared against the actual
+    // raw roll/pitch/heave logged at touchdown itself — i.e. validate "what the
+    // predictor said touchPredLookback seconds ago" against "what really
+    // happened", rather than the (much less useful) prediction made at the
+    // touchdown instant itself.
+    double touchPredLookback;
+
 };
 
 

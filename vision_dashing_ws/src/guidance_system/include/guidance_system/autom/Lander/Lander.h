@@ -421,6 +421,17 @@ private:
     double _touchTimeSinceSpike = 1e9;     // time [s] since the last positive impact spike
     double _touchConfirmTimer = 0.0;       // time [s] contact+recent-spike has held
     bool   _touchedDown = false;           // latched final verdict — never resets on its own
+    bool   _touchdownLogged = false;       // guards logTouchdownCsv() to fire once per attempt
+
+    // Rolling history of the SPA/heave PREDICTIONS (not the raw estimates),
+    // tracked unconditionally every tick regardless of state, so
+    // logTouchdownCsv() can look up "what the predictor said touchPredLookback
+    // seconds before touchdown" for comparison against the raw value it logs at
+    // touchdown itself. Each entry is (dt, value) for that tick.
+    std::deque<std::pair<double,double>> _predHistRoll;
+    std::deque<std::pair<double,double>> _predHistPitch;
+    std::deque<std::pair<double,double>> _predHistHeavePos;
+    std::deque<std::pair<double,double>> _predHistHeaveVel;
 
 private:
 
@@ -733,6 +744,34 @@ private:
      */
 
     double smoothAccel(double rawSample, std::deque<double> &buf);
+
+    /**
+     * @brief Dumps a one-row CSV snapshot of the touchdown-moment stats (x/y
+     * error, roll/pitch, heave, touchdown-detector state, ...) into the
+     * package's installed share/results directory, named by the wall-clock time
+     * it's created so repeated runs never clash. Called once, right when
+     * touchdown is confirmed (see updateSignals()).
+     */
+
+    void logTouchdownCsv();
+
+    /**
+     * @brief Pushes (dt, value) onto a rolling history buffer, trimming entries
+     * older than maxAge seconds — used to keep touchPredLookback seconds (plus
+     * margin) of the SPA/heave prediction signals available for
+     * logTouchdownCsv() to look back into.
+     */
+
+    void pushPredHistory(std::deque<std::pair<double,double>> &buf, double value, double dt, double maxAge);
+
+    /**
+     * @brief Looks up the value from `lookback` seconds before the most recent
+     * sample in `buf` (walking backward from the newest entry). Returns the
+     * oldest available sample if the buffer doesn't extend that far back yet.
+     * @param achievedLookback Set to the actual age [s] of the returned sample.
+     */
+
+    double lookupPredHistory(const std::deque<std::pair<double,double>> &buf, double lookback, double &achievedLookback) const;
 
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
