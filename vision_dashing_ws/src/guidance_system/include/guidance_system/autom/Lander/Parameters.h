@@ -196,7 +196,7 @@ public:
     // stops moving smoothly (near/at touchdown), so "velocity ~= 0 relative to
     // the pad" is unreliable exactly when it matters most. Instead both
     // conditions below are driven from real IMU accelerations (pad: imu/data:
-    // drone: /fmu/out/vehicle_acceleration — see SeaState.h), not derivatives of
+    // drone: — see SeaState.h), not derivatives of
     // velocity, which stays meaningful even when the raw velocity is noisy.
     //
     // Stage 1 (contact): |drone vertical accel - pad vertical accel| (both

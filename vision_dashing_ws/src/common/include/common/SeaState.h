@@ -6,7 +6,7 @@
  * @details Populated by the guidance node from the SPA predictor
  * (spa/estimate, spa/prediction), the heave estimator (heave/position,
  * heave/velocity), the pad's raw IMU (imu/data) and the drone's own PX4
- * acceleration estimate (/fmu/out/vehicle_acceleration). Used by
+ * acceleration estimate . Used by
  * LandMachine::safeInitialLanding() to decide whether the sea is calm enough
  * to begin the landing, and by Lander's touchdown detector (accel matching).
  */
@@ -51,7 +51,7 @@ struct SeaState {
     // ── Raw IMU accelerations, for the touchdown detector's accel-matching test ──
     // Pad: raw imu/data linear_acceleration.z, whatever sign/gravity convention
     // that source uses (see the landingplat plugin — it happens to publish
-    // az_true - g). Drone: /fmu/out/vehicle_acceleration.xyz[2], sign-flipped
+    // az_true - g). Drone: sign-flipped
     // from PX4's FRD (Z down) to an up-positive convention (still includes the
     // real +g gravity reaction of a physical accelerometer). Both are raw —
     // Lander::updateSignals() removes each convention's known additive gravity

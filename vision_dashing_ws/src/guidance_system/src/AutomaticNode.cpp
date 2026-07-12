@@ -14,7 +14,7 @@
 
 #include <px4_msgs/msg/vehicle_odometry.hpp>
 #include <px4_msgs/msg/sensor_gps.hpp>
-#include <px4_msgs/msg/vehicle_acceleration.hpp>
+#include <px4_msgs/msg/sensor_combined.hpp>
 #include <nav_msgs/msg/odometry.hpp>
 #include <geometry_msgs/msg/transform_stamped.hpp>
 #include <geometry_msgs/msg/vector3_stamped.hpp>
@@ -182,8 +182,8 @@ public:
       std::bind(&AutomaticNode::onPadImu, this, std::placeholders::_1));
 
     // Drone's own PX4 acceleration estimate — same purpose.
-    drone_accel_sub_ = create_subscription<px4_msgs::msg::VehicleAcceleration>(
-      "/fmu/out/vehicle_acceleration", px4_qos,
+    drone_accel_sub_ = create_subscription<px4_msgs::msg::SensorCombined>(
+      "/fmu/out/sensor_combined", px4_qos,
       std::bind(&AutomaticNode::onDroneAccel, this, std::placeholders::_1));
 
     // ── Sensor-staleness timer (1 Hz — matches the original 1-second Duration) ──
@@ -547,9 +547,9 @@ private:
   // including gravity" per px4_msgs — flip to up-positive so it at least has
   // the same sign sense as a conventional accelerometer; the touchdown detector
   // removes the +g reaction before comparing to the pad.
-  void onDroneAccel(const px4_msgs::msg::VehicleAcceleration::SharedPtr msg)
+  void onDroneAccel(const px4_msgs::msg::SensorCombined::SharedPtr msg)
   {
-    sea_state_.droneAccelZ = -msg->xyz[2];
+    sea_state_.droneAccelZ = -msg->accelerometer_m_s2[2];
     last_drone_accel_time_ = this->now();
   }
 
@@ -681,7 +681,7 @@ private:
   rclcpp::Subscription<std_msgs::msg::Float64>::SharedPtr               heave_pred_pos_sub_;
   rclcpp::Subscription<std_msgs::msg::Float64>::SharedPtr               heave_pred_vel_sub_;
   rclcpp::Subscription<sensor_msgs::msg::Imu>::SharedPtr                pad_imu_sub_;
-  rclcpp::Subscription<px4_msgs::msg::VehicleAcceleration>::SharedPtr   drone_accel_sub_;
+  rclcpp::Subscription<px4_msgs::msg::SensorCombined>::SharedPtr   drone_accel_sub_;
 };
 
 // ─────────────────────────── main ───────────────────────────────────────────

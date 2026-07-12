@@ -380,7 +380,7 @@ void Lander::updateSignals() {
     for (auto &s : _goVoteHistory) if (s.second) voteCount++;
     double voteFraction = _goVoteHistory.empty() ? 0.0
                          : static_cast<double>(voteCount) / _goVoteHistory.size();
-    bool votedGo = voteFraction >= param.landVoteThreshold;
+    bool votedGo = voteFraction >= param.landVoteThreshold || std::abs(_UltraInfo.getZ() < 0.3);
 
     _goLatchTimer += _seaState.dt;
     if (votedGo != _goLatched && _goLatchTimer >= param.landLatchTime) {
@@ -432,7 +432,7 @@ void Lander::updateSignals() {
   //
   // Both accel signals come from real IMUs, not derivatives of velocity: the pad
   // from its raw IMU (imu/data) and the drone from PX4's own
-  // /fmu/out/vehicle_acceleration — see SeaState.h. The two sources use DIFFERENT
+  // — see SeaState.h. The two sources use DIFFERENT
   // fixed gravity conventions (the pad simulator publishes az_true - g; a real
   // accelerometer reads az_true + g, "specific force", once flipped to
   // up-positive), so each is corrected back to true kinematic acceleration here
@@ -452,7 +452,7 @@ void Lander::updateSignals() {
   // Impact-deceleration spike: touching down arrests the descent, producing a
   // brief POSITIVE acceleration bump on the drone (up-positive convention) — not
   // an absolute-value test, a downward spike is just more descending, not contact.
-  bool accelSpike = _touchAccelZSmoothed > param.touchAccelSpike;
+  bool accelSpike = droneAccelTrue > param.touchAccelSpike;
   _touchTimeSinceSpike = accelSpike ? 0.0 : (_touchTimeSinceSpike + _seaState.dt);
 
   bool inLand = (_actualState == AbstractLandState::states::LAND);
@@ -464,7 +464,7 @@ void Lander::updateSignals() {
     // estimates themselves are deliberately NOT reset here — they stay warm.
     _touchContactTimer   = 0.0;
     _touchConfirmTimer   = 0.0;
-    _touchTimeSinceSpike = 1e9;
+    _touchTimeSinceSpike = param.touchAccelSpikeWindow+0.1;
   }
   _wasInLand = inLand;
 
@@ -477,7 +477,7 @@ void Lander::updateSignals() {
                      && std::fabs(_touchAccelZSmoothed - _padAccelZSmoothed) < param.touchAccelMatchTol;
     bool xyStill      = std::fabs(_state.getVx()) < param.touchVelRelMax
                       && std::fabs(_state.getVy()) < param.touchVelRelMax;
-    bool contactCond  = accelMatches && xyStill;
+    bool contactCond  =  xyStill;
 
     // Stage 1: drone/pad accel matched + xy settled, sustained touchContactTime.
     _touchContactTimer = contactCond ? (_touchContactTimer + _seaState.dt) : 0.0;
@@ -494,7 +494,7 @@ void Lander::updateSignals() {
                 << " padAz=" << _padAccelZSmoothed << " groundContact=" << groundContact << std::endl;
     }
 
-    _goDiag.touchAccelZ        = _touchAccelZSmoothed;
+    _goDiag.touchAccelZ        = droneAccelTrue;
     _goDiag.touchPadAccelZ     = _padAccelZSmoothed;
     _goDiag.touchGroundContact = groundContact;
     _goDiag.touchConfirmed     = confirmed;
@@ -740,8 +740,10 @@ void Lander::run() {
       // (already-landed) position every tick — no more tracking, no descent,
       // no way back to flying. A fresh landing task (initStateMachine()) is the
       // only way out.
-      _setPoint = _state;
-      _setPoint.setType(MavState::POSITION);
+      _setPoint.setVx(0);
+      _setPoint.setVy(0);
+      _setPoint.setVz(-param.landDescVel);
+      _setPoint.setType(MavState::VELOCITY);
       break;
 
     default:

@@ -35,9 +35,9 @@ Parameters::Parameters() {
     landVoteThreshold  = 0.6;
     landDescVel       = 2.5;
     touchAccelMatchTol    = 1.0;
-    touchVelRelMax        = 0.15;
+    touchVelRelMax        = 1.0;
     touchContactTime      = 0.15;
-    touchAccelSpike       = 3.0;
+    touchAccelSpike       = 5.0;
     touchAccelSpikeWindow = 0.5;
     touchConfirmTime      = 0.3;
 }

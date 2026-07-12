@@ -194,8 +194,9 @@ void CompState::handle() {
       std::cout << "out of comp: gap above standoff, back to hold" << std::endl;
       return;
     }
-
-    if(_contextL->getLandingGoSignal()){
+    bool xyStill = std::fabs(_state.getVx()) < param.touchVelRelMax
+                      && std::fabs(_state.getVy()) < param.touchVelRelMax;
+    if(_contextL->getLandingGoSignal() && _centered && xyStill){
       // Landing window is open — commit to the (aggressive) landing.
       this->_contextL->setStatePtr(_nextLanState);
       printStateTransition();
@@ -242,10 +243,10 @@ void LandState::handle() {
     // Abort the landing and go back to COMP if the GO window closes (NO-GO) or we
     // lose the platform fix. Otherwise stay in LAND — the committed descent is
     // issued in Lander::land() (XY stays centred via hold()).
-    if(!_contextL->getLandingGoSignal() || !_VisionPose.VisionDataUpdated || !onTarget || !_centered){
+    if(!_contextL->getLandingGoSignal() || !_centered){
       this->_contextL->setStatePtr(_nextState);   // -> COMP
       printStateTransition();
-      std::cout << "LAND -> COMP: "
+      std::cout << "LAND -> COMP: " << "on target " << onTarget << " _centered " << _centered 
                 << (!_contextL->getLandingGoSignal() ? "NO-GO" : "vision lost") << std::endl;
       return;
     }
