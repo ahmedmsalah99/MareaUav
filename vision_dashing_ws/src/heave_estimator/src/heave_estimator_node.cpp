@@ -33,7 +33,10 @@ public:
         double nis_gate       = declare_parameter("nis_gate",                  25.0);
         double vel_limit      = declare_parameter("heave_vel_limit_mps",       5.0);
         // Forward-prediction horizon [s] for heave/prediction_* (used downstream
-        // to lead the pad by the drone's reaction lag).
+        // to lead the pad by the drone's reaction lag). Static fallback, used
+        // until the guidance node starts publishing a dynamic one on
+        // spa/prediction_horizon (same T = l/v signal spa_predictor already
+        // consumes for its own prediction window).
         pred_horizon_       = declare_parameter("prediction_horizon_s",        0.3);
 
         dt_             = 1.0 / timer_rate;
@@ -51,6 +54,16 @@ public:
                 buf_.push_back(msg->linear_acceleration.z);
             });
 
+        // Dynamic prediction horizon T = l/v published by the guidance node.
+        // When fresh, it overrides the static prediction_horizon_s parameter —
+        // same signal/pattern as spa_predictor's own horizon_sub_.
+        horizon_sub_ = create_subscription<std_msgs::msg::Float64>(
+            "spa/prediction_horizon", rclcpp::QoS(rclcpp::KeepLast(1)).reliable(),
+            [this](const std_msgs::msg::Float64::SharedPtr msg) {
+                std::lock_guard<std::mutex> lk(buf_mutex_);
+                if (msg->data >= 0.0) pred_horizon_ = msg->data;
+            });
+
         pos_pub_ = create_publisher<std_msgs::msg::Float64>("heave/position", 10);
         vel_pub_ = create_publisher<std_msgs::msg::Float64>("heave/velocity", 10);
         pred_pos_pub_ = create_publisher<std_msgs::msg::Float64>("heave/prediction_position", 10);
@@ -62,19 +75,23 @@ public:
             std::bind(&HeaveEstimatorNode::timerCallback, this));
 
         RCLCPP_INFO(get_logger(),
-            "HeaveEstimatorNode: processing at %.1f Hz | FFT window %d samples (%.1f s)",
-            timer_rate, fft_window, fft_window / timer_rate);
+            "HeaveEstimatorNode: processing at %.1f Hz | FFT window %d samples (%.1f s) | "
+            "static prediction horizon %.2f s (overridden by spa/prediction_horizon when fresh)",
+            timer_rate, fft_window, fft_window / timer_rate, pred_horizon_);
     }
 
 private:
     void timerCallback()
     {
         // Swap the live buffer out under the lock so the subscriber
-        // can keep writing without blocking.
+        // can keep writing without blocking. Grab a consistent snapshot of the
+        // (possibly dynamically-updated) prediction horizon at the same time.
         std::vector<double> samples;
+        double pred_horizon;
         {
             std::lock_guard<std::mutex> lk(buf_mutex_);
             samples.swap(buf_);
+            pred_horizon = pred_horizon_;
         }
 
         if (samples.empty()) return;
@@ -122,9 +139,9 @@ private:
         pos_pub_->publish(pos_msg);
         vel_pub_->publish(vel_msg);
 
-        // Forward prediction: where the pad heave will be pred_horizon_ s from now.
+        // Forward prediction: where the pad heave will be pred_horizon s from now.
         double pred_pos, pred_vel;
-        ekf_->predict(pred_horizon_, pred_pos, pred_vel);
+        ekf_->predict(pred_horizon, pred_pos, pred_vel);
         std_msgs::msg::Float64 pred_pos_msg, pred_vel_msg;
         pred_pos_msg.data = pred_pos;
         pred_vel_msg.data = pred_vel;
@@ -132,7 +149,8 @@ private:
         pred_vel_pub_->publish(pred_vel_msg);
     }
 
-    rclcpp::Subscription<sensor_msgs::msg::Imu>::SharedPtr imu_sub_;
+    rclcpp::Subscription<sensor_msgs::msg::Imu>::SharedPtr    imu_sub_;
+    rclcpp::Subscription<std_msgs::msg::Float64>::SharedPtr   horizon_sub_;
     rclcpp::Publisher<std_msgs::msg::Float64>::SharedPtr    pos_pub_;
     rclcpp::Publisher<std_msgs::msg::Float64>::SharedPtr    vel_pub_;
     rclcpp::Publisher<std_msgs::msg::Float64>::SharedPtr    pred_pos_pub_;
