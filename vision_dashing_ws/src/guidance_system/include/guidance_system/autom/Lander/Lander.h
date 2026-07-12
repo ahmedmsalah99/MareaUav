@@ -421,6 +421,7 @@ private:
     double _touchTimeSinceSpike = 1e9;     // time [s] since the last positive impact spike
     double _touchConfirmTimer = 0.0;       // time [s] contact+recent-spike has held
     bool   _touchedDown = false;           // latched final verdict — never resets on its own
+    bool   _touchdownLogged = false;       // guards logTouchdownCsv() to fire once per attempt
 
 private:
 
@@ -733,6 +734,16 @@ private:
      */
 
     double smoothAccel(double rawSample, std::deque<double> &buf);
+
+    /**
+     * @brief Dumps a one-row CSV snapshot of the touchdown-moment stats (x/y
+     * error, roll/pitch, heave, touchdown-detector state, ...) into the
+     * package's installed share/results directory, named by the wall-clock time
+     * it's created so repeated runs never clash. Called once, right when
+     * touchdown is confirmed (see updateSignals()).
+     */
+
+    void logTouchdownCsv();
 
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 

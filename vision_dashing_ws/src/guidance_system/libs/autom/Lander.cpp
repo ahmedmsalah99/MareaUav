@@ -4,6 +4,11 @@
 
 #include <iostream>
 #include <algorithm>
+#include <fstream>
+#include <chrono>
+#include <ctime>
+#include <iomanip>
+#include <sstream>
 #include "guidance_system/autom/Lander/StatesClasses.hpp"
 #include "guidance_system/autom/Lander/Lander.h"
 #include "common/conversions.h"
@@ -167,6 +172,7 @@ void Lander::initStateMachine() {
 	_touchTimeSinceSpike = 1e9;
 	_touchConfirmTimer   = 0.0;
 	_touchedDown         = false;
+	_touchdownLogged     = false;
 
   //Link signals
   //assign initialized errors of the Lander class with
@@ -261,6 +267,65 @@ double Lander::smoothAccel(double rawSample, std::deque<double> &buf) {
   double sum = 0.0;
   for (double v : buf) sum += v;
   return sum / static_cast<double>(buf.size());
+}
+
+void Lander::logTouchdownCsv() {
+
+  // Named by wall-clock creation time (down to the millisecond) so repeated
+  // landing attempts/sim runs never clash.
+  auto now = std::chrono::system_clock::now();
+  std::time_t now_c = std::chrono::system_clock::to_time_t(now);
+  auto now_ms = std::chrono::duration_cast<std::chrono::milliseconds>(
+                  now.time_since_epoch()) % 1000;
+
+  std::ostringstream fname;
+  fname << "touchdown_"
+        << std::put_time(std::localtime(&now_c), "%Y%m%d_%H%M%S")
+        << "_" << std::setfill('0') << std::setw(3) << now_ms.count()
+        << ".csv";
+
+  std::string pkg_path   = ament_index_cpp::get_package_share_directory("guidance_system");
+  std::string results_dir = pkg_path + "/results";
+  std::string file_path   = results_dir + "/" + fname.str();
+
+  std::ofstream csv(file_path);
+  if (!csv.is_open()) {
+    std::cout << "[TOUCHDOWN] failed to open " << file_path
+              << " for the touchdown CSV dump (does " << results_dir << " exist?)" << std::endl;
+    return;
+  }
+
+  double droneRoll, dronePitch, droneYaw;
+  _state.getOrientationRPY(droneRoll, dronePitch, droneYaw);
+
+  csv << "horizontal_error_x_m,horizontal_error_y_m,horizontal_error_norm_m,vertical_error_m,"
+      << "drone_x_m,drone_y_m,drone_z_m,drone_vx_mps,drone_vy_mps,drone_vz_mps,"
+      << "drone_roll_rad,drone_pitch_rad,drone_yaw_rad,"
+      << "platform_roll_rad,platform_pitch_rad,platform_roll_pred_rad,platform_pitch_pred_rad,"
+      << "platform_roll_rate_radps,platform_pitch_rate_radps,"
+      << "heave_pos_m,heave_vel_mps,heave_pos_pred_m,heave_vel_pred_mps,"
+      << "ultrasonic_z_m,"
+      << "drone_accel_z_mps2,pad_accel_z_mps2,"
+      << "touch_contact_timer_s,touch_confirm_timer_s,touch_time_since_spike_s,"
+      << "land_vote_fraction,land_latch_timer_s,landing_go\n";
+
+  csv << _VisionPose.getX()   << "," << _VisionPose.getY()   << "," << _horizontaErr << "," << _verticalErr << ","
+      << _state.getX()        << "," << _state.getY()        << "," << _state.getZ()        << ","
+      << _state.getVx()       << "," << _state.getVy()       << "," << _state.getVz()       << ","
+      << droneRoll             << "," << dronePitch           << "," << droneYaw             << ","
+      << _seaState.roll        << "," << _seaState.pitch      << ","
+      << _seaState.spaRollPred << "," << _seaState.spaPitchPred << ","
+      << _seaState.rollRate    << "," << _seaState.pitchRate  << ","
+      << _seaState.heavePos    << "," << _seaState.heaveVel   << ","
+      << _seaState.heavePosPred << "," << _seaState.heaveVelPred << ","
+      << _UltraInfo.getZ()     << ","
+      << _goDiag.touchAccelZ   << "," << _goDiag.touchPadAccelZ << ","
+      << _goDiag.touchContactTimer << "," << _goDiag.touchConfirmTimer << "," << _goDiag.touchTimeSinceSpike << ","
+      << _goDiag.voteFraction  << "," << _goDiag.latchTimer   << "," << _goDiag.landingGo
+      << "\n";
+
+  csv.close();
+  std::cout << "[TOUCHDOWN] stats written to " << file_path << std::endl;
 }
 
 void Lander::updateSignals() {
@@ -502,6 +567,11 @@ void Lander::updateSignals() {
     _goDiag.touchContactTimer   = _touchContactTimer;
     _goDiag.touchConfirmTimer   = _touchConfirmTimer;
     _goDiag.touchTimeSinceSpike = _touchTimeSinceSpike;
+
+    if (_touchedDown && !_touchdownLogged) {
+      logTouchdownCsv();
+      _touchdownLogged = true;
+    }
   }
 
   _err_prev = _err;
