@@ -1164,49 +1164,73 @@ void Lander::hold() {
   }
 
 
-  // ── XY: absolute platform-position hold ──────────────────────────────────
-  // Command the platform's estimated WORLD position, not "drone position + gain*
-  // vision". vision = platform - drone, so platform_world = state + vision. This
-  // is an absolute target (no walk), low-pass filtered and rate-limited so the
-  // vision delay/jitter can't drive the sinusoidal limit cycle that unity-gain
-  // "state + vision" produced.
+  trackXY();
+
+}
+
+void Lander::trackXY() {
+
   const bool visionOk = _VisionPose.IsValid && _VisionPose.VisionDataUpdated;
 
-  double sp_x, sp_y;
-  if (!visionOk) {
-    // No trustworthy vision: freeze XY at the current position and re-seed the
-    // filter when vision returns.
-    sp_x = _state.getX();
-    sp_y = _state.getY();
-    _spSeeded = false;
-  } else {
-    double plat_x = _state.getX() + _VisionPose.getX();
-    double plat_y = _state.getY() + _VisionPose.getY();
+  if (param.xyControlMode == 1) {
+    // ── XY: PID on the horizontal vision error ─────────────────────────────
+    // Drives the drone->platform vision error (_VisionPose.getX()/getY()) to
+    // zero: setpoint = current position + PID(error). Reset the integrator
+    // whenever vision drops out so it can't wind up while blind.
+    _holdPIDX.setDt(_dt);
+    _holdPIDY.setDt(_dt);
 
-    if (!_spSeeded) {
-      _platFiltX = plat_x;  _platFiltY = plat_y;
-      _prevSpX   = plat_x;  _prevSpY   = plat_y;
-      _spSeeded  = true;
+    if (!visionOk) {
+      _holdPIDX.reset();
+      _holdPIDY.reset();
+      _setPoint.setPosition(_state.getX(), _state.getY(), _setPoint.getZ());
+    } else {
+      double targetX = _state.getX() + _holdPIDX.getOutput(0, _VisionPose.getX());
+      double targetY = _state.getY() + _holdPIDY.getOutput(0, _VisionPose.getY());
+      _setPoint.setPosition(targetX, targetY, _setPoint.getZ());
+    }
+  } else {
+    // ── XY: absolute platform-position hold (default) ──────────────────────
+    // Command the platform's estimated WORLD position, not "drone position + gain*
+    // vision". vision = platform - drone, so platform_world = state + vision. This
+    // is an absolute target (no walk), low-pass filtered and rate-limited so the
+    // vision delay/jitter can't drive the sinusoidal limit cycle that unity-gain
+    // "state + vision" produced.
+    double sp_x, sp_y;
+    if (!visionOk) {
+      // No trustworthy vision: freeze XY at the current position and re-seed the
+      // filter when vision returns.
+      sp_x = _state.getX();
+      sp_y = _state.getY();
+      _spSeeded = false;
+    } else {
+      double plat_x = _state.getX() + _VisionPose.getX();
+      double plat_y = _state.getY() + _VisionPose.getY();
+
+      if (!_spSeeded) {
+        _platFiltX = plat_x;  _platFiltY = plat_y;
+        _prevSpX   = plat_x;  _prevSpY   = plat_y;
+        _spSeeded  = true;
+      }
+
+      // EMA low-pass — the platform's horizontal position is quasi-stationary.
+      _platFiltX = param.spFilterAlpha * _platFiltX + (1.0 - param.spFilterAlpha) * plat_x;
+      _platFiltY = param.spFilterAlpha * _platFiltY + (1.0 - param.spFilterAlpha) * plat_y;
+
+      // Rate limit so a vision glitch can't fling the setpoint.
+      double maxStep = param.spMaxVelXY * _dt;
+      sp_x = common::clamp(_platFiltX, _prevSpX - maxStep, _prevSpX + maxStep);
+      sp_y = common::clamp(_platFiltY, _prevSpY - maxStep, _prevSpY + maxStep);
     }
 
-    // EMA low-pass — the platform's horizontal position is quasi-stationary.
-    _platFiltX = param.spFilterAlpha * _platFiltX + (1.0 - param.spFilterAlpha) * plat_x;
-    _platFiltY = param.spFilterAlpha * _platFiltY + (1.0 - param.spFilterAlpha) * plat_y;
+    _prevSpX = sp_x;
+    _prevSpY = sp_y;
 
-    // Rate limit so a vision glitch can't fling the setpoint.
-    double maxStep = param.spMaxVelXY * _dt;
-    sp_x = common::clamp(_platFiltX, _prevSpX - maxStep, _prevSpX + maxStep);
-    sp_y = common::clamp(_platFiltY, _prevSpY - maxStep, _prevSpY + maxStep);
+    //Fill right fields
+    _setPoint.setPosition(sp_x, sp_y, _setPoint.getZ());
   }
 
-  _prevSpX = sp_x;
-  _prevSpY = sp_y;
-  Eigen::Vector2d targetVect(sp_x, sp_y);
-
-  //Fill right fields
-  _setPoint.setPosition(targetVect(0),targetVect(1),_setPoint.getZ());
   _setPoint.setType(MavState::POSITION);
-
 }
 
 void Lander::asce() {
@@ -1231,15 +1255,26 @@ void Lander::desc() {
 
 void Lander::comp() {
 
+  // XY is held by hold() (runs before comp() in the COMP tick) but call
+  // trackXY() explicitly here too, so comp() applies the configured XY control
+  // mode (direct/PID) on its own and doesn't just inherit it implicitly from
+  // run()'s call order. Same-tick recompute — harmless, same inputs.
+  trackXY();
+
   // COMP standoff hold: keep the drone at compHoldDist above the pad while
-  // centred (XY is held by hold(), which runs before comp() in the COMP tick).
+  // centred.
   //
   // Hysteresis safety: if the gap drops below compMinDist the pad is coming up
   // too close — stop tracking and back off (ascend) until the gap climbs back
   // above compResumeDist, then resume tracking.
   //
-  // B2 is reactive: it uses the CURRENT measured gap. C1 adds the predicted
-  // pad motion (lead by REACTION_LAG_S) to drive the relative velocity to zero.
+  // Uses the CURRENT measured gap plus the predicted pad velocity to drive the
+  // relative velocity to zero. The prediction here is led by the drone's own
+  // control+communication delay (heaveVelPredComp, from heave_estimator's
+  // control_comm_delay_s), NOT by the distance-based landing-decision horizon
+  // (heaveVelPred) — comp() needs "where will the pad be by the time my command
+  // takes effect", which is a fixed system latency, not a function of how far
+  // the drone still is from the platform.
 
   double gap = -_verticalErr;   // measured drone->pad vertical distance
 
@@ -1248,7 +1283,7 @@ void Lander::comp() {
 
   double new_z;
   if (_compTracking) {
-    double vff  = _seaState.heaveValid ? _seaState.heaveVelPred : 0.0;
+    double vff  = _seaState.heaveValid ? _seaState.heaveVelPredComp : 0.0;
     double lead = (param.compHoldDist - gap) + vff ;
     new_z = _state.getZ() + lead;
   } else {
@@ -1257,7 +1292,7 @@ void Lander::comp() {
   }
 
   std::cout << "comp gap " << gap << " tracking " << _compTracking
-            << " heaveVelPred " << _seaState.heaveVelPred << " new_z " << new_z << std::endl;
+            << " heaveVelPredComp " << _seaState.heaveVelPredComp << " new_z " << new_z << std::endl;
 
   _setPoint.setZ(new_z);
   clampZSP();

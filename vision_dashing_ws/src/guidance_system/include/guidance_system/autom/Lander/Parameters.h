@@ -141,11 +141,17 @@ public:
     // Time [s] the calm conditions must hold continuously before landing is allowed.
     double calmDuration;
 
-    // ── XY platform-position hold (hold()) ───────────────────────────────────
+    // ── XY platform-position hold (trackXY(), used by hold() and comp()) ─────
+    // Which control law drives the XY setpoint:
+    //   0 = direct  — absolute platform-position hold: EMA-filtered + rate-
+    //       limited target at the platform's estimated world position.
+    //   1 = pid     — MiniPID (KpHold/KiHold/KdHold) driving the horizontal
+    //       vision error to zero, output added onto the drone's current position.
+    int xyControlMode;
     // EMA smoothing factor [0..1) for the platform XY setpoint. Higher = smoother
-    // / slower (rejects vision jitter and the delay-driven limit cycle).
+    // / slower (rejects vision jitter and the delay-driven limit cycle). Direct mode only.
     double spFilterAlpha;
-    // Max speed [m/s] the XY setpoint is allowed to move (rate limit).
+    // Max speed [m/s] the XY setpoint is allowed to move (rate limit). Direct mode only.
     double spMaxVelXY;
 
     // ── Heave-predictive landing ─────────────────────────────────────────────

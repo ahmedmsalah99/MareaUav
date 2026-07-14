@@ -174,6 +174,16 @@ public:
       "heave/prediction_velocity", rclcpp::QoS(rclcpp::KeepLast(1)),
       std::bind(&AutomaticNode::onHeavePredVelocity, this, std::placeholders::_1));
 
+    // Comp-phase heave prediction, led by the drone's control+comm delay
+    // instead of distance-to-platform — see SeaState.h.
+    heave_pred_pos_comp_sub_ = create_subscription<std_msgs::msg::Float64>(
+      "heave/prediction_position_comp", rclcpp::QoS(rclcpp::KeepLast(1)),
+      std::bind(&AutomaticNode::onHeavePredPositionComp, this, std::placeholders::_1));
+
+    heave_pred_vel_comp_sub_ = create_subscription<std_msgs::msg::Float64>(
+      "heave/prediction_velocity_comp", rclcpp::QoS(rclcpp::KeepLast(1)),
+      std::bind(&AutomaticNode::onHeavePredVelocityComp, this, std::placeholders::_1));
+
     // Pad's raw IMU (published by the landing-pad simulator plugin, already
     // consumed the same way by heave_estimator) — used by the touchdown
     // detector's accel-matching test.
@@ -534,6 +544,18 @@ private:
     sea_state_.heaveVelPred = msg->data;
   }
 
+  // Comp-phase heave prediction (control+comm delay horizon) — same freshness
+  // reasoning as above (published in lockstep with heave/velocity).
+  void onHeavePredPositionComp(const std_msgs::msg::Float64::SharedPtr msg)
+  {
+    sea_state_.heavePosPredComp = msg->data;
+  }
+
+  void onHeavePredVelocityComp(const std_msgs::msg::Float64::SharedPtr msg)
+  {
+    sea_state_.heaveVelPredComp = msg->data;
+  }
+
   // Pad's raw IMU — same topic/field heave_estimator already consumes. Raw,
   // whatever gravity/sign convention the source uses (see SeaState.h) — the
   // touchdown detector removes the known constant before comparing.
@@ -680,6 +702,8 @@ private:
   rclcpp::Subscription<std_msgs::msg::Float64>::SharedPtr               heave_vel_sub_;
   rclcpp::Subscription<std_msgs::msg::Float64>::SharedPtr               heave_pred_pos_sub_;
   rclcpp::Subscription<std_msgs::msg::Float64>::SharedPtr               heave_pred_vel_sub_;
+  rclcpp::Subscription<std_msgs::msg::Float64>::SharedPtr               heave_pred_pos_comp_sub_;
+  rclcpp::Subscription<std_msgs::msg::Float64>::SharedPtr               heave_pred_vel_comp_sub_;
   rclcpp::Subscription<sensor_msgs::msg::Imu>::SharedPtr                pad_imu_sub_;
   rclcpp::Subscription<px4_msgs::msg::SensorCombined>::SharedPtr   drone_accel_sub_;
 };

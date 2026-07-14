@@ -24,10 +24,19 @@ struct SeaState {
     // Heave vertical position of the platform [m].
     double heavePos = 0.0;
 
-    // Forward-predicted heave (heave_estimator's prediction_horizon_s ahead):
-    // where the pad will be, used to lead it by the drone's reaction lag.
+    // Forward-predicted heave (heave_estimator's prediction_horizon_s ahead, T =
+    // l/v to the platform): where the pad will be, used by the landing GO/NO-GO
+    // decision (see Lander::updateSignals()).
     double heaveVelPred = 0.0;
     double heavePosPred = 0.0;
+
+    // Second, INDEPENDENT forward-predicted heave (heave_estimator's
+    // control_comm_delay_s ahead — the drone's own control+communication
+    // latency, not the time-to-platform above): used by the compensation-phase
+    // vertical tracker (Lander::comp()) to lead the pad by "how far ahead the
+    // command actually lands" rather than by distance-to-platform.
+    double heaveVelPredComp = 0.0;
+    double heavePosPredComp = 0.0;
 
     // Roll/pitch angular rates [rad/s], finite-differenced from spa/estimate
     // and smoothed with a moving average.
