@@ -693,6 +693,15 @@ private:
     void hold();
 
     /**
+     * @brief Drives the XY setpoint toward the platform. Configurable via
+     * param.xyControlMode: direct (absolute EMA-filtered/rate-limited platform-
+     * position hold) or pid (MiniPID on the horizontal vision error). Called
+     * from both hold() and comp() so the chosen mode applies in either state.
+     */
+
+    void trackXY();
+
+    /**
      * @brief Go up every time of 10 cm in case we miss, reset PID values
      */
 

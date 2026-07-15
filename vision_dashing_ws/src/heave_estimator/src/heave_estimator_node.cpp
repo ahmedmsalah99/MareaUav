@@ -38,6 +38,14 @@ public:
         // spa/prediction_horizon (same T = l/v signal spa_predictor already
         // consumes for its own prediction window).
         pred_horizon_       = declare_parameter("prediction_horizon_s",        0.3);
+        // Second, INDEPENDENT prediction horizon: the drone's own control +
+        // communication delay (setpoint compute + link + inner-loop response),
+        // used only by the compensation-phase vertical tracking (comp()) so it
+        // leads the pad by "how far ahead the command actually lands", not by
+        // the (unrelated) time-to-platform used for the landing GO/NO-GO
+        // decision. Static — this is a system latency, not something that
+        // shrinks as the drone approaches the pad.
+        control_comm_delay_ = declare_parameter("control_comm_delay_s",        0.15);
 
         dt_             = 1.0 / timer_rate;
         reident_period_ = reident_period;
@@ -68,6 +76,9 @@ public:
         vel_pub_ = create_publisher<std_msgs::msg::Float64>("heave/velocity", 10);
         pred_pos_pub_ = create_publisher<std_msgs::msg::Float64>("heave/prediction_position", 10);
         pred_vel_pub_ = create_publisher<std_msgs::msg::Float64>("heave/prediction_velocity", 10);
+        // Comp-phase prediction, led by control_comm_delay_ instead of pred_horizon.
+        pred_pos_comp_pub_ = create_publisher<std_msgs::msg::Float64>("heave/prediction_position_comp", 10);
+        pred_vel_comp_pub_ = create_publisher<std_msgs::msg::Float64>("heave/prediction_velocity_comp", 10);
 
         // Wall timer drives all processing at `timer_rate` Hz.
         auto period = std::chrono::nanoseconds(static_cast<int64_t>(1e9 / timer_rate));
@@ -76,8 +87,9 @@ public:
 
         RCLCPP_INFO(get_logger(),
             "HeaveEstimatorNode: processing at %.1f Hz | FFT window %d samples (%.1f s) | "
-            "static prediction horizon %.2f s (overridden by spa/prediction_horizon when fresh)",
-            timer_rate, fft_window, fft_window / timer_rate, pred_horizon_);
+            "static prediction horizon %.2f s (overridden by spa/prediction_horizon when fresh) | "
+            "comp-phase (control+comm delay) horizon %.2f s",
+            timer_rate, fft_window, fft_window / timer_rate, pred_horizon_, control_comm_delay_);
     }
 
 private:
@@ -147,6 +159,16 @@ private:
         pred_vel_msg.data = pred_vel;
         pred_pos_pub_->publish(pred_pos_msg);
         pred_vel_pub_->publish(pred_vel_msg);
+
+        // Second forward prediction, at the (static) control+comm delay horizon,
+        // for the compensation-phase vertical tracker.
+        double pred_pos_comp, pred_vel_comp;
+        ekf_->predict(control_comm_delay_, pred_pos_comp, pred_vel_comp);
+        std_msgs::msg::Float64 pred_pos_comp_msg, pred_vel_comp_msg;
+        pred_pos_comp_msg.data = pred_pos_comp;
+        pred_vel_comp_msg.data = pred_vel_comp;
+        pred_pos_comp_pub_->publish(pred_pos_comp_msg);
+        pred_vel_comp_pub_->publish(pred_vel_comp_msg);
     }
 
     rclcpp::Subscription<sensor_msgs::msg::Imu>::SharedPtr    imu_sub_;
@@ -155,6 +177,8 @@ private:
     rclcpp::Publisher<std_msgs::msg::Float64>::SharedPtr    vel_pub_;
     rclcpp::Publisher<std_msgs::msg::Float64>::SharedPtr    pred_pos_pub_;
     rclcpp::Publisher<std_msgs::msg::Float64>::SharedPtr    pred_vel_pub_;
+    rclcpp::Publisher<std_msgs::msg::Float64>::SharedPtr    pred_pos_comp_pub_;
+    rclcpp::Publisher<std_msgs::msg::Float64>::SharedPtr    pred_vel_comp_pub_;
     rclcpp::TimerBase::SharedPtr                            timer_;
 
     std::unique_ptr<FFTIdentifier> identifier_;
@@ -167,6 +191,7 @@ private:
     double reident_period_      = 40.0;
     double last_reident_time_   = 0.0;
     double pred_horizon_        = 0.3;
+    double control_comm_delay_  = 0.15;
 };
 
 int main(int argc, char** argv)
