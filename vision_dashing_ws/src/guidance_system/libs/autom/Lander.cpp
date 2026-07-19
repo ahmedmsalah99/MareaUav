@@ -411,7 +411,7 @@ void Lander::updateSignals() {
   if( switchSensor )
 		dz = _VisionPose.getZ();
 	else
-		dz = (_UltraInfo.getZ()-params_automatic::OffsetUltraSensor);
+		dz = -(_UltraInfo.getZ()-params_automatic::OffsetUltraSensor);
 
 
   dx = _VisionPose.getX();
@@ -1303,7 +1303,7 @@ void Lander::comp() {
   double new_z;
   if (_compTracking) {
     double vff  = _seaState.heaveValid ? _seaState.heaveVelPredComp : 0.0;
-    double lead = (param.compHoldDist - gap) + vff ;
+    double lead = (param.compHoldDist - gap);
     new_z = _state.getZ() + lead;
     // Also feed the predicted heave velocity forward on the PX4 position
     // setpoint's velocity field, in addition to the position lead above.
