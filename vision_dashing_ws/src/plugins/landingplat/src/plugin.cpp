@@ -233,7 +233,7 @@ namespace gazebo
                     "nav_pose", reliable_qos,
                     std::bind(&PlatformManager::navPoseCallback, this, std::placeholders::_1));
 
-                wave.init(10,2.0,0.5,5.0);
+                wave.init(10,2.0,0.5,7.0);
 
                 _pose = _model.get()->WorldPose();
                 _prev_pose      = _pose;
