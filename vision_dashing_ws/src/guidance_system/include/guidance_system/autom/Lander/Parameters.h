@@ -161,9 +161,10 @@ public:
     // (rejects the raw ramp's noisy step-to-step swings); close to 0 => nearly
     // unfiltered (tracks the raw computed z_adj almost immediately).
     double slopeZFilterAlpha;
-    // The staleness timeout for the filter above (reseed instead of blend when
-    // not updated for a while) is hardcoded — see kSlopeZFilterTimeout in
-    // Lander.h, not a tunable param.
+    // If the filter goes this long [s] without being updated (the slope block
+    // not running — inactive, or a call gap), it reseeds from the next raw
+    // z_adj instead of resuming the blend from a stale filtered value.
+    double slopeZFilterTimeout;
 
     // ── Heave-predictive landing ─────────────────────────────────────────────
     // Drone vertical reaction lag [s]: how far ahead to lead the pad using the
