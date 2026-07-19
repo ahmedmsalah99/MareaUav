@@ -1155,7 +1155,7 @@ void Lander::hold() {
       double z_base = _platformState.getZ() + param.z_margin;
       double dot    = _VisionPose.getX() * _line_direction[0] + _VisionPose.getY() * _line_direction[1];
       double norm_sq = _line_direction[0] * _line_direction[0] + _line_direction[1] * _line_direction[1];
-      double z_adj  = z_base + _line_direction[2] * dot / norm_sq;
+      double z_adj  = z_base + _line_direction[2] * dot / norm_sq + 0.5*(z_adj-_state.getZ());
       std::cout << "z_base "  << z_base << " z_adj " << z_adj << " state z "<< _state.getZ() << " _line_direction[2] " << _line_direction[2]
       << " dot " << dot << " norm_sq " << norm_sq << " dot / norm_sq " << dot / norm_sq  << " _VisionPose.getX() " << (_VisionPose.getX()) <<
       " _VisionPose.getY() " << _VisionPose.getY() << " _state.getX() " <<_state.getX() << std::endl;
