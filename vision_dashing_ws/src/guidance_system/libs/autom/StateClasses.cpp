@@ -210,10 +210,28 @@ void CompState::handle() {
     }
     bool xyStill = std::fabs(_state.getVx()) < param.touchVelRelMax
                       && std::fabs(_state.getVy()) < param.touchVelRelMax;
-    if(_contextL->getLandingGoSignal() && _centered && xyStill){
-      // Landing window is open — commit to the (aggressive) landing.
+    bool xyPrecise = std::fabs(_VisionPose.getX()) < param.landXYErrThld
+                      && std::fabs(_VisionPose.getY()) < param.landXYErrThld;
+    bool landCondition = _contextL->getLandingGoSignal() && _centered && xyStill && xyPrecise;
+
+    // Require landCondition to hold CONTINUOUSLY for compToLandWaitTime
+    // seconds before actually transitioning — a brief flicker into "valid"
+    // shouldn't be enough. Reset (not just pause) the instant it drops, so
+    // it's a continuous timer, not a cumulative one; a full state-machine
+    // reset back to INIT clears it too (Lander::initStateMachine()).
+    if (landCondition) {
+      *_contextL->_landValidTimer += _contextL->_seaState->dt;
+    } else {
+      *_contextL->_landValidTimer = 0.0;
+    }
+    bool landConditionSustained = landCondition && (*_contextL->_landValidTimer >= param.compToLandWaitTime);
+
+    if(landConditionSustained){
+      // Landing window is open, drone is precisely centred, and it has held
+      // for at least compToLandWaitTime — commit to the (aggressive) landing.
       this->_contextL->setStatePtr(_nextLanState);
       printStateTransition();
+      *_contextL->_landValidTimer = 0.0;   // consumed — start clean for next time
       std::cout << "COMP -> LAND: GO window open" << std::endl;
       return;
     }

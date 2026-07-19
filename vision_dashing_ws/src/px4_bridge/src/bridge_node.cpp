@@ -266,6 +266,18 @@ private:
       setpoint.velocity[2] = -msg->twist.twist.linear.z;
       setpoint.position = {NAN, NAN, NAN};
 
+      // Unlike the POSITION branch above, this was previously leaving
+      // setpoint.yaw at its default-constructed value — causing a sudden yaw
+      // snap whenever a POSITION setpoint (which does set yaw) was followed
+      // by a VELOCITY one (e.g. HOLD/COMP -> LAND). Carry the commanded yaw
+      // through here too.
+      Eigen::Quaterniond qv(
+        msg->pose.pose.orientation.w,
+        msg->pose.pose.orientation.x,
+        msg->pose.pose.orientation.y,
+        msg->pose.pose.orientation.z);
+      setpoint.yaw = -yawFromQuaternion(qv);
+
       position_enabled_ = false;
       velocity_enabled_ = true;
       trajectory_setpoint_pub_->publish(setpoint);
