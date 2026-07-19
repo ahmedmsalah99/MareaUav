@@ -74,6 +74,18 @@ void HoldState::handle(){
     // centred, holding and on a calm sea. COMP then holds compHoldDist (1.5 m).
     bool compValid = _holding && _centered && (downDist < param.standoffDistance)
                     && _contextL->safeInitialLanding();
+
+    // Require compValid to hold CONTINUOUSLY for compWaitTime seconds before
+    // actually transitioning — a brief flicker into "valid" shouldn't be enough.
+    // Reset (not just pause) the instant compValid drops, so it's a continuous
+    // timer, not a cumulative one; a full state-machine reset back to INIT
+    // clears it too (Lander::initStateMachine()).
+    if (compValid) {
+      *_contextL->_compValidTimer += _contextL->_seaState->dt;
+    } else {
+      *_contextL->_compValidTimer = 0.0;
+    }
+    bool compValidSustained = compValid && (*_contextL->_compValidTimer >= param.compWaitTime);
     // B1: descend only while farther than the standoff distance (2 m) from the
     // pad. Once within the standoff we stop descending and hold there; the
     // compensated/aggressive landing from the standoff comes in later phases.
@@ -114,10 +126,11 @@ void HoldState::handle(){
         std::cout << "asceUnderMin " << " _setPoint.getZ() " << _setPoint.getZ() << std::endl;
         return;
     }
-    if(compValid){
+    if(compValidSustained){
         this->_contextL->setStatePtr(_nextState); //set the next state (RToLandState)
         printStateTransition();
         waitComp = 0;
+        *_contextL->_compValidTimer = 0.0;   // consumed — start clean for next time
         return;
     }
 

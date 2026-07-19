@@ -173,6 +173,13 @@ public:
     // COMP resumes tracking once the gap climbs back above this [m] (hysteresis).
     double compResumeDist;
 
+    // ── HOLD -> COMP wait (HoldState::handle()) ───────────────────────────────
+    // compValid must hold CONTINUOUSLY for this long [s] before HOLD actually
+    // transitions toward COMP (via R2LA). The timer resets to 0 the instant
+    // compValid goes false even momentarily (continuous, not cumulative time),
+    // and on any full state-machine reset back to INIT.
+    double compWaitTime;
+
     // ── Landing GO/NO-GO window (aggressive-landing trigger) ─────────────────
     // These are the LANDING limits (distinct from the calm-sea limits above).
     // Max SPA predicted roll/pitch [rad] for a GO.

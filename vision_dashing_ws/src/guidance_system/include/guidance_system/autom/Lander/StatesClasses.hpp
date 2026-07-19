@@ -149,6 +149,12 @@ public:
     /** Touchdown detected: true once the drone has landed on the pad (LAND -> LANDING_DONE). */
     bool getTouchedDown() const { return *_touchedDown; }
 
+    /** Continuous time [s] compValid has held in HoldState::handle() — reset to 0
+     * the instant compValid goes false, and on any full state-machine reset
+     * (initStateMachine()). Only the accumulator; the HOLD -> COMP wait
+     * threshold (param.compWaitTime) is applied by HoldState itself. */
+    double *_compValidTimer;
+
     /**
      * @brief Decides whether it is safe to begin the landing on a calm sea.
      * @details Returns true only when:

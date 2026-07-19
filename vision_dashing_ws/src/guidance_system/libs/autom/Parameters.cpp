@@ -27,6 +27,7 @@ Parameters::Parameters() {
     compHoldDist       = 1.5;
     compMinDist        = 1.0;
     compResumeDist     = 1.3;
+    compWaitTime       = 1.0;
     landRollLimit      = 0.20;
     landPitchLimit     = 0.20;
     landRollRateLimit  = 0.10;
@@ -204,6 +205,9 @@ void Parameters::loadParamFile(const char *config_file) {
 
             else if( !param.compare("COMP_RESUME_DIST") )
                 compResumeDist = value;
+
+            else if( !param.compare("COMP_WAIT_TIME_S") )
+                compWaitTime = value;
 
             else if( !param.compare("LAND_ROLL_LIMIT") )
                 landRollLimit = value;
