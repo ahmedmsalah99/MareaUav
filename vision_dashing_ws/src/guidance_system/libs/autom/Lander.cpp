@@ -173,6 +173,7 @@ void Lander::initStateMachine() {
 	_touchConfirmTimer   = 0.0;
 	_touchedDown         = false;
 	_touchdownLogged     = false;
+	_compValidTimer      = 0.0;
 	_predHistRoll.clear();
 	_predHistPitch.clear();
 	_predHistHeavePos.clear();
@@ -196,6 +197,7 @@ void Lander::initStateMachine() {
   _machine._seaState     =  &_seaState;
   _machine._landingGo    =  &_landingGo;
   _machine._touchedDown  =  &_touchedDown;
+  _machine._compValidTimer = &_compValidTimer;
 	_machine.param		     =  &param;
 	//New signals
   _machine._holding      =  &_holding;

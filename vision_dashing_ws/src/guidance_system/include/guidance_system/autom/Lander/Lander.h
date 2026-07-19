@@ -423,6 +423,11 @@ private:
     bool   _touchedDown = false;           // latched final verdict — never resets on its own
     bool   _touchdownLogged = false;       // guards logTouchdownCsv() to fire once per attempt
 
+    // Continuous time [s] compValid has held (HoldState::handle()) — the
+    // HOLD -> COMP wait gate. Reset to 0 the instant compValid goes false, and
+    // on any full state-machine reset (initStateMachine()).
+    double _compValidTimer = 0.0;
+
 
      bool _slopeActive = true;
     // Rolling history of the SPA/heave PREDICTIONS (not the raw estimates),
