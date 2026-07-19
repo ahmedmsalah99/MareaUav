@@ -687,6 +687,19 @@ AprilTag2Node::pnp(apriltag_detection_t* const detection, const std::array<doubl
 	Eigen::Matrix4d pose;
 	cv::Mat R_cv;
 	cv::Rodrigues(rvec, R_cv);
+
+	// Capture the tag's ORIGINAL (native PnP) rotation before the z_up
+	// relabeling below — the platform-center offset is stored in world/ENU
+	// frame and must be rotated by the tag's actual detected orientation,
+	// not by the z_up-relabeled one (which is only for the tag's own
+	// returned orientation).
+	Eigen::Matrix3d R_orig;
+	for (int i = 0; i < 3; i++) {
+		for (int j = 0; j < 3; j++) {
+			R_orig(i, j) = R_cv.at<double>(i, j);
+		}
+	}
+
 	if (z_up) {
 		// z_up convention: flip Y and Z axes to match coordinate system
 		R_cv.col(1) *= -1;
@@ -704,37 +717,56 @@ AprilTag2Node::pnp(apriltag_detection_t* const detection, const std::array<doubl
 		pose(i, 3) = tvec.at<double>(i);
 	}
 
+	// Select this tag's platform-center offset (world/ENU-frame translation,
+	// identity rotation — see LandingPlatform.h, matches the SDF's raw tag
+	// placement deltas).
+	Eigen::Matrix4d tagOffset = Eigen::Matrix4d::Identity();
 	if (detection->id == 0) {
-		pose = pose * TAGS.TAG0_T_TAG5;
+		tagOffset = TAGS.TAG0_T_TAG5;
 	} else if (detection->id == 1) {
-		pose = pose * TAGS.TAG1_T_TAG5;
+		tagOffset = TAGS.TAG1_T_TAG5;
 	} else if (detection->id == 2) {
-		pose = pose * TAGS.TAG2_T_TAG5;
+		tagOffset = TAGS.TAG2_T_TAG5;
 	} else if (detection->id == 3) {
-		pose = pose * TAGS.TAG3_T_TAG5;
+		tagOffset = TAGS.TAG3_T_TAG5;
 	} else if (detection->id == 4) {
-		pose = pose * TAGS.TAG4_T_TAG5;
+		tagOffset = TAGS.TAG4_T_TAG5;
 	} else if (detection->id == 5) {
-		pose = pose * TAGS.TAG5_T_TAG5;
+		tagOffset = TAGS.TAG5_T_TAG5;
 	} else if (detection->id == 6) {
-		pose = pose * TAGS.TAG6_T_TAG5;
+		tagOffset = TAGS.TAG6_T_TAG5;
 	} else if (detection->id == 7) {
-		pose = pose * TAGS.TAG7_T_TAG5;
+		tagOffset = TAGS.TAG7_T_TAG5;
 	} else if (detection->id == 8) {
-		pose = pose * TAGS.TAG8_T_TAG5;
+		tagOffset = TAGS.TAG8_T_TAG5;
 	} else if (detection->id == 9) {
-		pose = pose * TAGS.TAG9_T_TAG5;
-		detectionLog << "BABBALA9" << "\n";
+		tagOffset = TAGS.TAG9_T_TAG5;
 	} else if (detection->id == 10) {
-		pose = pose * TAGS.TAG10_T_TAG5;
-		detectionLog << "BABBALA10" << "\n";
+		tagOffset = TAGS.TAG10_T_TAG5;
 	} else if (detection->id == 11) {
-		pose = pose * TAGS.TAG11_T_TAG5;
-		detectionLog << "BABBALA11" << "\n";
+		tagOffset = TAGS.TAG11_T_TAG5;
 	} else if (detection->id == 12) {
-		pose = pose * TAGS.TAG12_T_TAG5;
-		detectionLog << "BABBALA12" << "\n";
+		tagOffset = TAGS.TAG12_T_TAG5;
 	}
+
+	// Every tag shares the same fixed mounting roll relative to world (see
+	// the SDF's tag link pose, 1.57 rad about local X). Convert the offset
+	// from world/ENU frame into this tag's own local frame with that fixed
+	// rotation's inverse, then rotate it into camera frame with the tag's
+	// actual (native, un-relabeled) rotation R_orig.
+	constexpr double kTagMountRoll = 1.57;
+	const double c = std::cos(kTagMountRoll);
+	const double s = std::sin(kTagMountRoll);
+	Eigen::Vector3d d_world(tagOffset(0, 3), tagOffset(1, 3), tagOffset(2, 3));
+	Eigen::Vector3d d_local(
+		d_world(0),
+		d_world(1) * c + d_world(2) * s,
+		-d_world(1) * s + d_world(2) * c);
+	Eigen::Vector3d t_offset = R_orig * d_local;
+
+	pose(0, 3) += t_offset(0);
+	pose(1, 3) += t_offset(1);
+	pose(2, 3) += t_offset(2);
 
 	pose = TAGS.robot_T_cam * pose;
 	Eigen::Matrix3d final_rotation = pose.block<3, 3>(0, 0);
