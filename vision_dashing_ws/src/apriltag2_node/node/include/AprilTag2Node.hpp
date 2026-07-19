@@ -25,6 +25,7 @@
 #include <vector>
 #include <queue>
 #include <deque>
+#include <map>
 #include <Eigen/Geometry>
 #include <Eigen/Core>
 
@@ -113,6 +114,13 @@ private:
 
 	rclcpp::Publisher<geometry_msgs::msg::TransformStamped>::SharedPtr pub_platformCenter;
 	rclcpp::Publisher<geometry_msgs::msg::TransformStamped>::SharedPtr pub_platformCenter_gt;
+
+	// Per-tag platform-center estimate (the same tagTransform computed for each
+	// individual detection, before the multi-tag weighted average) — published
+	// on /platform_center/tag_<id> so each tag's contribution can be plotted and
+	// compared in isolation (diagnosing which tag disagrees with the others).
+	// Publishers are created lazily, the first time each tag ID is seen.
+	std::map<int, rclcpp::Publisher<geometry_msgs::msg::TransformStamped>::SharedPtr> pub_platformCenter_per_tag;
 
 	void onImage(const sensor_msgs::msg::CompressedImage::SharedPtr msg_img);
 	void getDroneOdometry(const px4_msgs::msg::VehicleOdometry::SharedPtr msg_odom);
