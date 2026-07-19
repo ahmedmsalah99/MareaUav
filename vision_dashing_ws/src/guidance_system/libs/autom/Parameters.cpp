@@ -23,7 +23,6 @@ Parameters::Parameters() {
     spFilterAlpha      = 0.9;
     spMaxVelXY         = 0.3;
     slopeZFilterAlpha  = 0.95;
-    slopeZFilterTimeout = 0.5;
     reactionLag        = 0.3;
     standoffDistance   = 2.0;
     compHoldDist       = 1.5;
@@ -191,9 +190,6 @@ void Parameters::loadParamFile(const char *config_file) {
 
             else if( !param.compare("SLOPE_Z_FILTER_ALPHA") )
                 slopeZFilterAlpha = value;
-
-            else if( !param.compare("SLOPE_Z_FILTER_TIMEOUT_S") )
-                slopeZFilterTimeout = value;
 
             else if( !param.compare("SP_XY_MAX_VEL") )
                 spMaxVelXY = value;

@@ -1094,9 +1094,10 @@ void Lander::hold() {
 
     // Accumulated unconditionally, regardless of _slopeActive — reset to 0 only
     // where the slope-Z filter actually runs (below). Drives the filter's
-    // staleness timeout: if it's not "hit" for slopeZFilterTimeout seconds, the
+    // staleness timeout: if it's not "hit" for kSlopeZFilterTimeout seconds, the
     // filter reseeds from the next raw value instead of resuming the blend.
-    _zAdjFiltStaleTimer += _dt;
+    // Capped so it can't grow unbounded while the slope stays inactive.
+    _zAdjFiltStaleTimer = std::min(_zAdjFiltStaleTimer + _dt, kSlopeZFilterStaleMax);
 
     //This function is purely tracking, nothing more
 
@@ -1169,10 +1170,10 @@ void Lander::hold() {
       // Low-pass filter z_adj (slow EMA) so the commanded Z tracks the raw ramp
       // smoothly instead of following its every step-to-step swing. Seed (rather
       // than blend) on the first tick the slope is active, AND whenever the
-      // filter hasn't been hit for slopeZFilterTimeout seconds — a stale filtered
+      // filter hasn't been hit for kSlopeZFilterTimeout seconds — a stale filtered
       // value from long ago shouldn't be resumed/blended from, it should restart
       // fresh from whatever the raw ramp says right now.
-      if (!_zAdjFiltSeeded || _zAdjFiltStaleTimer > param.slopeZFilterTimeout) {
+      if (!_zAdjFiltSeeded || _zAdjFiltStaleTimer > kSlopeZFilterTimeout) {
         _zAdjFiltered   = z_adj;
         _zAdjFiltSeeded = true;
       } else {
