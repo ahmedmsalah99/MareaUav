@@ -173,6 +173,9 @@ void Lander::initStateMachine() {
 	_touchConfirmTimer   = 0.0;
 	_touchedDown         = false;
 	_touchdownLogged     = false;
+	_zAdjFiltered        = 0.0;
+	_zAdjFiltSeeded      = false;
+	_zAdjFiltStaleTimer  = 0.0;
 	_predHistRoll.clear();
 	_predHistPitch.clear();
 	_predHistHeavePos.clear();
@@ -1089,6 +1092,13 @@ void Lander::hovering() {
 
 void Lander::hold() {
 
+    // Accumulated unconditionally, regardless of _slopeActive — reset to 0 only
+    // where the slope-Z filter actually runs (below). Drives the filter's
+    // staleness timeout: if it's not "hit" for kSlopeZFilterTimeout seconds, the
+    // filter reseeds from the next raw value instead of resuming the blend.
+    // Capped so it can't grow unbounded while the slope stays inactive.
+    _zAdjFiltStaleTimer = std::min(_zAdjFiltStaleTimer + _dt, kSlopeZFilterStaleMax);
+
     //This function is purely tracking, nothing more
 
     /*
@@ -1156,17 +1166,35 @@ void Lander::hold() {
       double dot    = _VisionPose.getX() * _line_direction[0] + _VisionPose.getY() * _line_direction[1];
       double norm_sq = _line_direction[0] * _line_direction[0] + _line_direction[1] * _line_direction[1];
       double z_adj  = z_base + _line_direction[2] * dot / norm_sq;
-      std::cout << "z_base "  << z_base << " z_adj " << z_adj << " state z "<< _state.getZ() << " _line_direction[2] " << _line_direction[2]
+
+      // Low-pass filter z_adj (slow EMA) so the commanded Z tracks the raw ramp
+      // smoothly instead of following its every step-to-step swing. Seed (rather
+      // than blend) on the first tick the slope is active, AND whenever the
+      // filter hasn't been hit for kSlopeZFilterTimeout seconds — a stale filtered
+      // value from long ago shouldn't be resumed/blended from, it should restart
+      // fresh from whatever the raw ramp says right now.
+      if (!_zAdjFiltSeeded || _zAdjFiltStaleTimer > kSlopeZFilterTimeout) {
+        _zAdjFiltered   = z_adj;
+        _zAdjFiltSeeded = true;
+      } else {
+        _zAdjFiltered = param.slopeZFilterAlpha * _zAdjFiltered
+                      + (1.0 - param.slopeZFilterAlpha) * z_adj;
+      }
+      _zAdjFiltStaleTimer = 0.0;   // just hit — restart the staleness clock
+
+      std::cout << "z_base "  << z_base << " z_adj " << z_adj << " z_adj_filtered " << _zAdjFiltered
+      << " state z "<< _state.getZ() << " _line_direction[2] " << _line_direction[2]
       << " dot " << dot << " norm_sq " << norm_sq << " dot / norm_sq " << dot / norm_sq  << " _VisionPose.getX() " << (_VisionPose.getX()) <<
       " _VisionPose.getY() " << _VisionPose.getY() << " _state.getX() " <<_state.getX() << std::endl;
-      _setPoint.setZ(z_adj);
+      _setPoint.setZ(_zAdjFiltered);
         // std::cout << "hold setting z pos !desc_v " << !desc_v << " !asce_v " << !asce_v
         //           << " !asce_min " << !asce_min << " !asce_margin " << !asce_margin
         //           << " z_adj " << z_adj << " centered " << _centered << std::endl;
       clampZSP();
       if(std::fabs(_VisionPose.getX()) < 0.1 && std::fabs(_VisionPose.getY()) < 0.1){
         std::cout << "disabling slope" << std::endl;
-        _slopeActive = false;
+        _slopeActive   = false;
+        _zAdjFiltSeeded = false;   // reseed cleanly if the slope reactivates later
       }
     }
     _setPoint.setType(MavState::POSITION);

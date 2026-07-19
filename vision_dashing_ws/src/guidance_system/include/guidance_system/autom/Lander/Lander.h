@@ -38,6 +38,12 @@
 // different raw conventions involved).
 #define kGravityMs2 9.81
 
+// hold()'s slope-Z low-pass filter (z_adj): if not updated for this long [s],
+// reseed instead of resuming the blend from a stale value. Cap on
+// _zAdjFiltStaleTimer itself so it can't grow unbounded while inactive.
+#define kSlopeZFilterTimeout    0.5
+#define kSlopeZFilterStaleMax   3.0
+
 /**
  * @brief All the variables behind the landing GO/NO-GO decision, snapshotted every
  * tick in Lander::updateSignals() for logging/plotting (see getGoDiagnostics()).
@@ -425,6 +431,20 @@ private:
 
 
      bool _slopeActive = true;
+
+    // Low-pass filter state for the slope descent's z_adj (see hold()) — a slow
+    // EMA (param.slopeZFilterAlpha) so the commanded Z tracks the raw ramp
+    // smoothly instead of following its every step-to-step swing. Seeded to the
+    // current setpoint the moment the slope (re)activates, so it starts from
+    // wherever the drone actually is rather than snapping in from zero/stale.
+    double _zAdjFiltered = 0.0;
+    bool   _zAdjFiltSeeded = false;
+    // Time [s] since the filter was last updated — accumulated every hold() tick
+    // regardless of _slopeActive (capped at kSlopeZFilterStaleMax), reset to 0
+    // whenever the filter actually runs. If it exceeds kSlopeZFilterTimeout, the
+    // filter reseeds instead of resuming the blend from a stale value.
+    double _zAdjFiltStaleTimer = 0.0;
+
     // Rolling history of the SPA/heave PREDICTIONS (not the raw estimates),
     // tracked unconditionally every tick regardless of state, so
     // logTouchdownCsv() can look up "what the predictor said touchPredLookback
