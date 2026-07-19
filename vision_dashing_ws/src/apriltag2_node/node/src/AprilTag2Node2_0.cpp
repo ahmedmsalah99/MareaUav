@@ -203,9 +203,16 @@ void AprilTag2Node::onImage(const sensor_msgs::msg::CompressedImage::SharedPtr m
 		msg_detections.detections.push_back(msg_detection);
 		tfs.transforms.push_back(tagTransform);
 
-		// Publish this tag's own platform-center estimate, in isolation, so each
-		// tag can be plotted/compared separately (e.g. to spot a mis-calibrated
-		// tag size in platform_tags[] causing it to disagree with the others).
+		// Publish this tag's own estimate of the PAD POSITION, in isolation, in
+		// the exact same final frame/convention as /platform_center — so it's
+		// directly comparable to it and to the other tags' topics. tagTransform
+		// itself is only "tag projected to the TAG5/platform reference + drone
+		// body frame" (pnp() already applies TAGx_T_TAG5 and robot_T_cam) — the
+		// combined /platform_center output additionally rotates that into the
+		// world-aligned/NED frame (correctToPlatformFrame()), so we apply that
+		// same final step here too. Deliberately NOT anomaly-clamped (unlike the
+		// combined output) — clamping would hide exactly the jump we're trying
+		// to see when diagnosing a mis-calibrated tag.
 		auto pub_it = pub_platformCenter_per_tag.find(det->id);
 		if (pub_it == pub_platformCenter_per_tag.end()) {
 			pub_it = pub_platformCenter_per_tag.emplace(
@@ -214,7 +221,10 @@ void AprilTag2Node::onImage(const sensor_msgs::msg::CompressedImage::SharedPtr m
 					"/platform_center/tag_" + std::to_string(det->id), 1)
 			).first;
 		}
-		pub_it->second->publish(tagTransform);
+		geometry_msgs::msg::TransformStamped tagPlatformEstimate = tagTransform;
+		correctToPlatformFrame(tagTransform.transform.translation.x, tagTransform.transform.translation.y,
+		                       tagPlatformEstimate.transform.translation.x, tagPlatformEstimate.transform.translation.y);
+		pub_it->second->publish(tagPlatformEstimate);
 
 	}
 	if(zarray_size(detections) > 0 && msg_detections.detections.size() > 0) {
@@ -227,6 +237,32 @@ void AprilTag2Node::onImage(const sensor_msgs::msg::CompressedImage::SharedPtr m
 	image_u8_destroy(im);
 }
 
+
+void AprilTag2Node::correctToPlatformFrame(double x_in, double y_in, double &x_out, double &y_out) const
+{
+	// preparing for last rotation: the computed position is wrt drone frame: the
+	// whole should be rotated in global frame. The rotation sign depends on the
+	// chosen direction of z as well.
+	int sign = z_up ? -1 : 1;
+	double rotation_yaw = sign * _drone_yaw;
+
+	// performing a scalar product with a rotation matrix on drone's z-axis: this
+	// one rotates the error in the world frame, so it corresponds to real
+	// working environment.
+	double tx = cosf(rotation_yaw) * x_in - sinf(rotation_yaw) * y_in;
+	double ty = sinf(rotation_yaw) * x_in + cosf(rotation_yaw) * y_in;
+
+	// finally, adapting it to NED framework (rotations along Z by 90 degrees
+	// counterclockwise and X by 180 degrees for z_up; rotation along Z by 180
+	// degrees for z_down) — due to the sign of rotation angle.
+	if (z_up) {
+		x_out = -ty;
+		y_out = tx;
+	} else {
+		x_out = -tx;
+		y_out = -ty;
+	}
+}
 
 void AprilTag2Node::publish_data_center(const apriltag_msgs::msg::AprilTagDetectionArray& detections, const tf2_msgs::msg::TFMessage& transforms)
 {
@@ -332,36 +368,14 @@ void AprilTag2Node::publish_data_center(const apriltag_msgs::msg::AprilTagDetect
 
 		detectionLog << std::to_string(detections.detections.size()) + "," + std::to_string(horiz_dist_norm) + "," + std::to_string(vision_pose2[2]) + "," + std::to_string(this->now().seconds()) + "\n";
 
-		// preparing for last rotation: the computed position is wrt drone frame: the whole should be
-		// rotated in global frame.
-		// creating then a temporary store
-		geometry_msgs::msg::TransformStamped vision_temp;
-		// the rotation sign depends on the choosen direction of z as well
-		int sign = 1;
-		if(z_up)
-			sign = -1;
-
-		double rotation_yaw = sign*_drone_yaw;
-		// performing a scalar product with a rotation matrix on drone's z-axis: this one
-		// rotates the error in the world frame, so that it corresponds to real working environment
-		vision_temp.transform.translation.x = (cosf(rotation_yaw) * vision_pose.transform.translation.x - sinf(rotation_yaw) * vision_pose.transform.translation.y);
-		vision_temp.transform.translation.y = (sinf(rotation_yaw) * vision_pose.transform.translation.x + cosf(rotation_yaw) * vision_pose.transform.translation.y);
-
-		
-
-		// finally, assigning the computed rotation, adapting it to NED framework
-		// (rotations along Z by 90 degrees counterclockwise and X by 180 degrees for z_up)
-		// (rotation along Z by 180 degrees for z_down)
-		// this is due to the sign of rotation angle
-		if(z_up)
+		// Rotate the (weighted-averaged) drone-body-frame estimate into the final
+		// world-aligned/NED platform-center frame — see correctToPlatformFrame().
 		{
-			vision_pose.transform.translation.x = -vision_temp.transform.translation.y;
-			vision_pose.transform.translation.y = vision_temp.transform.translation.x;
-		}
-		else
-		{
-			vision_pose.transform.translation.x = -vision_temp.transform.translation.x;
-			vision_pose.transform.translation.y = -vision_temp.transform.translation.y;
+			double x_corrected, y_corrected;
+			correctToPlatformFrame(vision_pose.transform.translation.x, vision_pose.transform.translation.y,
+			                       x_corrected, y_corrected);
+			vision_pose.transform.translation.x = x_corrected;
+			vision_pose.transform.translation.y = y_corrected;
 		}
 
 		// checking whenever we would have anomalies in the computed errors

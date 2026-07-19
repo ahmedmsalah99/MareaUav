@@ -128,6 +128,12 @@ private:
 	double movingFilter(double raw, std::queue<double> *queue_t, double *integral);
 	void toEulerAngle(double quaternion[], double *Roll, double *Pitch, double *Yaw);
 	void publish_data_center(const apriltag_msgs::msg::AprilTagDetectionArray& detections, const tf2_msgs::msg::TFMessage& transforms);
+	// The final "drone-body -> world-aligned/NED" rotation applied to the
+	// (weighted-averaged) platform-center estimate in publish_data_center(),
+	// factored out so the SAME correction can be applied to a single tag's own
+	// estimate — otherwise a per-tag topic is in a different frame than
+	// /platform_center and isn't directly comparable to it.
+	void correctToPlatformFrame(double x_in, double y_in, double &x_out, double &y_out) const;
 	geometry_msgs::msg::Transform
 	// homography(apriltag_detection_t* const detection, const std::array<double, 4>& intr, double tagsize);
 	pnp(apriltag_detection_t* const detection, const std::array<double, 4>& intr, double tagsize, int tag_id);
