@@ -140,7 +140,7 @@ public:
     bool *_landingGo;
 
     /** Landing GO/NO-GO: true when the landing window is open (COMP -> LAND). */
-    bool getLandingGoSignal() const { return *_landingGo; }
+    bool getLandingGoSignal() const { return false;}//*_landingGo; }
 
     /** Latched touchdown detection, computed each tick in Lander::updateSignals()
      * while in LAND. Never resets on its own — only initStateMachine() clears it. */
@@ -188,7 +188,6 @@ public:
             << " heave vel limit " << (std::fabs(_seaState->heaveVel)  < param->heaveVelLimit) << " heaveVel " << _seaState->heaveVel << std::endl;
             return false;
         }
-
         // Calm conditions held this tick — accumulate and require it to be
         // sustained for calmDuration before declaring the sea calm.
         _calmTimer += _seaState->dt;

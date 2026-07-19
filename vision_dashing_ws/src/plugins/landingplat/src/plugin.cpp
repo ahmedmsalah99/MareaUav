@@ -233,7 +233,7 @@ namespace gazebo
                     "nav_pose", reliable_qos,
                     std::bind(&PlatformManager::navPoseCallback, this, std::placeholders::_1));
 
-                wave.init(10,2.0,0.5,7.0);
+                wave.init(10,2.0,0.5,5.0);
 
                 _pose = _model.get()->WorldPose();
                 _prev_pose      = _pose;
@@ -307,7 +307,7 @@ namespace gazebo
                       orientation.Z(_nav_pos.orientation[3]);
                   }
 
-                  if(_actual_sim_time <= 77.0)
+                  if(_actual_sim_time <= 30.0)
                     _pose.Set(ignition::math::Vector3<double>(_nav_pos.position[0], _nav_pos.position[1], wave.generateWaveHeightAtPoint(_pose.Pos()[0],_pose.Pos()[1],_actual_sim_time,0)/2.0 + 2), orientation);
                   else
                   {

@@ -1227,16 +1227,19 @@ void Lander::trackXY() {
       _platFiltY = param.spFilterAlpha * _platFiltY + (1.0 - param.spFilterAlpha) * plat_y;
 
       // Rate limit so a vision glitch can't fling the setpoint.
-      double maxStep = param.spMaxVelXY * _dt;
+      double maxStep = param.spMaxVelXY;
       sp_x = common::clamp(_platFiltX, _prevSpX - maxStep, _prevSpX + maxStep);
       sp_y = common::clamp(_platFiltY, _prevSpY - maxStep, _prevSpY + maxStep);
     }
 
     _prevSpX = sp_x;
     _prevSpY = sp_y;
-
+    // _setPoint.setPosition(sp_x, sp_y, _setPoint.getZ());
     //Fill right fields
-    _setPoint.setPosition(sp_x, sp_y, _setPoint.getZ());
+    if(param.xyControlMode == 1)
+      _setPoint.setPosition(sp_x, sp_y, _setPoint.getZ());
+    else
+       _setPoint.setPosition(sp_x + 0.5*(sp_x - _state.getX()), sp_y + 0.5*(sp_y - _state.getY()), _setPoint.getZ());
   }
 
   _setPoint.setType(MavState::POSITION);
