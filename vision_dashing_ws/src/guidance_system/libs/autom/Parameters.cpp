@@ -22,6 +22,7 @@ Parameters::Parameters() {
     xyControlMode      = 0;
     spFilterAlpha      = 0.9;
     spMaxVelXY         = 0.3;
+    slopeZFilterAlpha  = 0.95;
     reactionLag        = 0.3;
     standoffDistance   = 2.0;
     compHoldDist       = 1.5;
@@ -186,6 +187,9 @@ void Parameters::loadParamFile(const char *config_file) {
 
             else if( !param.compare("SP_XY_FILTER_ALPHA") )
                 spFilterAlpha = value;
+
+            else if( !param.compare("SLOPE_Z_FILTER_ALPHA") )
+                slopeZFilterAlpha = value;
 
             else if( !param.compare("SP_XY_MAX_VEL") )
                 spMaxVelXY = value;

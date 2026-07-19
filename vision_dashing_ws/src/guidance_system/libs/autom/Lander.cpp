@@ -173,6 +173,8 @@ void Lander::initStateMachine() {
 	_touchConfirmTimer   = 0.0;
 	_touchedDown         = false;
 	_touchdownLogged     = false;
+	_zAdjFiltered        = 0.0;
+	_zAdjFiltSeeded      = false;
 	_predHistRoll.clear();
 	_predHistPitch.clear();
 	_predHistHeavePos.clear();
@@ -1156,17 +1158,32 @@ void Lander::hold() {
       double dot    = _VisionPose.getX() * _line_direction[0] + _VisionPose.getY() * _line_direction[1];
       double norm_sq = _line_direction[0] * _line_direction[0] + _line_direction[1] * _line_direction[1];
       double z_adj  = z_base + _line_direction[2] * dot / norm_sq;
-      std::cout << "z_base "  << z_base << " z_adj " << z_adj << " state z "<< _state.getZ() << " _line_direction[2] " << _line_direction[2]
+
+      // Low-pass filter z_adj (slow EMA) so the commanded Z tracks the raw ramp
+      // smoothly instead of following its every step-to-step swing. Seed on the
+      // first tick the slope is active so it starts from the raw value rather
+      // than snapping in from a stale/zero filter state.
+      if (!_zAdjFiltSeeded) {
+        _zAdjFiltered   = z_adj;
+        _zAdjFiltSeeded = true;
+      } else {
+        _zAdjFiltered = param.slopeZFilterAlpha * _zAdjFiltered
+                      + (1.0 - param.slopeZFilterAlpha) * z_adj;
+      }
+
+      std::cout << "z_base "  << z_base << " z_adj " << z_adj << " z_adj_filtered " << _zAdjFiltered
+      << " state z "<< _state.getZ() << " _line_direction[2] " << _line_direction[2]
       << " dot " << dot << " norm_sq " << norm_sq << " dot / norm_sq " << dot / norm_sq  << " _VisionPose.getX() " << (_VisionPose.getX()) <<
       " _VisionPose.getY() " << _VisionPose.getY() << " _state.getX() " <<_state.getX() << std::endl;
-      _setPoint.setZ(z_adj);
+      _setPoint.setZ(_zAdjFiltered);
         // std::cout << "hold setting z pos !desc_v " << !desc_v << " !asce_v " << !asce_v
         //           << " !asce_min " << !asce_min << " !asce_margin " << !asce_margin
         //           << " z_adj " << z_adj << " centered " << _centered << std::endl;
       clampZSP();
       if(std::fabs(_VisionPose.getX()) < 0.1 && std::fabs(_VisionPose.getY()) < 0.1){
         std::cout << "disabling slope" << std::endl;
-        _slopeActive = false;
+        _slopeActive   = false;
+        _zAdjFiltSeeded = false;   // reseed cleanly if the slope reactivates later
       }
     }
     _setPoint.setType(MavState::POSITION);

@@ -425,6 +425,15 @@ private:
 
 
      bool _slopeActive = true;
+
+    // Low-pass filter state for the slope descent's z_adj (see hold()) — a slow
+    // EMA (param.slopeZFilterAlpha) so the commanded Z tracks the raw ramp
+    // smoothly instead of following its every step-to-step swing. Seeded to the
+    // current setpoint the moment the slope (re)activates, so it starts from
+    // wherever the drone actually is rather than snapping in from zero/stale.
+    double _zAdjFiltered = 0.0;
+    bool   _zAdjFiltSeeded = false;
+
     // Rolling history of the SPA/heave PREDICTIONS (not the raw estimates),
     // tracked unconditionally every tick regardless of state, so
     // logTouchdownCsv() can look up "what the predictor said touchPredLookback

@@ -154,6 +154,14 @@ public:
     // Max speed [m/s] the XY setpoint is allowed to move (rate limit). Direct mode only.
     double spMaxVelXY;
 
+    // ── INIT->HOLD slope descent (the "slope movement", hold()'s _slopeActive
+    // block) ──────────────────────────────────────────────────────────────────
+    // EMA smoothing factor [0..1) applied to z_adj before it's commanded, same
+    // idea as spFilterAlpha above. Close to 1 => slow/heavily damped response
+    // (rejects the raw ramp's noisy step-to-step swings); close to 0 => nearly
+    // unfiltered (tracks the raw computed z_adj almost immediately).
+    double slopeZFilterAlpha;
+
     // ── Heave-predictive landing ─────────────────────────────────────────────
     // Drone vertical reaction lag [s]: how far ahead to lead the pad using the
     // heave prediction. Should match the heave_estimator's prediction_horizon_s.
