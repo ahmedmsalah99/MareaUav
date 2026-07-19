@@ -203,6 +203,19 @@ void AprilTag2Node::onImage(const sensor_msgs::msg::CompressedImage::SharedPtr m
 		msg_detections.detections.push_back(msg_detection);
 		tfs.transforms.push_back(tagTransform);
 
+		// Publish this tag's own platform-center estimate, in isolation, so each
+		// tag can be plotted/compared separately (e.g. to spot a mis-calibrated
+		// tag size in platform_tags[] causing it to disagree with the others).
+		auto pub_it = pub_platformCenter_per_tag.find(det->id);
+		if (pub_it == pub_platformCenter_per_tag.end()) {
+			pub_it = pub_platformCenter_per_tag.emplace(
+				det->id,
+				this->create_publisher<geometry_msgs::msg::TransformStamped>(
+					"/platform_center/tag_" + std::to_string(det->id), 1)
+			).first;
+		}
+		pub_it->second->publish(tagTransform);
+
 	}
 	if(zarray_size(detections) > 0 && msg_detections.detections.size() > 0) {
 		publish_data_center( msg_detections,tfs );
