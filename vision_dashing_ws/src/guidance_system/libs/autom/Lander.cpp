@@ -511,7 +511,7 @@ void Lander::updateSignals() {
     for (auto &s : _goVoteHistory) if (s.second) voteCount++;
     double voteFraction = _goVoteHistory.empty() ? 0.0
                          : static_cast<double>(voteCount) / _goVoteHistory.size();
-    bool votedGo = voteFraction >= param.landVoteThreshold || std::abs(_UltraInfo.getZ() < 0.1);
+    bool votedGo = voteFraction >= param.landVoteThreshold || std::abs(_UltraInfo.getZ() < 0.2);
 
     _goLatchTimer += _seaState.dt;
     if (votedGo != _goLatched && _goLatchTimer >= param.landLatchTime) {

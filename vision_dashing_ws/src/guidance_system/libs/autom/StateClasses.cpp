@@ -223,7 +223,8 @@ void CompState::handle() {
     bool xyPrecise = std::fabs(_VisionPose.getX()) < param.landXYErrThld
                       && std::fabs(_VisionPose.getY()) < param.landXYErrThld;
     bool landCondition = _contextL->getLandingGoSignal() && _centered && xyStill && xyPrecise;
-
+    std::cout << "xyStill " << xyStill << " xyPrecise " << xyPrecise << " _VisionPose.getX() " << _VisionPose.getX() 
+    << " _VisionPose.getY() " << _VisionPose.getY() << " compDwellElapsed " << compDwellElapsed << std::endl;
     if(landCondition && compDwellElapsed){
       // Landing window is open, drone is precisely centred, and at least
       // compToLandWaitTime has been spent in COMP — commit to landing.

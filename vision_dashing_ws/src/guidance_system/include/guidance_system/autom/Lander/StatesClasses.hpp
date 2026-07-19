@@ -140,7 +140,8 @@ public:
     bool *_landingGo;
 
     /** Landing GO/NO-GO: true when the landing window is open (COMP -> LAND). */
-    bool getLandingGoSignal() const { return false;}//*_landingGo; }
+    bool getLandingGoSignal() const {return *_landingGo; }
+                                    //{ return false;}
 
     /** Latched touchdown detection, computed each tick in Lander::updateSignals()
      * while in LAND. Never resets on its own — only initStateMachine() clears it. */
