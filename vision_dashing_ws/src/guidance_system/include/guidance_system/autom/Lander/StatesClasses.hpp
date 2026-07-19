@@ -155,6 +155,13 @@ public:
      * threshold (param.compWaitTime) is applied by HoldState itself. */
     double *_compValidTimer;
 
+    /** Continuous time [s] the COMP -> LAND transition condition has held in
+     * CompState::handle() — reset to 0 the instant the condition goes false,
+     * and on any full state-machine reset (initStateMachine()). Only the
+     * accumulator; the COMP -> LAND wait threshold (param.compToLandWaitTime)
+     * is applied by CompState itself. */
+    double *_landValidTimer;
+
     /**
      * @brief Decides whether it is safe to begin the landing on a calm sea.
      * @details Returns true only when:

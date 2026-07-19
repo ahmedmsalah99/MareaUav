@@ -180,6 +180,16 @@ public:
     // and on any full state-machine reset back to INIT.
     double compWaitTime;
 
+    // ── COMP -> LAND wait (CompState::handle()) ───────────────────────────────
+    // The COMP->LAND transition condition must hold CONTINUOUSLY for this long
+    // [s] before COMP actually transitions to LAND. Same continuous-timer
+    // pattern as compWaitTime, but a distinct parameter/timer.
+    double compToLandWaitTime;
+
+    // COMP -> LAND also requires the X and Y position errors (not just the
+    // combined horizontal norm) to each individually be under this [m].
+    double landXYErrThld;
+
     // ── Landing GO/NO-GO window (aggressive-landing trigger) ─────────────────
     // These are the LANDING limits (distinct from the calm-sea limits above).
     // Max SPA predicted roll/pitch [rad] for a GO.

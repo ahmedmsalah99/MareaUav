@@ -428,6 +428,12 @@ private:
     // on any full state-machine reset (initStateMachine()).
     double _compValidTimer = 0.0;
 
+    // Continuous time [s] the COMP -> LAND transition condition has held
+    // (CompState::handle()) — the COMP -> LAND wait gate. Reset to 0 the
+    // instant the condition goes false, and on any full state-machine reset
+    // (initStateMachine()).
+    double _landValidTimer = 0.0;
+
 
      bool _slopeActive = true;
     // Rolling history of the SPA/heave PREDICTIONS (not the raw estimates),
