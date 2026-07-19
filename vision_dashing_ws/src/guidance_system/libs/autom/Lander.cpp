@@ -175,7 +175,6 @@ void Lander::initStateMachine() {
 	_touchdownLogged     = false;
 	_zAdjFiltered        = 0.0;
 	_zAdjFiltSeeded      = false;
-	_zAdjFiltStaleTimer  = 0.0;
 	_predHistRoll.clear();
 	_predHistPitch.clear();
 	_predHistHeavePos.clear();
@@ -1092,12 +1091,6 @@ void Lander::hovering() {
 
 void Lander::hold() {
 
-    // Accumulated unconditionally, regardless of _slopeActive — reset to 0 only
-    // where the slope-Z filter actually runs (below). Drives the filter's
-    // staleness timeout: if it's not "hit" for slopeZFilterTimeout seconds, the
-    // filter reseeds from the next raw value instead of resuming the blend.
-    _zAdjFiltStaleTimer += _dt;
-
     //This function is purely tracking, nothing more
 
     /*
@@ -1167,19 +1160,16 @@ void Lander::hold() {
       double z_adj  = z_base + _line_direction[2] * dot / norm_sq;
 
       // Low-pass filter z_adj (slow EMA) so the commanded Z tracks the raw ramp
-      // smoothly instead of following its every step-to-step swing. Seed (rather
-      // than blend) on the first tick the slope is active, AND whenever the
-      // filter hasn't been hit for slopeZFilterTimeout seconds — a stale filtered
-      // value from long ago shouldn't be resumed/blended from, it should restart
-      // fresh from whatever the raw ramp says right now.
-      if (!_zAdjFiltSeeded || _zAdjFiltStaleTimer > param.slopeZFilterTimeout) {
+      // smoothly instead of following its every step-to-step swing. Seed on the
+      // first tick the slope is active so it starts from the raw value rather
+      // than snapping in from a stale/zero filter state.
+      if (!_zAdjFiltSeeded) {
         _zAdjFiltered   = z_adj;
         _zAdjFiltSeeded = true;
       } else {
         _zAdjFiltered = param.slopeZFilterAlpha * _zAdjFiltered
                       + (1.0 - param.slopeZFilterAlpha) * z_adj;
       }
-      _zAdjFiltStaleTimer = 0.0;   // just hit — restart the staleness clock
 
       std::cout << "z_base "  << z_base << " z_adj " << z_adj << " z_adj_filtered " << _zAdjFiltered
       << " state z "<< _state.getZ() << " _line_direction[2] " << _line_direction[2]

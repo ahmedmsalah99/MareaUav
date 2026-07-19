@@ -433,11 +433,6 @@ private:
     // wherever the drone actually is rather than snapping in from zero/stale.
     double _zAdjFiltered = 0.0;
     bool   _zAdjFiltSeeded = false;
-    // Time [s] since the filter was last updated — accumulated every hold() tick
-    // regardless of _slopeActive, reset to 0 whenever the filter actually runs.
-    // If it exceeds param.slopeZFilterTimeout, the filter reseeds instead of
-    // resuming the blend from a stale value.
-    double _zAdjFiltStaleTimer = 0.0;
 
     // Rolling history of the SPA/heave PREDICTIONS (not the raw estimates),
     // tracked unconditionally every tick regardless of state, so
