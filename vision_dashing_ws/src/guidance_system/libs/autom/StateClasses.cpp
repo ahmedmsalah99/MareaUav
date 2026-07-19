@@ -197,6 +197,7 @@ void CompState::handle() {
       // Lost a trustworthy platform fix — recover via hovering.
       this->_contextL->setStatePtr(_nextHoveringState);
       printStateTransition();
+      *_contextL->_landValidTimer = 0.0;   // leaving COMP — reset the dwell timer
       std::cout << "out of comp: vision not valid/updated" << std::endl;
       return;
     }
@@ -205,30 +206,27 @@ void CompState::handle() {
       // Drifted back above the standoff — return to HOLD.
       this->_contextL->setStatePtr(_nextState);
       printStateTransition();
+      *_contextL->_landValidTimer = 0.0;   // leaving COMP — reset the dwell timer
       std::cout << "out of comp: gap above standoff, back to hold" << std::endl;
       return;
     }
+
+    // Minimum time spent in COMP before LAND is even considered — counts
+    // plain dwell time in COMP, independent of the landing condition below.
+    // Reset to 0 whenever COMP is left (the two early returns above) or on a
+    // full state-machine reset (Lander::initStateMachine()).
+    *_contextL->_landValidTimer += _contextL->_seaState->dt;
+    bool compDwellElapsed = *_contextL->_landValidTimer >= param.compToLandWaitTime;
+
     bool xyStill = std::fabs(_state.getVx()) < param.touchVelRelMax
                       && std::fabs(_state.getVy()) < param.touchVelRelMax;
     bool xyPrecise = std::fabs(_VisionPose.getX()) < param.landXYErrThld
                       && std::fabs(_VisionPose.getY()) < param.landXYErrThld;
     bool landCondition = _contextL->getLandingGoSignal() && _centered && xyStill && xyPrecise;
 
-    // Require landCondition to hold CONTINUOUSLY for compToLandWaitTime
-    // seconds before actually transitioning — a brief flicker into "valid"
-    // shouldn't be enough. Reset (not just pause) the instant it drops, so
-    // it's a continuous timer, not a cumulative one; a full state-machine
-    // reset back to INIT clears it too (Lander::initStateMachine()).
-    if (landCondition) {
-      *_contextL->_landValidTimer += _contextL->_seaState->dt;
-    } else {
-      *_contextL->_landValidTimer = 0.0;
-    }
-    bool landConditionSustained = landCondition && (*_contextL->_landValidTimer >= param.compToLandWaitTime);
-
-    if(landConditionSustained){
-      // Landing window is open, drone is precisely centred, and it has held
-      // for at least compToLandWaitTime — commit to the (aggressive) landing.
+    if(landCondition && compDwellElapsed){
+      // Landing window is open, drone is precisely centred, and at least
+      // compToLandWaitTime has been spent in COMP — commit to landing.
       this->_contextL->setStatePtr(_nextLanState);
       printStateTransition();
       *_contextL->_landValidTimer = 0.0;   // consumed — start clean for next time
