@@ -448,11 +448,13 @@ void Lander::updateSignals() {
 	_holding  = (_NHold > param.NFramesHold && _VisionPose.VisionDataUpdated );
 
   _lost     = (_NLost > param.NFramesLost || !_VisionPose.VisionDataUpdated );
-
-  _centered = _horizontaErr < tau_comp_cone && _VisionPose.VisionDataUpdated;
-  if(!_centered){
-    std::cout << "_vertical_Err" << _verticalErr << "_horizontaErr " << _horizontaErr << " tau_comp_cone " << tau_comp_cone << " _VisionPose.VisionDataUpdated " << _VisionPose.VisionDataUpdated << std::endl;
-  }
+  if(_actualState == AbstractLandState::states::COMP)
+    _centered = _horizontaErr < tau_comp_cone && _VisionPose.VisionDataUpdated;
+  else
+    _centered = _horizontaErr < tau_hold_cone && _VisionPose.VisionDataUpdated;
+  // if(!_centered){
+  //   std::cout << "_vertical_Err" << _verticalErr << "_horizontaErr " << _horizontaErr << " tau_comp_cone " << tau_comp_cone << " _VisionPose.VisionDataUpdated " << _VisionPose.VisionDataUpdated << std::endl;
+  // }
   //R2LA state is between hold and comp state
   if(_actualState == AbstractLandState::states::R2LA || _actualState == AbstractLandState::states::COMP || _actualState == AbstractLandState::states::LAND){
 
@@ -505,7 +507,7 @@ void Lander::updateSignals() {
     for (auto &s : _goVoteHistory) if (s.second) voteCount++;
     double voteFraction = _goVoteHistory.empty() ? 0.0
                          : static_cast<double>(voteCount) / _goVoteHistory.size();
-    bool votedGo = voteFraction >= param.landVoteThreshold || std::abs(_UltraInfo.getZ() < 0.3);
+    bool votedGo = voteFraction >= param.landVoteThreshold || std::abs(_UltraInfo.getZ() < 0.1);
 
     _goLatchTimer += _seaState.dt;
     if (votedGo != _goLatched && _goLatchTimer >= param.landLatchTime) {
@@ -952,6 +954,7 @@ bool Lander::setDroneInFront()
   double y_des_drone = 0;
   double xTarget = 0;
   double yTarget = 0;
+  _slopeActive = true;
   // getting the yaw of the platform to know how it's oriented.
   double yaw_plat = _platformState.getYaw();
   // std::cout << "YAW: " << yaw_plat << std::endl;
@@ -973,8 +976,8 @@ bool Lander::setDroneInFront()
 
     xTarget = _holdPIDX.getOutput(0, x_des_drone) + _state.getX();
     yTarget = _holdPIDY.getOutput(0, y_des_drone) + _state.getY();
-// xTarget = x_des_drone + _state.getX();
-// yTarget = y_des_drone + _state.getY();
+    // xTarget = x_des_drone + _state.getX();
+    // yTarget = y_des_drone + _state.getY();
 
 
     updateIntegrals();
@@ -1147,18 +1150,24 @@ void Lander::hold() {
     bool asce_margin   = _holding && _centered && (_verticalErr < param.z_margin) && (_verticalErr < param.zMax - 0.1) && !desc_v;
 
     // if (_prevState == AbstractLandState::states::INIT)
-    if(!desc_v && !asce_v && !asce_min && !asce_margin && !_centered)
+    if(_slopeActive)
     {
       double z_base = _platformState.getZ() + param.z_margin;
       double dot    = _VisionPose.getX() * _line_direction[0] + _VisionPose.getY() * _line_direction[1];
       double norm_sq = _line_direction[0] * _line_direction[0] + _line_direction[1] * _line_direction[1];
       double z_adj  = z_base + _line_direction[2] * dot / norm_sq;
-      
+      std::cout << "z_base "  << z_base << " z_adj " << z_adj << " state z "<< _state.getZ() << " _line_direction[2] " << _line_direction[2]
+      << " dot " << dot << " norm_sq " << norm_sq << " dot / norm_sq " << dot / norm_sq  << " _VisionPose.getX() " << (_VisionPose.getX()) <<
+      " _VisionPose.getY() " << _VisionPose.getY() << " _state.getX() " <<_state.getX() << std::endl;
       _setPoint.setZ(z_adj);
-        std::cout << "hold setting z pos !desc_v " << !desc_v << " !asce_v " << !asce_v
-                  << " !asce_min " << !asce_min << " !asce_margin " << !asce_margin
-                  << " z_adj " << z_adj << " centered " << _centered << std::endl;
+        // std::cout << "hold setting z pos !desc_v " << !desc_v << " !asce_v " << !asce_v
+        //           << " !asce_min " << !asce_min << " !asce_margin " << !asce_margin
+        //           << " z_adj " << z_adj << " centered " << _centered << std::endl;
       clampZSP();
+      if(std::fabs(_VisionPose.getX()) < 0.1 && std::fabs(_VisionPose.getY()) < 0.1){
+        std::cout << "disabling slope" << std::endl;
+        _slopeActive = false;
+      }
     }
     _setPoint.setType(MavState::POSITION);
   }

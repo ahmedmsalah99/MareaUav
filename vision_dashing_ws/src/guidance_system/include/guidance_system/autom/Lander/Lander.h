@@ -423,6 +423,8 @@ private:
     bool   _touchedDown = false;           // latched final verdict — never resets on its own
     bool   _touchdownLogged = false;       // guards logTouchdownCsv() to fire once per attempt
 
+
+     bool _slopeActive = true;
     // Rolling history of the SPA/heave PREDICTIONS (not the raw estimates),
     // tracked unconditionally every tick regardless of state, so
     // logTouchdownCsv() can look up "what the predictor said touchPredLookback
