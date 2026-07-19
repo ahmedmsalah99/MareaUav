@@ -750,23 +750,26 @@ AprilTag2Node::pnp(apriltag_detection_t* const detection, const std::array<doubl
 	}
 
 	// Every tag shares the same fixed mounting roll relative to world (see
-	// the SDF's tag link pose, 1.57 rad about local X). Convert the offset
-	// from world/ENU frame into this tag's own local frame with that fixed
-	// rotation's inverse, then rotate it into camera frame with the tag's
-	// actual (native, un-relabeled) rotation R_orig.
+	// the SDF's tag link pose, 1.57 rad about local X). tagOffset's
+	// translation is stored in world/ENU frame, so first rotate it back into
+	// the tag's own local frame with that fixed rotation's inverse, then
+	// compose with the tag's actual (native, un-relabeled) rotation R_orig
+	// instead of the z_up-flipped one used for the tag's own orientation.
 	constexpr double kTagMountRoll = 1.57;
-	const double c = std::cos(kTagMountRoll);
-	const double s = std::sin(kTagMountRoll);
-	Eigen::Vector3d d_world(tagOffset(0, 3), tagOffset(1, 3), tagOffset(2, 3));
-	Eigen::Vector3d d_local(
-		d_world(0),
-		d_world(1) * c + d_world(2) * s,
-		-d_world(1) * s + d_world(2) * c);
-	Eigen::Vector3d t_offset = R_orig * d_local;
+	Eigen::Matrix4d mountInv = Eigen::Matrix4d::Identity();
+	mountInv.block<3, 3>(0, 0) =
+		Eigen::AngleAxisd(-kTagMountRoll, Eigen::Vector3d::UnitX()).toRotationMatrix();
 
-	pose(0, 3) += t_offset(0);
-	pose(1, 3) += t_offset(1);
-	pose(2, 3) += t_offset(2);
+	Eigen::Matrix4d poseOrig = Eigen::Matrix4d::Identity();
+	poseOrig.block<3, 3>(0, 0) = R_orig;
+	poseOrig(0, 3) = tvec.at<double>(0);
+	poseOrig(1, 3) = tvec.at<double>(1);
+	poseOrig(2, 3) = tvec.at<double>(2);
+
+	Eigen::Matrix4d poseOrigWithOffset = poseOrig * mountInv * tagOffset;
+	pose(0, 3) = poseOrigWithOffset(0, 3);
+	pose(1, 3) = poseOrigWithOffset(1, 3);
+	pose(2, 3) = poseOrigWithOffset(2, 3);
 
 	pose = TAGS.robot_T_cam * pose;
 	Eigen::Matrix3d final_rotation = pose.block<3, 3>(0, 0);
