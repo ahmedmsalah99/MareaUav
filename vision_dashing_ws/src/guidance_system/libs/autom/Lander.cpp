@@ -742,6 +742,11 @@ void Lander::run() {
   }
 
   managetime();
+  // Reset the feed-forward velocity every tick — only comp() (and land()/
+  // LANDING_DONE, which set their own Vz) should ever drive it non-zero, so
+  // any state that falls through without touching Vz publishes zero
+  // feed-forward instead of leaking a stale value from a previous tick.
+  _setPoint.setVz(0.0);
   static bool initDone = false;
   switch (_actualState){
 
@@ -1300,9 +1305,13 @@ void Lander::comp() {
     double vff  = _seaState.heaveValid ? _seaState.heaveVelPredComp : 0.0;
     double lead = (param.compHoldDist - gap) + vff ;
     new_z = _state.getZ() + lead;
+    // Also feed the predicted heave velocity forward on the PX4 position
+    // setpoint's velocity field, in addition to the position lead above.
+    _setPoint.setVz(vff);
   } else {
     // Backing off: ascend (anchored, bounded) until the gap recovers.
     new_z = std::min(_setPoint.getZ() + param.asceVelocity, _state.getZ() + param.asceVelocity);
+    _setPoint.setVz(0.0);
   }
 
   std::cout << "comp gap " << gap << " tracking " << _compTracking
