@@ -30,6 +30,7 @@ Parameters::Parameters() {
     compWaitTime       = 1.0;
     compToLandWaitTime = 3.0;
     landXYErrThld      = 0.05;
+    landHeightThld     = 0.5;
     landRollLimit      = 0.20;
     landPitchLimit     = 0.20;
     landRollRateLimit  = 0.10;
@@ -216,6 +217,9 @@ void Parameters::loadParamFile(const char *config_file) {
 
             else if( !param.compare("LAND_XY_ERR_THLD") )
                 landXYErrThld = value;
+
+            else if( !param.compare("LAND_HEIGHT_THLD") )
+                landHeightThld = value;
 
             else if( !param.compare("LAND_ROLL_LIMIT") )
                 landRollLimit = value;

@@ -190,6 +190,11 @@ public:
     // combined horizontal norm) to each individually be under this [m].
     double landXYErrThld;
 
+    // COMP -> LAND also requires the drone-to-pad vertical gap (downDist) to
+    // be under this [m] — i.e. already close enough in height before
+    // committing to landing.
+    double landHeightThld;
+
     // ── Landing GO/NO-GO window (aggressive-landing trigger) ─────────────────
     // These are the LANDING limits (distinct from the calm-sea limits above).
     // Max SPA predicted roll/pitch [rad] for a GO.
