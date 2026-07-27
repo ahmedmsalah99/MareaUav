@@ -2,7 +2,7 @@ from setuptools import setup
 
 import os
 
-m2m_sim = os.environ['M2M_SIM']
+m2m_sim = os.environ.get('M2M_SIM', '')
 
 if m2m_sim=="1":
 	file_comp = 'payload_releaser = payload_releaser.payload_releaser_sim:main'
