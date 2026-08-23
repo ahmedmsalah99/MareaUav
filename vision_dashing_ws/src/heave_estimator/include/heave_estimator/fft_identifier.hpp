@@ -26,8 +26,21 @@ public:
     void addSample(double az_imu);
     bool isReady() const { return static_cast<int>(buffer_.size()) >= window_size_; }
 
+    // Warm-up progress, for diagnostics: how many samples buffered vs. how
+    // many identify() needs (== window_size_ once rounded to a power of 2).
+    int bufferedSamples() const { return static_cast<int>(buffer_.size()); }
+    int windowSize() const { return window_size_; }
+
     // Runs identification. Returns true if at least one mode found.
     bool identify(std::vector<HeaveMode>& modes);
+
+    // Diagnostics from the most recent identify() call, regardless of
+    // whether it found any accepted mode — lets a caller see e.g. "the
+    // strongest candidate peak exists, but its frequency is below
+    // min_omega" instead of just "found nothing."
+    double lastCandidateFreqRadS() const { return last_candidate_freq_; }
+    double lastCandidateAmp() const { return last_candidate_amp_; }
+    double lastPeakThresholdAmp() const { return last_threshold_amp_; }
 
 private:
     int    window_size_;
@@ -35,6 +48,10 @@ private:
     double peak_threshold_;
     double min_omega_;
     std::vector<double> buffer_;
+
+    double last_candidate_freq_ = 0.0;
+    double last_candidate_amp_  = 0.0;
+    double last_threshold_amp_  = 0.0;
 
     // Cooley-Tukey in-place FFT (N must be power of 2)
     void fft(std::vector<std::complex<double>>& x);

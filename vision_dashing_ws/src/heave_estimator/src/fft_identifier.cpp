@@ -107,15 +107,27 @@ std::vector<HeaveMode> FFTIdentifier::detectPeaks(const std::vector<double>& amp
 
     double max_amp = *std::max_element(amp_pos.begin(), amp_pos.end());
     double threshold = peak_threshold_ * max_amp;
+    last_threshold_amp_ = threshold;
+
+    // Track the single strongest local-max candidate regardless of the
+    // min_omega cutoff, so a caller can tell "there IS a real peak, it's
+    // just below min_omega" apart from "there's genuinely no signal".
+    last_candidate_freq_ = 0.0;
+    last_candidate_amp_  = 0.0;
 
     int n = static_cast<int>(amp_pos.size());
     for (int k = 1; k < n - 1; ++k) {
         double omega_k = k * df_rad;
+        bool is_local_max = amp_pos[k] > amp_pos[k - 1] && amp_pos[k] > amp_pos[k + 1];
+
+        if (is_local_max && amp_pos[k] > threshold && amp_pos[k] > last_candidate_amp_) {
+            last_candidate_freq_ = omega_k;
+            last_candidate_amp_  = amp_pos[k];
+        }
+
         if (omega_k < min_omega_) continue;   // reject DC/drift artifacts below wave range
 
-        if (amp_pos[k] > threshold &&
-            amp_pos[k] > amp_pos[k - 1] &&
-            amp_pos[k] > amp_pos[k + 1])
+        if (amp_pos[k] > threshold && is_local_max)
         {
             HeaveMode m;
             m.amplitude = amp_pos[k];

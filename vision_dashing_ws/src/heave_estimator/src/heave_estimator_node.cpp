@@ -1,3 +1,4 @@
+#include <cmath>
 #include <mutex>
 #include <vector>
 
@@ -49,6 +50,7 @@ public:
 
         dt_             = 1.0 / timer_rate;
         reident_period_ = reident_period;
+        min_omega_      = min_omega;
 
         identifier_ = std::make_unique<FFTIdentifier>(fft_window, timer_rate, peak_threshold, min_omega);
         ekf_        = std::make_unique<HeaveEKF>(dt_, q_pos, q_vel, q_omega, q_off, r_meas,
@@ -117,8 +119,17 @@ private:
 
         identifier_->addSample(az);
 
-        // Re-identification trigger
         double now = this->now().seconds();
+
+        // Warm-up progress — throttled to ~1 Hz, only while the FFT window
+        // isn't full yet (isReady() false means identify() can't run at all).
+        if (!identifier_->isReady() && (now - last_diag_log_time_) >= 1.0) {
+            last_diag_log_time_ = now;
+            RCLCPP_INFO(get_logger(), "Heave warm-up: %d/%d samples buffered.",
+                identifier_->bufferedSamples(), identifier_->windowSize());
+        }
+
+        // Re-identification trigger
         if (!ekf_->isInitialized() || (now - last_reident_time_) >= reident_period_) {
             std::vector<HeaveMode> modes;
             if (identifier_->identify(modes)) {
@@ -129,6 +140,31 @@ private:
                     RCLCPP_INFO(get_logger(),
                         "  Mode %zu: A=%.4f m, omega=%.4f rad/s, phi=%.4f rad",
                         i, modes[i].amplitude, modes[i].frequency, modes[i].phase);
+            } else if (identifier_->isReady() && (now - last_diag_log_time_) >= 2.0) {
+                // Window is full but nothing passed both the amplitude
+                // threshold and the min_omega cutoff — report the strongest
+                // candidate that DID pass the threshold (if any), so it's
+                // clear whether a real peak exists but is being rejected for
+                // being too slow (below min_omega_rad_s), versus there being
+                // no signal above the amplitude threshold at all.
+                last_diag_log_time_ = now;
+                if (identifier_->lastCandidateAmp() > 0.0) {
+                    double f_hz = identifier_->lastCandidateFreqRadS() / (2.0 * M_PI);
+                    RCLCPP_WARN(get_logger(),
+                        "Heave identify() found 0 modes, but a candidate peak exists: "
+                        "omega=%.4f rad/s (%.4f Hz, %.1fs period), amp=%.4f — "
+                        "rejected because it's below min_omega_rad_s (currently %.4f rad/s). "
+                        "Amplitude threshold was %.6f.",
+                        identifier_->lastCandidateFreqRadS(), f_hz,
+                        f_hz > 0.0 ? 1.0 / f_hz : 0.0,
+                        identifier_->lastCandidateAmp(), min_omega_, identifier_->lastPeakThresholdAmp());
+                } else {
+                    RCLCPP_WARN(get_logger(),
+                        "Heave identify() found 0 modes and no candidate peak passed the "
+                        "amplitude threshold (%.6f) at all — no discernible periodic signal "
+                        "in the buffered accel data.",
+                        identifier_->lastPeakThresholdAmp());
+                }
             }
         }
 
@@ -193,6 +229,8 @@ private:
     double last_reident_time_   = 0.0;
     double pred_horizon_        = 0.3;
     double control_comm_delay_  = 0.15;
+    double min_omega_           = 0.5;
+    double last_diag_log_time_  = 0.0;
 };
 
 int main(int argc, char** argv)
