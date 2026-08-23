@@ -301,7 +301,11 @@ namespace gazebo
 
                 _pose_pub = _ros_node->create_publisher<nav_msgs::msg::Odometry>(
                     _local_pose_topic, reliable_qos);
-                _imu_pub = _ros_node->create_publisher<sensor_msgs::msg::Imu>("imu/data", 10);
+                // Disabled: spa_predictor, heave_estimator, and AutomaticNode's
+                // touchdown detector now all consume real sensors
+                // (/ulisse/nav_filter/data, /adnav_node/imu_raw) instead of this
+                // simulated IMU — kept here, unused, in case it's needed again.
+                // _imu_pub = _ros_node->create_publisher<sensor_msgs::msg::Imu>("imu/data", 10);
 
 
                 _cmd_sub = _ros_node->create_subscription<nav_msgs::msg::Odometry>(
@@ -620,7 +624,9 @@ namespace gazebo
                     imu_msg.angular_velocity_covariance[8]    = var;
                     imu_msg.orientation_covariance[0]         = -1; // orientation is exact
 
-                    _imu_pub->publish(imu_msg);
+                    // Disabled — see _imu_pub declaration above.
+                    // _imu_pub->publish(imu_msg);
+                    (void)imu_msg;
                 }
 
                 _prev_prev_pose    = _prev_pose;

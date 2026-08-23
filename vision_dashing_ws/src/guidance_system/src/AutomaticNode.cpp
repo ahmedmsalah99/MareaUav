@@ -184,11 +184,11 @@ public:
       "heave/prediction_velocity_comp", rclcpp::QoS(rclcpp::KeepLast(1)),
       std::bind(&AutomaticNode::onHeavePredVelocityComp, this, std::placeholders::_1));
 
-    // Pad's raw IMU (published by the landing-pad simulator plugin, already
-    // consumed the same way by heave_estimator) — used by the touchdown
+    // Pad's raw IMU (real IMU, not the landingplat plugin's simulated one —
+    // same source heave_estimator now consumes) — used by the touchdown
     // detector's accel-matching test.
     pad_imu_sub_ = create_subscription<sensor_msgs::msg::Imu>(
-      "imu/data", rclcpp::SensorDataQoS(),
+      "/adnav_node/imu_raw", rclcpp::SensorDataQoS(),
       std::bind(&AutomaticNode::onPadImu, this, std::placeholders::_1));
 
     // Drone's own PX4 acceleration estimate — same purpose.
