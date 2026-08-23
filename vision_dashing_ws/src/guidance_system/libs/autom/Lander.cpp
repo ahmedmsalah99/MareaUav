@@ -1312,6 +1312,15 @@ void Lander::desc() {
     return;
   double new_z = std::max(_setPoint.getZ() - param.descVelocity,_state.getZ() - param.descVelocity);
   _setPoint.setZ(new_z);
+  // Feed the intended descent rate forward on the position command's
+  // velocity field (same mechanism comp() already uses for the heave
+  // feed-forward — see bridge_node.cpp's POSITION branch), instead of
+  // relying purely on the stepped-down position target. Without this the
+  // actual descent rate is bottlenecked by the bridge's own
+  // position-setpoint slew limit (kMaxVelocity) chasing a target that only
+  // moves once every other tick (DescState always bounces back to HOLD
+  // after one call), which can end up far slower than descVelocity.
+  _setPoint.setVz(-param.descVelocity);
   _setPoint.setType(MavState::POSITION);
 }
 
