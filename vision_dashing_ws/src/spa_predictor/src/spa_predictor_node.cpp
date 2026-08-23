@@ -103,6 +103,16 @@ private:
                     observers_[i].initialize(modes, now);
                     RCLCPP_INFO(get_logger(), "%s: identified %zu mode(s)",
                                 names[i], modes.size());
+                    // Per-mode breakdown — hitting the 6-mode cap repeatedly
+                    // usually means peak_threshold is too permissive and
+                    // real sensor noise is being picked up as extra "modes"
+                    // instead of just the 1-2 genuine dominant frequencies.
+                    for (size_t m = 0; m < modes.size(); ++m)
+                        RCLCPP_INFO(get_logger(),
+                            "  Mode %zu: A=%.5f rad, f=%.4f Hz (%.1fs period), phi=%.4f rad",
+                            m, modes[m].amplitude, modes[m].frequency,
+                            modes[m].frequency > 0.0 ? 1.0 / modes[m].frequency : 0.0,
+                            modes[m].phase);
                 }
             }
             last_reident_time_ = now;
