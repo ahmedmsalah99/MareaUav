@@ -13,6 +13,7 @@
 #include <nav_msgs/msg/odometry.hpp>
 #include <px4_msgs/msg/vehicle_odometry.hpp>
 #include <sensor_msgs/msg/imu.hpp>
+#include <ulisse_msgs/msg/simulated_system.hpp>
 
 #include "WaveGen.h"
 
@@ -26,6 +27,41 @@
 
 namespace gazebo
 {
+    // Wraps an angle (radians) into [-pi, pi].
+    static double wrapAngle(double a)
+    {
+        while (a >  M_PI) a -= 2.0 * M_PI;
+        while (a < -M_PI) a += 2.0 * M_PI;
+        return a;
+    }
+
+    // Caps how far `current` may move toward `target` this tick, given a max
+    // rate of change [units/s] — a slew-rate limiter. Used to keep any
+    // discontinuity in the raw /ulisse/simulated_system signal (e.g. the jump
+    // between the last and first sample when a short recording is looped)
+    // from being applied to the simulated platform in a single tick: the
+    // limiter spreads it out over multiple ticks instead, bounding the
+    // effective velocity/acceleration seen downstream.
+    static double slewLimit(double target, double current, double maxRate, double dt)
+    {
+        double maxStep = maxRate * dt;
+        double delta = target - current;
+        if (delta >  maxStep) delta =  maxStep;
+        if (delta < -maxStep) delta = -maxStep;
+        return current + delta;
+    }
+
+    // Same as slewLimit(), but for an angle — the shortest-path delta is
+    // wrapped into [-pi, pi] before clamping, so e.g. yaw doesn't take the
+    // long way around through +-pi.
+    static double slewLimitAngle(double target, double current, double maxRate, double dt)
+    {
+        double maxStep = maxRate * dt;
+        double delta = wrapAngle(target - current);
+        if (delta >  maxStep) delta =  maxStep;
+        if (delta < -maxStep) delta = -maxStep;
+        return current + delta;
+    }
 
     // Plain holder for the pose data the plugin consumes. Replaces the old
     // lcm geometry::pose so the motion logic below is left untouched.
@@ -55,6 +91,7 @@ namespace gazebo
         rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr _cmd_sub;
         rclcpp::Subscription<px4_msgs::msg::VehicleOdometry>::SharedPtr _drone_sub;
         rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr _nav_sub;
+        rclcpp::Subscription<ulisse_msgs::msg::SimulatedSystem>::SharedPtr _sim_system_sub;
 
         // Guards the data written by ROS callbacks and read in OnUpdate.
         std::mutex _data_mutex;
@@ -126,6 +163,47 @@ namespace gazebo
         AngleWaveGen _roll_wave;
         AngleWaveGen _pitch_wave;
         AngleWaveGen _yaw_wave;
+
+        // ---- /ulisse/simulated_system playback (recorded-bag motion) -------
+        // Highest-priority motion source, once heard: the platform's motion
+        // is driven by a recorded ulisse_msgs/SimulatedSystem stream (e.g. a
+        // Jazzy-recorded rosbag, played in a loop since a real recording is
+        // only a few minutes long). The message's absolute position field is
+        // deliberately NOT used — instead position is dead-reckoned from the
+        // body-frame linear velocity, which stays continuous across the
+        // bag's loop point even though absolute position would jump there.
+
+        // Latest raw sample from the topic — written by simulatedSystemCallback()
+        // under _data_mutex, read (snapshotted) in OnUpdate() under the same lock.
+        struct SimSystemData
+        {
+            double rpy[3]          {0, 0, 0};   // bodyframe_angular_position
+            double lin_vel_body[3] {0, 0, 0};   // bodyframe_linear_velocity
+            double ang_vel_body[3] {0, 0, 0};   // bodyframe_angular_velocity
+            double gyro_bias[3]    {0, 0, 0};
+        } _sim_system_raw;
+
+        bool _use_sim_system = false;   // latched true on the first message heard
+
+        // Slew-rate-limited values actually used to drive the simulation —
+        // updated once per OnUpdate() tick (not once per message), so a
+        // discontinuity in the raw signal is spread out over many ticks
+        // instead of being applied in one step.
+        double _sim_rpy_filt[3]     {0, 0, 0};
+        double _sim_lin_vel_filt[3] {0, 0, 0};
+        double _sim_ang_vel_filt[3] {0, 0, 0};
+        double _sim_gyro_bias[3]    {0, 0, 0};   // snapshotted alongside the above
+        bool   _sim_filt_init = false;
+
+        // Dead-reckoned world-frame position, integrated from
+        // _sim_lin_vel_filt (rotated into world frame) each tick.
+        ignition::math::Vector3d _sim_position;
+
+        // Slew-rate limits (SDF-configurable) — the resilience knobs against
+        // jumps in the recorded signal (loop point, sensor dropouts, ...).
+        double _sim_max_lin_accel;   // m/s^2 — caps how fast linear velocity may change
+        double _sim_max_ang_accel;   // rad/s^2 — caps how fast angular velocity may change
+        double _sim_max_rpy_rate;    // rad/s — caps how fast roll/pitch/yaw may change
 
         void manageTime(const common::UpdateInfo & _info){
 
@@ -213,6 +291,11 @@ namespace gazebo
                         _roll_wave.amplitude, _pitch_wave.amplitude, _yaw_wave.amplitude);
                 }
 
+                // ---- /ulisse/simulated_system playback params --------------
+                _sim_max_lin_accel = _sdf->Get<double>("sim_system_max_lin_accel", 3.0).first;
+                _sim_max_ang_accel = _sdf->Get<double>("sim_system_max_ang_accel", 2.0).first;
+                _sim_max_rpy_rate  = _sdf->Get<double>("sim_system_max_rpy_rate",  1.0).first;
+
                 auto px4_qos      = rclcpp::QoS(rclcpp::KeepLast(1)).best_effort();
                 auto reliable_qos = rclcpp::QoS(rclcpp::KeepLast(1)).reliable();
 
@@ -232,6 +315,10 @@ namespace gazebo
                 _nav_sub = _ros_node->create_subscription<nav_msgs::msg::Odometry>(
                     "nav_pose", reliable_qos,
                     std::bind(&PlatformManager::navPoseCallback, this, std::placeholders::_1));
+
+                _sim_system_sub = _ros_node->create_subscription<ulisse_msgs::msg::SimulatedSystem>(
+                    "/ulisse/simulated_system", reliable_qos,
+                    std::bind(&PlatformManager::simulatedSystemCallback, this, std::placeholders::_1));
 
                 wave.init(10,2.0,0.5,7.0);
 
@@ -289,7 +376,51 @@ namespace gazebo
 
                 double yaw_des = 0.0;
 
-                if(_test_rosbag)
+                if(_use_sim_system)
+                {
+                  // Snapshot the raw sample while still locked.
+                  SimSystemData raw = _sim_system_raw;
+                  for (int i = 0; i < 3; i++) _sim_gyro_bias[i] = raw.gyro_bias[i];
+
+                  if (!_sim_filt_init) {
+                    // First tick in this mode: seed the filters/accumulator
+                    // directly (nothing to slew-limit against yet) instead of
+                    // starting from zero and slewing all the way up.
+                    for (int i = 0; i < 3; i++) {
+                      _sim_rpy_filt[i]     = raw.rpy[i];
+                      _sim_lin_vel_filt[i] = raw.lin_vel_body[i];
+                      _sim_ang_vel_filt[i] = raw.ang_vel_body[i];
+                    }
+                    _sim_position  = _pose.Pos();
+                    _sim_filt_init = true;
+                  } else if (_dt > 1e-9) {
+                    for (int i = 0; i < 3; i++) {
+                      _sim_lin_vel_filt[i] = slewLimit(raw.lin_vel_body[i], _sim_lin_vel_filt[i], _sim_max_lin_accel, _dt);
+                      _sim_ang_vel_filt[i] = slewLimit(raw.ang_vel_body[i], _sim_ang_vel_filt[i], _sim_max_ang_accel, _dt);
+                    }
+                    _sim_rpy_filt[0] = slewLimitAngle(raw.rpy[0], _sim_rpy_filt[0], _sim_max_rpy_rate, _dt);
+                    _sim_rpy_filt[1] = slewLimitAngle(raw.rpy[1], _sim_rpy_filt[1], _sim_max_rpy_rate, _dt);
+                    _sim_rpy_filt[2] = slewLimitAngle(raw.rpy[2], _sim_rpy_filt[2], _sim_max_rpy_rate, _dt);
+                  }
+
+                  ignition::math::Quaterniond orientation(
+                      ignition::math::Vector3d(_sim_rpy_filt[0], _sim_rpy_filt[1], _sim_rpy_filt[2]));
+
+                  if (_dt > 1e-9) {
+                    // The message's own (absolute) position is deliberately
+                    // NOT used — it would jump at the recording's loop point.
+                    // Instead dead-reckon from the slew-limited body-frame
+                    // linear velocity, rotated into world frame, which stays
+                    // continuous by construction.
+                    ignition::math::Vector3d v_body(
+                        _sim_lin_vel_filt[0], _sim_lin_vel_filt[1], _sim_lin_vel_filt[2]);
+                    _sim_position += (orientation * v_body) * _dt;
+                  }
+
+                  _pose.Set(_sim_position, orientation);
+                  yaw_des = _sim_rpy_filt[2];
+                }
+                else if(_test_rosbag)
                 {
                   ignition::math::Quaternion<double> orientation;
 
@@ -451,6 +582,16 @@ namespace gazebo
                     double wy = (e0.Y() - e1.Y()) / _dt;
                     double wz =  dy               / _dt;
 
+                    if (_use_sim_system) {
+                      // Feed the recorded (slew-limited) angular velocity
+                      // directly, bias-corrected, instead of the noisier
+                      // Euler-angle finite difference above — this is the
+                      // actual rate signal the recording provides.
+                      wx = _sim_ang_vel_filt[0] - _sim_gyro_bias[0];
+                      wy = _sim_ang_vel_filt[1] - _sim_gyro_bias[1];
+                      wz = _sim_ang_vel_filt[2] - _sim_gyro_bias[2];
+                    }
+
                     sensor_msgs::msg::Imu imu_msg;
                     imu_msg.header.stamp    = _ros_node->now();
                     imu_msg.header.frame_id = "vessel_imu";
@@ -553,6 +694,33 @@ namespace gazebo
                 _nav_pos.orientation[1] = msg->pose.pose.orientation.x;
                 _nav_pos.orientation[2] = msg->pose.pose.orientation.y;
                 _nav_pos.orientation[3] = msg->pose.pose.orientation.z;
+            }
+
+            void simulatedSystemCallback(const ulisse_msgs::msg::SimulatedSystem::SharedPtr msg)
+            {
+                std::lock_guard<std::mutex> lk(_data_mutex);
+
+                // Position (inertialframe_linear_position) is intentionally
+                // NOT consumed — see OnUpdate()'s _use_sim_system branch.
+                _sim_system_raw.rpy[0] = msg->bodyframe_angular_position.roll;
+                _sim_system_raw.rpy[1] = msg->bodyframe_angular_position.pitch;
+                _sim_system_raw.rpy[2] = msg->bodyframe_angular_position.yaw;
+
+                for (int i = 0; i < 3; i++) {
+                    _sim_system_raw.lin_vel_body[i] = msg->bodyframe_linear_velocity[i];
+                    _sim_system_raw.ang_vel_body[i] = msg->bodyframe_angular_velocity[i];
+                    _sim_system_raw.gyro_bias[i]    = msg->gyro_bias[i];
+                }
+
+                // Latch into simulated-system mode on the first message heard
+                // — from then on it takes priority over every other motion
+                // source in OnUpdate(), for the lifetime of the plugin.
+                if (!_use_sim_system) {
+                    RCLCPP_INFO(_ros_node->get_logger(),
+                        "First /ulisse/simulated_system message received — "
+                        "switching platform motion to recorded playback.");
+                }
+                _use_sim_system = true;
             }
     };
 
