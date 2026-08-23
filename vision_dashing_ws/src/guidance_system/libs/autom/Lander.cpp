@@ -175,6 +175,7 @@ void Lander::initStateMachine() {
 	_touchdownLogged     = false;
 	_compValidTimer      = 0.0;
 	_landValidTimer      = 0.0;
+	_approachSettleTimer = 0.0;
 	_predHistRoll.clear();
 	_predHistPitch.clear();
 	_predHistHeavePos.clear();
@@ -959,65 +960,73 @@ bool Lander::setDroneInFront()
 {
   // this function computes the desired position the drone has to reach before
   // attempting the landing. That position is computed to be in front of the platform.
-  double x_des_drone = 0;
-  double y_des_drone = 0;
-  double xTarget = 0;
-  double yTarget = 0;
   _slopeActive = true;
   // getting the yaw of the platform to know how it's oriented.
   double yaw_plat = _platformState.getYaw();
-  // std::cout << "YAW: " << yaw_plat << std::endl;
+
+  if (!(yaw_plat >= -PI && yaw_plat < PI))
+  {
+    std::cout << "YAW NOT VALID, CANNOT GENERATE DESIRED POSITION" << std::endl;
+    return false;
+  }
 
   // getting also the distance from the center the drone has to keep once positioned,
   // passed from file; it also must be not less than 0.
   double gain = fabs(param.distanceFromCenter);
+
+  // The platform's current absolute world position, recovered from the
+  // drone's own pose plus the (relative) vision measurement — same trick
+  // trackXY() uses. Led by the platform's own measured velocity
+  // (feed-forward): without this, a moving platform makes the desired
+  // standoff point perpetually recede — a pure position-error law with no
+  // leading term settles to a nonzero steady-state tracking lag against a
+  // steadily drifting target and never actually closes the gap.
+  double plat_x = _state.getX() + _VisionPose.getX() + _platformState.getVx() * param.reactionLag;
+  double plat_y = _state.getY() + _VisionPose.getY() + _platformState.getVy() * param.reactionLag;
+
   // then, depending on how the platform is oriented, the desired position changes;
   // more precisely, the values of sin and cos (sin acting on x cause North in NED == Y in Local Frame)
-  // determinate the position around the platform, with a certain distance from the center;
-  // adding then the error wrt the platform , so that the drone is in the correct position.
-  if(yaw_plat >= -PI && yaw_plat < PI)
-  {
-    _holdPIDX.setDt(_dt);
-    _holdPIDY.setDt(_dt);
+  // determinate the position around the platform, with a certain distance from the center.
+  double xTarget = plat_x + gain*sinf(yaw_plat);
+  double yTarget = plat_y + gain*cosf(yaw_plat);
 
-    x_des_drone = _VisionPose.getX() + gain*sinf(yaw_plat);
-    y_des_drone = _VisionPose.getY() + gain*cosf(yaw_plat);
+  std::cout << "setDroneInFront gain " << gain << " yaw_plat " << yaw_plat
+            << " plat=(" << plat_x << "," << plat_y << ")"
+            << " state=(" << _state.getX() << "," << _state.getY() << ")"
+            << " vision=(" << _VisionPose.getX() << "," << _VisionPose.getY() << ")"
+            << " target=(" << xTarget << "," << yTarget << ")" << std::endl;
 
-    xTarget = _holdPIDX.getOutput(0, x_des_drone) + _state.getX();
-    yTarget = _holdPIDY.getOutput(0, y_des_drone) + _state.getY();
-    // xTarget = x_des_drone + _state.getX();
-    // yTarget = y_des_drone + _state.getY();
-
-
-    updateIntegrals();
-  }
-  else
-  {
-    std::cout << "YAW NOT VALID, CANNOT GENERATE DESIRED POSITION";
-    return false;
-  }
-  std::cout << "x_des_drone: " << x_des_drone << " gain " << gain << " yaw_plat " << yaw_plat << " sinf(yaw_plat) " << sinf(yaw_plat) << std::endl;
-  std::cout << "y_des_drone: " << y_des_drone << " cosf(yaw_plat) " << cosf(yaw_plat) << std::endl;
-  std::cout << "_state.getX() " << _state.getX() << " _state.getY() " << _state.getY() << std::endl;
-  std::cout << "xTarget: " << xTarget << std::endl;
-  std::cout << "yTarget: " << yTarget << std::endl;
-
-  std::cout << "_VisionPose.getX(): " << _VisionPose.getX() << std::endl;
-  std::cout << "_VisionPose.getY(): " << _VisionPose.getY() << std::endl;
-  std::cout << "**********************************" << std::endl;
   // setting the setpoint finally
   _setPoint.setPosition(xTarget, yTarget, param.prelandAltitude);
   _setPoint.setType(MavState::type::POSITION);
 
-  // returning the error condition
-  if(fabs(xTarget - _state.getX()) < 0.15 && fabs(yTarget - _state.getY()) < 0.15)
+  // Genuine physical proximity to the standoff point — NOT the magnitude of
+  // a controller output (which only meant "close" while the platform was
+  // stationary; against a moving platform a PID's steady-state output stays
+  // nonzero indefinitely and this check would never pass).
+  constexpr double kApproachPosThreshold = 0.15;
+  bool closeEnough = fabs(xTarget - _state.getX()) < kApproachPosThreshold
+                   && fabs(yTarget - _state.getY()) < kApproachPosThreshold;
+
+  // Require it to hold CONTINUOUSLY for initApproachWaitTime seconds before
+  // actually releasing — same continuous-timer pattern as the HOLD -> COMP
+  // and COMP -> LAND gates, so a brief flicker into "close enough" isn't
+  // enough. Reset (not just pause) the instant it drops.
+  if (closeEnough) {
+    _approachSettleTimer += _dt;
+  } else {
+    _approachSettleTimer = 0.0;
+  }
+  bool ready = closeEnough && (_approachSettleTimer >= param.initApproachWaitTime);
+
+  if (ready)
   {
     // setting the slope vector for the next step, simplifying the computations
     // _platformState.getX() - (_platformState.getX() + gain*sinf(yaw_plat))
     _line_direction[0] = -gain*sinf(yaw_plat);
     _line_direction[1] = -gain*cosf(yaw_plat);
     _line_direction[2] = _state.getZ() - (_platformState.getZ() + param.z_margin);
-    // and returning
+    _approachSettleTimer = 0.0;   // consumed — start clean for next time
     return true;
   }
   return false;
