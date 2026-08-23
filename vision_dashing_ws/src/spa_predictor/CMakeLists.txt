@@ -6,7 +6,7 @@ set(CMAKE_CXX_STANDARD 17)
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(std_msgs REQUIRED)
-find_package(sensor_msgs REQUIRED)
+find_package(ulisse_msgs REQUIRED)
 find_package(geometry_msgs REQUIRED)
 find_package(eigen3_cmake_module REQUIRED)
 find_package(Eigen3 REQUIRED)
@@ -35,7 +35,7 @@ target_link_libraries(spa_predictor_node spa_predictor_lib)
 ament_target_dependencies(spa_predictor_node
     rclcpp
     std_msgs
-    sensor_msgs
+    ulisse_msgs
     geometry_msgs
     Eigen3
 )

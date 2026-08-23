@@ -2,7 +2,7 @@
 #include <array>
 
 #include <rclcpp/rclcpp.hpp>
-#include <sensor_msgs/msg/imu.hpp>
+#include <ulisse_msgs/msg/nav_filter_data.hpp>
 #include <geometry_msgs/msg/vector3_stamped.hpp>
 #include <std_msgs/msg/float64.hpp>
 #include <cmath>
@@ -11,21 +11,6 @@
 #include "spa_predictor/spa_observer.hpp"
 
 using namespace spa_predictor;
-
-static void quatToRPY(double w, double x, double y, double z,
-                      double& roll, double& pitch, double& yaw)
-{
-    double sinr_cosp = 2.0 * (w * x + y * z);
-    double cosr_cosp = 1.0 - 2.0 * (x * x + y * y);
-    roll = std::atan2(sinr_cosp, cosr_cosp);
-
-    double sinp = 2.0 * (w * y - z * x);
-    pitch = (std::abs(sinp) >= 1.0) ? std::copysign(M_PI / 2.0, sinp) : std::asin(sinp);
-
-    double siny_cosp = 2.0 * (w * z + x * y);
-    double cosy_cosp = 1.0 - 2.0 * (y * y + z * z);
-    yaw = std::atan2(siny_cosp, cosy_cosp);
-}
 
 class SPAPredictorNode : public rclcpp::Node {
 public:
@@ -50,13 +35,16 @@ public:
             observers_.emplace_back(dt_, q_scale, r_meas);
         }
 
-        // Subscription: just buffer the latest IMU orientation — no processing here.
-        imu_sub_ = create_subscription<sensor_msgs::msg::Imu>(
-            "imu/data", rclcpp::SensorDataQoS(),
-            [this](const sensor_msgs::msg::Imu::SharedPtr msg) {
+        // Subscription: just buffer the latest roll/pitch/yaw — no processing here.
+        // Real nav-filter attitude output (not the landingplat plugin's simulated
+        // IMU) — already Euler angles, no quaternion conversion needed.
+        nav_filter_sub_ = create_subscription<ulisse_msgs::msg::NavFilterData>(
+            "/ulisse/nav_filter/data", rclcpp::SensorDataQoS(),
+            [this](const ulisse_msgs::msg::NavFilterData::SharedPtr msg) {
                 std::lock_guard<std::mutex> lk(buf_mutex_);
-                buf_quat_ = {msg->orientation.w, msg->orientation.x,
-                             msg->orientation.y, msg->orientation.z};
+                buf_rpy_ = {msg->bodyframe_angular_position.roll,
+                            msg->bodyframe_angular_position.pitch,
+                            msg->bodyframe_angular_position.yaw};
                 buf_has_data_ = true;
             });
 
@@ -88,19 +76,16 @@ public:
 private:
     void timerCallback()
     {
-        std::array<double, 4> q;
+        std::array<double, 3> rpy;
         double T_pred;
         {
             std::lock_guard<std::mutex> lk(buf_mutex_);
             if (!buf_has_data_) return;
-            q = buf_quat_;
+            rpy = buf_rpy_;
             T_pred = T_pred_;
         }
 
-        double roll, pitch, yaw;
-        quatToRPY(q[0], q[1], q[2], q[3], roll, pitch, yaw);
-
-        double angles[3] = {roll, pitch, yaw};
+        double angles[3] = {rpy[0], rpy[1], rpy[2]};
         double now = this->now().seconds();
 
         for (int i = 0; i < 3; ++i)
@@ -156,7 +141,7 @@ private:
         predict_pub_->publish(pred_msg);
     }
 
-    rclcpp::Subscription<sensor_msgs::msg::Imu>::SharedPtr imu_sub_;
+    rclcpp::Subscription<ulisse_msgs::msg::NavFilterData>::SharedPtr nav_filter_sub_;
     rclcpp::Subscription<std_msgs::msg::Float64>::SharedPtr horizon_sub_;
     rclcpp::Publisher<geometry_msgs::msg::Vector3Stamped>::SharedPtr estimate_pub_;
     rclcpp::Publisher<geometry_msgs::msg::Vector3Stamped>::SharedPtr predict_pub_;
@@ -166,7 +151,7 @@ private:
     std::vector<SPAObserver>   observers_;
 
     std::mutex              buf_mutex_;
-    std::array<double, 4>   buf_quat_{1.0, 0.0, 0.0, 0.0};
+    std::array<double, 3>   buf_rpy_{0.0, 0.0, 0.0};
     bool                    buf_has_data_ = false;
 
     double dt_                = 1.0 / 30.0;

@@ -5,7 +5,7 @@
  * @brief Aggregated sea-state/sensor feed for the landing state machine.
  * @details Populated by the guidance node from the SPA predictor
  * (spa/estimate, spa/prediction), the heave estimator (heave/position,
- * heave/velocity), the pad's raw IMU (imu/data) and the drone's own PX4
+ * heave/velocity), the pad's raw IMU (/adnav_node/imu_raw) and the drone's own PX4
  * acceleration estimate . Used by
  * LandMachine::safeInitialLanding() to decide whether the sea is calm enough
  * to begin the landing, and by Lander's touchdown detector (accel matching).
@@ -58,13 +58,19 @@ struct SeaState {
     double dt = 0.0;
 
     // ── Raw IMU accelerations, for the touchdown detector's accel-matching test ──
-    // Pad: raw imu/data linear_acceleration.z, whatever sign/gravity convention
-    // that source uses (see the landingplat plugin — it happens to publish
-    // az_true - g). Drone: sign-flipped
-    // from PX4's FRD (Z down) to an up-positive convention (still includes the
-    // real +g gravity reaction of a physical accelerometer). Both are raw —
-    // Lander::updateSignals() removes each convention's known additive gravity
-    // constant before comparing them.
+    // Pad: raw /adnav_node/imu_raw linear_acceleration.z. Lander::updateSignals()
+    // currently assumes this source uses the SAME az_true - g convention the
+    // landingplat plugin's now-unused simulated IMU used to publish
+    // (padAccelTrue = padAccelZ + kGravityMs2) — UNVERIFIED against the real
+    // sensor. If /adnav_node/imu_raw instead reports specific force
+    // (az_true + g, the standard accelerometer convention — see the drone's
+    // own convention just below), that correction is now backwards and the
+    // touchdown accel-matching test will be wrong; confirm the real sensor's
+    // convention and fix the sign in Lander::updateSignals() if needed.
+    // Drone: sign-flipped from PX4's FRD (Z down) to an up-positive convention
+    // (still includes the real +g gravity reaction of a physical
+    // accelerometer). Both are raw — Lander::updateSignals() removes each
+    // convention's known additive gravity constant before comparing them.
     double padAccelZ = 0.0;
     bool   padImuValid = false;
     double droneAccelZ = 0.0;

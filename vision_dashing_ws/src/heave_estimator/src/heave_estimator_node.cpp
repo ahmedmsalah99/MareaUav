@@ -55,8 +55,9 @@ public:
                                                  omega_max, nis_gate, vel_limit);
 
         // Subscription: just buffer incoming az readings — no processing here.
+        // Real IMU (not the landingplat plugin's simulated one).
         imu_sub_ = create_subscription<sensor_msgs::msg::Imu>(
-            "imu/data", rclcpp::SensorDataQoS(),
+            "/adnav_node/imu_raw", rclcpp::SensorDataQoS(),
             [this](const sensor_msgs::msg::Imu::SharedPtr msg) {
                 std::lock_guard<std::mutex> lk(buf_mutex_);
                 buf_.push_back(msg->linear_acceleration.z);
