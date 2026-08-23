@@ -122,10 +122,18 @@ public:
     double prelandAltitude;
 
     // setDroneInFront()'s standoff-position error (X and Y) must stay under
-    // its fixed 0.15 m threshold CONTINUOUSLY for this long [s] before INIT
+    // initApproachPosThld CONTINUOUSLY for this long [s] before INIT
     // releases into the landing state machine — same continuous-timer
     // pattern as compWaitTime/compToLandWaitTime.
     double initApproachWaitTime;
+
+    // Max X/Y position error [m] from the standoff point for
+    // setDroneInFront() to consider the drone "close enough" — a coarse
+    // initial-approach gate, not final landing precision (that's
+    // landXYErrThld). Against a moving platform this can never fully reach
+    // 0 (the bridge's own position-setpoint slew limit bounds how fast the
+    // gap can close), so keep this looser than landXYErrThld.
+    double initApproachPosThld;
 
     // Descent velocity (m per tick) applied in desc()
     double descVelocity;

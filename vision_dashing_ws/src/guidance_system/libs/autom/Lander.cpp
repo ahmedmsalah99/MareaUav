@@ -176,6 +176,7 @@ void Lander::initStateMachine() {
 	_compValidTimer      = 0.0;
 	_landValidTimer      = 0.0;
 	_approachSettleTimer = 0.0;
+	_approachLogTimer    = 0.0;
 	_predHistRoll.clear();
 	_predHistPitch.clear();
 	_predHistHeavePos.clear();
@@ -990,12 +991,6 @@ bool Lander::setDroneInFront()
   double xTarget = plat_x + gain*sinf(yaw_plat);
   double yTarget = plat_y + gain*cosf(yaw_plat);
 
-  std::cout << "setDroneInFront gain " << gain << " yaw_plat " << yaw_plat
-            << " plat=(" << plat_x << "," << plat_y << ")"
-            << " state=(" << _state.getX() << "," << _state.getY() << ")"
-            << " vision=(" << _VisionPose.getX() << "," << _VisionPose.getY() << ")"
-            << " target=(" << xTarget << "," << yTarget << ")" << std::endl;
-
   // setting the setpoint finally
   _setPoint.setPosition(xTarget, yTarget, param.prelandAltitude);
   _setPoint.setType(MavState::type::POSITION);
@@ -1004,9 +999,10 @@ bool Lander::setDroneInFront()
   // a controller output (which only meant "close" while the platform was
   // stationary; against a moving platform a PID's steady-state output stays
   // nonzero indefinitely and this check would never pass).
-  constexpr double kApproachPosThreshold = 0.15;
-  bool closeEnough = fabs(xTarget - _state.getX()) < kApproachPosThreshold
-                   && fabs(yTarget - _state.getY()) < kApproachPosThreshold;
+  double errX = xTarget - _state.getX();
+  double errY = yTarget - _state.getY();
+  bool closeEnough = fabs(errX) < param.initApproachPosThld
+                   && fabs(errY) < param.initApproachPosThld;
 
   // Require it to hold CONTINUOUSLY for initApproachWaitTime seconds before
   // actually releasing — same continuous-timer pattern as the HOLD -> COMP
@@ -1018,6 +1014,26 @@ bool Lander::setDroneInFront()
     _approachSettleTimer = 0.0;
   }
   bool ready = closeEnough && (_approachSettleTimer >= param.initApproachWaitTime);
+
+  // Diagnostic log, throttled to ~1 Hz (this runs at the full control-loop
+  // rate, e.g. 50 Hz) — enough to see whether the gap is shrinking, holding
+  // steady, or growing, and whether the threshold or the settle timer is
+  // what's currently blocking release, without flooding the console. Also
+  // prints the platform's own measured velocity, since a platform drifting
+  // faster than the bridge's position-setpoint slew limit (kMaxVelocity in
+  // bridge_node.cpp) can never actually be closed on regardless of what
+  // target this function computes — worth comparing against that limit.
+  _approachLogTimer += _dt;
+  if (_approachLogTimer >= 1.0) {
+    _approachLogTimer = 0.0;
+    std::cout << "[setDroneInFront] target=(" << xTarget << "," << yTarget << ")"
+              << " state=(" << _state.getX() << "," << _state.getY() << ")"
+              << " err=(" << errX << "," << errY << ")"
+              << " platVel=(" << _platformState.getVx() << "," << _platformState.getVy() << ")"
+              << " closeEnough " << closeEnough
+              << " settleTimer " << _approachSettleTimer << "/" << param.initApproachWaitTime
+              << " ready " << ready << std::endl;
+  }
 
   if (ready)
   {
