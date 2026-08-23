@@ -440,6 +440,10 @@ private:
     // state-machine reset (initStateMachine()).
     double _approachSettleTimer = 0.0;
 
+    // Throttles setDroneInFront()'s diagnostic log to ~1 Hz instead of the
+    // full control-loop rate.
+    double _approachLogTimer = 0.0;
+
 
      bool _slopeActive = true;
     // Rolling history of the SPA/heave PREDICTIONS (not the raw estimates),
