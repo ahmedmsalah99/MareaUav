@@ -1215,11 +1215,26 @@ void Lander::trackXY() {
 
   const bool visionOk = _VisionPose.IsValid && _VisionPose.VisionDataUpdated;
 
+  // Platform velocity feed-forward — Vdes = K*ep + Vplat, per hold()'s own
+  // doc comment above, which described this law but never actually
+  // implemented the +Vplat term. Without it, either branch below is a pure
+  // reactive law chasing the CURRENT vision offset with no leading term: against
+  // a genuinely drifting platform that's a ramp-tracking problem — the
+  // controller has to sustain a persistent nonzero error just to keep pace,
+  // and if the platform outruns what it can produce, the tracking error
+  // grows without ever converging (the drone stays trailing behind,
+  // "attached to the tail" of the platform, instead of centering on it).
+  // Same fix, and same lead convention (param.reactionLag), as
+  // setDroneInFront()'s equivalent feed-forward.
+  double ffX = visionOk ? _platformState.getVx() * param.reactionLag : 0.0;
+  double ffY = visionOk ? _platformState.getVy() * param.reactionLag : 0.0;
+
   if (param.xyControlMode == 1) {
     // ── XY: PID on the horizontal vision error ─────────────────────────────
     // Drives the drone->platform vision error (_VisionPose.getX()/getY()) to
-    // zero: setpoint = current position + PID(error). Reset the integrator
-    // whenever vision drops out so it can't wind up while blind.
+    // zero: setpoint = current position + PID(error) + platform velocity lead.
+    // Reset the integrator whenever vision drops out so it can't wind up
+    // while blind.
     _holdPIDX.setDt(_dt);
     _holdPIDY.setDt(_dt);
 
@@ -1228,8 +1243,8 @@ void Lander::trackXY() {
       _holdPIDY.reset();
       _setPoint.setPosition(_state.getX(), _state.getY(), _setPoint.getZ());
     } else {
-      double targetX = _state.getX() + _holdPIDX.getOutput(0, _VisionPose.getX());
-      double targetY = _state.getY() + _holdPIDY.getOutput(0, _VisionPose.getY());
+      double targetX = _state.getX() + _holdPIDX.getOutput(0, _VisionPose.getX()) + ffX;
+      double targetY = _state.getY() + _holdPIDY.getOutput(0, _VisionPose.getY()) + ffY;
       _setPoint.setPosition(targetX, targetY, _setPoint.getZ());
     }
   } else {
@@ -1238,7 +1253,8 @@ void Lander::trackXY() {
     // vision". vision = platform - drone, so platform_world = state + vision. This
     // is an absolute target (no walk), low-pass filtered and rate-limited so the
     // vision delay/jitter can't drive the sinusoidal limit cycle that unity-gain
-    // "state + vision" produced.
+    // "state + vision" produced. Led by the platform's own velocity before
+    // filtering, for the same reason as the PID branch above.
     double sp_x, sp_y;
     if (!visionOk) {
       // No trustworthy vision: freeze XY at the current position and re-seed the
@@ -1247,8 +1263,8 @@ void Lander::trackXY() {
       sp_y = _state.getY();
       _spSeeded = false;
     } else {
-      double plat_x = _state.getX() + _VisionPose.getX();
-      double plat_y = _state.getY() + _VisionPose.getY();
+      double plat_x = _state.getX() + _VisionPose.getX() + ffX;
+      double plat_y = _state.getY() + _VisionPose.getY() + ffY;
 
       if (!_spSeeded) {
         _platFiltX = plat_x;  _platFiltY = plat_y;
