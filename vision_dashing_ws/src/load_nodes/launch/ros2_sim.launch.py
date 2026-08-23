@@ -90,16 +90,27 @@ def generate_launch_description():
     	# ,prefix='xterm -e gdb -ex run --args'
     )
 
+    # Both nodes default to sample_rate=30.0/fft_window_size=1024, tuned for
+    # the old simulated plugin IMU's much faster publish rate. Their real
+    # sources (/ulisse/nav_filter/data, /adnav_node/imu_raw) publish at
+    # ~10 Hz — left at the 30 Hz default, the FFT identifier's bin->frequency
+    # mapping comes out ~3x wrong (bad estimates) and the 1024-sample warm-up
+    # window takes ~100+ s instead of the ~34 s the default was tuned for
+    # (heaveValid stays false until then, blocking COMP/LAND). fft_window_size
+    # dropped to 256 to keep warm-up time roughly in line with the original
+    # 30 Hz/1024 tuning at the new 10 Hz rate.
     spa_node = Node(
         package='spa_predictor',
         executable='spa_predictor_node',
         output='screen',
+        parameters=[{'sample_rate': 10.0, 'fft_window_size': 256}],
     )
 
     heave_node = Node(
         package='heave_estimator',
         executable='heave_estimator_node',
         output='screen',
+        parameters=[{'sample_rate': 10.0, 'fft_window_size': 256}],
     )
 
     return LaunchDescription([
