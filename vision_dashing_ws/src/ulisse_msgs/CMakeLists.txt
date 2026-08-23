@@ -48,12 +48,19 @@ rosidl_generate_interfaces(ulisse_msgs
   "msg/GPSStatus.msg"
   "msg/LatLongAlt.msg"
   "msg/ReferenceVelocities.msg"
-  #"msg/VehicleStatus.msg"
+  "msg/VehicleStatus.msg"
   "msg/ThrusterMappingControl.msg"
   #"msg/SimulatedVelocitySensor.msg"
   "msg/FeedbackGui.msg"
   "msg/SimulatedSystem.msg"
   "msg/DynamicPidControl.msg"
+
+  # Guidance app (custom, not part of upstream Ulisse — mirror the old
+  # LCM exec::task / exec::safety / exec::safety_ack structs so guidance_system
+  # doesn't need field-name changes; see ExecNode.cpp/SafetyNode.cpp comments).
+  "msg/ActualTask.msg"
+  "msg/Safety.msg"
+  "msg/SafetyAck.msg"
 
   # Commands
   "msg/CommandHold.msg"

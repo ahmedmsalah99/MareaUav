@@ -1,0 +1,7 @@
+int8 isbatterysafetytaskrunning
+int8 isgpssafetytaskrunning
+int8 iscamerasafetytaskrunning
+int8 issonarsafetytaskrunning
+int8 isgoinginsafeharbor
+int8 isgoingtoplatform
+float64 iscameragone_timestamp
