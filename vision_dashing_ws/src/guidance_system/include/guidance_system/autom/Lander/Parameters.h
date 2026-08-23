@@ -121,6 +121,12 @@ public:
 
     double prelandAltitude;
 
+    // setDroneInFront()'s standoff-position error (X and Y) must stay under
+    // its fixed 0.15 m threshold CONTINUOUSLY for this long [s] before INIT
+    // releases into the landing state machine — same continuous-timer
+    // pattern as compWaitTime/compToLandWaitTime.
+    double initApproachWaitTime;
+
     // Descent velocity (m per tick) applied in desc()
     double descVelocity;
 

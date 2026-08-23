@@ -434,6 +434,12 @@ private:
     // (initStateMachine()).
     double _landValidTimer = 0.0;
 
+    // Continuous time [s] setDroneInFront()'s standoff-position error has
+    // stayed under threshold — the INIT approach settle gate. Reset to 0 the
+    // instant the drone drifts back out of tolerance, and on any full
+    // state-machine reset (initStateMachine()).
+    double _approachSettleTimer = 0.0;
+
 
      bool _slopeActive = true;
     // Rolling history of the SPA/heave PREDICTIONS (not the raw estimates),
