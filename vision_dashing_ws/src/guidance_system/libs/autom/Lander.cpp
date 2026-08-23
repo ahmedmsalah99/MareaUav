@@ -175,10 +175,10 @@ void Lander::initStateMachine() {
 	_touchdownLogged     = false;
 	_compValidTimer      = 0.0;
 	_landValidTimer      = 0.0;
-	_predHistRoll.clear();
-	_predHistPitch.clear();
-	_predHistHeavePos.clear();
-	_predHistHeaveVel.clear();
+	_landDecisionRollPred     = 0.0;
+	_landDecisionPitchPred    = 0.0;
+	_landDecisionHeavePosPred = 0.0;
+	_landDecisionHeaveVelPred = 0.0;
 
   //Link signals
   //assign initialized errors of the Lander class with
@@ -277,33 +277,6 @@ double Lander::smoothAccel(double rawSample, std::deque<double> &buf) {
   return sum / static_cast<double>(buf.size());
 }
 
-void Lander::pushPredHistory(std::deque<std::pair<double,double>> &buf, double value, double dt, double maxAge) {
-  buf.emplace_back(dt, value);
-  double span = 0.0;
-  for (auto &s : buf) span += s.first;
-  while (buf.size() > 1 && span > maxAge) {
-    span -= buf.front().first;
-    buf.pop_front();
-  }
-}
-
-double Lander::lookupPredHistory(const std::deque<std::pair<double,double>> &buf, double lookback, double &achievedLookback) const {
-  achievedLookback = 0.0;
-  if (buf.empty()) return 0.0;
-
-  double age = 0.0;
-  for (auto it = buf.rbegin(); it != buf.rend(); ++it) {
-    age += it->first;
-    if (age >= lookback) {
-      achievedLookback = age;
-      return it->second;
-    }
-  }
-  // History doesn't extend far enough back yet — return the oldest we have.
-  achievedLookback = age;
-  return buf.front().second;
-}
-
 void Lander::logTouchdownCsv() {
 
   // Named by wall-clock creation time (down to the millisecond) so repeated
@@ -333,26 +306,14 @@ void Lander::logTouchdownCsv() {
   double droneRoll, dronePitch, droneYaw;
   _state.getOrientationRPY(droneRoll, dronePitch, droneYaw);
 
-  // What the SPA/heave predictors said touchPredLookback seconds before this
-  // exact touchdown moment — compare against the raw (actual) columns above to
-  // see how accurate the prediction pipeline actually was.
-  // The four lookups all land at (~) the same age (they're pushed in lockstep
-  // every tick) — only the roll one's age is kept, as the representative
-  // "how far back did we actually manage to look".
-  double rollAge = 0.0, unusedAge = 0.0;
-  double rollPredLookback     = lookupPredHistory(_predHistRoll,     param.touchPredLookback, rollAge);
-  double pitchPredLookback    = lookupPredHistory(_predHistPitch,    param.touchPredLookback, unusedAge);
-  double heavePosPredLookback = lookupPredHistory(_predHistHeavePos, param.touchPredLookback, unusedAge);
-  double heaveVelPredLookback = lookupPredHistory(_predHistHeaveVel, param.touchPredLookback, unusedAge);
-
   csv << "horizontal_error_x_m,horizontal_error_y_m,horizontal_error_norm_m,vertical_error_m,"
       << "drone_x_m,drone_y_m,drone_z_m,drone_vx_mps,drone_vy_mps,drone_vz_mps,"
       << "drone_roll_rad,drone_pitch_rad,drone_yaw_rad,"
       << "platform_roll_rad,platform_pitch_rad,platform_roll_pred_rad,platform_pitch_pred_rad,"
       << "platform_roll_rate_radps,platform_pitch_rate_radps,"
       << "heave_pos_m,heave_vel_mps,heave_pos_pred_m,heave_vel_pred_mps,"
-      << "platform_roll_pred_lookback_rad,platform_pitch_pred_lookback_rad,"
-      << "heave_pos_pred_lookback_m,heave_vel_pred_lookback_mps,pred_lookback_actual_s,"
+      << "platform_roll_pred_at_land_decision_rad,platform_pitch_pred_at_land_decision_rad,"
+      << "heave_pos_pred_at_land_decision_m,heave_vel_pred_at_land_decision_mps,"
       << "ultrasonic_z_m,"
       << "drone_accel_z_mps2,pad_accel_z_mps2,"
       << "touch_contact_timer_s,touch_confirm_timer_s,touch_time_since_spike_s,"
@@ -367,9 +328,8 @@ void Lander::logTouchdownCsv() {
       << _seaState.rollRate    << "," << _seaState.pitchRate  << ","
       << _seaState.heavePos    << "," << _seaState.heaveVel   << ","
       << _seaState.heavePosPred << "," << _seaState.heaveVelPred << ","
-      << rollPredLookback << "," << pitchPredLookback << ","
-      << heavePosPredLookback << "," << heaveVelPredLookback << ","
-      << rollAge << ","
+      << _landDecisionRollPred << "," << _landDecisionPitchPred << ","
+      << _landDecisionHeavePosPred << "," << _landDecisionHeaveVelPred << ","
       << _UltraInfo.getZ()     << ","
       << _goDiag.touchAccelZ   << "," << _goDiag.touchPadAccelZ << ","
       << _goDiag.touchContactTimer << "," << _goDiag.touchConfirmTimer << "," << _goDiag.touchTimeSinceSpike << ","
@@ -381,18 +341,6 @@ void Lander::logTouchdownCsv() {
 }
 
 void Lander::updateSignals() {
-
-  // Keep a rolling history of the SPA/heave PREDICTIONS (touchPredLookback
-  // seconds, plus margin), regardless of state, so logTouchdownCsv() can look
-  // back into "what the predictor said touchPredLookback seconds before
-  // touchdown" once touchdown actually happens.
-  {
-    double maxAge = param.touchPredLookback + 1.0;
-    pushPredHistory(_predHistRoll,     _seaState.spaRollPred,   _seaState.dt, maxAge);
-    pushPredHistory(_predHistPitch,    _seaState.spaPitchPred,  _seaState.dt, maxAge);
-    pushPredHistory(_predHistHeavePos, _seaState.heavePosPred,  _seaState.dt, maxAge);
-    pushPredHistory(_predHistHeaveVel, _seaState.heaveVelPred,  _seaState.dt, maxAge);
-  }
 
 	if( _VisionPose.VisionDataUpdated )
     Inspection = false;
@@ -596,6 +544,15 @@ void Lander::updateSignals() {
     _touchContactTimer   = 0.0;
     _touchConfirmTimer   = 0.0;
     _touchTimeSinceSpike = param.touchAccelSpikeWindow+0.1;
+
+    // Snapshot the SPA/heave predictions this exact tick — the ones the
+    // landing decision (issuing the velocity command) was actually based on
+    // — so logTouchdownCsv() can log what was known at decision time instead
+    // of a fixed lookback into the past.
+    _landDecisionRollPred     = _seaState.spaRollPred;
+    _landDecisionPitchPred    = _seaState.spaPitchPred;
+    _landDecisionHeavePosPred = _seaState.heavePosPred;
+    _landDecisionHeaveVelPred = _seaState.heaveVelPred;
   }
   _wasInLand = inLand;
 

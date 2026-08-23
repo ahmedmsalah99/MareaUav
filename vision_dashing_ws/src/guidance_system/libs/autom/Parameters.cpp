@@ -45,7 +45,6 @@ Parameters::Parameters() {
     touchAccelSpike       = 5.0;
     touchAccelSpikeWindow = 0.5;
     touchConfirmTime      = 0.3;
-    touchPredLookback     = 0.5;
 }
 
 void Parameters::loadConfigFile(const char *config_file) {
@@ -262,9 +261,6 @@ void Parameters::loadParamFile(const char *config_file) {
 
             else if( !param.compare("TOUCH_CONFIRM_TIME") )
                 touchConfirmTime = value;
-
-            else if( !param.compare("TOUCH_PRED_LOOKBACK_S") )
-                touchPredLookback = value;
 
         }
 		cFile.close();
