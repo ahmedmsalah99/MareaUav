@@ -1,3 +1,3 @@
 float64 speed
 float64 heading
-Time timeout
+builtin_interfaces/Time timeout

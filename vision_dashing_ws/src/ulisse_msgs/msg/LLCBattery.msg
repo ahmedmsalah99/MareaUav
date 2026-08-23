@@ -1,4 +1,4 @@
-Time stamp                 # [1/200 s] since EES power-on
+builtin_interfaces/Time stamp                 # [1/200 s] since EES power-on
 uint8 id                   # 0->left 1->right
 uint64 timestamp_485       # [1/200 s] since sw485 power-on
 uint64 timestamp_satellite # [1/200 s] since satellite power-on

@@ -2,6 +2,6 @@ string command_type
 CommandHold hold_cmd
 CommandLatLong latlong_cmd
 CommandSpeedHeading sh_cmd
-CommandNavigate nav_cmd
+CommandPathFollow path_cmd
 ---
 string res

@@ -1,4 +1,4 @@
-Time stamp # (Two-integer timestamp that is expressed as seconds and nanoseconds)
+builtin_interfaces/Time stamp # (Two-integer timestamp that is expressed as seconds and nanoseconds)
 float64 desired_surge
 float64 feedback_surge
 float64 desired_yaw_rate

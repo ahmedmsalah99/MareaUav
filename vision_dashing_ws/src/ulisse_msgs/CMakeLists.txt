@@ -1,10 +1,13 @@
 cmake_minimum_required(VERSION 3.5)
 project(ulisse_msgs)
 
-# Default to C++14
-if(NOT CMAKE_CXX_STANDARD)
-  set(CMAKE_CXX_STANDARD 14)
-endif()
+#if(NOT CMAKE_CXX_STANDARD)
+set(CMAKE_CXX_STANDARD 17)
+#endif()
+
+#if(NOT CMAKE_BUILD_TYPE)
+set(CMAKE_BUILD_TYPE RelWithDebInfo)
+#endif()
 
 if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   add_compile_options(-Wall -Wextra -Wpedantic)
@@ -23,40 +26,40 @@ file(GLOB_RECURSE SOURCE_FILES
     "srv/*.srv"
     "*.xml"
     "launch/*.py"
+    "include/*.hpp"
 )
 add_custom_target(.Files. SOURCES ${SOURCE_FILES})
 
 rosidl_generate_interfaces(ulisse_msgs
   # Sensors
-  "msg/Time.msg"
+  #"msg/Time.msg"
   "msg/RPY.msg"
-  "msg/LatLong.msg"
-  "msg/PIDData.msg"
-  "msg/IMUData.msg"
-  "msg/AmbientSensors.msg"
-  "msg/Compass.msg"
-  "msg/Magnetometer.msg"
+  #"msg/LatLong.msg"
+  #"msg/PIDData.msg"
+  #"msg/IMUData.msg"
+  "msg/DVLData.msg"
+  "msg/FOGData.msg"
+  #"msg/AmbientSensors.msg"
+  #"msg/Compass.msg"
+  #"msg/Magnetometer.msg"
   "msg/ThrustersReference.msg"
-  "msg/MicroLoopCount.msg"
+  #"msg/MicroLoopCount.msg"
   "msg/GPSData.msg"
   "msg/GPSStatus.msg"
   "msg/LatLongAlt.msg"
   "msg/ReferenceVelocities.msg"
-  "msg/VehicleStatus.msg"
+  #"msg/VehicleStatus.msg"
   "msg/ThrusterMappingControl.msg"
-  "msg/SimulatedVelocitySensor.msg"
+  #"msg/SimulatedVelocitySensor.msg"
   "msg/FeedbackGui.msg"
   "msg/SimulatedSystem.msg"
   "msg/DynamicPidControl.msg"
-  "msg/Safety.msg"
-  "msg/SafetyAck.msg"
-  "msg/ActualTask.msg"
 
   # Commands
   "msg/CommandHold.msg"
   "msg/CommandLatLong.msg"
   "msg/CommandSpeedHeading.msg"
-  "msg/CommandNavigate.msg"
+  "msg/CommandPathFollow.msg"
   
   # LLC
   "msg/LLCAck.msg"
@@ -66,21 +69,27 @@ rosidl_generate_interfaces(ulisse_msgs
   "msg/LLCVersion.msg"
   "msg/ThrusterData.msg"
   "msg/LLCThrusters.msg"
-  "msg/LLCStatus.msg"
+  #"msg/LLCStatus.msg"
   "msg/LLCStatusFlags.msg"
   "msg/LLCBeep.msg"
   "msg/LLCConfig.msg"
   "msg/LLCEnableRef.msg"
   "msg/LLCPowerButtons.msg"
-  "msg/LLCPumps.msg"
+  #"msg/LLCPumps.msg"
   
-  # Other
-  "msg/SpeedHeading.msg"
+  # Control
+  "msg/SurgeHeading.msg"
+  "msg/SurgeYawRate.msg"
   "msg/NavFilterData.msg"
   "msg/TaskStatus.msg"
-  "msg/Curves.msg"
-  "msg/Path.msg"
-  "msg/Boundaries.msg"
+  #"msg/Curves.msg"
+  "msg/PathData.msg"
+#  "msg/PolygonPath.msg"
+  "msg/CoordinateList.msg"
+  "msg/TPIKAction.msg"
+  "msg/TPIKPriorityLevel.msg"
+  "msg/Obstacle.msg"
+  "msg/PathFollow.msg"
 
   ## Services ##
   "srv/ControlCommand.srv"
@@ -92,7 +101,11 @@ rosidl_generate_interfaces(ulisse_msgs
   "srv/SetCruiseControl.srv"
   "srv/ResetConfiguration.srv"
   "srv/MinSrv.srv"
+
+  DEPENDENCIES builtin_interfaces
 )
+
+rosidl_get_typesupport_target(cpp_typesupport_target ${PROJECT_NAME} rosidl_typesupport_cpp)
 
 ament_export_include_directories(include)
 
