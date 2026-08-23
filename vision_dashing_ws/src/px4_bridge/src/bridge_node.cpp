@@ -145,15 +145,15 @@ private:
   void onNavFilter(const ulisse_msgs::msg::NavFilterData::SharedPtr msg)
   {
     if (first_nav_state_) {
-      nav_home_lat_ = msg->inertialframe_linear_position.latlong.latitude;
-      nav_home_lon_ = msg->inertialframe_linear_position.latlong.longitude;
+      nav_home_lat_ = msg->inertialframe_linear_position.latitude;
+      nav_home_lon_ = msg->inertialframe_linear_position.longitude;
       RCLCPP_INFO(get_logger(), "NAV home lat=%.7f lon=%.7f", nav_home_lat_, nav_home_lon_);
       first_nav_state_ = false;
     }
 
     double coords[3] = {
-      msg->inertialframe_linear_position.latlong.longitude,
-      msg->inertialframe_linear_position.latlong.latitude,
+      msg->inertialframe_linear_position.longitude,
+      msg->inertialframe_linear_position.latitude,
       0.0
     };
     double home[3] = {nav_home_lon_, nav_home_lat_, 0.0};
