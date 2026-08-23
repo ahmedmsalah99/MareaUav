@@ -99,11 +99,20 @@ def generate_launch_description():
     # (heaveValid stays false until then, blocking COMP/LAND). fft_window_size
     # dropped to 256 to keep warm-up time roughly in line with the original
     # 30 Hz/1024 tuning at the new 10 Hz rate.
+    # peak_threshold raised from the 0.05 default to 0.2: against real
+    # roll/pitch data, identify() was consistently hitting the 6-mode cap —
+    # per-mode logs showed 2 genuinely dominant modes per axis (well above
+    # 40% of the strongest mode's amplitude, and cross-validated against
+    # each other — e.g. roll and yaw both independently identifying the
+    # same 5.1s-period mode) plus a cluster of noise-floor peaks at
+    # 6-16% of the max, which 0.05 let straight through as "modes",
+    # feeding the Kalman observer several spurious frequencies and
+    # producing a noisy, wrong-amplitude spa/estimate.
     spa_node = Node(
         package='spa_predictor',
         executable='spa_predictor_node',
         output='screen',
-        parameters=[{'sample_rate': 10.0, 'fft_window_size': 256}],
+        parameters=[{'sample_rate': 10.0, 'fft_window_size': 256, 'peak_threshold': 0.2}],
     )
 
     heave_node = Node(
