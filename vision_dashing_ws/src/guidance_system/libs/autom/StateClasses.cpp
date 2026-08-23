@@ -100,10 +100,26 @@ void HoldState::handle(){
     //if the UAV is holding ad is centered on the platform and is close to the platform(20 cm), will be accomplish.
 
     
-    // std::cout << compValid << std::endl;
-    
-    // std::cout << "downDist " << downDist << "compValid " << compValid << " InitValid " << InitValid << " descValid " << descValid << " asceUnderMargin is " << asceUnderMargin << " and asceUnderMin " << asceUnderMin << " and asceValid " << asceValid << std::endl;
-    
+    // Throttled diagnostic (~1 Hz, HoldState runs at the full control-loop
+    // rate) — shows which of compValid's/descValid's constituent conditions
+    // is actually blocking the HOLD -> COMP transition. safeInitialLanding()
+    // itself already logs which of ITS conditions (spa/heave freshness,
+    // attitude limits, rates, heave velocity) is failing when called below.
+    {
+      static int logTick = 0;
+      if ((logTick++ % 50) == 0) {
+        std::cout << "[HOLD] downDist " << downDist << " standoff " << param.standoffDistance
+                  << " compValid " << compValid << " descValid " << descValid
+                  << " _holding " << _holding << " _centered " << _centered
+                  << " InitValid " << InitValid
+                  << " asceUnderMargin " << asceUnderMargin
+                  << " asceUnderMin " << asceUnderMin
+                  << " asceValid " << asceValid
+                  << " compValidTimer " << *_contextL->_compValidTimer << "/" << param.compWaitTime
+                  << std::endl;
+      }
+    }
+
     if(InitValid){
       this->_contextL->setStatePtr(_nextInitState); //set the next state (InitState)
       printStateTransition();
