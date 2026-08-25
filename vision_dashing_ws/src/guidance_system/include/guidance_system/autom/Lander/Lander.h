@@ -302,9 +302,6 @@ public:
 
     bool startFromBeginning;
 
-
-    // bool positionedInFront;
-
     // perform inspection
      double time;
      double X0;
@@ -313,9 +310,6 @@ public:
      bool First_insp;
      double RadiusInspection;
      double Period;
-    //
-    // //used to implement an hovering action for homing
-    // bool _home;
 
 private:
 
@@ -351,10 +345,6 @@ private:
      */
 
     SeaState _seaState;
-
-    static constexpr double kInvalidVisionHoldSecs = 3.0;
-    double _invalidVisionTimer {0.0};  // seconds elapsed since vision went invalid
-    bool   _inInvalidVisionHold {false};
 
     /**
      * Relative z position and velocity of the drone respect to the platform
@@ -512,7 +502,6 @@ private:
     LandingDoneState _landingDoneS;
 
     InspectionState _inspeS;    //its constructor set its ID to INSPE
-    // HomingState     _homingS;   //its constructor set its ID to HOMING
   	/**
        * state for hovering action
        */
@@ -575,12 +564,6 @@ private:
     double _tauLost;
 
     /**
-     * It seems not used
-     */
-
-    double _tauErr;
-
-    /**
      * It keeps how many times the _horizontaErr is under a given threshold (_tauLost)
      */
 
@@ -639,12 +622,6 @@ private:
      */
 
     Eigen::Vector3d _err_prev;
-
-    /**
-     * It seems not used
-     */
-
-    Eigen::Vector3d _err_diff;
 
     /**
      * direction of the line the drone has to follow to descend
@@ -760,8 +737,6 @@ private:
   	// circular trajectory for inspection. It tries with a circular
   	// trajectory to find the platform
   	void inspection();
-  	// //homing position action
-  	// void homing();
    	void initInspection(); //initialize variables to perform inspection
 
     /**

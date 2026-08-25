@@ -2,7 +2,6 @@
 
 SafetyHandler::SafetyHandler()
 {
-  gpsGoneCounter = 0;
   payload_released = false;
 }
 
@@ -106,18 +105,6 @@ bool SafetyHandler::handleSafeHarbor(double cameragone_timestamp)
 
   return false;
 }
-
-// TODO: handle
-// bool SafetyHandler::handleGPS()
-// {
-//   // if the number of consecutive times the GPS has no signal passes the prefixed
-//   // threshold, returning true.
-//   if(gpsGoneCounter >= _safety_params.gpsgone_threshold)
-//     return true;
-//
-//   return false;
-// }
-
 
 	// void SafetyHandler::globalToLocalCoords()
   // {

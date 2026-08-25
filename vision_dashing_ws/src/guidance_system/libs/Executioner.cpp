@@ -309,13 +309,6 @@ bool Executioner::CheckActions(int a)
 
 }
 
-void Executioner::setLastTask(const exec::task task){
-
-    _taskQueue.shrink_to_fit();
-    _taskQueue.push_back(task);
-
-}
-
 void Executioner::setNextTask(const exec::task task){
 
     _taskQueue.shrink_to_fit();
@@ -327,16 +320,6 @@ void Executioner::clearList(){
 
     _taskQueue.clear();
     _taskQueue.shrink_to_fit();
-
-}
-
-void Executioner::abort() {
-
-
-
-}
-
-void Executioner::rtl() {
 
 }
 
@@ -595,11 +578,6 @@ void Executioner::gpsGoneHandler()
 void Executioner::sonarGoneHandler()
 {
 
-}
-
-void Executioner::setSkip()
-{
-  skip = true;
 }
 
 void Executioner::resetLanding()

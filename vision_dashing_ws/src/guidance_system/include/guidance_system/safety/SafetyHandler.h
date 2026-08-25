@@ -55,7 +55,6 @@ class SafetyHandler
     void checkRelPayFeedback(const std::string& feedback);
     
     exec::safety_ack safety_ack;
-    int gpsGoneCounter;
     bool target_dispersed;
     double home_longitude;
     double home_latitude;

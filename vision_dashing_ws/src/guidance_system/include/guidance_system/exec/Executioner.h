@@ -37,10 +37,7 @@ public:
 	bool CheckActions(int a);
 	bool readyToPublish();
 	void setNextTask(const exec::task task);
-	void setLastTask(const exec::task task);
 	void clearList();
-  	void abort();
-	void rtl();
   	void loadTask();
 	void setState(MavState s);
 	void setPlatformState(MavState ps);
@@ -54,7 +51,6 @@ public:
 	void gpsGoneHandler();
 	void sonarGoneHandler();
 	void moveToSafeHarbor(const ulisse_msgs::msg::Safety& safety);
-	void setSkip();
 	void resetLanding();
 
 	void setNavTaskStatus(const ulisse_msgs::msg::VehicleStatus& nav_task_status);

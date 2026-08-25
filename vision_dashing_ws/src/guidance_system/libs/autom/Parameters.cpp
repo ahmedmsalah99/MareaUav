@@ -82,12 +82,6 @@ void Parameters::loadParamFile(const char *config_file) {
             else if( !param.compare("VELOCITY_INSPECTION") )
                 inspeLinVel = value;
 
-            else if( !param.compare("ROLL_THRESHOLD") )
-                RollThreshold = value;
-
-            else if( !param.compare("PITCH_THRESHOLD") )
-                PitchThreshold = value;
-
             else if( !param.compare("FRAMES_FOR_HOLDING") )
                 NFramesHold = value;
 
@@ -118,23 +112,14 @@ void Parameters::loadParamFile(const char *config_file) {
             else if( !param.compare("CONE_Z_REF") )
                 cone_z_ref = value;
 
-            else if( !param.compare("LAND_THRESHOLD") )
-                land_threshold = value;
-
             else if( !param.compare("FRAMES_FOR_COMP") )
                 NFramesComp = value;
-
-            else if( !param.compare("PLATFORM_LENGHT") )
-                platformLenght = value;
 
             else if( !param.compare("MAX_ALTITUDE") )
                 zMax = value;
 
             else if( !param.compare("MIN_ALTITUDE") )
                 zMin = value;
-
-            else if( !param.compare("KP_HOLD_VEL") )
-                KpHoldV = value;
 
             else if( !param.compare("KP_HOLD") )
                 KpHold = value;
@@ -144,9 +129,6 @@ void Parameters::loadParamFile(const char *config_file) {
 
             else if( !param.compare("KI_HOLD") )
                 KiHold = value;
-
-            else if( !param.compare("KP_COMP_VEL") )
-                KPCompV = value;
 
             else if( !param.compare("MAX_INT_VALUE") )
                 maxIntValue = value;

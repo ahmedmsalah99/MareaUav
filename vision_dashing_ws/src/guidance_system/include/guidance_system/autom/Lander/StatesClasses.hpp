@@ -51,12 +51,6 @@ public:
     double *_tauLost;
 
     /**
-     * It seems not used
-     */
-
-    double *_tauErr;
-
-    /**
      * It keeps how many times the _horizontaErr is under a given threshold (_tauLost)
      */
 
@@ -275,7 +269,6 @@ public:
          _verticalErr  = *(_contextL->_verticalErr);
          _tauHold      = *(_contextL->_tauHold);
          _tauLost      = *(_contextL->_tauLost);
-         _tauErr       = *(_contextL->_tauErr);
          _NHold        = *(_contextL->_NHold);
          _NLost        = *(_contextL->_NLost);
          _NComp        = *(_contextL->_NComp);
@@ -326,12 +319,6 @@ protected:
      */
 
     double   _tauLost;
-
-    /**
-     * It seems not used
-     */
-
-    double   _tauErr;
 
     /**
      * It keeps how many times the _horizontaErr is under a given threshold (_tauLost)
