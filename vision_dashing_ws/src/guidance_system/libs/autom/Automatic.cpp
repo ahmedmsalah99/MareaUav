@@ -11,6 +11,11 @@ MavState Automatic::getState()
     return _state;
 }
 
+MavState Automatic::getPlatformState()
+{
+    return _platformState;
+}
+
 exec::task Automatic::getTask()
 {
     return _actualTask;

@@ -118,6 +118,10 @@ public:
 
   MavState getState();
 
+
+
+  MavState getPlatformState();
+
   /**
    * @brief Actual command to provide to the drone
    */
