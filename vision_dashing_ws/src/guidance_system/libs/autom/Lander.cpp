@@ -16,9 +16,9 @@
 #include "ament_index_cpp/get_package_share_directory.hpp"
 
 Lander::Lander()
-        : _horizontaErr((double)0)    , _tauHold((double)0), _tauLost((double)0), _NHold(0),
+        : _horizontaErr((double)0)    , _tauHold((double)0), _tauLost((double)0), _tauErr((double)0), _NHold(0),
           _NLost(0),_NComp(0) , _initS(&_machine) , _inspeS(&_machine) , _hoveringS(&_machine) , _holdS(&_machine)  , _asceS(&_machine)  , _descS(&_machine),_compS(&_machine),
-          _rtolS(&_machine),_landS(&_machine),_landingDoneS(&_machine), _err(0,0,0), _err_int(0,0,0), _dt(0), _prevTime(0), _actualTime(0),
+          _rtolS(&_machine),_landS(&_machine),_landingDoneS(&_machine), _err(0,0,0), _err_int(0,0,0), _err_diff(0,0,0), _dt(0), _prevTime(0), _actualTime(0),
           _actualState(0),_prevState(0), _verticalErr(0), _holdPIDX(0,0,0),
           _holdPIDY(0,0,0)
 {
@@ -61,6 +61,7 @@ Lander::Lander()
 	starting_x = _state.getX();
 	starting_y = _state.getY();
 	starting_z = _state.getZ();
+  // _home = false;
 
 	_hovering = false;
 
@@ -119,6 +120,7 @@ void Lander::loadMachine() {
 	starting_x = _state.getX();
 	starting_y = _state.getY();
 	starting_z = _state.getZ();
+  // _home = false;
 
 	_hovering = false;
 
@@ -139,12 +141,14 @@ void Lander::initStateMachine() {
 	_horizontaErr = (double)0;
 	_tauHold      = (double)0;
 	_tauLost      = (double)0;
+	_tauErr       = (double)0;
 	_NHold = 0;
 	_NLost = 0;
 	_NComp = 0;
 
 	_err << 0,0,0;
 	_err_int << 0,0,0;
+	_err_diff << 0,0,0;
 	_dt 		 = 0;
 	_prevTime    = 0;
 	_actualTime  = 0;
@@ -183,6 +187,7 @@ void Lander::initStateMachine() {
   //the one of the LandMachine.
   _machine._horizontaErr =  &_horizontaErr;
   _machine._verticalErr  =  &_verticalErr;
+  _machine._tauErr       =  &_tauErr;
   _machine._tauHold      =  &_tauHold;
   _machine._tauLost      =  &_tauLost;
   _machine._NLost        =  &_NLost;
@@ -211,6 +216,7 @@ void Lander::initStateMachine() {
   _initS._nextState    = &_holdS;
   _initS._nextInspeState  = &_inspeS;
   _initS._nextHoveringState = &_hoveringS;
+  // _initS._nextHomingState = &_homingS;
 
   _inspeS._nextState      = &_initS;
 
@@ -1088,6 +1094,17 @@ void Lander::inspection() {
   _setPoint.setType(MavState::POSITION);
 
 }
+//
+// void Lander::homing(){
+//
+//     if(!_home){
+//         _setPoint.setX(starting_x);
+//         _setPoint.setY(starting_y);
+//         _setPoint.setType(MavState::POSITION);
+//         _home = true;
+//     }
+//
+// }
 
 void Lander::hovering() {
 
@@ -1120,6 +1137,39 @@ void Lander::hold() {
      *
      * Vdes = desired velocity, K = proportional gain, ep = position error, Vplat = paltform velocity
      */
+
+  // Eigen::Vector2d tempVel(_platformState.getVx(),_platformState.getVy());
+
+  // if(_VisionPose.getOrientation().w() == 0){
+  //   _setPoint.setPosition(_state.getX(),_state.getY(),_setPoint.getZ());
+  //   // Vision is invalid (shaking / too fast). Start or extend the freeze timer.
+  //   if(!_inInvalidVisionHold) {
+  //     _inInvalidVisionHold = true;
+  //     _invalidVisionTimer  = 0.0;
+  //     std::cout << "[hold] vision invalid — starting " << kInvalidVisionHoldSecs << "s freeze" << std::endl;
+  //   }
+  //   _invalidVisionTimer += _dt;
+  //   _setPoint.setPosition(_state.getX(), _state.getY(), _setPoint.getZ());
+  //   _setPoint.setType(MavState::POSITION);
+  //   return;
+  // }
+
+
+  // if(_inInvalidVisionHold) {
+  //   // Vision recovered. Check if it stayed invalid for the full window.
+  //   if(_invalidVisionTimer < kInvalidVisionHoldSecs) {
+  //     _invalidVisionTimer += _dt;
+  //     // _setPoint.setPosition(_state.getX(), _state.getY(), _setPoint.getZ());
+  //     // _setPoint.setType(MavState::POSITION);
+  //     std::cout << "time is " << _invalidVisionTimer << std::endl;
+  //     return;
+  //   }
+  //   // If the full 3 seconds elapsed, the state machine will have already handled
+  //   // the loss (VisionDataUpdated timeout → INIT); we just reset the flag here.
+  //   _inInvalidVisionHold = false;
+  //   _invalidVisionTimer  = 0.0;
+  // }
+
 
   _holdPIDX.setDt(_dt);
   _holdPIDY.setDt(_dt);
