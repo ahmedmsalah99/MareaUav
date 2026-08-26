@@ -1257,9 +1257,12 @@ void Lander::asce() {
 
 void Lander::desc() {
   std::cout << "In desc " << std::endl;
-  double v_hor_calm = std::fabs(_state.getVx()) < 0.1 && std::fabs(_state.getVy()) < 0.1;
-  if (!v_hor_calm)
+  double v_hor_calm = std::fabs(_state.getVx()) < 0.3 && std::fabs(_state.getVy()) < 0.3;
+  if (!v_hor_calm) {
+    std::cout << "[DESC] blocked by v_hor_calm gate: vx " << _state.getVx()
+              << " vy " << _state.getVy() << std::endl;
     return;
+  }
   double new_z = std::max(_setPoint.getZ() - param.descVelocity,_state.getZ() - param.descVelocity);
   _setPoint.setZ(new_z);
   // Feed the intended descent rate forward on the position command's
