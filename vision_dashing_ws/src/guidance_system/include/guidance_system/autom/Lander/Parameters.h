@@ -36,6 +36,10 @@ public:
 	//if 1 ==>inspection, if 0 it implements an hovering action
 	bool search;
 
+	//if 1 ==>disarm immediately on the GO signal in COMP and jump straight to
+	//LANDING_DONE, skipping LAND's descent and touchdown detection entirely
+	bool disarmOnGo;
+
     //init value of radius for inspection
     double inspeRadius;
 

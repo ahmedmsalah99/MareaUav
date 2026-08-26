@@ -6,6 +6,7 @@
 #include "guidance_system/autom/Lander/Parameters.h"
 
 Parameters::Parameters() {
+    disarmOnGo         = false;
     z_margin           = 1.0;
     hold_threshold_min = 0.60;
     comp_threshold_min = 0.30;
@@ -75,6 +76,9 @@ void Parameters::loadParamFile(const char *config_file) {
 
 			if ( !param.compare("SEARCH") )
                 search = value;
+
+            if ( !param.compare("DISARM_ON_GO") )
+                disarmOnGo = value;
 
             if ( !param.compare("INSPECTION_RADIUS") )
                 inspeRadius = value;

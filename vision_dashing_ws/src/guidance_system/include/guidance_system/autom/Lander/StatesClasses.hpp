@@ -144,6 +144,12 @@ public:
     /** Touchdown detected: true once the drone has landed on the pad (LAND -> LANDING_DONE). */
     bool getTouchedDown() const { return *_touchedDown; }
 
+    /** Pending disarm-on-GO request, owned by Lander and consumed via Lander::consumeDisarmRequest(). */
+    bool *_disarmRequest;
+
+    /** Raised by CompState::handle() when param.disarmOnGo is enabled and the GO signal arrives. */
+    void requestDisarm() { *_disarmRequest = true; }
+
     /** Continuous time [s] compValid has held in HoldState::handle() — reset to 0
      * the instant compValid goes false, and on any full state-machine reset
      * (initStateMachine()). Only the accumulator; the HOLD -> COMP wait
@@ -714,6 +720,13 @@ public:
      */
 
   	AbstractLandState* _nextHoveringState;
+
+    /**
+     * Terminal state to jump to directly when param.disarmOnGo is enabled —
+     * skips LandState's descent/touchdown detection entirely.
+     */
+
+    AbstractLandState* _nextDoneState;
 
     /**
      * @brief Constructor of the derived class
