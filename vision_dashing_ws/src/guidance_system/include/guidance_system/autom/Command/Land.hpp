@@ -224,6 +224,10 @@ public:
     LandGoDiagnostics getGoDiagnostics() const {
         return _lander.getGoDiagnostics();
     }
+
+    bool consumeDisarmRequest() {
+        return _lander.consumeDisarmRequest();
+    }
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
 };

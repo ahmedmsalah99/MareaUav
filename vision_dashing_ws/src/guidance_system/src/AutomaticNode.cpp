@@ -15,6 +15,7 @@
 #include <px4_msgs/msg/vehicle_odometry.hpp>
 #include <px4_msgs/msg/sensor_gps.hpp>
 #include <px4_msgs/msg/sensor_combined.hpp>
+#include <px4_msgs/msg/vehicle_command.hpp>
 #include <nav_msgs/msg/odometry.hpp>
 #include <geometry_msgs/msg/transform_stamped.hpp>
 #include <geometry_msgs/msg/vector3_stamped.hpp>
@@ -101,6 +102,8 @@ public:
     // ── Publishers ──────────────────────────────────────────────────────────
     local_position_sp_pub_     =
       create_publisher<nav_msgs::msg::Odometry>("local_position_sp",       reliable_qos);
+    vehicle_command_pub_       =
+      create_publisher<px4_msgs::msg::VehicleCommand>("/fmu/in/vehicle_command", px4_qos);
     landing_site_pose_cmd_pub_ =
       create_publisher<nav_msgs::msg::Odometry>("Landing_Site/pose_cmd",   reliable_qos);
     plat_rob_pub_              =
@@ -286,6 +289,22 @@ private:
     // std::cout << "executing commands" << std::endl;
     // Tick the active command's state machine.
     autom_.executeCommand();
+
+    // disarmOnGo: fire a component-disarm command to PX4 the instant COMP
+    // requests it (edge-triggered — sent exactly once per request).
+    if (autom_.consumeDisarmRequest()) {
+      px4_msgs::msg::VehicleCommand cmd{};
+      cmd.timestamp = this->get_clock()->now().nanoseconds() / 1000;
+      cmd.command = px4_msgs::msg::VehicleCommand::VEHICLE_CMD_COMPONENT_ARM_DISARM;
+      cmd.param1 = 0.0;  // 0 = disarm
+      cmd.target_system = 1;
+      cmd.target_component = 1;
+      cmd.source_system = 1;
+      cmd.source_component = 1;
+      cmd.from_external = true;
+      vehicle_command_pub_->publish(cmd);
+      RCLCPP_WARN(get_logger(), "[disarmOnGo] GO signal arrived — sending disarm command");
+    }
 
     // Publish the resulting setpoint.
     auto command = odomFromMavState(autom_._comm);
@@ -681,6 +700,7 @@ private:
 
   // Publishers
   rclcpp::Publisher<nav_msgs::msg::Odometry>::SharedPtr local_position_sp_pub_;
+  rclcpp::Publisher<px4_msgs::msg::VehicleCommand>::SharedPtr vehicle_command_pub_;
   rclcpp::Publisher<nav_msgs::msg::Odometry>::SharedPtr landing_site_pose_cmd_pub_;
   rclcpp::Publisher<nav_msgs::msg::Odometry>::SharedPtr plat_rob_pub_;
   rclcpp::Publisher<std_msgs::msg::Float64>::SharedPtr  pred_horizon_pub_;

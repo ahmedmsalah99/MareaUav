@@ -227,6 +227,18 @@ void CompState::handle() {
       return;
     }
 
+    if(param.disarmOnGo && _contextL->getLandingGoSignal()){
+      // Disarm mode: skip LandState's descent/touchdown detection entirely —
+      // disarm the instant the GO signal arrives and jump straight to the
+      // terminal state.
+      this->_contextL->requestDisarm();
+      this->_contextL->setStatePtr(_nextDoneState);
+      printStateTransition();
+      *_contextL->_landValidTimer = 0.0;
+      std::cout << "COMP -> LANDING_DONE: disarmOnGo, GO signal arrived" << std::endl;
+      return;
+    }
+
     // Minimum time spent in COMP before LAND is even considered — counts
     // plain dwell time in COMP, independent of the landing condition below.
     // Reset to 0 whenever COMP is left (the two early returns above) or on a
