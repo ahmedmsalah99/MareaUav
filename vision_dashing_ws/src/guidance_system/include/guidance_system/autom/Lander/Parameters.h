@@ -42,12 +42,6 @@ public:
     //linear velocity of the drone during inspection
     double inspeLinVel;
 
-    //roll upper limit to land
-    double RollThreshold;
-
-    //pitch upper limit to land
-    double PitchThreshold;
-
     //Number of consecutive frames in which tracking is considered valid
     int    NFramesHold;
 
@@ -57,9 +51,6 @@ public:
     //Number of consecutive frames in which tracking is considered valid
     //and robot is ready for compensation
     int    NFramesComp;
-
-    //Platform dimension
-    double platformLenght;
 
     //horizontal error allowed during holding phase
     double hold_threshold;
@@ -83,16 +74,11 @@ public:
     // Relative Z at which thresholds reach their maximum (cone base radius).
     double cone_z_ref;
 
-    //switch off the motors
-    double land_threshold;
     //Max altitude for landing procedure
     double zMax;
 
     //Minimum altitude for landing procedure (before compensating, this value should be above the maximum platform altitude)
     double zMin;
-
-    //Proportional gain times platform velocity
-    double KpHoldV;
 
     //Proportional gain times horizontal error
     double KpHold; // 0.5
@@ -102,9 +88,6 @@ public:
 
     //Integral gain times integral horizontal error
     double KiHold; //0.1
-
-    //Proportional gain for velocity tracking
-    double KPCompV;
 
     //Integral clamping values
     double maxIntValue;
