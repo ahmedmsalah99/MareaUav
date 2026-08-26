@@ -195,6 +195,7 @@ void Lander::initStateMachine() {
   _machine._seaState     =  &_seaState;
   _machine._landingGo    =  &_landingGo;
   _machine._touchedDown  =  &_touchedDown;
+  _machine._disarmRequest = &_disarmRequest;
   _machine._compValidTimer = &_compValidTimer;
   _machine._landValidTimer = &_landValidTimer;
 	_machine.param		     =  &param;
@@ -232,6 +233,7 @@ void Lander::initStateMachine() {
   _compS._nextState    = &_holdS;   // gap drifted back above standoff -> HOLD
   _compS._nextLanState = &_landS;
 	_compS._nextHoveringState = &_hoveringS;
+  _compS._nextDoneState = &_landingDoneS;   // disarmOnGo -> straight to terminal
 
   _landS._nextState    = &_compS;   // NO-GO or vision lost during landing -> back to COMP
   _landS._restartState = &_initS;
@@ -1258,11 +1260,8 @@ void Lander::asce() {
 void Lander::desc() {
   std::cout << "In desc " << std::endl;
   double v_hor_calm = std::fabs(_state.getVx()) < 0.3 && std::fabs(_state.getVy()) < 0.3;
-  if (!v_hor_calm) {
-    std::cout << "[DESC] blocked by v_hor_calm gate: vx " << _state.getVx()
-              << " vy " << _state.getVy() << std::endl;
+  if (!v_hor_calm)
     return;
-  }
   double new_z = std::max(_setPoint.getZ() - param.descVelocity,_state.getZ() - param.descVelocity);
   _setPoint.setZ(new_z);
   // Feed the intended descent rate forward on the position command's
