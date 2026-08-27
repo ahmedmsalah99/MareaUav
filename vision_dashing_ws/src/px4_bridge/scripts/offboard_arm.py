@@ -1,55 +1,140 @@
 #!/usr/bin/env python3
-"""Switch PX4 to Offboard mode and arm the drone.
+"""Switch PX4 to Offboard mode and arm, reporting exactly why if it refuses.
 
-Does NOT publish any OffboardControlMode/TrajectorySetpoint — it assumes
-something else (e.g. px4_bridge's bridge_node) is already publishing that
-stream. This script only sends the two VehicleCommands: mode switch to
-Offboard, then arm.
+Sends VEHICLE_CMD_DO_SET_MODE (offboard) then VEHICLE_CMD_COMPONENT_ARM_DISARM,
+and listens on /fmu/out/vehicle_command_ack + /fmu/out/vehicle_status so the
+result is visible instead of having to guess. PX4 only accepts offboard once a
+matching setpoint stream is already flowing (the OffboardControlMode heartbeat
+AND the setpoint it advertises, e.g. trajectory_setpoint for position) --
+normally bridge_node provides both, but it only forwards trajectory_setpoint
+once the guidance node actually commands something. Use --setpoints if nothing
+else is streaming them.
 
 Usage:
-    python3 offboard_arm.py
+    python3 offboard_arm.py                # commands only (bridge_node streaming)
+    python3 offboard_arm.py --setpoints    # also stream heartbeat + hold setpoint
+    python3 offboard_arm.py --no-arm       # only switch to offboard, don't arm
+    python3 offboard_arm.py --sys-id 2     # target a non-default MAV_SYS_ID
 """
 
-import time
+import argparse
+import sys
 
 import rclpy
 from rclpy.node import Node
-from rclpy.qos import QoSProfile, ReliabilityPolicy, HistoryPolicy
+from rclpy.qos import QoSProfile, ReliabilityPolicy, HistoryPolicy, DurabilityPolicy
 
-from px4_msgs.msg import VehicleCommand
+from px4_msgs.msg import OffboardControlMode, TrajectorySetpoint, VehicleCommand
 
-ARM_DELAY_S = 0.5  # gap between the mode-switch command and the arm command
+try:
+    from px4_msgs.msg import VehicleCommandAck
+except ImportError:  # depends on px4_msgs version
+    VehicleCommandAck = None
+
+# px4_msgs renamed this across versions; try the variants in order.
+VehicleStatus = None
+for _name in ('VehicleStatus', 'VehicleStatusV1'):
+    try:
+        VehicleStatus = getattr(__import__('px4_msgs.msg', fromlist=[_name]), _name)
+        break
+    except (ImportError, AttributeError):
+        continue
+
+ACK_RESULT = {
+    0: 'ACCEPTED',
+    1: 'TEMPORARILY_REJECTED (a precondition is not met yet -- usually no '
+       'setpoint stream, or the EKF has no valid position)',
+    2: 'DENIED',
+    3: 'UNSUPPORTED',
+    4: 'FAILED',
+    5: 'IN_PROGRESS',
+    6: 'CANCELLED',
+}
+
+NAV_STATE_OFFBOARD = 14
+ARMING_STATE_ARMED = 2
 
 
 class OffboardArmer(Node):
 
-    def __init__(self):
+    def __init__(self, args):
         super().__init__('offboard_armer')
+        self.args = args
 
-        qos = QoSProfile(
+        # PX4 publishes /fmu/out/* best-effort; subscribers must match.
+        sub_qos = QoSProfile(
+            reliability=ReliabilityPolicy.BEST_EFFORT,
+            durability=DurabilityPolicy.VOLATILE,
+            history=HistoryPolicy.KEEP_LAST,
+            depth=5,
+        )
+        pub_qos = QoSProfile(
             reliability=ReliabilityPolicy.BEST_EFFORT,
             history=HistoryPolicy.KEEP_LAST,
             depth=1,
         )
 
         self.vehicle_command_pub = self.create_publisher(
-            VehicleCommand, '/fmu/in/vehicle_command', qos)
+            VehicleCommand, '/fmu/in/vehicle_command', pub_qos)
 
-    def _set_mode(self):
-        # base_mode=1, custom_main_mode=6/PX4_CUSTOM_MAIN_MODE_OFFBOARD
-        self._publish_vehicle_command(
+        if args.setpoints:
+            self.offboard_mode_pub = self.create_publisher(
+                OffboardControlMode, '/fmu/in/offboard_control_mode', pub_qos)
+            self.setpoint_pub = self.create_publisher(
+                TrajectorySetpoint, '/fmu/in/trajectory_setpoint', pub_qos)
+            self.create_timer(0.05, self._stream_setpoints)  # 20 Hz
+
+        if VehicleCommandAck is not None:
+            self.create_subscription(
+                VehicleCommandAck, '/fmu/out/vehicle_command_ack',
+                self._on_ack, sub_qos)
+        else:
+            self.get_logger().warn(
+                'px4_msgs has no VehicleCommandAck -- cannot report rejection reasons.')
+
+        self._status_seen = False
+        if VehicleStatus is not None:
+            for topic in ('/fmu/out/vehicle_status', '/fmu/out/vehicle_status_v1'):
+                self.create_subscription(
+                    VehicleStatus, topic, self._on_status, sub_qos)
+        else:
+            self.get_logger().warn(
+                'px4_msgs has no VehicleStatus -- cannot report nav/arming state.')
+
+    # ---- outgoing ---------------------------------------------------------
+
+    def _stream_setpoints(self):
+        mode = OffboardControlMode()
+        mode.position = True
+        mode.velocity = False
+        mode.acceleration = False
+        mode.attitude = False
+        mode.body_rate = False
+        mode.timestamp = self._now_us()
+        self.offboard_mode_pub.publish(mode)
+
+        sp = TrajectorySetpoint()
+        sp.position = [0.0, 0.0, -2.0]  # NED: 2 m above the local origin
+        sp.yaw = 0.0
+        sp.timestamp = self._now_us()
+        self.setpoint_pub.publish(sp)
+
+    def set_offboard(self):
+        # base_mode = 1 (MAV_MODE_FLAG_CUSTOM_MODE_ENABLED),
+        # custom_main_mode = 6 (PX4_CUSTOM_MAIN_MODE_OFFBOARD)
+        self._publish_command(
             VehicleCommand.VEHICLE_CMD_DO_SET_MODE, param1=1.0, param2=6.0)
 
-    def _arm(self):
-        self._publish_vehicle_command(
-            VehicleCommand.VEHICLE_CMD_COMPONENT_ARM_DISARM, param1=1.0)  # 1 = arm
+    def arm(self):
+        self._publish_command(
+            VehicleCommand.VEHICLE_CMD_COMPONENT_ARM_DISARM, param1=1.0)
 
-    def _publish_vehicle_command(self, command, param1=0.0, param2=0.0):
+    def _publish_command(self, command, param1=0.0, param2=0.0):
         msg = VehicleCommand()
         msg.command = command
         msg.param1 = param1
         msg.param2 = param2
-        msg.target_system = 1
+        msg.target_system = self.args.sys_id
         msg.target_component = 1
         msg.source_system = 1
         msg.source_component = 1
@@ -60,22 +145,83 @@ class OffboardArmer(Node):
     def _now_us(self):
         return int(self.get_clock().now().nanoseconds / 1000)
 
+    # ---- incoming ---------------------------------------------------------
+
+    def _on_ack(self, msg):
+        name = {
+            VehicleCommand.VEHICLE_CMD_DO_SET_MODE: 'DO_SET_MODE',
+            VehicleCommand.VEHICLE_CMD_COMPONENT_ARM_DISARM: 'ARM_DISARM',
+        }.get(msg.command)
+        if name is None:
+            return  # someone else's command
+        result = ACK_RESULT.get(msg.result, 'UNKNOWN({})'.format(msg.result))
+        log = self.get_logger().info if msg.result == 0 else self.get_logger().error
+        log('ACK {}: {}'.format(name, result))
+
+    def _on_status(self, msg):
+        offboard = msg.nav_state == NAV_STATE_OFFBOARD
+        armed = msg.arming_state == ARMING_STATE_ARMED
+        line = ('status: nav_state={} ({}) arming_state={} ({})'.format(
+            msg.nav_state, 'OFFBOARD' if offboard else 'not offboard',
+            msg.arming_state, 'ARMED' if armed else 'not armed'))
+        for extra in ('pre_flight_checks_pass', 'failsafe'):
+            if hasattr(msg, extra):
+                line += ' {}={}'.format(extra, getattr(msg, extra))
+        self._status_seen = True
+        self.get_logger().info(line, throttle_duration_sec=1.0)
+
+
+def spin_for(node, seconds):
+    end = node.get_clock().now().nanoseconds + int(seconds * 1e9)
+    while rclpy.ok() and node.get_clock().now().nanoseconds < end:
+        rclpy.spin_once(node, timeout_sec=0.05)
+
 
 def main():
-    rclpy.init()
-    node = OffboardArmer()
-    try:
-        node._set_mode()
-        node.get_logger().info('Requested OFFBOARD mode')
-        time.sleep(ARM_DELAY_S)
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--setpoints', action='store_true',
+                        help='also stream the offboard heartbeat + a hold setpoint')
+    parser.add_argument('--no-arm', action='store_true',
+                        help='switch to offboard but do not arm')
+    parser.add_argument('--sys-id', type=int, default=1,
+                        help='target MAV_SYS_ID (default 1)')
+    args = parser.parse_args()
 
-        node._arm()
-        node.get_logger().info('Requested ARM')
-        time.sleep(0.1)  # give the publisher a moment to flush before shutdown
+    rclpy.init()
+    node = OffboardArmer(args)
+    try:
+        # Let discovery settle (and the setpoint stream warm up, if enabled)
+        # before commanding -- a command published before the XRCE agent has
+        # matched this publisher goes nowhere.
+        node.get_logger().info('Waiting for discovery...')
+        spin_for(node, 2.0)
+
+        if not node._status_seen and VehicleStatus is not None:
+            node.get_logger().warn(
+                'No vehicle_status received -- PX4/XRCE agent may not be connected, '
+                'in which case no command can reach the vehicle.')
+
+        node.get_logger().info('Requesting OFFBOARD mode...')
+        node.set_offboard()
+        spin_for(node, 1.0)
+
+        if not args.no_arm:
+            node.get_logger().info('Requesting ARM...')
+            node.arm()
+            spin_for(node, 1.0)
+
+        # Keep reporting status (and streaming setpoints, if enabled) so the
+        # resulting mode is visible; Ctrl-C to stop.
+        node.get_logger().info('Monitoring state -- Ctrl-C to exit.')
+        rclpy.spin(node)
+    except KeyboardInterrupt:
+        pass
     finally:
         node.destroy_node()
-        rclpy.shutdown()
+        if rclpy.ok():
+            rclpy.shutdown()
+    return 0
 
 
 if __name__ == '__main__':
-    main()
+    sys.exit(main())

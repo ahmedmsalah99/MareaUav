@@ -42,6 +42,13 @@ public:
     double lastCandidateAmp() const { return last_candidate_amp_; }
     double lastPeakThresholdAmp() const { return last_threshold_amp_; }
 
+    // DC mean of the acceleration window used by the most recent identify().
+    // This is the measured constant term (gravity projected on the IMU z axis
+    // plus any accelerometer bias) — the EKF seeds its offset state with this
+    // instead of assuming a hard-coded +/-g, so the filter works regardless of
+    // the IMU's axis convention and of any static bias.
+    double lastMean() const { return last_mean_; }
+
 private:
     int    window_size_;
     double sample_rate_;
@@ -52,6 +59,7 @@ private:
     double last_candidate_freq_ = 0.0;
     double last_candidate_amp_  = 0.0;
     double last_threshold_amp_  = 0.0;
+    double last_mean_           = 0.0;
 
     // Cooley-Tukey in-place FFT (N must be power of 2)
     void fft(std::vector<std::complex<double>>& x);

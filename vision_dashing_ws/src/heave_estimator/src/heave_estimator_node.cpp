@@ -47,6 +47,16 @@ public:
         // decision. Static — this is a system latency, not something that
         // shrinks as the drone approaches the pad.
         control_comm_delay_ = declare_parameter("control_comm_delay_s",        0.15);
+        // Sign applied to the IMU z acceleration before it is used. The
+        // measurement model is az = sum_j(-omega_j^2 * z_j) + offset, i.e. the
+        // dynamic part of az IS the pad's vertical acceleration expressed in the
+        // same sign convention as the published heave position/velocity (which
+        // downstream, in comp(), is treated as UP-positive). A z-up IMU
+        // (the usual ROS convention, reading +9.81 on z at rest) needs +1;
+        // a z-down/NED IMU (reading -9.81 at rest) needs -1, otherwise the
+        // published heave comes out correct in magnitude but inverted in sign —
+        // and the compensation then leads the pad the wrong way.
+        accel_sign_         = declare_parameter("accel_sign",                  1.0);
 
         dt_             = 1.0 / timer_rate;
         reident_period_ = reident_period;
@@ -62,7 +72,7 @@ public:
             "/adnav_node/imu_raw", rclcpp::SensorDataQoS(),
             [this](const sensor_msgs::msg::Imu::SharedPtr msg) {
                 std::lock_guard<std::mutex> lk(buf_mutex_);
-                buf_.push_back(msg->linear_acceleration.z);
+                buf_.push_back(accel_sign_ * msg->linear_acceleration.z);
             });
 
         // Dynamic prediction horizon T = l/v published by the guidance node.
@@ -133,9 +143,12 @@ private:
         if (!ekf_->isInitialized() || (now - last_reident_time_) >= reident_period_) {
             std::vector<HeaveMode> modes;
             if (identifier_->identify(modes)) {
-                ekf_->initialize(modes);
+                ekf_->initialize(modes, identifier_->lastMean());
                 last_reident_time_ = now;
-                RCLCPP_INFO(get_logger(), "Identified %zu heave mode(s).", modes.size());
+                RCLCPP_INFO(get_logger(),
+                    "Identified %zu heave mode(s). Accel DC mean %.4f m/s^2 "
+                    "(seeds the EKF offset state on first init).",
+                    modes.size(), identifier_->lastMean());
                 for (size_t i = 0; i < modes.size(); ++i)
                     RCLCPP_INFO(get_logger(),
                         "  Mode %zu: A=%.4f m, omega=%.4f rad/s, phi=%.4f rad",
@@ -230,6 +243,7 @@ private:
     double pred_horizon_        = 0.3;
     double control_comm_delay_  = 0.15;
     double min_omega_           = 0.5;
+    double accel_sign_          = 1.0;
     double last_diag_log_time_  = 0.0;
 };
 

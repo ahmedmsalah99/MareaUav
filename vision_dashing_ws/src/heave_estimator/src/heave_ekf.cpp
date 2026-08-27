@@ -88,7 +88,7 @@ Eigen::MatrixXd HeaveEKF::buildQ() const
 
 // ---- Initialization --------------------------------------------------------
 
-void HeaveEKF::initialize(const std::vector<HeaveMode>& modes)
+void HeaveEKF::initialize(const std::vector<HeaveMode>& modes, double measured_offset)
 {
     if (modes.empty()) return;
 
@@ -97,8 +97,6 @@ void HeaveEKF::initialize(const std::vector<HeaveMode>& modes)
 
     Eigen::VectorXd x_new = Eigen::VectorXd::Zero(new_dim);
     Eigen::MatrixXd P_new = Eigen::MatrixXd::Identity(new_dim, new_dim);
-
-    static constexpr double g = 9.81;
 
     for (int j = 0; j < new_nm; ++j) {
         const HeaveMode& m = modes[j];
@@ -131,8 +129,18 @@ void HeaveEKF::initialize(const std::vector<HeaveMode>& modes)
         }
     }
 
-    // Preserve offset; init to -g on first call
-    x_new(new_dim - 1) = initialized_ ? x_(state_dim_ - 1) : -g;
+    // Preserve the offset across re-identifications; on the first call seed it
+    // with the MEASURED DC mean of the identification window rather than a
+    // hard-coded -g. The measurement model is
+    //     az = sum_j(-omega_j^2 * z_j) + offset
+    // so the offset has to absorb the whole constant term (gravity projected on
+    // the IMU z axis, plus accelerometer bias). Assuming -9.81 breaks whenever
+    // the IMU reports +g on z (the usual ROS z-up convention) or carries a
+    // noticeable bias: the ~2g constant mismatch cannot be taken up by the
+    // near-frozen offset state (q_off is tiny), so it is forced into the
+    // oscillator states instead, inflating heave position/velocity far past the
+    // identified mode amplitude and driving the filter into a limit cycle.
+    x_new(new_dim - 1) = initialized_ ? x_(state_dim_ - 1) : measured_offset;
     P_new(new_dim - 1, new_dim - 1) = initialized_
         ? P_(state_dim_ - 1, state_dim_ - 1) : 1.0;
 
