@@ -25,7 +25,16 @@ public:
         // by that ratio.
         double timer_rate     = declare_parameter("sample_rate",                30.0);
         int    fft_window     = declare_parameter("fft_window_size",           1024);
-        double peak_threshold = declare_parameter("peak_threshold",            0.05);
+        // Minimum peak height, as a fraction of the strongest peak, for a mode
+        // to be accepted. At 0.05 the identifier also picks up a spurious
+        // SUBHARMONIC at exactly half the true frequency: the Hann-windowed main
+        // peak leaks downward, and the velocity->position conversion (A/omega)
+        // then amplifies whatever lands at omega/2 by a further 2x, which is
+        // enough to clear a 5% threshold. Being at half the wave frequency it
+        // shows up downstream as a slow baseline wander rather than as an
+        // obviously wrong mode. Rejecting it halves the position error and makes
+        // the forward prediction essentially exact.
+        double peak_threshold = declare_parameter("peak_threshold",            0.15);
         double min_omega      = declare_parameter("min_omega_rad_s",           0.5);
         double reident_period = declare_parameter("reidentification_period_s", 40.0);
         // Filter tuning, in VELOCITY units now that the measurement is m/s

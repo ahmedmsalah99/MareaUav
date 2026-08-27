@@ -204,7 +204,7 @@ void CompState::handle() {
     double downDist = -_verticalErr;
     bool onTarget = _NComp > param.NFramesComp;
 
-    // COMP holds compHoldDist (1.5 m) above the pad and compensates the heave.
+    // COMP holds compHoldDist above the pad and compensates the heave.
     // Rough platform attitude does NOT leave COMP (that's the aggressive-landing
     // abort, a later phase). Only a lost platform fix, or drifting back above the
     // standoff, leaves COMP.
@@ -227,17 +227,6 @@ void CompState::handle() {
       return;
     }
 
-    if(param.disarmOnGo && _contextL->getLandingGoSignal()){
-      // Disarm mode: skip LandState's descent/touchdown detection entirely —
-      // disarm the instant the GO signal arrives and jump straight to the
-      // terminal state.
-      this->_contextL->requestDisarm();
-      this->_contextL->setStatePtr(_nextDoneState);
-      printStateTransition();
-      *_contextL->_landValidTimer = 0.0;
-      std::cout << "COMP -> LANDING_DONE: disarmOnGo, GO signal arrived" << std::endl;
-      return;
-    }
 
     // Minimum time spent in COMP before LAND is even considered — counts
     // plain dwell time in COMP, independent of the landing condition below.
@@ -258,6 +247,24 @@ void CompState::handle() {
     if(landCondition && compDwellElapsed){
       // Landing window is open, drone is precisely centred, and at least
       // compToLandWaitTime has been spent in COMP — commit to landing.
+      if(param.disarmOnGo){
+        // Disarm mode: skip LandState entirely — its committed descent and the
+        // touchdown detector — and disarm straight into the terminal state.
+        // NOTE: this deliberately shares the SAME preconditions as the normal
+        // transition. Disarm mode changes what happens once the drone is
+        // committed, not how it gets there: it still has to have descended to
+        // within landHeightThld of the pad, be centred and still, and have held
+        // COMP for compToLandWaitTime. Testing only the GO signal here (as this
+        // first did) fires the instant COMP is entered, which is still up at the
+        // standoff distance — the drone was dropping from ~1.4 m, far outside
+        // the ultrasonic's ~0.83 m range, so it never even saw the pad.
+        this->_contextL->requestDisarm();
+        this->_contextL->setStatePtr(_nextDoneState);
+        printStateTransition();
+        *_contextL->_landValidTimer = 0.0;
+        std::cout << "COMP -> LANDING_DONE: disarmOnGo, downDist " << downDist << std::endl;
+        return;
+      }
       this->_contextL->setStatePtr(_nextLanState);
       printStateTransition();
       *_contextL->_landValidTimer = 0.0;   // consumed — start clean for next time
