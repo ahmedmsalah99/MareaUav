@@ -411,20 +411,39 @@ void Lander::updateSignals() {
   //above half meters use vision system for altitude value
   //otherwise, ultrasonic sensors.
 
+  // Total offset per source: hardware (physical mounting geometry) plus
+  // software (calibration on top). Both push the same way — a larger offset
+  // reports the drone as FURTHER from the pad for the same raw reading, which
+  // is the same direction the original sonar offset applied.
+  const double camOffset   = param.cameraHwOffset + param.cameraSwOffset;
+  const double sonarOffset = param.sonarHwOffset  + param.sonarSwOffset;
+
+  // dz is negative-down (downDist = -dz), so a positive offset is SUBTRACTED
+  // here to push the reported distance up in both branches.
   if( switchSensor )
-		dz = _VisionPose.getZ();
+		dz = _VisionPose.getZ() - camOffset;
 	else
-		dz = -(_UltraInfo.getZ()-params_automatic::OffsetUltraSensor);
+		dz = -(_UltraInfo.getZ() + sonarOffset);
 
   {
+    // Both sources are printed with their offsets applied, so the step at the
+    // switchSensor handover is directly visible: compare visionDist against
+    // sonarDist on the tick the source flips. They must agree there, or
+    // downDist jumps — which moves the landing height gate and injects a step
+    // into comp()'s tracking error at the worst possible moment.
     static int sensorLogTick = 0;
     if ((sensorLogTick++ % 25) == 0) {
+      const double visionDist = -_VisionPose.getZ() + camOffset;
+      const double sonarDist  =  _UltraInfo.getZ()  + sonarOffset;
       std::cout << "[SENSOR] switchSensor " << switchSensor
-                << " visionZ " << _VisionPose.getZ()
-                << " ultraZ " << _UltraInfo.getZ()
+                << " | visionRaw " << -_VisionPose.getZ()
+                << " +off " << camOffset << " = " << visionDist
+                << " | sonarRaw " << _UltraInfo.getZ()
+                << " +off " << sonarOffset << " = " << sonarDist
+                << " | handoverStep " << (sonarDist - visionDist)
                 << " ultraValid " << _UltraInfo.IsValid
                 << " ultraUpdated " << _UltraInfo.UltrasonicDataUpdated
-                << " dz " << dz << std::endl;
+                << " downDist " << -dz << std::endl;
     }
   }
 
@@ -672,7 +691,7 @@ void Lander::printSignals() {
   std::cout << "HERRV: " << _verticalErr<< std::endl;
 
 	std::cout<<"Vision_Z:"<<_VisionPose.getZ()<<std::endl;
-	std::cout<<"Ultrasonic_Z:"<<(_UltraInfo.getZ() - params_automatic::OffsetUltraSensor)<<std::endl;
+	std::cout<<"Ultrasonic_Z:"<<(_UltraInfo.getZ() + param.sonarHwOffset + param.sonarSwOffset)<<std::endl;
 	std::cout<<"UltrasonicValid? "<<_UltraInfo.IsValid<<std::endl;
 
 	std::cout << "switchSensor: " << switchSensor << std::endl;
@@ -1360,12 +1379,35 @@ void Lander::comp() {
     _setPoint.setVz(0.0);
   }
 
-  std::cout << "comp gap " << gap << " tracking " << _compTracking
-            << " heaveVelPredComp " << _seaState.heaveVelPredComp << " new_z " << new_z << std::endl;
-
   _setPoint.setZ(new_z);
   clampZSP();
   _setPoint.setType(MavState::POSITION);
+
+  // Throttled to ~10 Hz — enough to read the descent rate without flooding at
+  // the full loop rate. Prints what is needed to tell apart the three ways the
+  // descent can stall:
+  //   * commanded but not followed  -> cmdZ stays well below stateZ, stateVz ~0
+  //   * not commanded               -> cmdZ converges onto stateZ (gap already
+  //                                    at compHoldDist, or gap not updating)
+  //   * clamped                     -> clamped flag set, cmdZ pinned at zMin
+  {
+    static int compLogTick = 0;
+    if ((compLogTick++ % 5) == 0) {
+      const double cmdZ = _setPoint.getZ();
+      std::cout << "comp gap " << gap << "/" << param.compHoldDist
+                << " tracking " << _compTracking
+                << " heaveVelPredComp " << _seaState.heaveVelPredComp
+                << " | stateZ " << _state.getZ()
+                << " stateVz " << _state.getVz()
+                << " newZ " << new_z
+                << " cmdZ " << cmdZ
+                << " cmdMinusState " << (cmdZ - _state.getZ())
+                << " clamped " << (std::fabs(cmdZ - new_z) > 1e-9)
+                << " zMin " << param.zMin
+                << " platZ " << _platformState.getZ()
+                << std::endl;
+    }
+  }
 }
 
 void Lander::clampZSP() {
