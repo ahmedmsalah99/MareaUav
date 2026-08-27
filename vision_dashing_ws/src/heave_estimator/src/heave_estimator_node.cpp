@@ -23,11 +23,39 @@ public:
         double peak_threshold = declare_parameter("peak_threshold",            0.05);
         double min_omega      = declare_parameter("min_omega_rad_s",           0.5);
         double reident_period = declare_parameter("reidentification_period_s", 40.0);
-        double q_pos          = declare_parameter("q_pos",                     1e-4);
-        double q_vel          = declare_parameter("q_vel",                     1e-3);
-        double q_omega        = declare_parameter("q_omega",                   1e-6);
-        double q_off          = declare_parameter("q_off",                     1e-8);
-        double r_meas         = declare_parameter("r_meas",                    1e-4);
+        // Filter tuning. The mode dynamics are an EXACT model of a stationary
+        // sinusoid, so the process noise only has to cover how fast the sea
+        // state itself drifts (tens of seconds), not the oscillation. The old
+        // values had this backwards -- q_vel = 1e-3 at 30 Hz admits a velocity
+        // random walk of sqrt(1e-3 * 30) = 0.17 m/s per second, larger than the
+        // entire heave signal, while r_meas = 1e-4 claimed the accelerometer was
+        // accurate to 0.01 m/s^2. A real MEMS unit is nearer 0.03-0.05 m/s^2 in
+        // band, and the heave acceleration itself is only about
+        // z_amp * omega^2 ~= 0.05 * 1.5^2 ~= 0.1 m/s^2, so the true SNR is only
+        // a few to one. Understating the measurement noise by 3-5x in amplitude
+        // (an order of magnitude in variance) makes the Kalman gain that much
+        // too high, so the filter tracks accelerometer noise instead of the
+        // identified mode: the published estimate came out several times larger
+        // than the mode that was just identified, and visibly jagged even though
+        // a sum of sinusoids cannot produce jagged output.
+        //
+        // Retune from measured data if needed: set r_meas to the VARIANCE of the
+        // accelerometer noise (record /adnav_node/imu_raw with the pad still and
+        // take the variance of linear_acceleration.z), and keep q_pos/q_vel small
+        // enough that sqrt(q * rate) stays well under the real signal.
+        double q_pos          = declare_parameter("q_pos",                     1e-8);
+        double q_vel          = declare_parameter("q_vel",                     1e-6);
+        double q_omega        = declare_parameter("q_omega",                   1e-8);
+        // The offset state absorbs gravity-on-z plus accelerometer bias. It is
+        // seeded from the measured DC mean, but at 1e-8 it was then effectively
+        // frozen, so any residual constant (bias drift, a change in the pad's
+        // mean tilt) had nowhere to go but the oscillator states -- and a
+        // constant cannot be represented by an oscillator, so the filter chases
+        // it into a growing limit cycle. This is slow enough not to absorb the
+        // heave itself (sqrt(1e-6 * 30) = 5.5e-3 m/s^2 per second, against a
+        // ~0.24 Hz oscillation).
+        double q_off          = declare_parameter("q_off",                     1e-6);
+        double r_meas         = declare_parameter("r_meas",                    2.5e-3);
         // Divergence safeguards (see HeaveEKF): physical frequency cap, innovation
         // gate, and output sanity limits.
         double omega_max      = declare_parameter("omega_max_rad_s",           3.0);
@@ -188,8 +216,9 @@ private:
         // re-identification instead of waiting for the periodic one.
         if (!ekf_->isHealthy()) {
             RCLCPP_WARN(get_logger(),
-                "Heave EKF diverged (pos=%.2f vel=%.2f) — withholding estimate and re-identifying.",
-                ekf_->heavePosision(), ekf_->heaveVelocity());
+                "Heave EKF diverged (pos=%.3f vel=%.3f, identified amplitude %.3f m) — "
+                "withholding estimate and re-identifying.",
+                ekf_->heavePosision(), ekf_->heaveVelocity(), ekf_->identifiedAmplitude());
             ekf_->reset();                               // discard diverged state (no reuse)
             last_reident_time_ = now - reident_period_;  // trip the re-ident branch next tick
             return;

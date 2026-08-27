@@ -210,10 +210,7 @@ def main():
             node.arm()
             spin_for(node, 1.0)
 
-        # Keep reporting status (and streaming setpoints, if enabled) so the
-        # resulting mode is visible; Ctrl-C to stop.
-        node.get_logger().info('Monitoring state -- Ctrl-C to exit.')
-        rclpy.spin(node)
+        node.get_logger().info('Done -- offboard requested and armed; exiting.')
     except KeyboardInterrupt:
         pass
     finally:

@@ -144,6 +144,9 @@ void HeaveEKF::initialize(const std::vector<HeaveMode>& modes, double measured_o
     P_new(new_dim - 1, new_dim - 1) = initialized_
         ? P_(state_dim_ - 1, state_dim_ - 1) : 1.0;
 
+    amp_sum_ = 0.0;
+    for (const HeaveMode& m : modes) amp_sum_ += std::abs(m.amplitude);
+
     nm_          = new_nm;
     state_dim_   = new_dim;
     x_           = x_new;
@@ -219,8 +222,18 @@ bool HeaveEKF::update(double az_imu)
     // is beyond any physically plausible value. Heave position is left unbounded
     // (it is not range-limited). The node withholds the estimate and forces a
     // re-identification when this trips.
+    // The estimate cannot legitimately be much larger than the modes it was
+    // built from: |z| <= sum(A_j) and |z_dot| <= sum(A_j * omega_j) <=
+    // amp_sum * omega_max. Allow a generous factor for genuine growth between
+    // re-identifications, plus a small floor so a near-zero identification
+    // cannot latch the filter permanently unhealthy.
+    static constexpr double kAmpSlack = 3.0;
+    static constexpr double kAmpFloor = 0.05;   // [m]
+    double pos_limit = kAmpSlack * amp_sum_ + kAmpFloor;
+
     healthy_ = std::isfinite(heave_pos_) && std::isfinite(heave_vel_)
-            && std::fabs(heave_vel_) <= vel_limit_;
+            && std::fabs(heave_vel_) <= vel_limit_
+            && std::fabs(heave_pos_) <= pos_limit;
 
     return true;
 }
