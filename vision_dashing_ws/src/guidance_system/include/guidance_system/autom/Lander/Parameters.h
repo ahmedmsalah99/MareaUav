@@ -218,6 +218,14 @@ public:
     // Setpoint lead [m] for the committed (aggressive) descent in land().
     double landDescVel;
 
+    // Max UPWARD platform heave velocity [m/s] allowed to commit to landing.
+    // One-sided on purpose: the pad may descend as fast as it likes (the gap
+    // only opens), but committing while it is rushing UP at the drone is what
+    // slams the pad into it. Compared against the PREDICTED heave velocity
+    // (up-positive), so it is sign-sensitive — unlike the calm-sea gate's
+    // heaveVelLimit, which is a symmetric fabs() limit.
+    double landHeaveUpVelLimit;
+
     // ── Touchdown detection (LAND -> LANDING_DONE) ────────────────────────────
     // Adapted from PX4's own multicopter land detector (staged hysteresis:
     // contact then confirm). NOT based on relative vertical velocity (drone vz -

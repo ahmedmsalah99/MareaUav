@@ -495,7 +495,7 @@ void Lander::updateSignals() {
   // ── Landing GO/NO-GO window ────────────────────────────────────────────────
   // GO when the SPA prediction and heave estimate are active, the predicted
   // roll/pitch and the roll/pitch rates are within the LANDING limits, and the
-  // pad is descending from a peak. The raw (instantaneous) decision is noisy —
+  // pad is not rushing upward at the drone. The raw (instantaneous) decision is noisy —
   // it's smoothed by a majority vote over the last landVoteWindow seconds before
   // it feeds the latch, so a single bad sample can't flip the landing decision.
   // The latch then holds each (voted) decision for at least landLatchTime before
@@ -505,9 +505,13 @@ void Lander::updateSignals() {
                  && std::fabs(_seaState.spaPitchPred) < param.landPitchLimit;
     bool ratesOk  = std::fabs(_seaState.rollRate)  < param.landRollRateLimit
                  && std::fabs(_seaState.pitchRate) < param.landPitchRateLimit;
-    bool descFromPeak = (_seaState.heaveVelPred < 0.7);
+    // One-sided ON PURPOSE, and sign-sensitive: heaveVelPred is up-positive, so
+    // the pad may descend as fast as it likes (the gap only opens), but
+    // committing while it is rushing UP at the drone is what slams the pad into
+    // it. Not a fabs() limit — that would also veto the safe half of the cycle.
+    bool padNotRushingUp = (_seaState.heaveVelPred < param.landHeaveUpVelLimit);
     bool rawGo = _seaState.spaValid && _seaState.heaveValid
-              && anglesOk && ratesOk && descFromPeak;
+              && anglesOk && ratesOk && padNotRushingUp;
 
     // Majority vote over the last landVoteWindow seconds.
     _goVoteHistory.emplace_back(_seaState.dt, rawGo);
@@ -545,7 +549,7 @@ void Lander::updateSignals() {
     _goDiag.pitchRateLimit = param.landPitchRateLimit;
     _goDiag.anglesOk       = anglesOk;
     _goDiag.ratesOk        = ratesOk;
-    _goDiag.descFromPeak   = descFromPeak;
+    _goDiag.descFromPeak   = padNotRushingUp;
     _goDiag.rawGo          = rawGo;
     _goDiag.voteFraction   = voteFraction;
     _goDiag.voteWindowSize = static_cast<int>(_goVoteHistory.size());

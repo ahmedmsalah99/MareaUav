@@ -42,6 +42,7 @@ Parameters::Parameters() {
     landVoteWindow     = 1.5;
     landVoteThreshold  = 0.6;
     landDescVel       = 2.5;
+    landHeaveUpVelLimit = 0.7;
     touchAccelMatchTol    = 1.0;
     touchVelRelMax        = 1.0;
     touchContactTime      = 0.15;
@@ -238,6 +239,9 @@ void Parameters::loadParamFile(const char *config_file) {
 
             else if( !param.compare("LAND_DESC_VEL") )
                 landDescVel = value;
+
+            else if( !param.compare("LAND_HEAVE_UP_VEL_LIMIT") )
+                landHeaveUpVelLimit = value;
 
             else if( !param.compare("TOUCH_ACCEL_MATCH_TOL") )
                 touchAccelMatchTol = value;
