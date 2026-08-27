@@ -165,6 +165,15 @@ public:
   LandGoDiagnostics getGoDiagnostics() const;
 
   /**
+   * @brief Consumes (returns and clears) the active Land command's pending
+   * disarm-on-GO request, set when param.disarmOnGo is enabled and the GO
+   * signal arrives in COMP. False when no Land command is active or none
+   * is pending.
+   */
+
+  bool consumeDisarmRequest() const;
+
+  /**
    * @brief M2M_SIM Environment variable value
    */
 

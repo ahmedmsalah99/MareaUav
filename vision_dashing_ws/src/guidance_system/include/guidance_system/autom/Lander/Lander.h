@@ -236,6 +236,19 @@ public:
     bool getTouchedDown() const { return _touchedDown; }
 
     /**
+     * @brief Consumes (returns and clears) the pending disarm-on-GO request,
+     * set by CompState::handle() when param.disarmOnGo is enabled and the GO
+     * signal arrives. Edge-triggered so the caller (AutomaticNode) sends the
+     * disarm command exactly once.
+     */
+
+    bool consumeDisarmRequest() {
+        bool req = _disarmRequest;
+        _disarmRequest = false;
+        return req;
+    }
+
+    /**
      * @brief The core function of the landing procedure. Mainly, it is
      * a switch based on the actual state.
      */
@@ -384,6 +397,10 @@ private:
     bool   _goLatched   = false;   // internal latch state
     double _goLatchTimer = 0.0;    // time [s] since the last GO<->NO-GO switch
     bool   _goLogPrev   = false;   // for edge-triggered logging
+
+    // Set by CompState::handle() when param.disarmOnGo is enabled and the GO
+    // signal arrives — consumed (and cleared) via consumeDisarmRequest().
+    bool   _disarmRequest = false;
 
     // Rolling window of the raw (instantaneous) GO decision, used to majority-vote
     // a smoothed decision before it feeds the latch — a single noisy sample must
