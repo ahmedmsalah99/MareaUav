@@ -9,6 +9,7 @@
 #include <ctime>
 #include <iomanip>
 #include <sstream>
+#include <cstdlib>
 #include "guidance_system/autom/Lander/StatesClasses.hpp"
 #include "guidance_system/autom/Lander/Lander.h"
 #include "common/conversions.h"
@@ -28,6 +29,12 @@ Lander::Lander()
   std::string pkg_path = ament_index_cpp::get_package_share_directory("guidance_system");
   std::string params_path = pkg_path + "/params/Landing_params.txt";
 	param.loadConfigFile(params_path.c_str());
+
+	_envSim = (bool)std::getenv("M2M_SIM");
+	std::cout << "[OFFSETS] M2M_SIM " << _envSim
+	          << " -> camera " << (_envSim ? param.cameraOffsetSim : param.cameraOffsetHw)
+	          << " sonar "    << (_envSim ? param.sonarOffsetSim  : param.sonarOffsetHw)
+	          << std::endl;
 
 	// std::cout<<"Params: "<<param.zMax<<std::endl;
 
@@ -411,12 +418,13 @@ void Lander::updateSignals() {
   //above half meters use vision system for altitude value
   //otherwise, ultrasonic sensors.
 
-  // Total offset per source: hardware (physical mounting geometry) plus
-  // software (calibration on top). Both push the same way — a larger offset
-  // reports the drone as FURTHER from the pad for the same raw reading, which
-  // is the same direction the original sonar offset applied.
-  const double camOffset   = param.cameraHwOffset + param.cameraSwOffset;
-  const double sonarOffset = param.sonarHwOffset  + param.sonarSwOffset;
+  // Offset per source, SELECTED by environment — the sim and hardware values
+  // are alternatives, never summed. The simulated sensors sit at different
+  // places relative to the drone reference point than the real ones, so each
+  // environment gets its own pair. Same M2M_SIM flag Automatic and Executioner
+  // already switch on.
+  const double camOffset   = _envSim ? param.cameraOffsetSim : param.cameraOffsetHw;
+  const double sonarOffset = _envSim ? param.sonarOffsetSim  : param.sonarOffsetHw;
 
   // dz is negative-down (downDist = -dz), so a positive offset is SUBTRACTED
   // here to push the reported distance up in both branches.
@@ -691,7 +699,7 @@ void Lander::printSignals() {
   std::cout << "HERRV: " << _verticalErr<< std::endl;
 
 	std::cout<<"Vision_Z:"<<_VisionPose.getZ()<<std::endl;
-	std::cout<<"Ultrasonic_Z:"<<(_UltraInfo.getZ() + param.sonarHwOffset + param.sonarSwOffset)<<std::endl;
+	std::cout<<"Ultrasonic_Z:"<<(_UltraInfo.getZ() + (_envSim ? param.sonarOffsetSim : param.sonarOffsetHw))<<std::endl;
 	std::cout<<"UltrasonicValid? "<<_UltraInfo.IsValid<<std::endl;
 
 	std::cout << "switchSensor: " << switchSensor << std::endl;

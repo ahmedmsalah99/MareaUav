@@ -43,10 +43,10 @@ Parameters::Parameters() {
     landVoteThreshold  = 0.6;
     landDescVel       = 2.5;
     landHeaveUpVelLimit = 0.7;
-    cameraHwOffset     = 0.0;
-    cameraSwOffset     = 0.03;
-    sonarHwOffset      = 0.082;   // was params_automatic::OffsetUltraSensor
-    sonarSwOffset      = 0.04;
+    cameraOffsetSim    = 0.03;
+    cameraOffsetHw     = 0.0;
+    sonarOffsetSim     = 0.04;
+    sonarOffsetHw      = 0.082;   // was params_automatic::OffsetUltraSensor
     touchAccelMatchTol    = 1.0;
     touchVelRelMax        = 1.0;
     touchContactTime      = 0.15;
@@ -247,17 +247,17 @@ void Parameters::loadParamFile(const char *config_file) {
             else if( !param.compare("LAND_HEAVE_UP_VEL_LIMIT") )
                 landHeaveUpVelLimit = value;
 
-            else if( !param.compare("CAMERA_HW_OFFSET") )
-                cameraHwOffset = value;
+            else if( !param.compare("CAMERA_OFFSET_SIM") )
+                cameraOffsetSim = value;
 
-            else if( !param.compare("CAMERA_SW_OFFSET") )
-                cameraSwOffset = value;
+            else if( !param.compare("CAMERA_OFFSET_HW") )
+                cameraOffsetHw = value;
 
-            else if( !param.compare("SONAR_HW_OFFSET") )
-                sonarHwOffset = value;
+            else if( !param.compare("SONAR_OFFSET_SIM") )
+                sonarOffsetSim = value;
 
-            else if( !param.compare("SONAR_SW_OFFSET") )
-                sonarSwOffset = value;
+            else if( !param.compare("SONAR_OFFSET_HW") )
+                sonarOffsetHw = value;
 
             else if( !param.compare("TOUCH_ACCEL_MATCH_TOL") )
                 touchAccelMatchTol = value;

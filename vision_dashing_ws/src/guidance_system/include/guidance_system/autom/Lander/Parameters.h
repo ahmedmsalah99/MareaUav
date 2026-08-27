@@ -222,22 +222,23 @@ public:
     // Added to the raw reading of each altitude source to give the drone->pad
     // distance (downDist). All four push in the SAME direction: a larger offset
     // means the drone is reported as FURTHER from the pad for the same raw
-    // reading.
+    // reading. (Stored as a positive magnitude and added, where the original
+    // sonar constant was negative and subtracted — same result, but it lets all
+    // four read consistently.)
     //
-    // Split hardware/software per sensor because they are set for different
-    // reasons and by different people: the hardware term is the physical
-    // mounting geometry (where the sensor sits relative to the drone's
-    // reference point), the software term is the correction applied on top.
-    // Keeping them separate means re-mounting a sensor does not silently
-    // invalidate a software calibration, and vice versa.
+    // SIM and HW are ALTERNATIVES, not terms to be summed: exactly one pair is
+    // used per run, chosen by the M2M_SIM environment variable (the same flag
+    // Automatic and Executioner already switch on). The simulated camera and
+    // sonar sit at different places relative to the drone reference point than
+    // the real ones do, so each environment needs its own pair.
     //
-    // NOTE the two sources must end up referenced to the SAME plane, or
+    // NOTE the camera and sonar values must be referenced to the SAME plane, or
     // downDist steps at the switchSensor handover — which shows up as a jump in
     // both the landing height gate and comp()'s tracking error.
-    double cameraHwOffset;
-    double cameraSwOffset;
-    double sonarHwOffset;
-    double sonarSwOffset;
+    double cameraOffsetSim;
+    double cameraOffsetHw;
+    double sonarOffsetSim;
+    double sonarOffsetHw;
 
     // Max UPWARD platform heave velocity [m/s] allowed to commit to landing.
     // One-sided on purpose: the pad may descend as fast as it likes (the gap
