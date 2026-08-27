@@ -400,6 +400,10 @@ private:
 
     // Set by CompState::handle() when param.disarmOnGo is enabled and the GO
     // signal arrives — consumed (and cleared) via consumeDisarmRequest().
+    // M2M_SIM environment flag, cached at construction — selects the simulated
+    // vs hardware altitude sensor offsets. Same flag Automatic/Executioner use.
+    bool   _envSim = false;
+
     bool   _disarmRequest = false;
 
     // Disarm mode re-sends the disarm for a short window after entering

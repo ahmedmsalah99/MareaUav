@@ -218,6 +218,28 @@ public:
     // Setpoint lead [m] for the committed (aggressive) descent in land().
     double landDescVel;
 
+    // ── Altitude sensor offsets [m] ───────────────────────────────────────────
+    // Added to the raw reading of each altitude source to give the drone->pad
+    // distance (downDist). All four push in the SAME direction: a larger offset
+    // means the drone is reported as FURTHER from the pad for the same raw
+    // reading. (Stored as a positive magnitude and added, where the original
+    // sonar constant was negative and subtracted — same result, but it lets all
+    // four read consistently.)
+    //
+    // SIM and HW are ALTERNATIVES, not terms to be summed: exactly one pair is
+    // used per run, chosen by the M2M_SIM environment variable (the same flag
+    // Automatic and Executioner already switch on). The simulated camera and
+    // sonar sit at different places relative to the drone reference point than
+    // the real ones do, so each environment needs its own pair.
+    //
+    // NOTE the camera and sonar values must be referenced to the SAME plane, or
+    // downDist steps at the switchSensor handover — which shows up as a jump in
+    // both the landing height gate and comp()'s tracking error.
+    double cameraOffsetSim;
+    double cameraOffsetHw;
+    double sonarOffsetSim;
+    double sonarOffsetHw;
+
     // Max UPWARD platform heave velocity [m/s] allowed to commit to landing.
     // One-sided on purpose: the pad may descend as fast as it likes (the gap
     // only opens), but committing while it is rushing UP at the drone is what
