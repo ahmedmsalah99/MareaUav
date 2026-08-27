@@ -402,6 +402,14 @@ private:
     // signal arrives — consumed (and cleared) via consumeDisarmRequest().
     bool   _disarmRequest = false;
 
+    // Disarm mode re-sends the disarm for a short window after entering
+    // LANDING_DONE: /fmu/in/vehicle_command is published best-effort, so a
+    // single dropped command would otherwise leave the drone armed and holding
+    // in the terminal state. Bounded rather than forever, so it cannot fight an
+    // operator trying to re-arm afterwards.
+    double _disarmRetryElapsed = 0.0;   // time [s] since entering LANDING_DONE
+    double _disarmRetrySince   = 0.0;   // time [s] since the last re-send
+
     // Rolling window of the raw (instantaneous) GO decision, used to majority-vote
     // a smoothed decision before it feeds the latch — a single noisy sample must
     // not be able to flip the landing decision. Each entry is (dt, rawGo) for that

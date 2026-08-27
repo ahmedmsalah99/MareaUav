@@ -171,6 +171,9 @@ void Lander::initStateMachine() {
 	_touchdownLogged     = false;
 	_compValidTimer      = 0.0;
 	_landValidTimer      = 0.0;
+	_disarmRequest       = false;
+	_disarmRetryElapsed  = 0.0;
+	_disarmRetrySince    = 0.0;
 	_approachSettleTimer = 0.0;
 	_approachLogTimer    = 0.0;
 	_predHistRoll.clear();
@@ -891,13 +894,36 @@ void Lander::run() {
 
 			if (print > 30) std::cout<<"LANDING_DONE"<<std::endl;
 
-      // Terminal: touchdown confirmed. Freeze the setpoint at the current
-      // (already-landed) position every tick — no more tracking, no descent,
-      // no way back to flying. A fresh landing task (initStateMachine()) is the
-      // only way out.
+      // Terminal state. A fresh landing task (initStateMachine()) is the only
+      // way out.
       _setPoint.setVx(0);
       _setPoint.setVy(0);
-      _setPoint.setVz(-param.landDescVel);
+
+      if (param.disarmOnGo) {
+        // Disarm mode arrives here still FLYING (just above the pad), not
+        // already landed, so the push-down below must not run: it would command
+        // a landDescVel descent under offboard velocity control and land the
+        // drone the very way disarm mode exists to skip. Hold zero vertical
+        // velocity and let the disarm stop the motors.
+        _setPoint.setVz(0.0);
+
+        // Re-send the disarm for a bounded window — the command goes out
+        // best-effort, so one dropped message would leave the drone armed and
+        // hovering here indefinitely.
+        if (_disarmRetryElapsed < 2.0) {
+          _disarmRetryElapsed += _dt;
+          _disarmRetrySince   += _dt;
+          if (_disarmRetrySince >= 0.1) {
+            _disarmRetrySince = 0.0;
+            _disarmRequest    = true;
+          }
+        }
+      } else {
+        // Normal path: touchdown is already confirmed, so keep pushing down to
+        // stay planted until PX4's own land detector disarms.
+        _setPoint.setVz(-param.landDescVel);
+      }
+
       _setPoint.setType(MavState::VELOCITY);
       break;
 
