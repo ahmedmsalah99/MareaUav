@@ -16,9 +16,9 @@ FFTIdentifier::FFTIdentifier(int window_size, double sample_rate,
     buffer_.reserve(window_size_);
 }
 
-void FFTIdentifier::addSample(double az_imu)
+void FFTIdentifier::addSample(double heave_vel)
 {
-    buffer_.push_back(az_imu);
+    buffer_.push_back(heave_vel);
     // Keep only the latest window_size_ samples
     if (static_cast<int>(buffer_.size()) > window_size_) {
         buffer_.erase(buffer_.begin());
@@ -62,8 +62,8 @@ bool FFTIdentifier::identify(std::vector<HeaveMode>& modes)
 
     const int N = window_size_;
 
-    // Subtract mean before windowing to prevent the gravity DC offset (-9.81 m/s²)
-    // from leaking into frequency bins via the Hann window sidelobes.
+    // Subtract mean before windowing so any DC bias in the measured velocity does
+    // not leak into frequency bins via the Hann window sidelobes.
     double mean = 0.0;
     for (int i = 0; i < N; ++i) mean += buffer_[i];
     mean /= N;
@@ -83,7 +83,7 @@ bool FFTIdentifier::identify(std::vector<HeaveMode>& modes)
     double df_rad = 2.0 * M_PI * df_hz;       // rad/s per bin
 
     // Only use positive frequencies (bins 1 .. N/2-1)
-    // Convert acceleration spectrum -> position spectrum: A_pos = A_acc / omega^2
+    // Convert velocity spectrum -> position spectrum: A_pos = A_vel / omega
     int n_pos = N / 2;
     std::vector<double> amp_pos(n_pos, 0.0);
     std::vector<double> phase_pos(n_pos, 0.0);
@@ -97,9 +97,13 @@ bool FFTIdentifier::identify(std::vector<HeaveMode>& modes)
 
     for (int k = 1; k < n_pos; ++k) {
         double omega = k * df_rad;
-        double amp_acc = (2.0 / N) * std::abs(X[k]) / kHannCoherentGain;  // two-sided -> one-sided
-        amp_pos[k] = amp_acc / (omega * omega);         // eq. (2) of paper
-        phase_pos[k] = std::arg(X[k]) - M_PI;           // eq. (2) of paper
+        double amp_vel = (2.0 / N) * std::abs(X[k]) / kHannCoherentGain;  // two-sided -> one-sided
+
+        // z(t)   = A cos(omega t + phi)
+        // zdot(t) = -A omega sin(omega t + phi) = A omega cos(omega t + phi + pi/2)
+        // so the velocity spectrum leads position by pi/2 and is scaled by omega.
+        amp_pos[k]   = amp_vel / omega;
+        phase_pos[k] = std::arg(X[k]) - M_PI_2;
     }
 
     modes = detectPeaks(amp_pos, phase_pos, df_rad);

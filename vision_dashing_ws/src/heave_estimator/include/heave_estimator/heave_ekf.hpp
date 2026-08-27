@@ -10,10 +10,22 @@ namespace heave_estimator {
 //
 // State per mode j (3 states): x_j = [z_j, zdot_j, omega_j]^T
 // omega_j modelled as random walk so the EKF can track slow frequency changes.
-// Plus one offset state: x_off  (absorbs gravity + sensor bias)
+// Plus one offset state: x_off  (absorbs any bias in the measured velocity)
 // Total state dim = 3*Nm + 1
 //
-// Measurement (scalar): az_imu = sum_j(-omega_j^2 * z_j) + x_off
+// Measurement (scalar): heave_vel = sum_j(zdot_j) + x_off
+//
+// The measurement is the pad's vertical VELOCITY, taken from the nav filter,
+// which has already done attitude compensation and gravity removal. It enters
+// the state linearly, so H is constant and independent of omega.
+//
+// This replaces an earlier acceleration measurement, az = sum_j(-omega_j^2 *
+// z_j) + x_off, fed from the raw body-frame IMU z axis. That model had to
+// recover a few-millimetre displacement by implicit double integration of a
+// signal sitting at the accelerometer's noise floor, scaled the state by
+// omega^2, made H depend on the estimated omega, and -- fatally -- could not
+// distinguish heave from the gravity component that platform roll/pitch
+// projects onto the body z axis at exactly the same wave frequency.
 //
 // Covariance update uses the symmetric Joseph form to maintain positive-
 // definiteness and prevent numerical divergence.
@@ -25,18 +37,19 @@ public:
              double vel_limit = 5.0);
 
     // (Re-)initialize with identified modes. Reuses existing states when possible.
-    // measured_offset is the DC mean of the acceleration window the modes were
+    // measured_offset is the DC mean of the velocity window the modes were
     // identified from (FFTIdentifier::lastMean()); it seeds the offset state on
-    // the first call, so the filter does not assume a particular IMU z-axis
-    // sign or a bias-free accelerometer.
+    // the first call, so the filter does not assume a bias-free input.
     void initialize(const std::vector<HeaveMode>& modes, double measured_offset);
 
     // Discard all state so the next initialize() starts fresh (no state reuse).
     // Used to recover cleanly after a divergence.
     void reset() { initialized_ = false; healthy_ = true; }
 
-    // EKF predict + update step. Returns false if not yet initialized.
-    bool update(double az_imu);
+    // EKF predict + update step, given a measured vertical velocity [m/s]
+    // (up-positive, same convention as the published heave). Returns false if
+    // not yet initialized.
+    bool update(double heave_vel_meas);
 
     double heavePosision() const { return heave_pos_; }
     double heaveVelocity() const { return heave_vel_; }
