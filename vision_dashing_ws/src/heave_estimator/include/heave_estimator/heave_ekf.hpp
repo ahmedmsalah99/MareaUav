@@ -53,6 +53,11 @@ public:
     // re-identification instead of publishing garbage.
     bool isHealthy() const { return healthy_; }
 
+    // Sum of the identified mode amplitudes [m] behind the current state --
+    // the scale the estimate is expected to stay within. Reported alongside a
+    // divergence so it is obvious whether the filter outgrew its own model.
+    double identifiedAmplitude() const { return amp_sum_; }
+
 private:
     double dt_;
     double q_pos_, q_vel_, q_omega_, q_off_, r_meas_;
@@ -62,6 +67,14 @@ private:
     double nis_gate_;    // reject a measurement if innov^2/S exceeds this
     double vel_limit_;   // |heave velocity| beyond this [m/s] => diverged
     bool   healthy_ = true;
+
+    // Sum of the amplitudes of the modes the filter was last initialised with:
+    // the largest heave the identification actually supports. The estimate is
+    // physically not allowed to exceed it by much, so it doubles as a tight
+    // divergence check -- much tighter than the fixed 5 m/s velocity limit,
+    // which a filter tracking accelerometer noise stays comfortably inside
+    // while still being several times too large.
+    double amp_sum_ = 0.0;
 
     bool initialized_ = false;
     int nm_        = 0;

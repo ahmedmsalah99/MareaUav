@@ -88,9 +88,16 @@ bool FFTIdentifier::identify(std::vector<HeaveMode>& modes)
     std::vector<double> amp_pos(n_pos, 0.0);
     std::vector<double> phase_pos(n_pos, 0.0);
 
+    // Coherent gain of the Hann window: mean(w) = 0.5, so windowing scales every
+    // tone by 0.5 and (2/N)*|X[k]| recovers only HALF the true amplitude. Divide
+    // it back out, otherwise every identified mode is reported at half strength
+    // and the EKF is seeded with an amplitude that disagrees with the data it is
+    // about to be fed.
+    static constexpr double kHannCoherentGain = 0.5;
+
     for (int k = 1; k < n_pos; ++k) {
         double omega = k * df_rad;
-        double amp_acc = (2.0 / N) * std::abs(X[k]);  // two-sided -> one-sided
+        double amp_acc = (2.0 / N) * std::abs(X[k]) / kHannCoherentGain;  // two-sided -> one-sided
         amp_pos[k] = amp_acc / (omega * omega);         // eq. (2) of paper
         phase_pos[k] = std::arg(X[k]) - M_PI;           // eq. (2) of paper
     }
