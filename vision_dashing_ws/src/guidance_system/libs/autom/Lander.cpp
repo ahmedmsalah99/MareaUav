@@ -10,6 +10,7 @@
 #include <iomanip>
 #include <sstream>
 #include <cstdlib>
+#include <cmath>
 #include "guidance_system/autom/Lander/StatesClasses.hpp"
 #include "guidance_system/autom/Lander/Lander.h"
 #include "common/conversions.h"
@@ -1250,6 +1251,9 @@ void Lander::trackXY() {
   double ffX = visionOk ? _platformState.getVx() * param.reactionLag : 0.0;
   double ffY = visionOk ? _platformState.getVy() * param.reactionLag : 0.0;
 
+  // Captured for the diagnostic below (mode 1 only; stays 0 in direct mode).
+  double pidOutX = 0.0, pidOutY = 0.0;
+
   if (param.xyControlMode == 1) {
     // ── XY: PID on the horizontal vision error ─────────────────────────────
     // Drives the drone->platform vision error (_VisionPose.getX()/getY()) to
@@ -1264,8 +1268,10 @@ void Lander::trackXY() {
       _holdPIDY.reset();
       _setPoint.setPosition(_state.getX(), _state.getY(), _setPoint.getZ());
     } else {
-      double targetX = _state.getX() + _holdPIDX.getOutput(0, _VisionPose.getX()) + ffX;
-      double targetY = _state.getY() + _holdPIDY.getOutput(0, _VisionPose.getY()) + ffY;
+      pidOutX = _holdPIDX.getOutput(0, _VisionPose.getX());
+      pidOutY = _holdPIDY.getOutput(0, _VisionPose.getY());
+      double targetX = _state.getX() + pidOutX + ffX;
+      double targetY = _state.getY() + pidOutY + ffY;
       _setPoint.setPosition(targetX, targetY, _setPoint.getZ());
     }
   } else {
@@ -1298,7 +1304,12 @@ void Lander::trackXY() {
       _platFiltY = param.spFilterAlpha * _platFiltY + (1.0 - param.spFilterAlpha) * plat_y;
 
       // Rate limit so a vision glitch can't fling the setpoint.
-      double maxStep = param.spMaxVelXY;
+      // spMaxVelXY is a SPEED [m/s], so the per-tick position step is
+      // speed * dt. It was being applied as a raw per-tick step, which at the
+      // 50 Hz control loop meant 3.0 m per tick (~150 m/s) — the limiter never
+      // clamped anything, leaving the EMA above as the only damping, where the
+      // comment on this branch assumes both are protecting the loop.
+      double maxStep = param.spMaxVelXY * _dt;
       sp_x = common::clamp(_platFiltX, _prevSpX - maxStep, _prevSpX + maxStep);
       sp_y = common::clamp(_platFiltY, _prevSpY - maxStep, _prevSpY + maxStep);
     }
@@ -1311,6 +1322,39 @@ void Lander::trackXY() {
       _setPoint.setPosition(sp_x, sp_y, _setPoint.getZ());
     else
        _setPoint.setPosition(sp_x + 0.5*(sp_x - _state.getX()), sp_y + 0.5*(sp_y - _state.getY()), _setPoint.getZ());
+  }
+
+  // XY tracking diagnostic, throttled to ~5 Hz.
+  //
+  // The horizontal error is a 2-vector but the existing slope log prints only
+  // _state.getX(), so a divergence that is mostly in Y is invisible. This
+  // prints both axes of everything, plus the pieces the commanded target is
+  // built from, so a run where the drone falls behind can be attributed:
+  //   * platVel large vs the bridge's 0.3 m/s setpoint slew cap
+  //         -> the platform is genuinely outrunning the achievable speed
+  //   * platVel small but ff ~ 0
+  //         -> the velocity feed-forward is not arriving (stale platform state)
+  //   * cmdOffset not growing with err
+  //         -> the controller is not asking for more as it falls behind
+  //           (PID output saturated at maxOutput, or the error is not reaching it)
+  {
+    static int xyLogTick = 0;
+    if ((xyLogTick++ % 10) == 0) {
+      const double errNorm = std::sqrt(_VisionPose.getX() * _VisionPose.getX()
+                                     + _VisionPose.getY() * _VisionPose.getY());
+      std::cout << "[XY] mode " << param.xyControlMode
+                << " visionOk " << visionOk
+                << " err (" << _VisionPose.getX() << "," << _VisionPose.getY() << ") |err| " << errNorm
+                << " state (" << _state.getX() << "," << _state.getY() << ")"
+                << " platVel (" << _platformState.getVx() << "," << _platformState.getVy() << ")"
+                << " ff (" << ffX << "," << ffY << ")"
+                << " pidOut (" << pidOutX << "," << pidOutY << ")"
+                << " cmd (" << _setPoint.getX() << "," << _setPoint.getY() << ")"
+                << " cmdOffset (" << (_setPoint.getX() - _state.getX())
+                << "," << (_setPoint.getY() - _state.getY()) << ")"
+                << " maxOutput " << param.maxOutput
+                << std::endl;
+    }
   }
 
   _setPoint.setType(MavState::POSITION);
