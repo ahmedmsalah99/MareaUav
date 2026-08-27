@@ -84,13 +84,19 @@ public:
         control_comm_delay_ = declare_parameter("control_comm_delay_s",        0.15);
         // Sign applied to bodyframe_linear_velocity[2] to bring it into the
         // UP-positive convention that comp() expects of the published heave.
-        // Marine nav filters usually run a z-DOWN body frame, in which case this
-        // must be -1; set +1 for a z-up source. Easy to verify: overlay
-        // /heave/velocity on /ulisse/nav_filter/data bodyframe_linear_velocity[2]
-        // — with a z-down source and heave_sign = -1 the two are mirror images,
-        // which is correct. Get this wrong and the heave is right in magnitude
-        // but inverted, and the compensation leads the pad the wrong way.
-        heave_sign_         = declare_parameter("heave_sign",                 -1.0);
+        //
+        // +1 is correct for this system, and the landingplat plugin settles it:
+        // it dead-reckons the platform's GAZEBO WORLD position straight from
+        // this field, with no sign flip anywhere —
+        //     v_body(lin_vel_filt[0], lin_vel_filt[1], lin_vel_filt[2]);
+        //     _sim_position += (orientation * v_body) * _dt;
+        // and Gazebo's world frame is z-UP, so a positive value moves the pad
+        // up. (This defaulted to -1 on the assumption that a marine nav filter
+        // would use a z-down body frame. It does not here, and the published
+        // heave came out inverted — right in magnitude, opposite in sign, which
+        // makes comp() lead the pad the wrong way and ADD to the relative
+        // motion instead of cancelling it.)
+        heave_sign_         = declare_parameter("heave_sign",                  1.0);
 
         dt_             = 1.0 / timer_rate;
         reident_period_ = reident_period;
@@ -286,7 +292,7 @@ private:
     double pred_horizon_        = 0.3;
     double control_comm_delay_  = 0.15;
     double min_omega_           = 0.5;
-    double heave_sign_          = -1.0;
+    double heave_sign_          = 1.0;
     double last_diag_log_time_  = 0.0;
 };
 
