@@ -240,10 +240,47 @@ void CompState::handle() {
     bool xyPrecise = std::fabs(_VisionPose.getX()) < param.landXYErrThld
                       && std::fabs(_VisionPose.getY()) < param.landXYErrThld;
     bool heightOk = downDist < param.landHeightThld;
-    bool landCondition = _contextL->getLandingGoSignal() && _centered && xyStill && xyPrecise && heightOk;
-    std::cout << "xyStill " << xyStill << " xyPrecise " << xyPrecise << " _VisionPose.getX() " << _VisionPose.getX()
-    << " _VisionPose.getY() " << _VisionPose.getY() << " heightOk " << heightOk << " downDist " << downDist
-    << " compDwellElapsed " << compDwellElapsed << std::endl;
+    bool goSignal = _contextL->getLandingGoSignal();
+    bool landCondition = goSignal && _centered && xyStill && xyPrecise && heightOk;
+
+    // Which condition is actually holding the landing up.
+    //
+    // landCondition is an instantaneous AND of five noisy terms, so a slow
+    // commit is usually not one term being permanently false — it is several
+    // being true only intermittently and rarely coinciding. A per-tick snapshot
+    // cannot show that, so report the FRACTION of the last second each term
+    // held true: the bottleneck is whichever fraction is low. The previous log
+    // omitted goSignal and _centered entirely (2 of the 5 terms), so when either
+    // was the blocker it printed all-ones and explained nothing.
+    {
+      static double win = 0.0;
+      static double tGo = 0.0, tCentered = 0.0, tStill = 0.0, tPrecise = 0.0, tHeight = 0.0;
+      const double dt = _contextL->_seaState->dt;
+      win += dt;
+      if (goSignal)  tGo       += dt;
+      if (_centered) tCentered += dt;
+      if (xyStill)   tStill    += dt;
+      if (xyPrecise) tPrecise  += dt;
+      if (heightOk)  tHeight   += dt;
+
+      if (win >= 1.0) {
+        std::cout << "[COMP] held-fraction over " << win << "s:"
+                  << " go "        << (tGo       / win)
+                  << " centered "  << (tCentered / win)
+                  << " xyStill "   << (tStill    / win)
+                  << " xyPrecise " << (tPrecise  / win)
+                  << " heightOk "  << (tHeight   / win)
+                  << " | dwell "   << *_contextL->_landValidTimer << "/" << param.compToLandWaitTime
+                  << " visionXY ("  << _VisionPose.getX() << "," << _VisionPose.getY()
+                  << ") thld "      << param.landXYErrThld
+                  << " downDist "   << downDist << "/" << param.landHeightThld
+                  << " spaValid "   << _contextL->_seaState->spaValid
+                  << " heaveValid " << _contextL->_seaState->heaveValid
+                  << std::endl;
+        win = 0.0;
+        tGo = tCentered = tStill = tPrecise = tHeight = 0.0;
+      }
+    }
     if(landCondition && compDwellElapsed){
       // Landing window is open, drone is precisely centred, and at least
       // compToLandWaitTime has been spent in COMP — commit to landing.
