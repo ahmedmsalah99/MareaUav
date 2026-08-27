@@ -218,6 +218,11 @@ public:
     // Setpoint lead [m] for the committed (aggressive) descent in land().
     double landDescVel;
 
+    // EMA factor [0..1) for the vision-derived platform velocity estimate.
+    // Higher = smoother/slower. Needs to be heavy: the estimate differentiates
+    // the vision offset, so raw vision jitter is amplified by 1/dt.
+    double platVisionVelAlpha;
+
     // ── Altitude sensor offsets [m] ───────────────────────────────────────────
     // Added to the raw reading of each altitude source to give the drone->pad
     // distance (downDist). All four push in the SAME direction: a larger offset

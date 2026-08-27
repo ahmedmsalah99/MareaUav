@@ -43,6 +43,7 @@ Parameters::Parameters() {
     landVoteThreshold  = 0.6;
     landDescVel       = 2.5;
     landHeaveUpVelLimit = 0.7;
+    platVisionVelAlpha = 0.95;
     cameraOffsetSim    = 0.03;
     cameraOffsetHw     = 0.0;
     sonarOffsetSim     = 0.04;
@@ -246,6 +247,9 @@ void Parameters::loadParamFile(const char *config_file) {
 
             else if( !param.compare("LAND_HEAVE_UP_VEL_LIMIT") )
                 landHeaveUpVelLimit = value;
+
+            else if( !param.compare("PLAT_VISION_VEL_ALPHA") )
+                platVisionVelAlpha = value;
 
             else if( !param.compare("CAMERA_OFFSET_SIM") )
                 cameraOffsetSim = value;

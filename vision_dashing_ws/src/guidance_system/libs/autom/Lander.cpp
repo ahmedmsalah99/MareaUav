@@ -469,6 +469,8 @@ void Lander::updateSignals() {
   _err[2]       = dz;
   _verticalErr  = _err[2];
 
+  updatePlatformVision();
+
   // Prediction horizon: time to reach platform at current descent velocity, capped.
   double predHorizonMax = param.zMax / param.landDescVel;
   _predictionHorizon = std::min(fabs(_verticalErr) / param.landDescVel, predHorizonMax);
@@ -1023,13 +1025,104 @@ void Lander::init() {
 
 }
 
+void Lander::updatePlatformVision() {
+
+  const bool visionOk = _VisionPose.IsValid && _VisionPose.VisionDataUpdated;
+
+  // Position. The apriltag node already rotates its output into world-aligned
+  // axes (correctToPlatformFrame()), so the vision offset is a plain
+  // drone->platform vector in the same frame as _state — no rotation needed.
+  // Z deliberately uses _verticalErr rather than _VisionPose.getZ(): that is
+  // the offset-corrected, sensor-selected vertical, so the platform Z derived
+  // here is exactly consistent with downDist.
+  const double px = _state.getX() + _VisionPose.getX();
+  const double py = _state.getY() + _VisionPose.getY();
+  const double pz = _state.getZ() + _verticalErr;
+
+  // Velocity. vision = platform - drone, so d(vision)/dt = plat_vel - drone_vel
+  // and plat_vel = drone_vel + d(vision)/dt. The drone's own velocity carries
+  // the bulk of the signal and the differentiated vision term is a small
+  // correction — which is what makes differentiating a noisy measurement
+  // workable here. Still low-passed, since d/dt amplifies jitter by 1/dt.
+  if (!visionOk || _dt <= 1e-6) {
+    // Nothing trustworthy to differentiate: hold the last estimate and re-seed
+    // when vision returns, so a dropout cannot inject a huge false derivative.
+    _platVisSeeded = false;
+  } else {
+    if (!_platVisSeeded) {
+      _prevVisX = _VisionPose.getX();
+      _prevVisY = _VisionPose.getY();
+      _platVisFiltVx = _state.getVx();
+      _platVisFiltVy = _state.getVy();
+      _platVisSeeded = true;
+    }
+
+    const double rawVx = _state.getVx() + (_VisionPose.getX() - _prevVisX) / _dt;
+    const double rawVy = _state.getVy() + (_VisionPose.getY() - _prevVisY) / _dt;
+    _prevVisX = _VisionPose.getX();
+    _prevVisY = _VisionPose.getY();
+
+    const double a = param.platVisionVelAlpha;
+    _platVisFiltVx = a * _platVisFiltVx + (1.0 - a) * rawVx;
+    _platVisFiltVy = a * _platVisFiltVy + (1.0 - a) * rawVy;
+  }
+
+  // Yaw. _VisionPose's quaternion is the platform's orientation relative to the
+  // drone body, so the platform's heading is the drone's plus that relative
+  // term. Stored via setYaw() because MavState::setOrientation() does NOT touch
+  // the _yaw scalar that getYaw() returns — which is exactly why the old
+  // _platformState.getYaw() was always 0 (mavStateFromNavOdom only ever calls
+  // setOrientation), pinning the approach slope to the Y axis.
+  double platYaw = _state.getYawFromQuat() + _VisionPose.getYawFromQuat();
+  while (platYaw >   PI) platYaw -= 2.0 * PI;
+  while (platYaw <= -PI) platYaw += 2.0 * PI;
+
+  _platformVision.setX(px);
+  _platformVision.setY(py);
+  _platformVision.setZ(pz);
+  _platformVision.setVx(_platVisFiltVx);
+  _platformVision.setVy(_platVisFiltVy);
+  _platformVision.setYaw(platYaw);
+  _platformVision.IsValid = visionOk;
+
+  // Vision estimate vs the ground-truth topic, side by side, for verification.
+  // _platformState is Landing_Site/pose, which in simulation is the Gazebo
+  // plugin echoing the pose it wrote onto the model. Expect a CONSTANT offset
+  // on X/Y/Z (the two live in different frame origins) — what matters is that
+  // the two track the same shape and that the velocities agree in magnitude.
+  {
+    static int platLogTick = 0;
+    if ((platLogTick++ % 10) == 0) {
+      std::cout << "[PLAT] vision pos (" << px << "," << py << "," << pz << ")"
+                << " vel (" << _platVisFiltVx << "," << _platVisFiltVy << ")"
+                << " yaw " << platYaw
+                << " | truth pos (" << _platformState.getX() << "," << _platformState.getY()
+                << "," << _platformState.getZ() << ")"
+                << " vel (" << _platformState.getVx() << "," << _platformState.getVy() << ")"
+                << " yaw " << _platformState.getYaw()
+                << " | dPos (" << (px - _platformState.getX())
+                << "," << (py - _platformState.getY())
+                << "," << (pz - _platformState.getZ()) << ")"
+                << " dVel (" << (_platVisFiltVx - _platformState.getVx())
+                << "," << (_platVisFiltVy - _platformState.getVy()) << ")"
+                << " visionOk " << visionOk << std::endl;
+    }
+  }
+}
+
 bool Lander::setDroneInFront()
 {
   // this function computes the desired position the drone has to reach before
   // attempting the landing. That position is computed to be in front of the platform.
   _slopeActive = true;
   // getting the yaw of the platform to know how it's oriented.
-  double yaw_plat = _platformState.getYaw();
+  // GROUND TRUTH (Landing_Site/pose) — kept commented for reference:
+  // double yaw_plat = _platformState.getYaw();
+  // NOTE this always returned 0: mavStateFromNavOdom() only calls
+  // setOrientation(), and MavState::setOrientation() does not update the _yaw
+  // scalar that getYaw() reads. The slope direction was therefore pinned to the
+  // Y axis regardless of the platform's real heading.
+  double yaw_plat = _platformVision.getYaw();
 
   if (!(yaw_plat >= -PI && yaw_plat < PI))
   {
@@ -1048,8 +1141,11 @@ bool Lander::setDroneInFront()
   // standoff point perpetually recede — a pure position-error law with no
   // leading term settles to a nonzero steady-state tracking lag against a
   // steadily drifting target and never actually closes the gap.
-  double plat_x = _state.getX() + _VisionPose.getX() + _platformState.getVx() * param.reactionLag;
-  double plat_y = _state.getY() + _VisionPose.getY() + _platformState.getVy() * param.reactionLag;
+  // GROUND TRUTH — kept commented for reference:
+  // double plat_x = _state.getX() + _VisionPose.getX() + _platformState.getVx() * param.reactionLag;
+  // double plat_y = _state.getY() + _VisionPose.getY() + _platformState.getVy() * param.reactionLag;
+  double plat_x = _platformVision.getX() + _platformVision.getVx() * param.reactionLag;
+  double plat_y = _platformVision.getY() + _platformVision.getVy() * param.reactionLag;
 
   // then, depending on how the platform is oriented, the desired position changes;
   // more precisely, the values of sin and cos (sin acting on x cause North in NED == Y in Local Frame)
@@ -1095,7 +1191,7 @@ bool Lander::setDroneInFront()
     std::cout << "[setDroneInFront] target=(" << xTarget << "," << yTarget << ")"
               << " state=(" << _state.getX() << "," << _state.getY() << ")"
               << " err=(" << errX << "," << errY << ")"
-              << " platVel=(" << _platformState.getVx() << "," << _platformState.getVy() << ")"
+              << " platVel=(" << _platformVision.getVx() << "," << _platformVision.getVy() << ")"
               << " closeEnough " << closeEnough
               << " settleTimer " << _approachSettleTimer << "/" << param.initApproachWaitTime
               << " ready " << ready << std::endl;
@@ -1107,7 +1203,9 @@ bool Lander::setDroneInFront()
     // _platformState.getX() - (_platformState.getX() + gain*sinf(yaw_plat))
     _line_direction[0] = -gain*sinf(yaw_plat);
     _line_direction[1] = -gain*cosf(yaw_plat);
-    _line_direction[2] = _state.getZ() - (_platformState.getZ() + param.z_margin);
+    // GROUND TRUTH — kept commented for reference:
+    // _line_direction[2] = _state.getZ() - (_platformState.getZ() + param.z_margin);
+    _line_direction[2] = _state.getZ() - (_platformVision.getZ() + param.z_margin);
     _approachSettleTimer = 0.0;   // consumed — start clean for next time
     return true;
   }
@@ -1208,7 +1306,12 @@ void Lander::hold() {
     // if (_prevState == AbstractLandState::states::INIT)
     if(_slopeActive)
     {
-      double z_base = _platformState.getZ() + param.z_margin;
+      // GROUND TRUTH — kept commented for reference:
+      // double z_base = _platformState.getZ() + param.z_margin;
+      // The vision-derived Z is also in the DRONE's frame, where the setpoint is
+      // commanded; _platformState is in the simulator's world frame, so the old
+      // form mixed frames as well as using truth.
+      double z_base = _platformVision.getZ() + param.z_margin;
       double dot    = _VisionPose.getX() * _line_direction[0] + _VisionPose.getY() * _line_direction[1];
       double norm_sq = _line_direction[0] * _line_direction[0] + _line_direction[1] * _line_direction[1];
       double z_adj  = z_base + _line_direction[2] * dot / norm_sq + 0.5*(z_adj-_state.getZ());
@@ -1248,8 +1351,11 @@ void Lander::trackXY() {
   // "attached to the tail" of the platform, instead of centering on it).
   // Same fix, and same lead convention (param.reactionLag), as
   // setDroneInFront()'s equivalent feed-forward.
-  double ffX = visionOk ? _platformState.getVx() * param.reactionLag : 0.0;
-  double ffY = visionOk ? _platformState.getVy() * param.reactionLag : 0.0;
+  // GROUND TRUTH — kept commented for reference:
+  // double ffX = visionOk ? _platformState.getVx() * param.reactionLag : 0.0;
+  // double ffY = visionOk ? _platformState.getVy() * param.reactionLag : 0.0;
+  double ffX = visionOk ? _platformVision.getVx() * param.reactionLag : 0.0;
+  double ffY = visionOk ? _platformVision.getVy() * param.reactionLag : 0.0;
 
   // Captured for the diagnostic below (mode 1 only; stays 0 in direct mode).
   double pidOutX = 0.0, pidOutY = 0.0;
@@ -1346,7 +1452,7 @@ void Lander::trackXY() {
                 << " visionOk " << visionOk
                 << " err (" << _VisionPose.getX() << "," << _VisionPose.getY() << ") |err| " << errNorm
                 << " state (" << _state.getX() << "," << _state.getY() << ")"
-                << " platVel (" << _platformState.getVx() << "," << _platformState.getVy() << ")"
+                << " platVel (" << _platformVision.getVx() << "," << _platformVision.getVy() << ")"
                 << " ff (" << ffX << "," << ffY << ")"
                 << " pidOut (" << pidOutX << "," << pidOutY << ")"
                 << " cmd (" << _setPoint.getX() << "," << _setPoint.getY() << ")"
@@ -1456,7 +1562,7 @@ void Lander::comp() {
                 << " cmdMinusState " << (cmdZ - _state.getZ())
                 << " clamped " << (std::fabs(cmdZ - new_z) > 1e-9)
                 << " zMin " << param.zMin
-                << " platZ " << _platformState.getZ()
+                << " platZ " << _platformVision.getZ()
                 << std::endl;
     }
   }
@@ -1465,7 +1571,9 @@ void Lander::comp() {
 void Lander::clampZSP() {
 
     double temp;
-    temp = common::clamp(_setPoint.getZ(), param.zMin, _platformState.getZ() + param.zMax);
+    // GROUND TRUTH — kept commented for reference:
+    // temp = common::clamp(_setPoint.getZ(), param.zMin, _platformState.getZ() + param.zMax);
+    temp = common::clamp(_setPoint.getZ(), param.zMin, _platformVision.getZ() + param.zMax);
     // std::cout << "_platformState.getZ() " << _platformState.getZ() << " _platformState.getZ() + param.zMax " << _platformState.getZ() + param.zMax << std::endl;
     _setPoint.setZ(temp);
     _setPoint.setType(MavState::POSITION);

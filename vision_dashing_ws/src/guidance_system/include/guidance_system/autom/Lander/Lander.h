@@ -402,6 +402,39 @@ private:
     // signal arrives — consumed (and cleared) via consumeDisarmRequest().
     // M2M_SIM environment flag, cached at construction — selects the simulated
     // vs hardware altitude sensor offsets. Same flag Automatic/Executioner use.
+    // ── Platform state derived from VISION (not the ground-truth topic) ───────
+    // _platformState comes from Landing_Site/pose, which in simulation is the
+    // Gazebo plugin publishing the pose it just wrote onto the model — i.e.
+    // simulator truth, not a measurement. Feeding that into the control path
+    // makes sim behaviour unreachable on hardware, so the guidance now builds
+    // its own platform estimate from what it can actually measure:
+    //
+    //   position  = drone state + vision offset   (vision is already rotated
+    //               into world-aligned axes by the apriltag node's
+    //               correctToPlatformFrame(), so this is a plain sum)
+    //   z         = drone state + _verticalErr    (the offset-corrected,
+    //               sensor-selected vertical, so it matches downDist exactly)
+    //   velocity  = drone velocity + d(vision)/dt, low-pass filtered
+    //   yaw       = drone yaw + vision relative yaw
+    //
+    // Velocity is built that way on purpose: vision offset = platform - drone,
+    // so d(offset)/dt = platform_vel - drone_vel. The drone's own velocity
+    // carries the signal and the differentiated (noisy) vision term is only a
+    // small correction, which is what makes differentiating vision viable here.
+    MavState _platformVision;
+
+    double _platVisFiltVx = 0.0;   // low-passed platform Vx estimate [m/s]
+    double _platVisFiltVy = 0.0;
+    double _prevVisX      = 0.0;   // previous vision offset, for the derivative
+    double _prevVisY      = 0.0;
+    bool   _platVisSeeded = false;
+
+    /**
+     * @brief Rebuilds _platformVision from the drone state + vision offset.
+     * Called every tick from updateSignals(), after _verticalErr is computed.
+     */
+    void updatePlatformVision();
+
     bool   _envSim = false;
 
     bool   _disarmRequest = false;
