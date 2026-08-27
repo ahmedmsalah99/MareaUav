@@ -67,6 +67,7 @@ bool FFTIdentifier::identify(std::vector<HeaveMode>& modes)
     double mean = 0.0;
     for (int i = 0; i < N; ++i) mean += buffer_[i];
     mean /= N;
+    last_mean_ = mean;
 
     // Apply Hann window to reduce spectral leakage
     std::vector<std::complex<double>> X(N);

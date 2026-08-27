@@ -25,7 +25,11 @@ public:
              double vel_limit = 5.0);
 
     // (Re-)initialize with identified modes. Reuses existing states when possible.
-    void initialize(const std::vector<HeaveMode>& modes);
+    // measured_offset is the DC mean of the acceleration window the modes were
+    // identified from (FFTIdentifier::lastMean()); it seeds the offset state on
+    // the first call, so the filter does not assume a particular IMU z-axis
+    // sign or a bias-free accelerometer.
+    void initialize(const std::vector<HeaveMode>& modes, double measured_offset);
 
     // Discard all state so the next initialize() starts fresh (no state reuse).
     // Used to recover cleanly after a divergence.
