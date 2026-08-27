@@ -3,18 +3,20 @@
 
 Sends VEHICLE_CMD_DO_SET_MODE (offboard) then VEHICLE_CMD_COMPONENT_ARM_DISARM,
 and listens on /fmu/out/vehicle_command_ack + /fmu/out/vehicle_status so the
-result is visible instead of having to guess. PX4 only accepts offboard once a
-matching setpoint stream is already flowing (the OffboardControlMode heartbeat
-AND the setpoint it advertises, e.g. trajectory_setpoint for position) --
-normally bridge_node provides both, but it only forwards trajectory_setpoint
-once the guidance node actually commands something. Use --setpoints if nothing
-else is streaming them.
+result is visible instead of having to guess.
+
+Like the upstream px4_ros_com offboard example, this streams the
+OffboardControlMode heartbeat and a hold setpoint itself by default: PX4 only
+accepts offboard once BOTH are already flowing, and it drops back out if the
+heartbeat rate falls below ~2 Hz. bridge_node publishes the heartbeat
+unconditionally but only forwards trajectory_setpoint once guidance commands
+something, so with no task active that precondition is unmet.
 
 Usage:
-    python3 offboard_arm.py                # commands only (bridge_node streaming)
-    python3 offboard_arm.py --setpoints    # also stream heartbeat + hold setpoint
-    python3 offboard_arm.py --no-arm       # only switch to offboard, don't arm
-    python3 offboard_arm.py --sys-id 2     # target a non-default MAV_SYS_ID
+    python3 offboard_arm.py                 # stream setpoints, go offboard, arm
+    python3 offboard_arm.py --no-setpoints  # commands only (something else streams)
+    python3 offboard_arm.py --no-arm        # only switch to offboard, don't arm
+    python3 offboard_arm.py --sys-id 2      # target a non-default MAV_SYS_ID
 """
 
 import argparse
@@ -68,10 +70,17 @@ class OffboardArmer(Node):
             history=HistoryPolicy.KEEP_LAST,
             depth=5,
         )
+        # Publishers to /fmu/in/* must be RELIABLE (rclcpp/rclpy default), which
+        # is what the upstream px4_ros_com offboard example uses --
+        # create_publisher<T>(topic, 10). The XRCE-DDS agent subscribes to these
+        # topics RELIABLE, and a BEST_EFFORT publisher is INCOMPATIBLE with a
+        # RELIABLE subscriber: the endpoints never match, so every command is
+        # silently dropped with no error anywhere. bridge_node gets this right
+        # by passing a plain depth (default QoS) rather than a best-effort one.
         pub_qos = QoSProfile(
-            reliability=ReliabilityPolicy.BEST_EFFORT,
+            reliability=ReliabilityPolicy.RELIABLE,
             history=HistoryPolicy.KEEP_LAST,
-            depth=1,
+            depth=10,
         )
 
         self.vehicle_command_pub = self.create_publisher(
@@ -179,8 +188,10 @@ def spin_for(node, seconds):
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--setpoints', action='store_true',
-                        help='also stream the offboard heartbeat + a hold setpoint')
+    parser.add_argument('--no-setpoints', dest='setpoints', action='store_false',
+                        help='do not stream the heartbeat + hold setpoint '
+                             '(only when something else, e.g. bridge_node driven '
+                             'by an active guidance task, is already streaming both)')
     parser.add_argument('--no-arm', action='store_true',
                         help='switch to offboard but do not arm')
     parser.add_argument('--sys-id', type=int, default=1,
