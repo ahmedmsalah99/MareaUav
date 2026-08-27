@@ -130,16 +130,14 @@ void HeaveEKF::initialize(const std::vector<HeaveMode>& modes, double measured_o
     }
 
     // Preserve the offset across re-identifications; on the first call seed it
-    // with the MEASURED DC mean of the identification window rather than a
-    // hard-coded -g. The measurement model is
-    //     az = sum_j(-omega_j^2 * z_j) + offset
-    // so the offset has to absorb the whole constant term (gravity projected on
-    // the IMU z axis, plus accelerometer bias). Assuming -9.81 breaks whenever
-    // the IMU reports +g on z (the usual ROS z-up convention) or carries a
-    // noticeable bias: the ~2g constant mismatch cannot be taken up by the
-    // near-frozen offset state (q_off is tiny), so it is forced into the
-    // oscillator states instead, inflating heave position/velocity far past the
-    // identified mode amplitude and driving the filter into a limit cycle.
+    // with the measured DC mean of the identification window. The model is
+    //     heave_vel = sum_j(zdot_j) + offset
+    // and the oscillator states are zero-mean by construction, so the offset is
+    // the only place a constant can live: any bias in the measured velocity, or
+    // a genuine slow rise/fall of the platform, has to go here. Left out (or
+    // frozen by too small a q_off) it gets pushed into the oscillator states
+    // instead, which cannot represent a constant -- so the filter chases it and
+    // the amplitude grows.
     x_new(new_dim - 1) = initialized_ ? x_(state_dim_ - 1) : measured_offset;
     P_new(new_dim - 1, new_dim - 1) = initialized_
         ? P_(state_dim_ - 1, state_dim_ - 1) : 1.0;
@@ -156,7 +154,7 @@ void HeaveEKF::initialize(const std::vector<HeaveMode>& modes, double measured_o
 
 // ---- EKF update step -------------------------------------------------------
 
-bool HeaveEKF::update(double az_imu)
+bool HeaveEKF::update(double heave_vel_meas)
 {
     if (!initialized_) return false;
 
@@ -176,21 +174,28 @@ bool HeaveEKF::update(double az_imu)
     Eigen::MatrixXd P_pred = F * P_ * F.transpose() + buildQ();
 
     // ---- Update ----
-    // Linearise measurement at x_pred:  y = sum_j(-omega_j^2 * z_j) + x_off
+    // Measurement is the pad's vertical VELOCITY:  y = sum_j(z_dot_j) + x_off
+    //
+    // This is exactly linear in the state -- H is constant, with no dependence
+    // on omega at all. The previous acceleration model, y = sum_j(-omega_j^2 *
+    // z_j) + x_off, was far worse conditioned: it scaled the state by omega^2
+    // and made H itself a function of the estimated omega, so any omega error
+    // fed straight back into the position estimate. It also had to reconstruct
+    // a displacement by implicit double integration of a signal whose heave
+    // content sat at the accelerometer's noise floor, and could not separate
+    // heave from the gravity that roll/pitch project onto the body z axis at
+    // the very same wave frequency.
     double y_pred = x_pred(state_dim_ - 1);
     Eigen::RowVectorXd H = Eigen::RowVectorXd::Zero(state_dim_);
     H(state_dim_ - 1) = 1.0;
 
     for (int j = 0; j < nm_; ++j) {
-        int    idx = modeOffset(j);
-        double z_j = x_pred(idx);
-        double w_j = x_pred(idx + 2);
-        y_pred    += -w_j * w_j * z_j;
-        H(idx)     = -w_j * w_j;
-        H(idx + 2) = -2.0 * w_j * z_j;
+        int idx = modeOffset(j);
+        y_pred     += x_pred(idx + 1);
+        H(idx + 1)  = 1.0;
     }
 
-    double innov = az_imu - y_pred;
+    double innov = heave_vel_meas - y_pred;
     double S     = (H * P_pred * H.transpose())(0, 0) + r_meas_;
 
     // Innovation (NIS) gate: reject an implausible measurement so a single bad

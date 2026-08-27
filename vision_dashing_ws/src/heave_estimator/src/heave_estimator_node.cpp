@@ -3,8 +3,8 @@
 #include <vector>
 
 #include <rclcpp/rclcpp.hpp>
-#include <sensor_msgs/msg/imu.hpp>
 #include <std_msgs/msg/float64.hpp>
+#include <ulisse_msgs/msg/nav_filter_data.hpp>
 
 #include "heave_estimator/fft_identifier.hpp"
 #include "heave_estimator/heave_ekf.hpp"
@@ -17,45 +17,43 @@ public:
     {
         // Processing rate of the wall timer (Hz).
         // This is the effective sample rate seen by the FFT and EKF —
-        // independent of however fast the IMU topic is published.
+        // independent of however fast the nav filter publishes. The latest
+        // received velocity is (re)sampled on every tick, so the FFT time base
+        // really is this rate; previously a tick with no new data returned early
+        // and skipped the sample entirely, so the true sample rate silently
+        // differed from this value and every identified frequency was scaled
+        // by that ratio.
         double timer_rate     = declare_parameter("sample_rate",                30.0);
         int    fft_window     = declare_parameter("fft_window_size",           1024);
         double peak_threshold = declare_parameter("peak_threshold",            0.05);
         double min_omega      = declare_parameter("min_omega_rad_s",           0.5);
         double reident_period = declare_parameter("reidentification_period_s", 40.0);
-        // Filter tuning. The mode dynamics are an EXACT model of a stationary
-        // sinusoid, so the process noise only has to cover how fast the sea
-        // state itself drifts (tens of seconds), not the oscillation. The old
-        // values had this backwards -- q_vel = 1e-3 at 30 Hz admits a velocity
-        // random walk of sqrt(1e-3 * 30) = 0.17 m/s per second, larger than the
-        // entire heave signal, while r_meas = 1e-4 claimed the accelerometer was
-        // accurate to 0.01 m/s^2. A real MEMS unit is nearer 0.03-0.05 m/s^2 in
-        // band, and the heave acceleration itself is only about
-        // z_amp * omega^2 ~= 0.05 * 1.5^2 ~= 0.1 m/s^2, so the true SNR is only
-        // a few to one. Understating the measurement noise by 3-5x in amplitude
-        // (an order of magnitude in variance) makes the Kalman gain that much
-        // too high, so the filter tracks accelerometer noise instead of the
-        // identified mode: the published estimate came out several times larger
-        // than the mode that was just identified, and visibly jagged even though
-        // a sum of sinusoids cannot produce jagged output.
+        // Filter tuning, in VELOCITY units now that the measurement is m/s
+        // rather than m/s^2.
         //
-        // Retune from measured data if needed: set r_meas to the VARIANCE of the
-        // accelerometer noise (record /adnav_node/imu_raw with the pad still and
-        // take the variance of linear_acceleration.z), and keep q_pos/q_vel small
-        // enough that sqrt(q * rate) stays well under the real signal.
-        double q_pos          = declare_parameter("q_pos",                     1e-8);
-        double q_vel          = declare_parameter("q_vel",                     1e-6);
-        double q_omega        = declare_parameter("q_omega",                   1e-8);
-        // The offset state absorbs gravity-on-z plus accelerometer bias. It is
-        // seeded from the measured DC mean, but at 1e-8 it was then effectively
-        // frozen, so any residual constant (bias drift, a change in the pad's
-        // mean tilt) had nowhere to go but the oscillator states -- and a
-        // constant cannot be represented by an oscillator, so the filter chases
-        // it into a growing limit cycle. This is slow enough not to absorb the
-        // heave itself (sqrt(1e-6 * 30) = 5.5e-3 m/s^2 per second, against a
-        // ~0.24 Hz oscillation).
-        double q_off          = declare_parameter("q_off",                     1e-6);
-        double r_meas         = declare_parameter("r_meas",                    2.5e-3);
+        // r_meas is the variance of the nav filter's vertical-velocity noise.
+        // Observed jitter on /ulisse/nav_filter/data is of order 1e-3 m/s
+        // against a heave amplitude of order 1e-2 m/s, so 1e-6 (std 1e-3 m/s).
+        // To retune from data: log bodyframe_linear_velocity[2] with the
+        // platform still and take its variance.
+        //
+        // The mode dynamics are an EXACT model of a stationary sinusoid, so the
+        // process noise only has to cover how fast the sea state itself drifts
+        // (tens of seconds), not the oscillation. Rule of thumb: keep
+        // sqrt(q_vel * rate) well under the heave velocity amplitude -- here
+        // sqrt(1e-8 * 10) = 3e-4 m/s per second, so about 1e-2 m/s of drift
+        // allowed over a 40 s re-identification period.
+        double q_pos          = declare_parameter("q_pos",                     1e-10);
+        double q_vel          = declare_parameter("q_vel",                     1e-8);
+        double q_omega        = declare_parameter("q_omega",                   1e-9);
+        // The offset state absorbs any bias in the measured velocity, or a
+        // genuine slow rise/fall of the platform. The oscillator states are
+        // zero-mean by construction, so a constant has nowhere else to go; if
+        // this is too small the offset freezes and the constant is forced into
+        // the oscillators, which cannot represent it, and the amplitude grows.
+        // Slow enough not to absorb the heave itself.
+        double q_off          = declare_parameter("q_off",                     1e-9);
+        double r_meas         = declare_parameter("r_meas",                    1e-6);
         // Divergence safeguards (see HeaveEKF): physical frequency cap, innovation
         // gate, and output sanity limits.
         double omega_max      = declare_parameter("omega_max_rad_s",           3.0);
@@ -75,16 +73,15 @@ public:
         // decision. Static — this is a system latency, not something that
         // shrinks as the drone approaches the pad.
         control_comm_delay_ = declare_parameter("control_comm_delay_s",        0.15);
-        // Sign applied to the IMU z acceleration before it is used. The
-        // measurement model is az = sum_j(-omega_j^2 * z_j) + offset, i.e. the
-        // dynamic part of az IS the pad's vertical acceleration expressed in the
-        // same sign convention as the published heave position/velocity (which
-        // downstream, in comp(), is treated as UP-positive). A z-up IMU
-        // (the usual ROS convention, reading +9.81 on z at rest) needs +1;
-        // a z-down/NED IMU (reading -9.81 at rest) needs -1, otherwise the
-        // published heave comes out correct in magnitude but inverted in sign —
-        // and the compensation then leads the pad the wrong way.
-        accel_sign_         = declare_parameter("accel_sign",                  1.0);
+        // Sign applied to bodyframe_linear_velocity[2] to bring it into the
+        // UP-positive convention that comp() expects of the published heave.
+        // Marine nav filters usually run a z-DOWN body frame, in which case this
+        // must be -1; set +1 for a z-up source. Easy to verify: overlay
+        // /heave/velocity on /ulisse/nav_filter/data bodyframe_linear_velocity[2]
+        // — with a z-down source and heave_sign = -1 the two are mirror images,
+        // which is correct. Get this wrong and the heave is right in magnitude
+        // but inverted, and the compensation leads the pad the wrong way.
+        heave_sign_         = declare_parameter("heave_sign",                 -1.0);
 
         dt_             = 1.0 / timer_rate;
         reident_period_ = reident_period;
@@ -94,13 +91,17 @@ public:
         ekf_        = std::make_unique<HeaveEKF>(dt_, q_pos, q_vel, q_omega, q_off, r_meas,
                                                  omega_max, nis_gate, vel_limit);
 
-        // Subscription: just buffer incoming az readings — no processing here.
-        // Real IMU (not the landingplat plugin's simulated one).
-        imu_sub_ = create_subscription<sensor_msgs::msg::Imu>(
-            "/adnav_node/imu_raw", rclcpp::SensorDataQoS(),
-            [this](const sensor_msgs::msg::Imu::SharedPtr msg) {
+        // Subscription: hold the latest vertical velocity — no processing here.
+        // Same source and pattern spa_predictor uses for attitude: the nav
+        // filter has already fused the IMU, removed gravity and compensated
+        // attitude, so this is the pad's actual vertical motion rather than a
+        // raw body-frame accelerometer axis.
+        nav_filter_sub_ = create_subscription<ulisse_msgs::msg::NavFilterData>(
+            "/ulisse/nav_filter/data", rclcpp::SensorDataQoS(),
+            [this](const ulisse_msgs::msg::NavFilterData::SharedPtr msg) {
                 std::lock_guard<std::mutex> lk(buf_mutex_);
-                buf_.push_back(accel_sign_ * msg->linear_acceleration.z);
+                latest_vel_    = heave_sign_ * msg->bodyframe_linear_velocity[2];
+                have_vel_      = true;
             });
 
         // Dynamic prediction horizon T = l/v published by the guidance node.
@@ -136,26 +137,29 @@ public:
 private:
     void timerCallback()
     {
-        // Swap the live buffer out under the lock so the subscriber
-        // can keep writing without blocking. Grab a consistent snapshot of the
-        // (possibly dynamically-updated) prediction horizon at the same time.
-        std::vector<double> samples;
+        // Take a consistent snapshot of the latest velocity and of the
+        // (possibly dynamically-updated) prediction horizon, without holding the
+        // lock across any processing.
+        double heave_vel;
         double pred_horizon;
+        bool   have_vel;
         {
             std::lock_guard<std::mutex> lk(buf_mutex_);
-            samples.swap(buf_);
+            heave_vel    = latest_vel_;
             pred_horizon = pred_horizon_;
+            have_vel     = have_vel_;
         }
 
-        if (samples.empty()) return;
+        // Nothing has arrived yet — there is no sample to take.
+        if (!have_vel) return;
 
-        // Average all IMU readings that arrived since the last timer fire.
-        // This downsamples to timer_rate Hz while reducing noise by sqrt(N).
-        double az = 0.0;
-        for (double s : samples) az += s;
-        az /= static_cast<double>(samples.size());
-
-        identifier_->addSample(az);
+        // Re-sample the latest value on every tick, even if the nav filter has
+        // not published since the last one. That keeps the FFT time base and the
+        // EKF's dt exactly at timer_rate; skipping ticks instead would make the
+        // real sample rate depend on the publisher and scale every identified
+        // frequency by that ratio. Set sample_rate at or below the nav filter
+        // rate so this stays a mild zero-order hold rather than heavy repetition.
+        identifier_->addSample(heave_vel);
 
         double now = this->now().seconds();
 
@@ -174,7 +178,7 @@ private:
                 ekf_->initialize(modes, identifier_->lastMean());
                 last_reident_time_ = now;
                 RCLCPP_INFO(get_logger(),
-                    "Identified %zu heave mode(s). Accel DC mean %.4f m/s^2 "
+                    "Identified %zu heave mode(s). Velocity DC mean %.5f m/s "
                     "(seeds the EKF offset state on first init).",
                     modes.size(), identifier_->lastMean());
                 for (size_t i = 0; i < modes.size(); ++i)
@@ -203,13 +207,13 @@ private:
                     RCLCPP_WARN(get_logger(),
                         "Heave identify() found 0 modes and no candidate peak passed the "
                         "amplitude threshold (%.6f) at all — no discernible periodic signal "
-                        "in the buffered accel data.",
+                        "in the buffered velocity data.",
                         identifier_->lastPeakThresholdAmp());
                 }
             }
         }
 
-        if (!ekf_->update(az)) return;
+        if (!ekf_->update(heave_vel)) return;
 
         // Divergence self-heal: if the EKF output is implausible, do NOT publish
         // (downstream freshness turns heaveValid false), and force an immediate
@@ -250,7 +254,7 @@ private:
         pred_vel_comp_pub_->publish(pred_vel_comp_msg);
     }
 
-    rclcpp::Subscription<sensor_msgs::msg::Imu>::SharedPtr    imu_sub_;
+    rclcpp::Subscription<ulisse_msgs::msg::NavFilterData>::SharedPtr nav_filter_sub_;
     rclcpp::Subscription<std_msgs::msg::Float64>::SharedPtr   horizon_sub_;
     rclcpp::Publisher<std_msgs::msg::Float64>::SharedPtr    pos_pub_;
     rclcpp::Publisher<std_msgs::msg::Float64>::SharedPtr    vel_pub_;
@@ -263,8 +267,9 @@ private:
     std::unique_ptr<FFTIdentifier> identifier_;
     std::unique_ptr<HeaveEKF>      ekf_;
 
-    std::mutex          buf_mutex_;
-    std::vector<double> buf_;
+    std::mutex buf_mutex_;
+    double     latest_vel_ = 0.0;   // latest nav-filter vertical velocity [m/s], up-positive
+    bool       have_vel_   = false;
 
     double dt_                  = 1.0 / 30.0;
     double reident_period_      = 40.0;
@@ -272,7 +277,7 @@ private:
     double pred_horizon_        = 0.3;
     double control_comm_delay_  = 0.15;
     double min_omega_           = 0.5;
-    double accel_sign_          = 1.0;
+    double heave_sign_          = -1.0;
     double last_diag_log_time_  = 0.0;
 };
 

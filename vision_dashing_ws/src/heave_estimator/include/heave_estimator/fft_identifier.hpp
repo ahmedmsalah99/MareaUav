@@ -12,8 +12,9 @@ struct HeaveMode {
     double phase;       // phi_j [rad]
 };
 
-// Identifies dominant heave modes from a buffered IMU acceleration signal via FFT.
-// Converts acceleration spectrum -> position spectrum, then peak-detects modes.
+// Identifies dominant heave modes from a buffered vertical-VELOCITY signal via
+// FFT. Converts the velocity spectrum -> position spectrum, then peak-detects
+// modes.
 class FFTIdentifier {
 public:
     // window_size    : number of samples per FFT (should be power of 2)
@@ -23,7 +24,7 @@ public:
     FFTIdentifier(int window_size, double sample_rate,
                   double peak_threshold = 0.05, double min_omega = 0.5);
 
-    void addSample(double az_imu);
+    void addSample(double heave_vel);
     bool isReady() const { return static_cast<int>(buffer_.size()) >= window_size_; }
 
     // Warm-up progress, for diagnostics: how many samples buffered vs. how
@@ -42,11 +43,9 @@ public:
     double lastCandidateAmp() const { return last_candidate_amp_; }
     double lastPeakThresholdAmp() const { return last_threshold_amp_; }
 
-    // DC mean of the acceleration window used by the most recent identify().
-    // This is the measured constant term (gravity projected on the IMU z axis
-    // plus any accelerometer bias) — the EKF seeds its offset state with this
-    // instead of assuming a hard-coded +/-g, so the filter works regardless of
-    // the IMU's axis convention and of any static bias.
+    // DC mean of the velocity window used by the most recent identify() — any
+    // bias in the measured velocity, or a genuine slow rise/fall of the
+    // platform. The EKF seeds its offset state with this.
     double lastMean() const { return last_mean_; }
 
 private:
