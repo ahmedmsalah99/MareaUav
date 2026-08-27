@@ -290,20 +290,30 @@ private:
     // Tick the active command's state machine.
     autom_.executeCommand();
 
-    // disarmOnGo: fire a component-disarm command to PX4 the instant COMP
-    // requests it (edge-triggered — sent exactly once per request).
+    // disarmOnGo: send a forced component-disarm to PX4 whenever the guidance
+    // asks. The Lander re-raises the request a few times over a bounded window
+    // after entering LANDING_DONE, since this topic is published best-effort
+    // and a single dropped command would leave the drone armed and hovering.
     if (autom_.consumeDisarmRequest()) {
       px4_msgs::msg::VehicleCommand cmd{};
       cmd.timestamp = this->get_clock()->now().nanoseconds() / 1000;
       cmd.command = px4_msgs::msg::VehicleCommand::VEHICLE_CMD_COMPONENT_ARM_DISARM;
       cmd.param1 = 0.0;  // 0 = disarm
+      // param2 = 21196 is MAVLink's "force" magic value. Without it PX4's
+      // commander refuses to disarm an airborne vehicle and defers the command
+      // until its own land detector reports landed -- which is why the disarm
+      // appeared late: it only took effect after the drone had already been put
+      // down by the LANDING_DONE descent. Disarm mode exists precisely to cut
+      // the motors while still just above the pad, so the force flag is
+      // required for it to mean anything.
+      cmd.param2 = 21196.0;
       cmd.target_system = 1;
       cmd.target_component = 1;
       cmd.source_system = 1;
       cmd.source_component = 1;
       cmd.from_external = true;
       vehicle_command_pub_->publish(cmd);
-      RCLCPP_WARN(get_logger(), "[disarmOnGo] GO signal arrived — sending disarm command");
+      RCLCPP_WARN(get_logger(), "[disarmOnGo] sending FORCED disarm command");
     }
 
     // Publish the resulting setpoint.
