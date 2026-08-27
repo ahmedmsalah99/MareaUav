@@ -413,6 +413,18 @@ void Lander::updateSignals() {
 	else
 		dz = -(_UltraInfo.getZ()-params_automatic::OffsetUltraSensor);
 
+  {
+    static int sensorLogTick = 0;
+    if ((sensorLogTick++ % 25) == 0) {
+      std::cout << "[SENSOR] switchSensor " << switchSensor
+                << " visionZ " << _VisionPose.getZ()
+                << " ultraZ " << _UltraInfo.getZ()
+                << " ultraValid " << _UltraInfo.IsValid
+                << " ultraUpdated " << _UltraInfo.UltrasonicDataUpdated
+                << " dz " << dz << std::endl;
+    }
+  }
+
 
   dx = _VisionPose.getX();
 
