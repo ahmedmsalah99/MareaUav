@@ -1,14 +1,20 @@
 #!/usr/bin/env python3
-"""Switch PX4 to Offboard mode and arm, reporting exactly why if it refuses.
+"""Switch PX4 to Offboard mode and arm, confirming both actually took effect.
 
 Sends VEHICLE_CMD_DO_SET_MODE (offboard) then VEHICLE_CMD_COMPONENT_ARM_DISARM,
-and listens on /fmu/out/vehicle_command_ack + /fmu/out/vehicle_status so the
-result is visible instead of having to guess. PX4 only accepts offboard once a
-matching setpoint stream is already flowing (the OffboardControlMode heartbeat
-AND the setpoint it advertises, e.g. trajectory_setpoint for position) --
-normally bridge_node provides both, but it only forwards trajectory_setpoint
-once the guidance node actually commands something. Use --setpoints if nothing
-else is streaming them.
+and does NOT exit until /fmu/out/vehicle_status reports nav_state == OFFBOARD
+and arming_state == ARMED. A VehicleCommand can be dropped outright, or ACKed
+and still not take effect a moment later, so each command is re-sent until
+vehicle_status confirms it, and the script exits non-zero if it never does.
+/fmu/out/vehicle_command_ack is reported alongside so a refusal says why.
+
+PX4 only accepts offboard once a matching setpoint stream is already flowing
+(the OffboardControlMode heartbeat AND the setpoint it advertises, e.g.
+trajectory_setpoint for position) -- normally bridge_node provides both, but it
+only forwards trajectory_setpoint once the guidance node actually commands
+something. Use --setpoints if nothing else is streaming them.
+
+Exit status: 0 once confirmed, 1 if offboard or arming could not be confirmed.
 
 Usage:
     python3 offboard_arm.py                # commands only (bridge_node streaming)
@@ -93,6 +99,8 @@ class OffboardArmer(Node):
                 'px4_msgs has no VehicleCommandAck -- cannot report rejection reasons.')
 
         self._status_seen = False
+        self.is_offboard = False
+        self.is_armed = False
         if VehicleStatus is not None:
             for topic in ('/fmu/out/vehicle_status', '/fmu/out/vehicle_status_v1'):
                 self.create_subscription(
@@ -159,11 +167,11 @@ class OffboardArmer(Node):
         log('ACK {}: {}'.format(name, result))
 
     def _on_status(self, msg):
-        offboard = msg.nav_state == NAV_STATE_OFFBOARD
-        armed = msg.arming_state == ARMING_STATE_ARMED
+        self.is_offboard = msg.nav_state == NAV_STATE_OFFBOARD
+        self.is_armed = msg.arming_state == ARMING_STATE_ARMED
         line = ('status: nav_state={} ({}) arming_state={} ({})'.format(
-            msg.nav_state, 'OFFBOARD' if offboard else 'not offboard',
-            msg.arming_state, 'ARMED' if armed else 'not armed'))
+            msg.nav_state, 'OFFBOARD' if self.is_offboard else 'not offboard',
+            msg.arming_state, 'ARMED' if self.is_armed else 'not armed'))
         for extra in ('pre_flight_checks_pass', 'failsafe'):
             if hasattr(msg, extra):
                 line += ' {}={}'.format(extra, getattr(msg, extra))
@@ -177,6 +185,40 @@ def spin_for(node, seconds):
         rclpy.spin_once(node, timeout_sec=0.05)
 
 
+def spin_until(node, predicate, seconds):
+    """Spin until predicate() is true, or the timeout expires. Returns the result.
+
+    Keeps spinning rather than sleeping so the setpoint stream (when enabled)
+    stays alive and vehicle_status keeps arriving while we wait.
+    """
+    end = node.get_clock().now().nanoseconds + int(seconds * 1e9)
+    while rclpy.ok() and node.get_clock().now().nanoseconds < end:
+        if predicate():
+            return True
+        rclpy.spin_once(node, timeout_sec=0.05)
+    return predicate()
+
+
+def command_until(node, send, predicate, what, attempts, per_attempt_s):
+    """Send a command and confirm it took effect, retrying on failure.
+
+    A VehicleCommand can be accepted and still not take effect (a precondition
+    clears a moment later), and it can be dropped outright, so confirm against
+    vehicle_status rather than assuming the command worked.
+    """
+    for attempt in range(1, attempts + 1):
+        node.get_logger().info(
+            'Requesting {} (attempt {}/{})...'.format(what, attempt, attempts))
+        send()
+        if spin_until(node, predicate, per_attempt_s):
+            node.get_logger().info('{} confirmed.'.format(what))
+            return True
+    node.get_logger().error(
+        '{} NOT confirmed after {} attempts -- see the ACK and status lines above.'
+        .format(what, attempts))
+    return False
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--setpoints', action='store_true',
@@ -185,6 +227,12 @@ def main():
                         help='switch to offboard but do not arm')
     parser.add_argument('--sys-id', type=int, default=1,
                         help='target MAV_SYS_ID (default 1)')
+    parser.add_argument('--attempts', type=int, default=5,
+                        help='how many times to re-send a command that has not '
+                             'taken effect (default 5)')
+    parser.add_argument('--timeout', type=float, default=3.0,
+                        help='seconds to wait for each command to be confirmed '
+                             'in vehicle_status (default 3)')
     args = parser.parse_args()
 
     rclpy.init()
@@ -201,16 +249,33 @@ def main():
                 'No vehicle_status received -- PX4/XRCE agent may not be connected, '
                 'in which case no command can reach the vehicle.')
 
-        node.get_logger().info('Requesting OFFBOARD mode...')
-        node.set_offboard()
-        spin_for(node, 1.0)
+        if VehicleStatus is None:
+            # Without vehicle_status there is nothing to confirm against, so
+            # fall back to fire-and-hope rather than silently claiming success.
+            node.get_logger().warn(
+                'Cannot confirm the result without VehicleStatus -- '
+                'sending commands blind.')
+            node.set_offboard()
+            spin_for(node, 1.0)
+            if not args.no_arm:
+                node.arm()
+                spin_for(node, 1.0)
+            return 0
+
+        if not command_until(node, node.set_offboard,
+                             lambda: node.is_offboard, 'OFFBOARD mode',
+                             args.attempts, args.timeout):
+            return 1
 
         if not args.no_arm:
-            node.get_logger().info('Requesting ARM...')
-            node.arm()
-            spin_for(node, 1.0)
+            if not command_until(node, node.arm,
+                                 lambda: node.is_armed, 'ARM',
+                                 args.attempts, args.timeout):
+                return 1
 
-        node.get_logger().info('Done -- offboard requested and armed; exiting.')
+        node.get_logger().info(
+            'Done -- offboard {}; exiting.'.format(
+                'enabled and armed' if not args.no_arm else 'enabled'))
     except KeyboardInterrupt:
         pass
     finally:
