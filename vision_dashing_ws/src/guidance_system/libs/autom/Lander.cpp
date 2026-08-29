@@ -818,6 +818,7 @@ void Lander::run() {
         // positioning the drone in front of the platform
         _readyToLand = setDroneInFront();
 				initDone = _VisionPose.VisionDataUpdated && _readyToLand;
+        std::cout << "_VisionPose.VisionDataUpdated " << _VisionPose.VisionDataUpdated << "_readyToLand" << _readyToLand << std::endl;
         // once the drone is ready to land, the altitude setpoint changes
         if(initDone)
         {
@@ -1176,7 +1177,8 @@ bool Lander::setDroneInFront()
     _approachSettleTimer = 0.0;
   }
   bool ready = closeEnough && (_approachSettleTimer >= param.initApproachWaitTime);
-
+  std::cout << "closeEnough " << closeEnough << " _approachSettleTimer " << _approachSettleTimer << std::endl;
+  std::cout << "_platformVision.getVx() " << _platformVision.getVx() << " _platformVision.getX() " << _platformVision.getX() << std::endl;
   // Diagnostic log, throttled to ~1 Hz (this runs at the full control-loop
   // rate, e.g. 50 Hz) — enough to see whether the gap is shrinking, holding
   // steady, or growing, and whether the threshold or the settle timer is
@@ -1354,8 +1356,8 @@ void Lander::trackXY() {
   // GROUND TRUTH — kept commented for reference:
   // double ffX = visionOk ? _platformState.getVx() * param.reactionLag : 0.0;
   // double ffY = visionOk ? _platformState.getVy() * param.reactionLag : 0.0;
-  double ffX = visionOk ? _platformVision.getVx() * param.reactionLag : 0.0;
-  double ffY = visionOk ? _platformVision.getVy() * param.reactionLag : 0.0;
+  double ffX = visionOk ? _platformVision.getVx()  : 0.0;
+  double ffY = visionOk ? _platformVision.getVy() : 0.0;
 
   // Captured for the diagnostic below (mode 1 only; stays 0 in direct mode).
   double pidOutX = 0.0, pidOutY = 0.0;
@@ -1530,7 +1532,8 @@ void Lander::comp() {
     new_z = _state.getZ() + lead;
     // Also feed the predicted heave velocity forward on the PX4 position
     // setpoint's velocity field, in addition to the position lead above.
-    _setPoint.setVz(vff);
+    _setPoint.setVz(vff + lead*0.4);
+    
   } else {
     // Backing off: ascend (anchored, bounded) until the gap recovers.
     new_z = std::min(_setPoint.getZ() + param.asceVelocity, _state.getZ() + param.asceVelocity);
