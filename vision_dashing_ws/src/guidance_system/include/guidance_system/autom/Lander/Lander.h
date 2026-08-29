@@ -388,6 +388,11 @@ private:
     double _prevSpY   = 0.0;
     bool   _spSeeded  = false;
 
+    // COMP vertical mode this tick: true = velocity matching (pad moving),
+    // false = pure position (pad quiet, Vz commanded 0). Logged so the mode
+    // the drone was actually in is visible per tick.
+    bool   _compVelMatching = false;
+
     // COMP standoff hysteresis: true = track compHoldDist, false = backing off
     // (ascending) because the gap dropped below compMinDist.
     bool   _compTracking = true;

@@ -1530,10 +1530,29 @@ void Lander::comp() {
     double vff  = _seaState.heaveValid ? _seaState.heaveVelPredComp : 0.0;
     double lead = (param.compHoldDist - gap);
     new_z = _state.getZ() + lead;
-    // Also feed the predicted heave velocity forward on the PX4 position
-    // setpoint's velocity field, in addition to the position lead above.
-    _setPoint.setVz(vff + lead*0.4);
-    
+
+    // Two modes, so the position and velocity halves of the setpoint stop
+    // fighting each other.
+    //
+    // A PX4 TrajectorySetpoint carrying BOTH a position and a velocity asks for
+    // two things at once. While the pad is essentially still, the velocity term
+    // is meaningless (it is heave noise) but PX4 still tracks it, so it pulls
+    // against the position target that is doing the actual work — the clash.
+    //
+    //   MATCHING  |heaveVelPredComp| > compVelMatchThld: the pad is genuinely
+    //             moving and matching its vertical rate is the point, so the
+    //             velocity term is sent (pad rate + a lead-proportional term to
+    //             keep closing the standoff while matching).
+    //   POSITION  otherwise: the pad is quiet, so command position ONLY and
+    //             leave Vz at zero. Nothing to match, nothing to fight.
+    _compVelMatching = std::fabs(vff) > param.compVelMatchThld;
+
+    if (_compVelMatching) {
+      _setPoint.setVz(vff + lead * param.compLeadVelGain);
+    } else {
+      _setPoint.setVz(0.0);
+    }
+
   } else {
     // Backing off: ascend (anchored, bounded) until the gap recovers.
     new_z = std::min(_setPoint.getZ() + param.asceVelocity, _state.getZ() + param.asceVelocity);
@@ -1557,6 +1576,9 @@ void Lander::comp() {
       const double cmdZ = _setPoint.getZ();
       std::cout << "comp gap " << gap << "/" << param.compHoldDist
                 << " tracking " << _compTracking
+                << " mode " << (_compTracking ? (_compVelMatching ? "VEL" : "POS") : "BACKOFF")
+                << " cmdVz " << _setPoint.getVz()
+                << "/" << param.compVelMatchThld
                 << " heaveVelPredComp " << _seaState.heaveVelPredComp
                 << " | stateZ " << _state.getZ()
                 << " stateVz " << _state.getVz()
