@@ -169,6 +169,13 @@ public:
     // ── COMP standoff (comp()) ───────────────────────────────────────────────
     // Drone->pad distance [m] COMP holds while compensating (below standoffDistance).
     double compHoldDist;
+    // Pad vertical speed [m/s] above which comp() switches to VELOCITY MATCHING.
+    // Compared SIGNED against heaveVelPredComp (up-positive), so only a pad
+    // climbing faster than this engages matching. Below it comp() commands
+    // position only, with Vz sent as NaN so PX4 does not velocity-control the
+    // axis at all.
+    double compVelMatchThld;
+
     // If the gap drops below this [m], COMP stops tracking and backs off (ascends).
     double compMinDist;
     // COMP resumes tracking once the gap climbs back above this [m] (hysteresis).

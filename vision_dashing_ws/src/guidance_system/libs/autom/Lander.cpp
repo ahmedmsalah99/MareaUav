@@ -1530,10 +1530,31 @@ void Lander::comp() {
     double vff  = _seaState.heaveValid ? _seaState.heaveVelPredComp : 0.0;
     double lead = (param.compHoldDist - gap);
     new_z = _state.getZ() + lead;
-    // Also feed the predicted heave velocity forward on the PX4 position
-    // setpoint's velocity field, in addition to the position lead above.
-    _setPoint.setVz(vff + lead*0.4);
-    
+
+    // Two modes, so the position and velocity halves of the setpoint stop
+    // fighting each other.
+    //
+    //   MATCHING  heaveVelPredComp > compVelMatchThld: the pad is climbing fast
+    //             enough that matching its vertical rate is the point, so Vz is
+    //             the pad rate, nothing else added. Signed, not |.|: the pad
+    //             dropping away is not a case that needs matching.
+    //   POSITION  otherwise: command position ONLY.
+    //
+    // NOTE the position-only branch sends NaN, not 0. They are NOT the same
+    // thing — a velocity field of 0 is still a commanded setpoint ("hold zero
+    // vertical velocity") that PX4 tracks and that therefore fights the
+    // position target. NaN is what tells PX4 the axis is not velocity
+    // commanded, which is exactly how velocity[0]/[1] are already sent in
+    // bridge_node's POSITION branch. It propagates untouched: getVz() ->
+    // twist.linear.z -> "velocity[2] = -twist.linear.z", and -NaN is NaN.
+    _compVelMatching = vff > param.compVelMatchThld;
+
+    if (_compVelMatching) {
+      _setPoint.setVz(vff);
+    } else {
+      _setPoint.setVz(NAN);
+    }
+
   } else {
     // Backing off: ascend (anchored, bounded) until the gap recovers.
     new_z = std::min(_setPoint.getZ() + param.asceVelocity, _state.getZ() + param.asceVelocity);
@@ -1557,6 +1578,10 @@ void Lander::comp() {
       const double cmdZ = _setPoint.getZ();
       std::cout << "comp gap " << gap << "/" << param.compHoldDist
                 << " tracking " << _compTracking
+                << " mode " << (_compTracking ? (_compVelMatching ? "VEL" : "POS") : "BACKOFF")
+                << " vff " << (_seaState.heaveValid ? _seaState.heaveVelPredComp : 0.0)
+                << "/" << param.compVelMatchThld
+                << " cmdVz " << _setPoint.getVz()
                 << " heaveVelPredComp " << _seaState.heaveVelPredComp
                 << " | stateZ " << _state.getZ()
                 << " stateVz " << _state.getVz()

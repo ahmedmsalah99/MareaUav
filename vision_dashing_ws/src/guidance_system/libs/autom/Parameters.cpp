@@ -28,6 +28,7 @@ Parameters::Parameters() {
     compHoldDist       = 1.5;
     compMinDist        = 1.0;
     compResumeDist     = 1.3;
+    compVelMatchThld   = 0.1;
     compWaitTime       = 1.0;
     compToLandWaitTime = 3.0;
     landXYErrThld      = 0.05;
@@ -202,6 +203,9 @@ void Parameters::loadParamFile(const char *config_file) {
 
             else if( !param.compare("COMP_RESUME_DIST") )
                 compResumeDist = value;
+
+            else if( !param.compare("COMP_VEL_MATCH_THLD") )
+                compVelMatchThld = value;
 
             else if( !param.compare("COMP_WAIT_TIME_S") )
                 compWaitTime = value;
