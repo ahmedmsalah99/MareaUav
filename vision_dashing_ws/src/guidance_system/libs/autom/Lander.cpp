@@ -1148,11 +1148,13 @@ bool Lander::setDroneInFront()
   double plat_x = _platformVision.getX() + _platformVision.getVx() * param.reactionLag;
   double plat_y = _platformVision.getY() + _platformVision.getVy() * param.reactionLag;
 
-  // then, depending on how the platform is oriented, the desired position changes;
-  // more precisely, the values of sin and cos (sin acting on x cause North in NED == Y in Local Frame)
-  // determinate the position around the platform, with a certain distance from the center.
-  double xTarget = plat_x + gain*sinf(yaw_plat);
-  double yTarget = plat_y + gain*cosf(yaw_plat);
+  // then, depending on how the platform is oriented, the desired position changes.
+  // yaw_plat is a compass-style bearing in this local frame: 0 rad = facing
+  // +X (North), increasing toward +Y (East) — same convention PX4's compass
+  // yaw uses. The platform's forward unit vector is therefore
+  // (cos(yaw_plat), sin(yaw_plat)) in (x, y), not (sin, cos) as before.
+  double xTarget = plat_x + gain*cosf(yaw_plat);
+  double yTarget = plat_y + gain*sinf(yaw_plat);
 
   // setting the setpoint finally
   _setPoint.setPosition(xTarget, yTarget, param.prelandAltitude);
@@ -1202,9 +1204,9 @@ bool Lander::setDroneInFront()
   if (ready)
   {
     // setting the slope vector for the next step, simplifying the computations
-    // _platformState.getX() - (_platformState.getX() + gain*sinf(yaw_plat))
-    _line_direction[0] = -gain*sinf(yaw_plat);
-    _line_direction[1] = -gain*cosf(yaw_plat);
+    // _platformState.getX() - (_platformState.getX() + gain*cosf(yaw_plat))
+    _line_direction[0] = -gain*cosf(yaw_plat);
+    _line_direction[1] = -gain*sinf(yaw_plat);
     // GROUND TRUTH — kept commented for reference:
     // _line_direction[2] = _state.getZ() - (_platformState.getZ() + param.z_margin);
     _line_direction[2] = _state.getZ() - (_platformVision.getZ() + param.z_margin);
