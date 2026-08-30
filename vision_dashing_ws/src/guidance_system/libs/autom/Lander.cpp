@@ -415,7 +415,7 @@ void Lander::updateSignals() {
 	double dz;
 
 
-	switchSensor = (fabs( _VisionPose.getZ() ) > 0.83); //with 0.1 always vision:)
+	switchSensor = (fabs( _VisionPose.getZ() ) > 0.83); 
   //above half meters use vision system for altitude value
   //otherwise, ultrasonic sensors.
 
@@ -476,10 +476,11 @@ void Lander::updateSignals() {
   _predictionHorizon = std::min(fabs(_verticalErr) / param.landDescVel, predHorizonMax);
 
   // Cone thresholds: linearly interpolate between min (at z=0) and max (at z=cone_z_ref).
-  double cone_t = common::clamp(fabs(_verticalErr) / param.cone_z_ref, 0.0, 1.0);
-  double tau_hold_cone = param.hold_threshold_min + (param.hold_threshold - param.hold_threshold_min) * cone_t;
-  double tau_lost_cone = param.lost_threshold_min + (param.lost_threshold - param.lost_threshold_min) * cone_t;
-  double tau_comp_cone = param.comp_threshold_min + (param.comp_threshold - param.comp_threshold_min) * cone_t;
+  // TODO: Change hold_threshold to hold_threshold_max and same for lost and comp
+  double cone_th = common::clamp(fabs(_verticalErr) / param.cone_z_ref, 0.0, 1.0);
+  double tau_hold_cone = param.hold_threshold_min + (param.hold_threshold - param.hold_threshold_min) * cone_th;
+  double tau_lost_cone = param.lost_threshold_min + (param.lost_threshold - param.lost_threshold_min) * cone_th;
+  double tau_comp_cone = param.comp_threshold_min + (param.comp_threshold - param.comp_threshold_min) * cone_th;
 
   //Increment N if needed
   if (_horizontaErr < tau_hold_cone && _VisionPose.VisionDataUpdated) {
@@ -493,8 +494,8 @@ void Lander::updateSignals() {
   }
 
 	_holding  = (_NHold > param.NFramesHold && _VisionPose.VisionDataUpdated );
-
   _lost     = (_NLost > param.NFramesLost || !_VisionPose.VisionDataUpdated );
+
   if(_actualState == AbstractLandState::states::COMP)
     _centered = _horizontaErr < tau_comp_cone && _VisionPose.VisionDataUpdated;
   else
@@ -504,8 +505,6 @@ void Lander::updateSignals() {
   // }
   //R2LA state is between hold and comp state
   if(_actualState == AbstractLandState::states::R2LA || _actualState == AbstractLandState::states::COMP || _actualState == AbstractLandState::states::LAND){
-
-
       //Reset NComp
       if(_prevState == AbstractLandState::states::HOLD) _NComp = 0;
 
@@ -1529,7 +1528,7 @@ void Lander::comp() {
   if (_compTracking) {
     double vff  = _seaState.heaveValid ? _seaState.heaveVelPredComp : 0.0;
     double lead = (param.compHoldDist - gap);
-    new_z = _state.getZ() + lead;
+    new_z = _state.getZ() + 3.0*lead;
 
     // Two modes, so the position and velocity halves of the setpoint stop
     // fighting each other.
@@ -1548,12 +1547,12 @@ void Lander::comp() {
     // bridge_node's POSITION branch. It propagates untouched: getVz() ->
     // twist.linear.z -> "velocity[2] = -twist.linear.z", and -NaN is NaN.
     _compVelMatching = vff > param.compVelMatchThld;
-
-    if (_compVelMatching) {
-      _setPoint.setVz(vff);
-    } else {
-      _setPoint.setVz(NAN);
-    }
+    _setPoint.setVz(vff);
+    // if (_compVelMatching) {
+    //   _setPoint.setVz(vff);
+    // } else {
+    //   _setPoint.setVz(NAN);
+    // }
 
   } else {
     // Backing off: ascend (anchored, bounded) until the gap recovers.
