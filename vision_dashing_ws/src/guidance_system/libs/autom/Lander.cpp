@@ -807,7 +807,6 @@ void Lander::run() {
 				if (print > 30) std::cout<<"INIT"<<std::endl;
 
 				init();
-        align(); //controlling the yaw
 				/*
 				It is divided in two parts:
 					--set the setpoint to the actual drone position.
@@ -815,8 +814,11 @@ void Lander::run() {
 				*/
 
                 //initDone = true;
-        // positioning the drone in front of the platform
+        // positioning the drone in front of the platform; also updates
+        // _yaw_des to the platform's live heading, so align() (below) uses
+        // this tick's value rather than a tick-stale one.
         _readyToLand = setDroneInFront();
+        align(); //controlling the yaw
 				initDone = _VisionPose.VisionDataUpdated && _readyToLand;
         std::cout << "_VisionPose.VisionDataUpdated " << _VisionPose.VisionDataUpdated << "_readyToLand" << _readyToLand << std::endl;
         // once the drone is ready to land, the altitude setpoint changes
@@ -832,10 +834,12 @@ void Lander::run() {
         if (print > 30) std::cout<<"INIT2"<<std::endl;
 
         init();
-        align(); //controlling the yaw
 
-        // positioning the drone in front of the platform
+        // positioning the drone in front of the platform; also updates
+        // _yaw_des to the platform's live heading, so align() (below) uses
+        // this tick's value rather than a tick-stale one.
         _readyToLand = setDroneInFront();
+        align(); //controlling the yaw
         startFromBeginning = !_readyToLand;
         // once the drone is ready to land, the altitude setpoint changes
         if(!startFromBeginning)
@@ -1131,6 +1135,11 @@ bool Lander::setDroneInFront()
     return false;
   }
 
+  // Track the platform's live heading instead of whatever static yaw the
+  // mission task carries — Land.hpp's setYaw(_actualTask->yaw) is a fixed
+  // config value, unrelated to the pad's actual orientation.
+  setYaw(yaw_plat);
+
   // getting also the distance from the center the drone has to keep once positioned,
   // passed from file; it also must be not less than 0.
   double gain = fabs(param.distanceFromCenter);
@@ -1148,11 +1157,13 @@ bool Lander::setDroneInFront()
   double plat_x = _platformVision.getX() + _platformVision.getVx() * param.reactionLag;
   double plat_y = _platformVision.getY() + _platformVision.getVy() * param.reactionLag;
 
-  // then, depending on how the platform is oriented, the desired position changes;
-  // more precisely, the values of sin and cos (sin acting on x cause North in NED == Y in Local Frame)
-  // determinate the position around the platform, with a certain distance from the center.
-  double xTarget = plat_x + gain*sinf(yaw_plat);
-  double yTarget = plat_y + gain*cosf(yaw_plat);
+  // then, depending on how the platform is oriented, the desired position changes.
+  // yaw_plat is a compass-style bearing in this local frame: 0 rad = facing
+  // +X (North), increasing toward +Y (East) — same convention PX4's compass
+  // yaw uses. The platform's forward unit vector is therefore
+  // (cos(yaw_plat), sin(yaw_plat)) in (x, y), not (sin, cos) as before.
+  double xTarget = plat_x + gain*cosf(yaw_plat);
+  double yTarget = plat_y + gain*sinf(yaw_plat);
 
   // setting the setpoint finally
   _setPoint.setPosition(xTarget, yTarget, param.prelandAltitude);
@@ -1202,9 +1213,9 @@ bool Lander::setDroneInFront()
   if (ready)
   {
     // setting the slope vector for the next step, simplifying the computations
-    // _platformState.getX() - (_platformState.getX() + gain*sinf(yaw_plat))
-    _line_direction[0] = -gain*sinf(yaw_plat);
-    _line_direction[1] = -gain*cosf(yaw_plat);
+    // _platformState.getX() - (_platformState.getX() + gain*cosf(yaw_plat))
+    _line_direction[0] = -gain*cosf(yaw_plat);
+    _line_direction[1] = -gain*sinf(yaw_plat);
     // GROUND TRUTH — kept commented for reference:
     // _line_direction[2] = _state.getZ() - (_platformState.getZ() + param.z_margin);
     _line_direction[2] = _state.getZ() - (_platformVision.getZ() + param.z_margin);
