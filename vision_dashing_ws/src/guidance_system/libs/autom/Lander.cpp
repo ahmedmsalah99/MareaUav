@@ -1214,6 +1214,10 @@ bool Lander::setDroneInFront()
               << " state=(" << _state.getX() << "," << _state.getY() << ")"
               << " err=(" << errX << "," << errY << ")"
               << " platVel=(" << _platformVision.getVx() << "," << _platformVision.getVy() << ")"
+              << " yawPlat " << yaw_plat
+              << " yawDes " << _yaw_des
+              << " droneYawActual " << _state.getYawFromQuat()
+              << " spYaw " << _setPoint.getYaw()
               << " closeEnough " << closeEnough
               << " settleTimer " << _approachSettleTimer << "/" << param.initApproachWaitTime
               << " ready " << ready << std::endl;
