@@ -1137,7 +1137,16 @@ bool Lander::setDroneInFront()
   // Track the platform's live heading instead of whatever static yaw the
   // mission task carries — Land.hpp's setYaw(_actualTask->yaw) is a fixed
   // config value, unrelated to the pad's actual orientation.
-  setYaw(yaw_plat);
+  //
+  // Sign: yaw_plat (like all getYawFromQuat() readings) is PX4's raw native
+  // yaw (0 = North, +ve = North->East) because bridge_node's onPx4Odom swaps
+  // NED->ENU on POSITION only, leaving the orientation quaternion untouched.
+  // _yaw_des instead feeds yawToQuaternion() -> bridge_node's
+  // setpoint.yaw = -yawFromQuaternion(...), which is a pure sign flip (exact
+  // inverse of yawToQuaternion). So the native yaw PX4 actually receives is
+  // -_yaw_des; to converge the drone's native yaw on yaw_plat we must command
+  // the negation.
+  setYaw(-yaw_plat);
 
   // getting also the distance from the center the drone has to keep once positioned,
   // passed from file; it also must be not less than 0.
@@ -1157,12 +1166,13 @@ bool Lander::setDroneInFront()
   double plat_y = _platformVision.getY() + _platformVision.getVy() * param.reactionLag;
 
   // then, depending on how the platform is oriented, the desired position changes.
-  // yaw_plat is a compass-style bearing in this local frame: 0 rad = facing
-  // +X (North), increasing toward +Y (East) — same convention PX4's compass
-  // yaw uses. The platform's forward unit vector is therefore
-  // (cos(yaw_plat), sin(yaw_plat)) in (x, y), not (sin, cos) as before.
-  double xTarget = plat_x + gain*cosf(yaw_plat);
-  double yTarget = plat_y + gain*sinf(yaw_plat);
+  // yaw_plat is PX4's raw native yaw (0 = North, +ve = North->East) — see the
+  // sign note above setYaw(-yaw_plat). This local (x, y) position frame is
+  // ENU (x = East, y = North; onPx4Odom swaps position axes), so the
+  // platform's forward unit vector in (x, y) is (sin(yaw_plat), cos(yaw_plat)):
+  // North-component cos(yaw_plat) lands on y, East-component sin(yaw_plat) on x.
+  double xTarget = plat_x + gain*sinf(yaw_plat);
+  double yTarget = plat_y + gain*cosf(yaw_plat);
 
   // setting the setpoint finally
   _setPoint.setPosition(xTarget, yTarget, param.prelandAltitude);
@@ -1212,9 +1222,9 @@ bool Lander::setDroneInFront()
   if (ready)
   {
     // setting the slope vector for the next step, simplifying the computations
-    // _platformState.getX() - (_platformState.getX() + gain*cosf(yaw_plat))
-    _line_direction[0] = -gain*cosf(yaw_plat);
-    _line_direction[1] = -gain*sinf(yaw_plat);
+    // _platformState.getX() - (_platformState.getX() + gain*sinf(yaw_plat))
+    _line_direction[0] = -gain*sinf(yaw_plat);
+    _line_direction[1] = -gain*cosf(yaw_plat);
     // GROUND TRUTH — kept commented for reference:
     // _line_direction[2] = _state.getZ() - (_platformState.getZ() + param.z_margin);
     _line_direction[2] = _state.getZ() - (_platformVision.getZ() + param.z_margin);
