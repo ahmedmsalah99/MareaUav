@@ -807,7 +807,6 @@ void Lander::run() {
 				if (print > 30) std::cout<<"INIT"<<std::endl;
 
 				init();
-        align(); //controlling the yaw
 				/*
 				It is divided in two parts:
 					--set the setpoint to the actual drone position.
@@ -815,8 +814,11 @@ void Lander::run() {
 				*/
 
                 //initDone = true;
-        // positioning the drone in front of the platform
+        // positioning the drone in front of the platform; also updates
+        // _yaw_des to the platform's live heading, so align() (below) uses
+        // this tick's value rather than a tick-stale one.
         _readyToLand = setDroneInFront();
+        align(); //controlling the yaw
 				initDone = _VisionPose.VisionDataUpdated && _readyToLand;
         std::cout << "_VisionPose.VisionDataUpdated " << _VisionPose.VisionDataUpdated << "_readyToLand" << _readyToLand << std::endl;
         // once the drone is ready to land, the altitude setpoint changes
@@ -832,10 +834,12 @@ void Lander::run() {
         if (print > 30) std::cout<<"INIT2"<<std::endl;
 
         init();
-        align(); //controlling the yaw
 
-        // positioning the drone in front of the platform
+        // positioning the drone in front of the platform; also updates
+        // _yaw_des to the platform's live heading, so align() (below) uses
+        // this tick's value rather than a tick-stale one.
         _readyToLand = setDroneInFront();
+        align(); //controlling the yaw
         startFromBeginning = !_readyToLand;
         // once the drone is ready to land, the altitude setpoint changes
         if(!startFromBeginning)
@@ -1130,6 +1134,11 @@ bool Lander::setDroneInFront()
     std::cout << "YAW NOT VALID, CANNOT GENERATE DESIRED POSITION" << std::endl;
     return false;
   }
+
+  // Track the platform's live heading instead of whatever static yaw the
+  // mission task carries — Land.hpp's setYaw(_actualTask->yaw) is a fixed
+  // config value, unrelated to the pad's actual orientation.
+  setYaw(yaw_plat);
 
   // getting also the distance from the center the drone has to keep once positioned,
   // passed from file; it also must be not less than 0.
