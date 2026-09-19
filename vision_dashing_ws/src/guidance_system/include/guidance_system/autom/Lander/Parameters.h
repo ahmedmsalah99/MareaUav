@@ -122,13 +122,6 @@ public:
     // gap can close), so keep this looser than landXYErrThld.
     double initApproachPosThld;
 
-    // Gain on hold()'s INIT slope feedback error term (last tick's z_adj minus
-    // current altitude), applied while _slopeActive tracks the drone down the
-    // approach line toward the standoff. Higher = corrects toward the line
-    // faster/harder. See Lander::_prevZAdj for why this term now feeds back a
-    // real previous value instead of undefined behavior.
-    double initSlopeGain;
-
     // Descent velocity (m per tick) applied in desc()
     double descVelocity;
 
@@ -169,9 +162,12 @@ public:
     double reactionLag;
 
     // Drone->pad vertical distance [m] to descend to and hold before starting
-    // the compensated / aggressive landing (the "standoff"). Kept as the
-    // nominal reference distance; standoffCompThld/standoffDescThld below are
-    // what HOLD/COMP actually gate transitions on.
+    // the compensated / aggressive landing (the "standoff"). Also the height
+    // hold()'s INIT slope glides down to (in place of a separately-configured
+    // z_margin), so the slope hands off to the same height the HOLD state
+    // machine's descend/COMP thresholds (standoffCompThld/standoffDescThld
+    // below) are already built around. Nominal reference distance for those
+    // two thresholds, which are what HOLD/COMP actually gate transitions on.
     double standoffDistance;
 
     // Hysteresis band around standoffDistance for the HOLD <-> DESC/COMP/ASCE

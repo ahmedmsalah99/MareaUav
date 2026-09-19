@@ -40,7 +40,6 @@ Parameters::Parameters() {
     landHeightThld     = 0.5;
     initApproachWaitTime = 2.0;
     initApproachPosThld  = 0.5;
-    initSlopeGain        = 1.0;   // was an unnamed, effectively-undefined 0.5 -- see Parameters.h
     landRollLimit      = 0.20;
     landPitchLimit     = 0.20;
     landRollRateLimit  = 0.10;
@@ -245,9 +244,6 @@ void Parameters::loadParamFile(const char *config_file) {
 
             else if( !param.compare("INIT_APPROACH_POS_THLD") )
                 initApproachPosThld = value;
-
-            else if( !param.compare("INIT_SLOPE_GAIN") )
-                initSlopeGain = value;
 
             else if( !param.compare("LAND_ROLL_LIMIT") )
                 landRollLimit = value;

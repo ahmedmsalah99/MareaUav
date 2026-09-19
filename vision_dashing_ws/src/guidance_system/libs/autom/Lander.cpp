@@ -188,7 +188,6 @@ void Lander::initStateMachine() {
 	_predHistPitch.clear();
 	_predHistHeavePos.clear();
 	_predHistHeaveVel.clear();
-	_zAdjInitialized     = false;   // re-seed the INIT slope's feedback term on (re)init
 
   //Link signals
   //assign initialized errors of the Lander class with
@@ -1246,8 +1245,8 @@ bool Lander::setDroneInFront()
     _line_direction[0] = -gain*sinf(yaw_plat);
     _line_direction[1] = -gain*cosf(yaw_plat);
     // GROUND TRUTH — kept commented for reference:
-    // _line_direction[2] = _state.getZ() - (_platformState.getZ() + param.z_margin);
-    _line_direction[2] = _state.getZ() - (_platformVision.getZ() + param.z_margin);
+    // _line_direction[2] = _state.getZ() - (_platformState.getZ() + param.standoffDistance);
+    _line_direction[2] = _state.getZ() - (_platformVision.getZ() + param.standoffDistance);
     _approachSettleTimer = 0.0;   // consumed — start clean for next time
     return true;
   }
@@ -1349,26 +1348,38 @@ void Lander::hold() {
     if(_slopeActive)
     {
       // GROUND TRUTH — kept commented for reference:
-      // double z_base = _platformState.getZ() + param.z_margin;
+      // double z_base = _platformState.getZ() + param.standoffDistance;
       // The vision-derived Z is also in the DRONE's frame, where the setpoint is
       // commanded; _platformState is in the simulator's world frame, so the old
       // form mixed frames as well as using truth.
-      double z_base = _platformVision.getZ() + param.z_margin;
+      //
+      // Uses standoffDistance, not z_margin: the slope should hand off to the
+      // same height the HOLD state machine's descend/COMP thresholds are
+      // already built around, not a separate, independently-configured value
+      // it would then immediately re-adjust away from.
+      double z_base = _platformVision.getZ() + param.standoffDistance;
       double dot    = _VisionPose.getX() * _line_direction[0] + _VisionPose.getY() * _line_direction[1];
       double norm_sq = _line_direction[0] * _line_direction[0] + _line_direction[1] * _line_direction[1];
-      double lineTarget = z_base + _line_direction[2] * dot / norm_sq;
-      // _prevZAdj feeds back LAST TICK's z_adj (see its declaration) -- seed
-      // it with this tick's own lineTarget (no feedback yet) the very first
-      // time this runs, instead of reading an uninitialized value.
-      if (!_zAdjInitialized) {
-        _prevZAdj = lineTarget;
-        _zAdjInitialized = true;
-      }
-      double z_adj = lineTarget + param.initSlopeGain * (_prevZAdj - _state.getZ());
-      _prevZAdj = z_adj;
-      std::cout << "z_base "  << z_base << " z_adj " << z_adj << " state z "<< _state.getZ() << " _line_direction[2] " << _line_direction[2]
+      double z_adj = z_base + _line_direction[2] * dot / norm_sq;
+
+      // Feed-forward the descent rate implied by the line instead of relying
+      // on PX4's position loop to infer it from a moving setpoint. z_adj
+      // slides every tick as dot closes -- purely commanding the position
+      // makes PX4 chase a receding target and lag behind, which is what the
+      // (removed) position-feedback term was trying, unstably, to paper
+      // over. Differentiate z_adj analytically via the chain rule instead
+      // (dot's own rate is the horizontal closing velocity projected onto
+      // the line direction) -- same feed-forward technique desc()/comp()
+      // already use for their own Vz.
+      double closingVx = _platformVision.getVx() - _state.getVx();
+      double closingVy = _platformVision.getVy() - _state.getVy();
+      double dDotDt = closingVx * _line_direction[0] + closingVy * _line_direction[1];
+      double zDotFF = _line_direction[2] * dDotDt / norm_sq;
+
+      std::cout << "z_base "  << z_base << " z_adj " << z_adj << " zDotFF " << zDotFF << " state z "<< _state.getZ() << " _line_direction[2] " << _line_direction[2]
       << " dot " << dot << " norm_sq " << norm_sq << " dot / norm_sq " << dot / norm_sq  << " _VisionPose.getX() " << (_VisionPose.getX()) <<
       " _VisionPose.getY() " << _VisionPose.getY() << " _state.getX() " <<_state.getX() << std::endl;
+      _setPoint.setVz(zDotFF);
       _setPoint.setZ(z_adj);
         // std::cout << "hold setting z pos !desc_v " << !desc_v << " !asce_v " << !asce_v
         //           << " !asce_min " << !asce_min << " !asce_margin " << !asce_margin
