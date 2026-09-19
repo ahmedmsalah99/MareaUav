@@ -90,7 +90,7 @@ void ReleaseState::handle()
 
     getSignals();
     // static int wait = 0;
-    // bool onTarget = _NComp > param.NFramesComp;
+    // bool onTarget = _NComp > param.nFramesComp;
     //
     // if (!onTarget || !_centered)
     // { //set the next state(AsceState)

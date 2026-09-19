@@ -61,8 +61,8 @@ Lander::Lander()
   _holdPIDX.setOutputLimits(param.maxOutput);
   //put a saturation for the whole PID
 
-	_tauHold = param.hold_threshold;
-	_tauLost = param.lost_threshold;
+	_tauHold = param.holdThreshold;
+	_tauLost = param.lostThreshold;
   //this two parameters are thresholds for the horizontal error.
 
 	//stored starting hovering position
@@ -120,8 +120,8 @@ void Lander::loadMachine() {
 
   _holdPIDX.setOutputLimits(param.maxOutput);
 
-	_tauHold = param.hold_threshold;
-	_tauLost = param.lost_threshold;
+	_tauHold = param.holdThreshold;
+	_tauLost = param.lostThreshold;
 
 	//stored starting hovering position
 	starting_x = _state.getX();
@@ -478,9 +478,9 @@ void Lander::updateSignals() {
   // Cone thresholds: linearly interpolate between min (at z=0) and max (at z=cone_z_ref).
   // TODO: Change hold_threshold to hold_threshold_max and same for lost and comp
   double cone_th = common::clamp(fabs(_verticalErr) / param.cone_z_ref, 0.0, 1.0);
-  double tau_hold_cone = param.hold_threshold_min + (param.hold_threshold - param.hold_threshold_min) * cone_th;
-  double tau_lost_cone = param.lost_threshold_min + (param.lost_threshold - param.lost_threshold_min) * cone_th;
-  double tau_comp_cone = param.comp_threshold_min + (param.comp_threshold - param.comp_threshold_min) * cone_th;
+  double tau_hold_cone = param.holdThresholdMin + (param.holdThreshold - param.holdThresholdMin) * cone_th;
+  double tau_lost_cone = param.lostThresholdMin + (param.lostThreshold - param.lostThresholdMin) * cone_th;
+  double tau_comp_cone = param.compThresholdMin + (param.compThreshold - param.compThresholdMin) * cone_th;
 
   //Increment N if needed
   if (_horizontaErr < tau_hold_cone && _VisionPose.VisionDataUpdated) {
@@ -493,8 +493,9 @@ void Lander::updateSignals() {
       _NLost++;
   }
 
-	_holding  = (_NHold > param.NFramesHold && _VisionPose.VisionDataUpdated );
-  _lost     = (_NLost > param.NFramesLost || !_VisionPose.VisionDataUpdated );
+	_holding  = (_NHold > param.nFramesHold && _VisionPose.VisionDataUpdated );
+  _lost     = (_NLost > param.nFramesLost || !_VisionPose.VisionDataUpdated );
+
 
   if(_actualState == AbstractLandState::states::COMP)
     _centered = _horizontaErr < tau_comp_cone && _VisionPose.VisionDataUpdated;
@@ -575,10 +576,10 @@ void Lander::updateSignals() {
     _goDiag.heavePos       = _seaState.heavePos;
     _goDiag.heaveVel       = _seaState.heaveVel;
     _goDiag.heaveVelPred   = _seaState.heaveVelPred;
-    _goDiag.rollLimit      = param.landRollLimit;
-    _goDiag.pitchLimit     = param.landPitchLimit;
-    _goDiag.rollRateLimit  = param.landRollRateLimit;
-    _goDiag.pitchRateLimit = param.landPitchRateLimit;
+    _goDiag.goRollLimit      = param.landRollLimit;
+    _goDiag.goPitchLimit     = param.landPitchLimit;
+    _goDiag.goRollRateLimit  = param.landRollRateLimit;
+    _goDiag.goPitchRateLimit = param.landPitchRateLimit;
     _goDiag.anglesOk       = anglesOk;
     _goDiag.ratesOk        = ratesOk;
     _goDiag.descFromPeak   = padNotRushingUp;
@@ -1230,8 +1231,8 @@ bool Lander::setDroneInFront()
     _line_direction[0] = -gain*sinf(yaw_plat);
     _line_direction[1] = -gain*cosf(yaw_plat);
     // GROUND TRUTH — kept commented for reference:
-    // _line_direction[2] = _state.getZ() - (_platformState.getZ() + param.z_margin);
-    _line_direction[2] = _state.getZ() - (_platformVision.getZ() + param.z_margin);
+    // _line_direction[2] = _state.getZ() - (_platformState.getZ() + param.zMargin);
+    _line_direction[2] = _state.getZ() - (_platformVision.getZ() + param.zMargin);
     _approachSettleTimer = 0.0;   // consumed — start clean for next time
     return true;
   }
@@ -1327,17 +1328,17 @@ void Lander::hold() {
     bool desc_v        = _centered && _holding && (_setPoint.getZ() > param.zMin + 0.1) && _machine.safeInitialLanding();
     bool asce_v        = _lost    && (_verticalErr < param.zMax - 0.1);
     bool asce_min      = (_setPoint.getZ() < param.zMin);
-    bool asce_margin   = _holding && _centered && (_verticalErr < param.z_margin) && (_verticalErr < param.zMax - 0.1) && !desc_v;
+    bool asce_margin   = _holding && _centered && (_verticalErr < param.zMargin) && (_verticalErr < param.zMax - 0.1) && !desc_v;
 
     // if (_prevState == AbstractLandState::states::INIT)
     if(_slopeActive)
     {
       // GROUND TRUTH — kept commented for reference:
-      // double z_base = _platformState.getZ() + param.z_margin;
+      // double z_base = _platformState.getZ() + param.zMargin;
       // The vision-derived Z is also in the DRONE's frame, where the setpoint is
       // commanded; _platformState is in the simulator's world frame, so the old
       // form mixed frames as well as using truth.
-      double z_base = _platformVision.getZ() + param.z_margin;
+      double z_base = _platformVision.getZ() + param.zMargin;
       double dot    = _VisionPose.getX() * _line_direction[0] + _VisionPose.getY() * _line_direction[1];
       double norm_sq = _line_direction[0] * _line_direction[0] + _line_direction[1] * _line_direction[1];
       double z_adj  = z_base + _line_direction[2] * dot / norm_sq + 0.5*(z_adj-_state.getZ());
@@ -1529,7 +1530,7 @@ void Lander::comp() {
   // run()'s call order. Same-tick recompute — harmless, same inputs.
   trackXY();
 
-  // COMP standoff hold: keep the drone at compHoldDist above the pad while
+  // COMP standoff hold: keep the drone at compTargetDist above the pad while
   // centred.
   //
   // Hysteresis safety: if the gap drops below compMinDist the pad is coming up
@@ -1552,7 +1553,7 @@ void Lander::comp() {
   double new_z;
   if (_compTracking) {
     double vff  = _seaState.heaveValid ? _seaState.heaveVelPredComp : 0.0;
-    double lead = (param.compHoldDist - gap);
+    double lead = (param.compTargetDist - gap);
     new_z = _state.getZ() + 3.0*lead;
 
     // Two modes, so the position and velocity halves of the setpoint stop
@@ -1594,13 +1595,13 @@ void Lander::comp() {
   // descent can stall:
   //   * commanded but not followed  -> cmdZ stays well below stateZ, stateVz ~0
   //   * not commanded               -> cmdZ converges onto stateZ (gap already
-  //                                    at compHoldDist, or gap not updating)
+  //                                    at compTargetDist, or gap not updating)
   //   * clamped                     -> clamped flag set, cmdZ pinned at zMin
   {
     static int compLogTick = 0;
     if ((compLogTick++ % 5) == 0) {
       const double cmdZ = _setPoint.getZ();
-      std::cout << "comp gap " << gap << "/" << param.compHoldDist
+      std::cout << "comp gap " << gap << "/" << param.compTargetDist
                 << " tracking " << _compTracking
                 << " mode " << (_compTracking ? (_compVelMatching ? "VEL" : "POS") : "BACKOFF")
                 << " vff " << (_seaState.heaveValid ? _seaState.heaveVelPredComp : 0.0)
