@@ -168,10 +168,13 @@ namespace gazebo
         // Highest-priority motion source, once heard: the platform's motion
         // is driven by a recorded ulisse_msgs/SimulatedSystem stream (e.g. a
         // Jazzy-recorded rosbag, played in a loop since a real recording is
-        // only a few minutes long). The message's absolute position field is
-        // deliberately NOT used — instead position is dead-reckoned from the
-        // body-frame linear velocity, which stays continuous across the
-        // bag's loop point even though absolute position would jump there.
+        // only a few minutes long). Neither the message's absolute position
+        // NOR its absolute orientation (rpy) field is used as a continuous
+        // target — both are dead-reckoned from the body-frame velocities
+        // (linear and angular respectively) instead, which stay continuous
+        // across a discontinuity in the raw signal (e.g. the bag's loop
+        // point) even though the absolute fields would jump there. Both
+        // absolute fields are still used once, to seed the very first tick.
 
         // Latest raw sample from the topic — written by simulatedSystemCallback()
         // under _data_mutex, read (snapshotted) in OnUpdate() under the same lock.
@@ -203,7 +206,11 @@ namespace gazebo
         // jumps in the recorded signal (loop point, sensor dropouts, ...).
         double _sim_max_lin_accel;   // m/s^2 — caps how fast linear velocity may change
         double _sim_max_ang_accel;   // rad/s^2 — caps how fast angular velocity may change
-        double _sim_max_rpy_rate;    // rad/s — caps how fast roll/pitch/yaw may change
+        double _sim_max_rpy_rate;    // rad/s — caps how fast the rpy INTEGRATED from
+                                      // _sim_ang_vel_filt may actually step per tick
+                                      // (a safety clamp on the integration, not a
+                                      // slew target -- rpy is no longer slewed toward
+                                      // the message's absolute value, see above)
 
         void manageTime(const common::UpdateInfo & _info){
 
@@ -402,9 +409,22 @@ namespace gazebo
                       _sim_lin_vel_filt[i] = slewLimit(raw.lin_vel_body[i], _sim_lin_vel_filt[i], _sim_max_lin_accel, _dt);
                       _sim_ang_vel_filt[i] = slewLimit(raw.ang_vel_body[i], _sim_ang_vel_filt[i], _sim_max_ang_accel, _dt);
                     }
-                    _sim_rpy_filt[0] = slewLimitAngle(raw.rpy[0], _sim_rpy_filt[0], _sim_max_rpy_rate, _dt);
-                    _sim_rpy_filt[1] = slewLimitAngle(raw.rpy[1], _sim_rpy_filt[1], _sim_max_rpy_rate, _dt);
-                    _sim_rpy_filt[2] = slewLimitAngle(raw.rpy[2], _sim_rpy_filt[2], _sim_max_rpy_rate, _dt);
+                    // Orientation is now dead-reckoned from the (slew-limited)
+                    // body-frame angular velocity, exactly like position is
+                    // dead-reckoned from linear velocity above -- rather than
+                    // slewing toward the message's own absolute rpy. That
+                    // absolute value was only ever used as the very first
+                    // seed (above); using it as a continuous target meant a
+                    // discontinuity in the recorded rpy (e.g. the bag's loop
+                    // point) fed straight into the platform's commanded
+                    // attitude, same class of bug the linear-velocity
+                    // dead-reckoning already existed to avoid. _sim_max_rpy_rate
+                    // still applies, now as a safety clamp on the integrated
+                    // step rather than a slew target.
+                    for (int i = 0; i < 3; i++) {
+                      double integrated = wrapAngle(_sim_rpy_filt[i] + _sim_ang_vel_filt[i] * _dt);
+                      _sim_rpy_filt[i] = slewLimitAngle(integrated, _sim_rpy_filt[i], _sim_max_rpy_rate, _dt);
+                    }
                   }
 
                   ignition::math::Quaterniond orientation(
