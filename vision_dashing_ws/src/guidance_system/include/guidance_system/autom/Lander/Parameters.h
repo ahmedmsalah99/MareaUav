@@ -47,33 +47,33 @@ public:
     double inspeLinVel;
 
     //Number of consecutive frames in which tracking is considered valid
-    int    NFramesHold;
+    int    nFramesHold;
 
     //Number of consecutive frames in which tracking is considered not valid
-    int    NFramesLost;
+    int    nFramesLost;
 
     //Number of consecutive frames in which tracking is considered valid
     //and robot is ready for compensation
-    int    NFramesComp;
+    int    nFramesComp;
 
     //horizontal error allowed during holding phase
-    double hold_threshold;
+    double holdThreshold;
 
     //horizontal error allowed during compensation phase
-    double comp_threshold;
+    double compThreshold;
 
     //vertical error allowed
-    double lost_threshold;
+    double lostThreshold;
 
-    // Drone must stay at or above platformZ + z_margin when not actively descending.
-    double z_margin;
+    // Drone must stay at or above platformZ + zMargin when not actively descending.
+    double zMargin;
 
     // Minimum (tightest) values of the above thresholds, applied at z=0.
     // At any relative z the threshold is linearly interpolated between
     // the _min value (z=0) and the max value (z=cone_z_ref).
-    double hold_threshold_min;
-    double comp_threshold_min;
-    double lost_threshold_min;
+    double holdThresholdMin;
+    double compThresholdMin;
+    double lostThresholdMin;
 
     // Relative Z at which thresholds reach their maximum (cone base radius).
     double cone_z_ref;
@@ -168,7 +168,7 @@ public:
 
     // ── COMP standoff (comp()) ───────────────────────────────────────────────
     // Drone->pad distance [m] COMP holds while compensating (below standoffDistance).
-    double compHoldDist;
+    double compTargetDist;
     // Pad vertical speed [m/s] above which comp() switches to VELOCITY MATCHING.
     // Compared SIGNED against heaveVelPredComp (up-positive), so only a pad
     // climbing faster than this engages matching. Below it comp() commands
@@ -222,7 +222,10 @@ public:
     // Fraction (0..1] of the vote window that must be GO for the vote to be GO.
     double landVoteThreshold;
 
-    // Setpoint lead [m] for the committed (aggressive) descent in land().
+    // Commanded descent velocity [m/s] for the committed (aggressive) descent
+    // in land() -- sent directly as _setPoint.setVz(-landDescVel). (Comment
+    // here previously said "setpoint lead [m]", which was stale/wrong: this
+    // is a velocity, matching what the name and every use site already say.)
     double landDescVel;
 
     // EMA factor [0..1) for the vision-derived platform velocity estimate.

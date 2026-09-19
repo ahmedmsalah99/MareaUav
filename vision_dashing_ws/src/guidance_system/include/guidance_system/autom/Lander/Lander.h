@@ -55,11 +55,15 @@ struct LandGoDiagnostics {
     double heaveVelPred   = 0.0;
 
     // Limits applied to the inputs above (LAND_* params, logged so plots are
-    // self-contained — no need to cross-reference the param file).
-    double rollLimit      = 0.0;
-    double pitchLimit     = 0.0;
-    double rollRateLimit  = 0.0;
-    double pitchRateLimit = 0.0;
+    // self-contained — no need to cross-reference the param file). Named
+    // go*Limit (not just *Limit) because Parameters has its own, DIFFERENT
+    // rollLimit/pitchLimit/rollRateLimit/pitchRateLimit (the calm-sea gate,
+    // param.rollLimit etc.) — reusing the same names here previously made
+    // the two easy to confuse despite being unrelated values.
+    double goRollLimit      = 0.0;
+    double goPitchLimit     = 0.0;
+    double goRollRateLimit  = 0.0;
+    double goPitchRateLimit = 0.0;
 
     // Per-condition verdicts
     bool anglesOk      = false;
@@ -393,7 +397,7 @@ private:
     // the drone was actually in is visible per tick.
     bool   _compVelMatching = false;
 
-    // COMP standoff hysteresis: true = track compHoldDist, false = backing off
+    // COMP standoff hysteresis: true = track compTargetDist, false = backing off
     // (ascending) because the gap dropped below compMinDist.
     bool   _compTracking = true;
 

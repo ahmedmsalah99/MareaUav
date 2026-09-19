@@ -71,7 +71,7 @@ void HoldState::handle(){
     (void)ultraCompValid;   // reserved for the final landing phase
 
     // Enter COMP once we are within the standoff distance (2 m) of the pad,
-    // centred, holding and on a calm sea. COMP then holds compHoldDist (1.5 m).
+    // centred, holding and on a calm sea. COMP then holds compTargetDist (1.5 m).
     bool compValid = _holding && _centered && (downDist < param.standoffDistance)
                     && _contextL->safeInitialLanding();
 
@@ -165,7 +165,7 @@ void HoldState::handle(){
     }
 
     if (asceUnderMargin){
-        this->_contextL->setStatePtr(_nextAscState); // below z_margin above pad — ascend
+        this->_contextL->setStatePtr(_nextAscState); // below zMargin above pad — ascend
         printStateTransition();
         std::cout << "asceUnderMargin " << asceUnderMargin << std::endl;
         // std::cout << "_centered " << _centered << " _holding " << _holding << " z cond " << (_setPoint.getZ() > param.zMin + 0.1) << " _setPoint.getZ() "
@@ -202,9 +202,9 @@ void CompState::handle() {
 
     getSignals();
     double downDist = -_verticalErr;
-    bool onTarget = _NComp > param.NFramesComp;
+    bool onTarget = _NComp > param.nFramesComp;
 
-    // COMP holds compHoldDist above the pad and compensates the heave.
+    // COMP holds compTargetDist above the pad and compensates the heave.
     // Rough platform attitude does NOT leave COMP (that's the aggressive-landing
     // abort, a later phase). Only a lost platform fix, or drifting back above the
     // standoff, leaves COMP.
@@ -317,7 +317,7 @@ void CompState::handle() {
 void RToLandState::handle() {
 
     getSignals();
-    if (_NComp > param.NFramesComp){
+    if (_NComp > param.nFramesComp){
         this->_contextL->setStatePtr(_nextComState); //set the next state(CompState)
         printStateTransition();
         return;
@@ -333,7 +333,7 @@ void RToLandState::handle() {
 void LandState::handle() {
 
     getSignals();
-    bool onTarget = _NComp > param.NFramesComp;
+    bool onTarget = _NComp > param.nFramesComp;
 
     // Touchdown takes priority over everything else — once detected we commit
     // permanently to LANDING_DONE, even if the GO window happens to close or

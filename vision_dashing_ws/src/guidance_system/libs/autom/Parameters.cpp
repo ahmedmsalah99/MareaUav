@@ -7,10 +7,10 @@
 
 Parameters::Parameters() {
     disarmOnGo         = false;
-    z_margin           = 1.0;
-    hold_threshold_min = 0.60;
-    comp_threshold_min = 0.30;
-    lost_threshold_min = 0.80;
+    zMargin           = 1.0;
+    holdThresholdMin = 0.60;
+    compThresholdMin = 0.30;
+    lostThresholdMin = 0.80;
     cone_z_ref         = 5.0;
     descVelocity       = 0.1;
     asceVelocity       = 0.1;
@@ -25,7 +25,7 @@ Parameters::Parameters() {
     spMaxVelXY         = 0.3;
     reactionLag        = 0.3;
     standoffDistance   = 2.0;
-    compHoldDist       = 1.5;
+    compTargetDist       = 1.5;
     compMinDist        = 1.0;
     compResumeDist     = 1.3;
     compVelMatchThld   = 0.1;
@@ -84,47 +84,47 @@ void Parameters::loadParamFile(const char *config_file) {
 			if ( !param.compare("SEARCH") )
                 search = value;
 
-            if ( !param.compare("DISARM_ON_GO") )
+            else if ( !param.compare("DISARM_ON_GO") )
                 disarmOnGo = value;
 
-            if ( !param.compare("INSPECTION_RADIUS") )
+            else if ( !param.compare("INSPECTION_RADIUS") )
                 inspeRadius = value;
 
             else if( !param.compare("VELOCITY_INSPECTION") )
                 inspeLinVel = value;
 
             else if( !param.compare("FRAMES_FOR_HOLDING") )
-                NFramesHold = value;
+                nFramesHold = value;
 
             else if( !param.compare("FRAMES_FOR_LOST") )
-                NFramesLost = value;
+                nFramesLost = value;
 
             else if( !param.compare("HOLD_THRESHOLD") )
-                hold_threshold = value;
+                holdThreshold = value;
 
             else if( !param.compare("COMP_THRESHOLD") )
-                comp_threshold = value;
+                compThreshold = value;
 
             else if( !param.compare("LOST_THRESHOLD") )
-                lost_threshold = value;
+                lostThreshold = value;
 
             else if( !param.compare("Z_MARGIN") )
-                z_margin = value;
+                zMargin = value;
 
             else if( !param.compare("HOLD_THRESHOLD_MIN") )
-                hold_threshold_min = value;
+                holdThresholdMin = value;
 
             else if( !param.compare("COMP_THRESHOLD_MIN") )
-                comp_threshold_min = value;
+                compThresholdMin = value;
 
             else if( !param.compare("LOST_THRESHOLD_MIN") )
-                lost_threshold_min = value;
+                lostThresholdMin = value;
 
             else if( !param.compare("CONE_Z_REF") )
                 cone_z_ref = value;
 
             else if( !param.compare("FRAMES_FOR_COMP") )
-                NFramesComp = value;
+                nFramesComp = value;
 
             else if( !param.compare("MAX_ALTITUDE") )
                 zMax = value;
@@ -195,8 +195,8 @@ void Parameters::loadParamFile(const char *config_file) {
             else if( !param.compare("STANDOFF_DISTANCE") )
                 standoffDistance = value;
 
-            else if( !param.compare("COMP_HOLD_DIST") )
-                compHoldDist = value;
+            else if( !param.compare("COMP_TARGET_DIST") )
+                compTargetDist = value;
 
             else if( !param.compare("COMP_MIN_DIST") )
                 compMinDist = value;

@@ -31,8 +31,8 @@ Searcher::Searcher():_horizontaErr((double)0), _tauHold((double)0), _tauLost((do
     //put a saturation for the whole PID
     _holdPIDX.setOutputLimits(param.maxOutput);
 
-  	_tauHold = param.hold_threshold;
-  	_tauLost = param.lost_threshold;
+  	_tauHold = param.holdThreshold;
+  	_tauLost = param.lostThreshold;
 
     //stored starting hovering position
     starting_x = _state.getX();
@@ -138,8 +138,8 @@ void Searcher::loadMachine()
 
   _holdPIDX.setOutputLimits(param.maxOutput);
 
-	_tauHold = param.hold_threshold;
-	_tauLost = param.lost_threshold;
+	_tauHold = param.holdThreshold;
+	_tauLost = param.lostThreshold;
   //stored starting hovering position
   starting_x = _state.getX();
   starting_y = _state.getY();
@@ -346,9 +346,9 @@ void Searcher::updateSignals()
       _NLost++;
   }
 
-	_holding  = (_NHold > param.NFramesHold && _VisionPose.VisionDataUpdated);
+	_holding  = (_NHold > param.nFramesHold && _VisionPose.VisionDataUpdated);
 
-  _lost     = (_NLost > param.NFramesLost || !_VisionPose.VisionDataUpdated);
+  _lost     = (_NLost > param.nFramesLost || !_VisionPose.VisionDataUpdated);
 
   _positioned = _horizontaErr < _tauHold * 0.5 && _VisionPose.VisionDataUpdated;
 
