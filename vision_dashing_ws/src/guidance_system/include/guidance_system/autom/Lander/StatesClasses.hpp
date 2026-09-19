@@ -163,6 +163,14 @@ public:
      * is applied by CompState itself. */
     double *_landValidTimer;
 
+    /** Peak recent upward heave velocity, computed each tick in
+     * Lander::updateSignals() (see Lander::_heaveUpMax's declaration) --
+     * the same value comp()'s own standoff margin uses, so the landing
+     * height gate widens/narrows in step with it. Capped separately by
+     * each caller (CompState::handle() applies its own cap for heightOk,
+     * distinct from comp()'s cap for the standoff distance itself). */
+    double *_heaveUpMax;
+
     /**
      * @brief Decides whether it is safe to begin the landing on a calm sea.
      * @details Returns true only when:

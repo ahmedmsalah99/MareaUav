@@ -188,6 +188,7 @@ void Lander::initStateMachine() {
 	_predHistPitch.clear();
 	_predHistHeavePos.clear();
 	_predHistHeaveVel.clear();
+	_zAdjInitialized     = false;   // re-seed the INIT slope's feedback term on (re)init
 
   //Link signals
   //assign initialized errors of the Lander class with
@@ -209,6 +210,7 @@ void Lander::initStateMachine() {
   _machine._disarmRequest = &_disarmRequest;
   _machine._compValidTimer = &_compValidTimer;
   _machine._landValidTimer = &_landValidTimer;
+  _machine._heaveUpMax    = &_heaveUpMax;
 	_machine.param		     =  &param;
 	//New signals
   _machine._holding      =  &_holding;
@@ -1354,7 +1356,16 @@ void Lander::hold() {
       double z_base = _platformVision.getZ() + param.z_margin;
       double dot    = _VisionPose.getX() * _line_direction[0] + _VisionPose.getY() * _line_direction[1];
       double norm_sq = _line_direction[0] * _line_direction[0] + _line_direction[1] * _line_direction[1];
-      double z_adj  = z_base + _line_direction[2] * dot / norm_sq + 0.5*(z_adj-_state.getZ());
+      double lineTarget = z_base + _line_direction[2] * dot / norm_sq;
+      // _prevZAdj feeds back LAST TICK's z_adj (see its declaration) -- seed
+      // it with this tick's own lineTarget (no feedback yet) the very first
+      // time this runs, instead of reading an uninitialized value.
+      if (!_zAdjInitialized) {
+        _prevZAdj = lineTarget;
+        _zAdjInitialized = true;
+      }
+      double z_adj = lineTarget + param.initSlopeGain * (_prevZAdj - _state.getZ());
+      _prevZAdj = z_adj;
       std::cout << "z_base "  << z_base << " z_adj " << z_adj << " state z "<< _state.getZ() << " _line_direction[2] " << _line_direction[2]
       << " dot " << dot << " norm_sq " << norm_sq << " dot / norm_sq " << dot / norm_sq  << " _VisionPose.getX() " << (_VisionPose.getX()) <<
       " _VisionPose.getY() " << _VisionPose.getY() << " _state.getX() " <<_state.getX() << std::endl;
@@ -1563,14 +1574,21 @@ void Lander::comp() {
   if (gap < param.compMinDist)    _compTracking = false;   // too close — back off
   if (gap > param.compResumeDist) _compTracking = true;    // safe again — track
 
+  // Extra standoff margin, added directly (no gain): calm seas (no recent
+  // upward heave) hold at plain compHoldDist; a rougher sea (a nonzero
+  // _heaveUpMax) pushes the held distance back out. The CAP applies to the
+  // resulting TOTAL standoff distance (compHeaveMarginMax), not to the
+  // margin in isolation -- an unbounded standoff would back the drone
+  // arbitrarily far off in a rough enough sea, and capping the total is what
+  // actually bounds that, not capping how much gets added to whatever
+  // compHoldDist already is. Computed once, before the tracking branch, so
+  // both the standoff below and the throttled diagnostic log agree on the
+  // exact same value.
+  double effectiveHoldDist = std::min(param.compHoldDist + _heaveUpMax, param.compHeaveMarginMax);
+
   double new_z;
   if (_compTracking) {
     double vff  = _seaState.heaveValid ? _seaState.heaveVelPredComp : 0.0;
-    // Extra standoff margin, added directly (no gain): calm seas (no recent
-    // upward heave) hold at plain compHoldDist; a rougher sea (a nonzero
-    // peak of the recent upward excursions -- see _heaveUpMax) pushes
-    // the held distance back out by that peak.
-    double effectiveHoldDist = param.compHoldDist + _heaveUpMax;
     double lead = (effectiveHoldDist - gap);
     new_z = _state.getZ() + 3.0*lead;
 
@@ -1619,8 +1637,9 @@ void Lander::comp() {
     static int compLogTick = 0;
     if ((compLogTick++ % 5) == 0) {
       const double cmdZ = _setPoint.getZ();
-      std::cout << "comp gap " << gap << "/" << (param.compHoldDist + _heaveUpMax)
-                << " (base " << param.compHoldDist << " +heaveUpMax " << _heaveUpMax << ")"
+      std::cout << "comp gap " << gap << "/" << effectiveHoldDist
+                << " (base " << param.compHoldDist << " +heaveUpMax " << _heaveUpMax
+                << " capped@" << param.compHeaveMarginMax << ")"
                 << " tracking " << _compTracking
                 << " mode " << (_compTracking ? (_compVelMatching ? "VEL" : "POS") : "BACKOFF")
                 << " vff " << (_seaState.heaveValid ? _seaState.heaveVelPredComp : 0.0)
