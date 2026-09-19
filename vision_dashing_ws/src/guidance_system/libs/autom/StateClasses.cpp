@@ -71,22 +71,16 @@ void HoldState::handle(){
     bool ultraCompValid = _holding && (fabs(_UltraInfo.getZ()) < ultra_limit+0.1) && _centered;
     (void)ultraCompValid;   // reserved for the final landing phase
 
-    // Enter COMP once we are within standoffCompThld of the pad, centred,
+    // Enter COMP once we are within standoffDescThld of the pad, centred,
     // holding and on a calm sea. COMP then holds compHoldDist (1.5 m).
     //
-    // compValid/descValid/asceUnderMargin used to all pivot on the exact
-    // same single threshold (standoffDistance), with zero hysteresis. Against
-    // a heaving pad, downDist oscillates back and forth across that one line
-    // every heave cycle, which (a) flip-flopped the state machine between
-    // DESC and ASCE every crossing instead of ever settling, and (b) reset
-    // compValidTimer to 0 on every single crossing below, so it could never
-    // accumulate compWaitTime seconds of continuous validity and COMP was
-    // never reached. Splitting the single threshold into two --
-    // standoffDescThld (outer, triggers descent) and standoffCompThld (inner,
-    // eligible for COMP / ascend-if-not-cleared) -- creates a dead band
-    // between them where the drone just holds level, so a moderate heave
-    // excursion no longer immediately flips the state.
-    bool compValid = _holding && _centered && (downDist < param.standoffCompThld)
+    // Uses the same (outer) threshold descValid stops descending at, not the
+    // inner standoffCompThld: descent only ever brings downDist down to just
+    // under standoffDescThld before stopping, so gating compValid on the
+    // tighter standoffCompThld left a gap nothing ever crossed -- the drone
+    // would stop descending in the dead band and sit there forever, never
+    // satisfying compValid, so COMP was never reached at all.
+    bool compValid = _holding && _centered && (downDist < param.standoffDescThld)
                     && _contextL->safeInitialLanding();
 
 
