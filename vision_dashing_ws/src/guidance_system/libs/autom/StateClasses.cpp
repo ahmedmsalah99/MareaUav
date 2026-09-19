@@ -91,7 +91,14 @@ void HoldState::handle(){
 
     // Ascend if the drone is closer than the standoff distance and not actively
     // descending — together with descValid this parks the drone at the standoff.
-    bool asceUnderMargin = _centered && _holding &&  (downDist > param.standoffDistance) && (downDist < param.zMax - 0.1) && !descValid;
+    // NOTE: this previously used "downDist > standoffDistance" — the same
+    // range as descValid — which meant it fired whenever descValid dropped
+    // false for ANY reason (e.g. safeInitialLanding()'s calm-sea gate
+    // blipping) while still far above the pad, sending the drone climbing
+    // instead of simply holding level. The comment always said "closer than",
+    // matching descValid's off state should mean "too close, not cleared to
+    // hold there" -- i.e. downDist < standoffDistance, not >.
+    bool asceUnderMargin = _centered && _holding &&  (downDist < param.standoffDistance) && (downDist < param.zMax - 0.1) && !descValid;
 
     //if the vision data are not available and the drone is at or above zMax, go back to init.
     // bool InitValid = !_VisionPose.VisionDataUpdated && !(_setPoint.getZ() < param.zMax - 0.1);
