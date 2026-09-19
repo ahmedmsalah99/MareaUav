@@ -329,14 +329,19 @@ private:
   double nav_home_lat_    {0.0};
   double nav_home_lon_    {0.0};
 
-  // Slew-rate state for the position command translator. Z gets its own,
-  // higher limit than X/Y: it's what bounds the achievable descent/ascent
-  // rate for every POSITION-type command (HOLD's INIT slope, desc()/asce(),
-  // COMP), independent of whatever velocity feed-forward rides alongside it
-  // in setpoint.velocity[2] -- the position target itself is what PX4 tracks,
-  // so a feed-forward can't ask for more than this lets the target move.
-  static constexpr double kMaxVelocityXY = 0.5;  // m/s
-  static constexpr double kMaxVelocityZ  = 1.0;  // m/s
+  // Slew-rate state for the position command translator. Kept as separate
+  // XY/Z constants (rather than one shared kMaxVelocity) so either axis can
+  // be retuned independently later -- raising kMaxVelocityZ above 0.3 was
+  // tried (to let the INIT slope/desc()'s Vz feed-forward actually move the
+  // Z position target faster) but produced quirky behavior in both the INIT
+  // slope and COMP, so both are back at the original 0.3 for now. This is
+  // what bounds the achievable rate for every POSITION-type command (HOLD's
+  // INIT slope, desc()/asce(), COMP), independent of whatever velocity
+  // feed-forward rides alongside it in setpoint.velocity[2] -- the position
+  // target itself is what PX4 tracks, so a feed-forward can't ask for more
+  // than this lets the target move.
+  static constexpr double kMaxVelocityXY = 0.3;  // m/s
+  static constexpr double kMaxVelocityZ  = 0.3;  // m/s
   bool         first_pos_sp_ {true};
   rclcpp::Time pos_sp_last_time_;
   double       prev_pos_sp_[3] {0.0, 0.0, 0.0};
