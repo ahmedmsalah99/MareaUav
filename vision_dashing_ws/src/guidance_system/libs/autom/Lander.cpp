@@ -403,6 +403,25 @@ void Lander::updateSignals() {
     pushPredHistory(_predHistHeaveVel, _seaState.heaveVelPred,  _seaState.dt, maxAge);
   }
 
+  // Rolling mean of recent UPWARD heave velocity, feeding comp()'s extra
+  // standoff margin (see param.compHeaveMarginWindow / _heaveUpMean's
+  // declaration). Pushed every tick (like the history above) so the window
+  // is pruned by real elapsed time regardless of sign -- but the value
+  // pushed is heaveVel clamped to >= 0, and the mean below is taken only
+  // over the entries that are actually positive (downward heave velocity is
+  // excluded from both the sum and the count, not just zeroed into the sum,
+  // so it can't dilute the average toward zero).
+  {
+    double v = std::max(_seaState.heaveVel, 0.0);
+    pushPredHistory(_heaveUpSamples, v, _seaState.dt, param.compHeaveMarginWindow);
+    double sum = 0.0;
+    int count = 0;
+    for (auto &s : _heaveUpSamples) {
+      if (s.second > 0.0) { sum += s.second; ++count; }
+    }
+    _heaveUpMean = (count > 0) ? (sum / count) : 0.0;
+  }
+
 	if( _VisionPose.VisionDataUpdated )
     Inspection = false;
 
@@ -1552,7 +1571,12 @@ void Lander::comp() {
   double new_z;
   if (_compTracking) {
     double vff  = _seaState.heaveValid ? _seaState.heaveVelPredComp : 0.0;
-    double lead = (param.compHoldDist - gap);
+    // Extra standoff margin, added directly (no gain): calm seas (no recent
+    // upward heave) hold at plain compHoldDist; a rougher sea (a nonzero
+    // recent mean of just the upward excursions -- see _heaveUpMean) pushes
+    // the held distance back out by that same amount.
+    double effectiveHoldDist = param.compHoldDist + _heaveUpMean;
+    double lead = (effectiveHoldDist - gap);
     new_z = _state.getZ() + 3.0*lead;
 
     // Two modes, so the position and velocity halves of the setpoint stop
@@ -1600,7 +1624,8 @@ void Lander::comp() {
     static int compLogTick = 0;
     if ((compLogTick++ % 5) == 0) {
       const double cmdZ = _setPoint.getZ();
-      std::cout << "comp gap " << gap << "/" << param.compHoldDist
+      std::cout << "comp gap " << gap << "/" << (param.compHoldDist + _heaveUpMean)
+                << " (base " << param.compHoldDist << " +heaveUpMean " << _heaveUpMean << ")"
                 << " tracking " << _compTracking
                 << " mode " << (_compTracking ? (_compVelMatching ? "VEL" : "POS") : "BACKOFF")
                 << " vff " << (_seaState.heaveValid ? _seaState.heaveVelPredComp : 0.0)

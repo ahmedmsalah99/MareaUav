@@ -497,6 +497,22 @@ private:
     // state-machine reset (initStateMachine()).
     double _approachSettleTimer = 0.0;
 
+    // Rolling window of recent UPWARD (positive, up-positive convention)
+    // _seaState.heaveVel samples, (age-since-insertion, value) pairs, updated
+    // every tick in updateSignals(). Downward heave velocity is deliberately
+    // NOT recorded here at all -- the pad moving away from the drone doesn't
+    // need extra standoff margin, only the pad rushing up toward it does, so
+    // negative samples must not dilute the average toward zero. Feeds
+    // _heaveUpMean, comp()'s extra standoff margin: calm seas (no recent
+    // upward excursions) let the drone hold closer; an energetic sea (a
+    // sustained positive mean) pushes the standoff back out.
+    std::deque<std::pair<double, double>> _heaveUpSamples;
+
+    // Mean of _heaveUpSamples' values (0.0 when the window has no positive
+    // samples, e.g. a genuinely calm or currently-descending pad) --
+    // recomputed alongside _heaveUpSamples in updateSignals().
+    double _heaveUpMean = 0.0;
+
     // Throttles setDroneInFront()'s diagnostic log to ~1 Hz instead of the
     // full control-loop rate.
     double _approachLogTimer = 0.0;
