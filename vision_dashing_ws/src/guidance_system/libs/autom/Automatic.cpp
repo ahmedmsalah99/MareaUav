@@ -1,9 +1,16 @@
+#include <cstdlib>
 #include "guidance_system/autom/Automatic.h"
 using namespace common;
 Automatic::Automatic()
 {
   _defaultYaw = 0;
-  env_sim = (bool)std::getenv("M2M_SIM");
+  // Value-based, not presence-based: (bool)getenv(...) was true even for
+  // M2M_SIM=0 (a non-null pointer to the string "0"), which meant hardware
+  // exporting M2M_SIM=0 as instructed still ran this in simulation mode.
+  {
+    const char *m2mSimEnv = std::getenv("M2M_SIM");
+    env_sim = m2mSimEnv && (atoi(m2mSimEnv) >= 1);
+  }
 }
 
 MavState Automatic::getState()
