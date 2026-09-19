@@ -1571,9 +1571,6 @@ void Lander::comp() {
 
   double gap = -_verticalErr;   // measured drone->pad vertical distance
 
-  if (gap < param.compMinDist)    _compTracking = false;   // too close — back off
-  if (gap > param.compResumeDist) _compTracking = true;    // safe again — track
-
   // Extra standoff margin, added directly (no gain): calm seas (no recent
   // upward heave) hold at plain compHoldDist; a rougher sea (a nonzero
   // _heaveUpMax) pushes the held distance back out. The CAP applies to the
@@ -1585,6 +1582,20 @@ void Lander::comp() {
   // both the standoff below and the throttled diagnostic log agree on the
   // exact same value.
   double effectiveHoldDist = std::min(param.compHoldDist + _heaveUpMax, param.compHeaveMarginMax);
+
+  // compMinDist/compResumeDist are configured as offsets FROM compHoldDist
+  // (how much closer than the hold distance triggers back-off / resume).
+  // When _heaveUpMax pushes the effective hold distance out, these two
+  // hysteresis bounds must follow it by the same amount so they keep the
+  // same physical offset from wherever the drone is actually holding —
+  // otherwise a large standoff margin would leave compMinDist/compResumeDist
+  // sitting at their configured-for-calm-seas values, far too close to the
+  // (now much larger) effective hold distance.
+  double effectiveMinDist    = effectiveHoldDist - (param.compHoldDist - param.compMinDist);
+  double effectiveResumeDist = effectiveHoldDist - (param.compHoldDist - param.compResumeDist);
+
+  if (gap < effectiveMinDist)    _compTracking = false;   // too close — back off
+  if (gap > effectiveResumeDist) _compTracking = true;    // safe again — track
 
   double new_z;
   if (_compTracking) {
@@ -1640,6 +1651,7 @@ void Lander::comp() {
       std::cout << "comp gap " << gap << "/" << effectiveHoldDist
                 << " (base " << param.compHoldDist << " +heaveUpMax " << _heaveUpMax
                 << " capped@" << param.compHeaveMarginMax << ")"
+                << " minDist " << effectiveMinDist << " resumeDist " << effectiveResumeDist
                 << " tracking " << _compTracking
                 << " mode " << (_compTracking ? (_compVelMatching ? "VEL" : "POS") : "BACKOFF")
                 << " vff " << (_seaState.heaveValid ? _seaState.heaveVelPredComp : 0.0)
