@@ -497,21 +497,23 @@ private:
     // state-machine reset (initStateMachine()).
     double _approachSettleTimer = 0.0;
 
-    // Rolling window of recent UPWARD (positive, up-positive convention)
-    // _seaState.heaveVel samples, (age-since-insertion, value) pairs, updated
-    // every tick in updateSignals(). Downward heave velocity is deliberately
-    // NOT recorded here at all -- the pad moving away from the drone doesn't
-    // need extra standoff margin, only the pad rushing up toward it does, so
-    // negative samples must not dilute the average toward zero. Feeds
-    // _heaveUpMean, comp()'s extra standoff margin: calm seas (no recent
-    // upward excursions) let the drone hold closer; an energetic sea (a
-    // sustained positive mean) pushes the standoff back out.
+    // Rolling window of recent heave velocity, (dt-since-previous-sample, value)
+    // pairs pushed every tick in updateSignals() (same pushPredHistory helper
+    // and real-elapsed-time pruning as the SPA/heave prediction history
+    // above) -- but the value stored is _seaState.heaveVel clamped to >= 0,
+    // since downward heave velocity is our friend (the pad moving away from
+    // the drone needs no extra standoff margin) and must not affect the peak
+    // computed from this window at all.
     std::deque<std::pair<double, double>> _heaveUpSamples;
 
-    // Mean of _heaveUpSamples' values (0.0 when the window has no positive
-    // samples, e.g. a genuinely calm or currently-descending pad) --
-    // recomputed alongside _heaveUpSamples in updateSignals().
-    double _heaveUpMean = 0.0;
+    // Peak (max) of _heaveUpSamples' values over the window (0.0 when the
+    // pad hasn't moved up at all recently, e.g. a genuinely calm or
+    // currently-descending sea) -- feeds comp()'s extra standoff margin:
+    // calm seas let the drone hold closer; a recent upward excursion pushes
+    // the standoff back out by that excursion's peak speed, and the margin
+    // relaxes again once that peak ages out of the window. Recomputed
+    // alongside _heaveUpSamples in updateSignals().
+    double _heaveUpMax = 0.0;
 
     // Throttles setDroneInFront()'s diagnostic log to ~1 Hz instead of the
     // full control-loop rate.

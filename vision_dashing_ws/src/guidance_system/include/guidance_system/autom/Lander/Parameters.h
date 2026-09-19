@@ -176,10 +176,11 @@ public:
     // axis at all.
     double compVelMatchThld;
 
-    // Window [s] over which comp() averages recent UPWARD heave velocity
-    // (see Lander::_heaveUpSamples) to grow the standoff distance in rougher
-    // seas and let it shrink back in calm ones. Added directly (no gain) to
-    // compHoldDist -- see comp().
+    // Window [s] over which comp() tracks the PEAK recent upward heave
+    // velocity (see Lander::_heaveUpSamples/_heaveUpMax) to grow the
+    // standoff distance in rougher seas and let it shrink back once that
+    // peak ages out of the window. Added directly (no gain) to compHoldDist
+    // -- see comp().
     double compHeaveMarginWindow;
 
     // If the gap drops below this [m], COMP stops tracking and backs off (ascends).

@@ -403,23 +403,18 @@ void Lander::updateSignals() {
     pushPredHistory(_predHistHeaveVel, _seaState.heaveVelPred,  _seaState.dt, maxAge);
   }
 
-  // Rolling mean of recent UPWARD heave velocity, feeding comp()'s extra
-  // standoff margin (see param.compHeaveMarginWindow / _heaveUpMean's
+  // Rolling PEAK of recent upward heave velocity, feeding comp()'s extra
+  // standoff margin (see param.compHeaveMarginWindow / _heaveUpMax's
   // declaration). Pushed every tick (like the history above) so the window
   // is pruned by real elapsed time regardless of sign -- but the value
-  // pushed is heaveVel clamped to >= 0, and the mean below is taken only
-  // over the entries that are actually positive (downward heave velocity is
-  // excluded from both the sum and the count, not just zeroed into the sum,
-  // so it can't dilute the average toward zero).
+  // pushed is heaveVel clamped to >= 0, so a downward tick can only ever
+  // contribute 0 to the max, never pull it down.
   {
     double v = std::max(_seaState.heaveVel, 0.0);
     pushPredHistory(_heaveUpSamples, v, _seaState.dt, param.compHeaveMarginWindow);
-    double sum = 0.0;
-    int count = 0;
-    for (auto &s : _heaveUpSamples) {
-      if (s.second > 0.0) { sum += s.second; ++count; }
-    }
-    _heaveUpMean = (count > 0) ? (sum / count) : 0.0;
+    double peak = 0.0;
+    for (auto &s : _heaveUpSamples) peak = std::max(peak, s.second);
+    _heaveUpMax = peak;
   }
 
 	if( _VisionPose.VisionDataUpdated )
@@ -1573,9 +1568,9 @@ void Lander::comp() {
     double vff  = _seaState.heaveValid ? _seaState.heaveVelPredComp : 0.0;
     // Extra standoff margin, added directly (no gain): calm seas (no recent
     // upward heave) hold at plain compHoldDist; a rougher sea (a nonzero
-    // recent mean of just the upward excursions -- see _heaveUpMean) pushes
-    // the held distance back out by that same amount.
-    double effectiveHoldDist = param.compHoldDist + _heaveUpMean;
+    // peak of the recent upward excursions -- see _heaveUpMax) pushes
+    // the held distance back out by that peak.
+    double effectiveHoldDist = param.compHoldDist + _heaveUpMax;
     double lead = (effectiveHoldDist - gap);
     new_z = _state.getZ() + 3.0*lead;
 
@@ -1624,8 +1619,8 @@ void Lander::comp() {
     static int compLogTick = 0;
     if ((compLogTick++ % 5) == 0) {
       const double cmdZ = _setPoint.getZ();
-      std::cout << "comp gap " << gap << "/" << (param.compHoldDist + _heaveUpMean)
-                << " (base " << param.compHoldDist << " +heaveUpMean " << _heaveUpMean << ")"
+      std::cout << "comp gap " << gap << "/" << (param.compHoldDist + _heaveUpMax)
+                << " (base " << param.compHoldDist << " +heaveUpMax " << _heaveUpMax << ")"
                 << " tracking " << _compTracking
                 << " mode " << (_compTracking ? (_compVelMatching ? "VEL" : "POS") : "BACKOFF")
                 << " vff " << (_seaState.heaveValid ? _seaState.heaveVelPredComp : 0.0)
