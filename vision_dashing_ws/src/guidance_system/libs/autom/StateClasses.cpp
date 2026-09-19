@@ -145,6 +145,17 @@ void HoldState::handle(){
         std::cout << "asceUnderMin " << " _setPoint.getZ() " << _setPoint.getZ() << std::endl;
         return;
     }
+
+    // While the INIT slope is still driving Z (hold()'s _slopeActive), don't
+    // let DESC/ASCE/COMP steal alternating ticks from it -- DescState/AsceState
+    // always bounce straight back to HoldState after one call, so every tick
+    // one of those fires instead of hold() is a tick the slope's own Z control
+    // (position target + Vz feed-forward, both computed from the geometric
+    // line) doesn't run at all. Just stay in HOLD and let the slope finish.
+    if (*_contextL->_slopeActive) {
+        return;
+    }
+
     // Require compValid to hold for close to compWaitTime seconds before
     // actually transitioning — a brief flicker into "valid" shouldn't be
     // enough on its own. The timer DECAYS (at the same rate it accumulates)
