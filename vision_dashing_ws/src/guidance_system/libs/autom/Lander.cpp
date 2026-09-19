@@ -208,6 +208,7 @@ void Lander::initStateMachine() {
   _machine._touchedDown  =  &_touchedDown;
   _machine._disarmRequest = &_disarmRequest;
   _machine._compValidTimer = &_compValidTimer;
+  _machine._slopeActive    = &_slopeActive;
   _machine._landValidTimer = &_landValidTimer;
   _machine._heaveUpMax    = &_heaveUpMax;
 	_machine.param		     =  &param;
@@ -1208,8 +1209,17 @@ bool Lander::setDroneInFront()
   // nonzero indefinitely and this check would never pass).
   double errX = xTarget - _state.getX();
   double errY = yTarget - _state.getY();
+  // Also require Z to have actually reached zTarget -- not just X/Y -- before
+  // considering the standoff point reached. Without this, INIT could hand
+  // off to HOLD's slope while Z still had real distance left to close, which
+  // seeds _line_direction[2] (set right after this, from wherever state.getZ()
+  // actually is) with more than the intended "gain" of vertical distance --
+  // an unequal-legs slope from the very first tick, on top of whatever the
+  // slope's own convergence issues are.
+  double errZ = zTarget - _state.getZ();
   bool closeEnough = fabs(errX) < param.initApproachPosThld
-                   && fabs(errY) < param.initApproachPosThld;
+                   && fabs(errY) < param.initApproachPosThld
+                   && fabs(errZ) < param.initApproachPosThld;
 
   // Require it to hold CONTINUOUSLY for initApproachWaitTime seconds before
   // actually releasing — same continuous-timer pattern as the HOLD -> COMP
@@ -1236,7 +1246,7 @@ bool Lander::setDroneInFront()
     _approachLogTimer = 0.0;
     std::cout << "[setDroneInFront] target=(" << xTarget << "," << yTarget << "," << zTarget << ")"
               << " state=(" << _state.getX() << "," << _state.getY() << "," << _state.getZ() << ")"
-              << " err=(" << errX << "," << errY << ")"
+              << " err=(" << errX << "," << errY << "," << errZ << ")"
               << " platVel=(" << _platformVision.getVx() << "," << _platformVision.getVy() << ")"
               << " yawPlat " << yaw_plat
               << " yawDes " << _yaw_des

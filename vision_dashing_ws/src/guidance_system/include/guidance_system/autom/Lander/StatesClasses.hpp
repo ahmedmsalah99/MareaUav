@@ -156,6 +156,13 @@ public:
      * threshold (param.compWaitTime) is applied by HoldState itself. */
     double *_compValidTimer;
 
+    /** True while hold()'s INIT slope is still driving Z along the approach
+     * line (Lander::_slopeActive) -- see HoldState::handle(), which skips its
+     * own compValid/descValid/asceValid/asceUnderMargin transitions entirely
+     * while this is set, so DESC/ASCE/COMP can't steal ticks from the slope
+     * and fight it over the Z setpoint. */
+    bool *_slopeActive;
+
     /** Continuous time [s] the COMP -> LAND transition condition has held in
      * CompState::handle() — reset to 0 the instant the condition goes false,
      * and on any full state-machine reset (initStateMachine()). Only the
