@@ -1219,8 +1219,8 @@ bool Lander::setDroneInFront()
   // steady, or growing, and whether the threshold or the settle timer is
   // what's currently blocking release, without flooding the console. Also
   // prints the platform's own measured velocity, since a platform drifting
-  // faster than the bridge's position-setpoint slew limit (kMaxVelocity in
-  // bridge_node.cpp) can never actually be closed on regardless of what
+  // faster than the bridge's XY position-setpoint slew limit (kMaxVelocityXY
+  // in bridge_node.cpp) can never actually be closed on regardless of what
   // target this function computes — worth comparing against that limit.
   _approachLogTimer += _dt;
   if (_approachLogTimer >= 1.0) {
@@ -1547,12 +1547,12 @@ void Lander::desc() {
   _setPoint.setZ(new_z);
   // Feed the intended descent rate forward on the position command's
   // velocity field (same mechanism comp() already uses for the heave
-  // feed-forward — see bridge_node.cpp's POSITION branch), instead of
-  // relying purely on the stepped-down position target. Without this the
-  // actual descent rate is bottlenecked by the bridge's own
-  // position-setpoint slew limit (kMaxVelocity) chasing a target that only
-  // moves once every other tick (DescState always bounces back to HOLD
-  // after one call), which can end up far slower than descVelocity.
+  // feed-forward — see bridge_node.cpp's POSITION branch). Note this
+  // feed-forward alone does NOT bypass the bridge's own Z position-setpoint
+  // slew limit (kMaxVelocityZ in bridge_node.cpp) -- the position target is
+  // what PX4 actually tracks, and the bridge never lets it move faster than
+  // that limit regardless of the velocity field. The achievable descent rate
+  // is bounded by kMaxVelocityZ, not just descVelocity.
   _setPoint.setVz(-param.descVelocity);
   _setPoint.setType(MavState::POSITION);
 }
