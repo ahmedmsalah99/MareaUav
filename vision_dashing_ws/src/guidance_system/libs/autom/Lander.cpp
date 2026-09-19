@@ -178,6 +178,7 @@ void Lander::initStateMachine() {
 	_touchedDown         = false;
 	_touchdownLogged     = false;
 	_compValidTimer      = 0.0;
+	_holdDescActive      = false;
 	_landValidTimer      = 0.0;
 	_disarmRequest       = false;
 	_disarmRetryElapsed  = 0.0;
@@ -209,6 +210,7 @@ void Lander::initStateMachine() {
   _machine._touchedDown  =  &_touchedDown;
   _machine._disarmRequest = &_disarmRequest;
   _machine._compValidTimer = &_compValidTimer;
+  _machine._holdDescActive = &_holdDescActive;
   _machine._landValidTimer = &_landValidTimer;
   _machine._heaveUpMax    = &_heaveUpMax;
 	_machine.param		     =  &param;

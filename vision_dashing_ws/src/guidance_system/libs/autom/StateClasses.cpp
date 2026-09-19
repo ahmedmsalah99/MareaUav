@@ -90,10 +90,21 @@ void HoldState::handle(){
                     && _contextL->safeInitialLanding();
 
 
-    // B1: descend only while farther than the (outer) descend threshold from
-    // the pad. Once inside it we stop descending; the compensated/aggressive
-    // landing from the standoff comes in later phases.
-    bool descValid = _centered && _holding && (_setPoint.getZ() > param.zMin) && (downDist > param.standoffDescThld)
+    // B1: descend once farther than the (outer) descend threshold from the
+    // pad -- and, once started, KEEP descending through the dead band until
+    // downDist actually reaches inside the (inner) COMP threshold, not just
+    // until it drifts back under the outer one. Without this latch, the dead
+    // band added for heave hysteresis would let the drone stop descending
+    // anywhere between the two thresholds and never actually reach
+    // standoffCompThld -- so compValid, and therefore COMP, could never be
+    // reached at all (same shape of bug as CompState's own hysteresis
+    // latch, _compTracking, in comp()).
+    if (downDist > param.standoffDescThld) {
+      *_contextL->_holdDescActive = true;
+    } else if (downDist < param.standoffCompThld) {
+      *_contextL->_holdDescActive = false;
+    }
+    bool descValid = _centered && _holding && (_setPoint.getZ() > param.zMin) && *_contextL->_holdDescActive
                     && _contextL->safeInitialLanding();
 
     // Ascend if platform is lost and we are still below zMax (relative to pad).
@@ -128,6 +139,7 @@ void HoldState::handle(){
       if ((logTick++ % 50) == 0) {
         std::cout << "[HOLD] downDist " << downDist
                   << " standoffCompThld " << param.standoffCompThld << " standoffDescThld " << param.standoffDescThld
+                  << " holdDescActive " << *_contextL->_holdDescActive
                   << " compValid " << compValid << " descValid " << descValid
                   << " _holding " << _holding << " _centered " << _centered
                   << " InitValid " << InitValid

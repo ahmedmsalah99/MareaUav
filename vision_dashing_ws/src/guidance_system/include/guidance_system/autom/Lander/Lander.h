@@ -485,6 +485,18 @@ private:
     // on any full state-machine reset (initStateMachine()).
     double _compValidTimer = 0.0;
 
+    // Latches HOLD's descend decision: once downDist crosses above the outer
+    // threshold (standoffDescThld) and descent starts, this stays true --
+    // keeping descValid true -- until downDist actually reaches inside the
+    // inner (COMP) threshold (standoffCompThld), NOT merely until it drifts
+    // back under the outer one. Without this, the dead band between the two
+    // thresholds (added for heave hysteresis) would let the drone stop
+    // descending anywhere in between and never actually reach
+    // standoffCompThld, so compValid — and therefore COMP — could never be
+    // reached at all. Reset on any full state-machine reset
+    // (initStateMachine()).
+    bool _holdDescActive = false;
+
     // Continuous time [s] the COMP -> LAND transition condition has held
     // (CompState::handle()) — the COMP -> LAND wait gate. Reset to 0 the
     // instant the condition goes false, and on any full state-machine reset

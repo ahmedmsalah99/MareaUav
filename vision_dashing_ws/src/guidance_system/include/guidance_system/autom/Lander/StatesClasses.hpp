@@ -156,6 +156,11 @@ public:
      * threshold (param.compWaitTime) is applied by HoldState itself. */
     double *_compValidTimer;
 
+    /** Latches HOLD's descend decision across the standoff dead band -- see
+     * Lander::_holdDescActive's declaration. Set/cleared by HoldState::handle()
+     * itself each tick. */
+    bool *_holdDescActive;
+
     /** Continuous time [s] the COMP -> LAND transition condition has held in
      * CompState::handle() — reset to 0 the instant the condition goes false,
      * and on any full state-machine reset (initStateMachine()). Only the
