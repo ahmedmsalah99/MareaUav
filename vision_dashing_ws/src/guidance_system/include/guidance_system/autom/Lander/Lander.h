@@ -497,6 +497,18 @@ private:
     // state-machine reset (initStateMachine()).
     double _approachSettleTimer = 0.0;
 
+    // INIT slope (hold()'s z_adj): last tick's computed z_adj, fed back into
+    // the next tick's error term (param.initSlopeGain * (_prevZAdj -
+    // _state.getZ())). Previously this read z_adj's own not-yet-initialized
+    // value on the right-hand side of its own declaration -- undefined
+    // behavior, not a real feedback loop. _zAdjInitialized seeds _prevZAdj
+    // with that tick's base term (z_base + line-projection, no feedback)
+    // instead of reading garbage on the very first use, and is reset on any
+    // full state-machine reset (initStateMachine()) so a new landing attempt
+    // doesn't inherit a stale value from a previous one.
+    double _prevZAdj = 0.0;
+    bool   _zAdjInitialized = false;
+
     // Rolling window of recent heave velocity, (dt-since-previous-sample, value)
     // pairs pushed every tick in updateSignals() (same pushPredHistory helper
     // and real-elapsed-time pruning as the SPA/heave prediction history
