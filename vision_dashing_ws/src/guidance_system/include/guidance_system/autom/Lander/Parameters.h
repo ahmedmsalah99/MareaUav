@@ -190,21 +190,25 @@ public:
     // -- see comp().
     double compHeaveMarginWindow;
 
-    // Cap [m] on how much _heaveUpMax may add to compHoldDist in comp() --
-    // an unbounded standoff would back the drone arbitrarily far off in a
-    // sufficiently rough sea, so this bounds the widest the COMP standoff
-    // is ever allowed to grow.
+    // Cap [m] on the TOTAL effective COMP standoff (compHoldDist +
+    // _heaveUpMax), not on _heaveUpMax's contribution in isolation -- an
+    // unbounded standoff would back the drone arbitrarily far off in a
+    // sufficiently rough sea, and capping the total is what actually bounds
+    // how far out COMP will ever hold, regardless of what compHoldDist
+    // itself is set to.
     double compHeaveMarginMax;
 
-    // Cap [m] on how much _heaveUpMax may add to landHeightThld's gate in
-    // CompState::handle() (see heightOk there) -- the SAME _heaveUpMax value
-    // comp() uses for its own standoff, so the landing height gate widens in
-    // step with the (capped) standoff instead of staying fixed while the
-    // standoff grows out from under it, which would otherwise mean COMP
-    // never gets close enough to satisfy heightOk and the drone never lands.
-    // Capped separately (and smaller, by default) from compHeaveMarginMax:
-    // this gate is the LAST check before committing to land, so it should
-    // stay tighter than the mid-COMP standoff margin.
+    // Cap [m] on the TOTAL effective landHeightThld's gate in
+    // CompState::handle() (see heightOk there) -- landHeightThld +
+    // _heaveUpMax, capped, mirroring compHeaveMarginMax above. Uses the SAME
+    // _heaveUpMax value comp() uses for its own standoff, so the landing
+    // height gate widens in step with the (capped) standoff instead of
+    // staying fixed while the standoff grows out from under it, which would
+    // otherwise mean COMP never gets close enough to satisfy heightOk and
+    // the drone never lands. Capped separately (and smaller, by default)
+    // from compHeaveMarginMax: this gate is the LAST check before
+    // committing to land, so it should stay tighter than the mid-COMP
+    // standoff cap.
     double landHeightMarginMax;
 
     // If the gap drops below this [m], COMP stops tracking and backs off (ascends).

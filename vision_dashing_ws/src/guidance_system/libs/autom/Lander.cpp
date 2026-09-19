@@ -1574,20 +1574,21 @@ void Lander::comp() {
   if (gap < param.compMinDist)    _compTracking = false;   // too close — back off
   if (gap > param.compResumeDist) _compTracking = true;    // safe again — track
 
-  // Extra standoff margin, added directly (no gain) and capped: an unbounded
-  // standoff would back the drone arbitrarily far off in a rough enough sea,
-  // so _heaveUpMax's contribution here is capped at compHeaveMarginMax.
-  // Computed once, before the tracking branch, so both the standoff below
-  // and the throttled diagnostic log agree on the exact same value.
-  double compHeaveMargin = std::min(_heaveUpMax, param.compHeaveMarginMax);
+  // Extra standoff margin, added directly (no gain): calm seas (no recent
+  // upward heave) hold at plain compHoldDist; a rougher sea (a nonzero
+  // _heaveUpMax) pushes the held distance back out. The CAP applies to the
+  // resulting TOTAL standoff distance (compHeaveMarginMax), not to the
+  // margin in isolation -- an unbounded standoff would back the drone
+  // arbitrarily far off in a rough enough sea, and capping the total is what
+  // actually bounds that, not capping how much gets added to whatever
+  // compHoldDist already is. Computed once, before the tracking branch, so
+  // both the standoff below and the throttled diagnostic log agree on the
+  // exact same value.
+  double effectiveHoldDist = std::min(param.compHoldDist + _heaveUpMax, param.compHeaveMarginMax);
 
   double new_z;
   if (_compTracking) {
     double vff  = _seaState.heaveValid ? _seaState.heaveVelPredComp : 0.0;
-    // Calm seas (no recent upward heave) hold at plain compHoldDist; a
-    // rougher sea (a nonzero capped peak -- see compHeaveMargin above)
-    // pushes the held distance back out by that peak.
-    double effectiveHoldDist = param.compHoldDist + compHeaveMargin;
     double lead = (effectiveHoldDist - gap);
     new_z = _state.getZ() + 3.0*lead;
 
@@ -1636,9 +1637,9 @@ void Lander::comp() {
     static int compLogTick = 0;
     if ((compLogTick++ % 5) == 0) {
       const double cmdZ = _setPoint.getZ();
-      std::cout << "comp gap " << gap << "/" << (param.compHoldDist + compHeaveMargin)
-                << " (base " << param.compHoldDist << " +heaveUpMax " << compHeaveMargin
-                << " raw " << _heaveUpMax << ")"
+      std::cout << "comp gap " << gap << "/" << effectiveHoldDist
+                << " (base " << param.compHoldDist << " +heaveUpMax " << _heaveUpMax
+                << " capped@" << param.compHeaveMarginMax << ")"
                 << " tracking " << _compTracking
                 << " mode " << (_compTracking ? (_compVelMatching ? "VEL" : "POS") : "BACKOFF")
                 << " vff " << (_seaState.heaveValid ? _seaState.heaveVelPredComp : 0.0)
