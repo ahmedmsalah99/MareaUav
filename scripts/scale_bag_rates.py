@@ -169,10 +169,11 @@ def convert(input_path: Path, output_path: Path, args) -> None:
             for conn, timestamp, rawdata in reader.messages():
                 total_count += 1
                 if conn.msgtype in MSGTYPES:
-                    touched = seen_report.setdefault(conn.msgtype, set())
+                    entry = seen_report.setdefault((conn.topic, conn.msgtype), {'count': 0, 'fields': set()})
                     msg = typestore.deserialize_cdr(rawdata, conn.msgtype)
-                    scale_message(msg, plan, touched)
+                    scale_message(msg, plan, entry['fields'])
                     rawdata = typestore.serialize_cdr(msg, conn.msgtype)
+                    entry['count'] += 1
                     scaled_count += 1
                 if writer is not None:
                     writer.write(conn_map[conn.id], timestamp, rawdata)
@@ -186,14 +187,19 @@ def convert(input_path: Path, output_path: Path, args) -> None:
     print(f'{"[dry run] " if args.list_fields else ""}'
           f'{scaled_count}/{total_count} messages scaled'
           + ('' if args.list_fields else f' -> {output_path}'))
-    print('\nFields touched per message type:')
+    print('\nTopics touched (every topic in the bag whose type is '
+          f'{" or ".join(MSGTYPES)} -- whether or not any of its fields '
+          'actually changed, since a factor of 1.0 for every axis still '
+          'means the topic was inspected):')
     if not seen_report:
-        print(f'  (none -- no --scale-* option was given a value != 1.0, '
-              f'or the bag has no topic of type {" / ".join(MSGTYPES)})')
-    for msgtype, fields in sorted(seen_report.items()):
-        print(f'  {msgtype}:')
-        for f in sorted(fields):
-            print(f'    - {f}')
+        print(f'  (none -- the bag has no topic of type {" / ".join(MSGTYPES)})')
+    for (topic, msgtype), entry in sorted(seen_report.items()):
+        print(f'  {topic}  [{msgtype}]  ({entry["count"]} messages)')
+        if entry['fields']:
+            for f in sorted(entry['fields']):
+                print(f'    - {f}')
+        else:
+            print('    - (no fields changed -- every --scale-* option was left at its default 1.0)')
 
 
 def main() -> None:
