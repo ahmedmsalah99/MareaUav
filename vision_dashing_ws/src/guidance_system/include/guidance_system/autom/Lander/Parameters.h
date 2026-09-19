@@ -183,6 +183,23 @@ public:
     // -- see comp().
     double compHeaveMarginWindow;
 
+    // Cap [m] on how much _heaveUpMax may add to compHoldDist in comp() --
+    // an unbounded standoff would back the drone arbitrarily far off in a
+    // sufficiently rough sea, so this bounds the widest the COMP standoff
+    // is ever allowed to grow.
+    double compHeaveMarginMax;
+
+    // Cap [m] on how much _heaveUpMax may add to landHeightThld's gate in
+    // CompState::handle() (see heightOk there) -- the SAME _heaveUpMax value
+    // comp() uses for its own standoff, so the landing height gate widens in
+    // step with the (capped) standoff instead of staying fixed while the
+    // standoff grows out from under it, which would otherwise mean COMP
+    // never gets close enough to satisfy heightOk and the drone never lands.
+    // Capped separately (and smaller, by default) from compHeaveMarginMax:
+    // this gate is the LAST check before committing to land, so it should
+    // stay tighter than the mid-COMP standoff margin.
+    double landHeightMarginMax;
+
     // If the gap drops below this [m], COMP stops tracking and backs off (ascends).
     double compMinDist;
     // COMP resumes tracking once the gap climbs back above this [m] (hysteresis).

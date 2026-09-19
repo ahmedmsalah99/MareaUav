@@ -30,6 +30,8 @@ Parameters::Parameters() {
     compResumeDist     = 1.3;
     compVelMatchThld   = 0.1;
     compHeaveMarginWindow = 7.5;
+    compHeaveMarginMax = 0.7;
+    landHeightMarginMax = 0.5;
     compWaitTime       = 1.0;
     compToLandWaitTime = 3.0;
     landXYErrThld      = 0.05;
@@ -210,6 +212,12 @@ void Parameters::loadParamFile(const char *config_file) {
 
             else if( !param.compare("COMP_HEAVE_MARGIN_WINDOW_S") )
                 compHeaveMarginWindow = value;
+
+            else if( !param.compare("COMP_HEAVE_MARGIN_MAX") )
+                compHeaveMarginMax = value;
+
+            else if( !param.compare("LAND_HEIGHT_MARGIN_MAX") )
+                landHeightMarginMax = value;
 
             else if( !param.compare("COMP_WAIT_TIME_S") )
                 compWaitTime = value;

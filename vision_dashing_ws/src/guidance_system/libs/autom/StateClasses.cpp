@@ -2,6 +2,7 @@
 // Created by andreanistico on 08/02/17.
 //
 
+#include <algorithm>
 #include "guidance_system/autom/Lander/StatesClasses.hpp"
 #include "guidance_system/autom/param.h"
 //Define actual states
@@ -239,7 +240,15 @@ void CompState::handle() {
                       && std::fabs(_state.getVy()) < param.touchVelRelMax;
     bool xyPrecise = std::fabs(_VisionPose.getX()) < param.landXYErrThld
                       && std::fabs(_VisionPose.getY()) < param.landXYErrThld;
-    bool heightOk = downDist < param.landHeightThld;
+    // Same _heaveUpMax comp() widens its own standoff by (see comp()'s
+    // compHeaveMargin), capped separately here (landHeightMarginMax) since
+    // this gate is the LAST check before committing to land and should stay
+    // tighter than the mid-COMP standoff margin. Without this, a rough sea
+    // that's widened comp()'s standoff would leave downDist permanently
+    // above a fixed landHeightThld -- heightOk would never pass and the
+    // drone would never land.
+    double landHeightMargin = std::min(*_contextL->_heaveUpMax, param.landHeightMarginMax);
+    bool heightOk = downDist < (param.landHeightThld + landHeightMargin);
     bool goSignal = _contextL->getLandingGoSignal();
     bool landCondition = goSignal && _centered && xyStill && xyPrecise && heightOk;
 
@@ -273,7 +282,8 @@ void CompState::handle() {
                   << " | dwell "   << *_contextL->_landValidTimer << "/" << param.compToLandWaitTime
                   << " visionXY ("  << _VisionPose.getX() << "," << _VisionPose.getY()
                   << ") thld "      << param.landXYErrThld
-                  << " downDist "   << downDist << "/" << param.landHeightThld
+                  << " downDist "   << downDist << "/" << (param.landHeightThld + landHeightMargin)
+                  << " (base " << param.landHeightThld << " +heaveUpMax " << landHeightMargin << ")"
                   << " spaValid "   << _contextL->_seaState->spaValid
                   << " heaveValid " << _contextL->_seaState->heaveValid
                   << std::endl;
