@@ -24,11 +24,18 @@ Why this only touches rate-like fields:
   off for this reason; pass it explicitly once you've decided that tradeoff
   is fine for what you're testing.
 
+Physical consistency is a strict rule, not a tunable: this script never
+touches message timestamps, only field values. Acceleration is d(velocity)/dt
+by definition -- with dt unchanged, scaling velocity by k means the ONLY
+value of k that keeps acceleration consistent with it is k itself (NOT k**2;
+that would only apply if timestamps were also being compressed/stretched,
+which they are not). So acceleration fields always scale by the same
+--factor as velocity fields -- there is no separate knob for it.
+
 Usage:
     pip install rosbags
     ./scale_bag_rates.py INPUT_BAG OUTPUT_BAG --factor 1.5
     ./scale_bag_rates.py INPUT_BAG OUTPUT_BAG --factor 1.5 --list-fields   # dry run, no output bag written
-    ./scale_bag_rates.py INPUT_BAG OUTPUT_BAG --factor 1.5 --accel-factor 2.25  # e.g. factor**2 for a time-dilation scale
 """
 
 import argparse
@@ -69,9 +76,10 @@ STORAGE_PLUGINS = {
 #    mechanism -- always run --list-fields first on an unfamiliar bag and
 #    check the output before trusting it.
 
-# 'vel' entries scale under --factor (velocity scale).
-# 'accel' entries scale under --accel-factor (defaults to --factor).
-# 'angvel' entries scale under --factor but are gated by --scale-angular-velocity.
+# 'vel' and 'accel' entries both scale under --factor -- the same factor,
+# always (see the module docstring: with timestamps unchanged, that's the
+# only physically-consistent choice). 'angvel' also scales under --factor,
+# but is additionally gated by --scale-angular-velocity.
 EXPLICIT_RULES = {
     'ulisse_msgs/msg/SimulatedSystem': {
         'bodyframe_linear_velocity': 'vel',
@@ -177,13 +185,9 @@ def build_scaler(msgtype, args, seen_report):
         touched = seen_report.setdefault(msgtype, set())
         if explicit is not None:
             for path, category in explicit.items():
-                factor = {
-                    'vel': args.factor,
-                    'accel': args.accel_factor,
-                    'angvel': args.factor if args.scale_angular_velocity else None,
-                }[category]
-                if factor is None:
+                if category == 'angvel' and not args.scale_angular_velocity:
                     continue
+                factor = args.factor  # vel and accel always share the same factor
                 parent, leaf = resolve_field(msg, path)
                 setattr(parent, leaf, scale_value(getattr(parent, leaf), factor))
                 touched.add(f'{path} ({category})')
@@ -192,13 +196,9 @@ def build_scaler(msgtype, args, seen_report):
                 category = classify_by_name(path)
                 if category is None:
                     continue
-                factor = {
-                    'vel': args.factor,
-                    'accel': args.accel_factor,
-                    'angvel': args.factor if args.scale_angular_velocity else None,
-                }[category]
-                if factor is None:
+                if category == 'angvel' and not args.scale_angular_velocity:
                     continue
+                factor = args.factor  # vel and accel always share the same factor
                 parent, leaf = resolve_field(msg, path)
                 value = getattr(parent, leaf)
                 if not isinstance(value, (int, float)) and not hasattr(value, '__len__'):
@@ -310,11 +310,10 @@ def main() -> None:
     parser.add_argument('output_bag', type=Path, nargs='?',
                          help='required unless --list-fields is given')
     parser.add_argument('--factor', type=float, required=True,
-                         help='scale applied to linear velocity fields')
-    parser.add_argument('--accel-factor', type=float, default=None,
-                         help='scale applied to acceleration fields '
-                              '(default: same as --factor; pass factor**2 '
-                              'if this represents a time-dilation)')
+                         help='scale applied to velocity AND acceleration fields '
+                              '(always the same value for both -- see module '
+                              'docstring for why that is a strict rule, not a '
+                              'default)')
     parser.add_argument('--scale-angular-velocity', action='store_true',
                          help='also scale angular velocity / gyro fields. '
                               'Off by default: in this codebase\'s sim plugin, '
@@ -341,9 +340,6 @@ def main() -> None:
                               'message definitions (default: this script\'s '
                               'repo)')
     args = parser.parse_args()
-
-    if args.accel_factor is None:
-        args.accel_factor = args.factor
 
     if not args.input_bag.exists():
         sys.exit(f'Input bag not found: {args.input_bag}')
