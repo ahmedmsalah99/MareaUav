@@ -31,7 +31,13 @@ Lander::Lander()
   std::string params_path = pkg_path + "/params/Landing_params.txt";
 	param.loadConfigFile(params_path.c_str());
 
-	_envSim = (bool)std::getenv("M2M_SIM");
+	// Value-based, not presence-based: (bool)getenv(...) was true even for
+	// M2M_SIM=0 (a non-null pointer to the string "0"), which meant hardware
+	// exporting M2M_SIM=0 as instructed still ran this in simulation mode.
+	{
+		const char *m2mSimEnv = std::getenv("M2M_SIM");
+		_envSim = m2mSimEnv && (atoi(m2mSimEnv) >= 1);
+	}
 	std::cout << "[OFFSETS] M2M_SIM " << _envSim
 	          << " -> camera " << (_envSim ? param.cameraOffsetSim : param.cameraOffsetHw)
 	          << " sonar "    << (_envSim ? param.sonarOffsetSim  : param.sonarOffsetHw)
