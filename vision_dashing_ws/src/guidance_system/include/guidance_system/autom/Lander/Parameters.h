@@ -66,6 +66,10 @@ public:
     double lost_threshold;
 
     // Drone must stay at or above platformZ + z_margin when not actively descending.
+    // Also the floor the INIT slope (hold()) glides down to -- should match
+    // standoffDescThld/standoffCompThld's reference (standoffDistance) so the
+    // slope hands off to a height the HOLD state machine already agrees with,
+    // instead of a different one it immediately re-adjusts away from.
     double z_margin;
 
     // Minimum (tightest) values of the above thresholds, applied at z=0.
@@ -121,13 +125,6 @@ public:
     // 0 (the bridge's own position-setpoint slew limit bounds how fast the
     // gap can close), so keep this looser than landXYErrThld.
     double initApproachPosThld;
-
-    // Gain on hold()'s INIT slope feedback error term (last tick's z_adj minus
-    // current altitude), applied while _slopeActive tracks the drone down the
-    // approach line toward the standoff. Higher = corrects toward the line
-    // faster/harder. See Lander::_prevZAdj for why this term now feeds back a
-    // real previous value instead of undefined behavior.
-    double initSlopeGain;
 
     // Descent velocity (m per tick) applied in desc()
     double descVelocity;
