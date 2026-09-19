@@ -1245,8 +1245,8 @@ bool Lander::setDroneInFront()
     _line_direction[0] = -gain*sinf(yaw_plat);
     _line_direction[1] = -gain*cosf(yaw_plat);
     // GROUND TRUTH — kept commented for reference:
-    // _line_direction[2] = _state.getZ() - (_platformState.getZ() + param.z_margin);
-    _line_direction[2] = _state.getZ() - (_platformVision.getZ() + param.z_margin);
+    // _line_direction[2] = _state.getZ() - (_platformState.getZ() + param.standoffDistance);
+    _line_direction[2] = _state.getZ() - (_platformVision.getZ() + param.standoffDistance);
     _approachSettleTimer = 0.0;   // consumed — start clean for next time
     return true;
   }
@@ -1348,11 +1348,16 @@ void Lander::hold() {
     if(_slopeActive)
     {
       // GROUND TRUTH — kept commented for reference:
-      // double z_base = _platformState.getZ() + param.z_margin;
+      // double z_base = _platformState.getZ() + param.standoffDistance;
       // The vision-derived Z is also in the DRONE's frame, where the setpoint is
       // commanded; _platformState is in the simulator's world frame, so the old
       // form mixed frames as well as using truth.
-      double z_base = _platformVision.getZ() + param.z_margin;
+      //
+      // Uses standoffDistance, not z_margin: the slope should hand off to the
+      // same height the HOLD state machine's descend/COMP thresholds are
+      // already built around, not a separate, independently-configured value
+      // it would then immediately re-adjust away from.
+      double z_base = _platformVision.getZ() + param.standoffDistance;
       double dot    = _VisionPose.getX() * _line_direction[0] + _VisionPose.getY() * _line_direction[1];
       double norm_sq = _line_direction[0] * _line_direction[0] + _line_direction[1] * _line_direction[1];
       double z_adj = z_base + _line_direction[2] * dot / norm_sq;

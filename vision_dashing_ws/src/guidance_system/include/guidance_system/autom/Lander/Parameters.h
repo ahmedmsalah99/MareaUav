@@ -66,10 +66,6 @@ public:
     double lost_threshold;
 
     // Drone must stay at or above platformZ + z_margin when not actively descending.
-    // Also the floor the INIT slope (hold()) glides down to -- should match
-    // standoffDescThld/standoffCompThld's reference (standoffDistance) so the
-    // slope hands off to a height the HOLD state machine already agrees with,
-    // instead of a different one it immediately re-adjusts away from.
     double z_margin;
 
     // Minimum (tightest) values of the above thresholds, applied at z=0.
@@ -166,9 +162,12 @@ public:
     double reactionLag;
 
     // Drone->pad vertical distance [m] to descend to and hold before starting
-    // the compensated / aggressive landing (the "standoff"). Kept as the
-    // nominal reference distance; standoffCompThld/standoffDescThld below are
-    // what HOLD/COMP actually gate transitions on.
+    // the compensated / aggressive landing (the "standoff"). Also the height
+    // hold()'s INIT slope glides down to (in place of a separately-configured
+    // z_margin), so the slope hands off to the same height the HOLD state
+    // machine's descend/COMP thresholds (standoffCompThld/standoffDescThld
+    // below) are already built around. Nominal reference distance for those
+    // two thresholds, which are what HOLD/COMP actually gate transitions on.
     double standoffDistance;
 
     // Hysteresis band around standoffDistance for the HOLD <-> DESC/COMP/ASCE
