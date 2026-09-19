@@ -104,8 +104,10 @@ public:
 
     double distanceFromCenter;
 
-    // Drone altitude when initializing the landing
-
+    // Fixed absolute altitude used by inspection()/searching mode. NOT used by
+    // setDroneInFront()'s INIT standoff target -- that Z is now computed as
+    // platformZ + standoffDistance + gain (see Lander::setDroneInFront()),
+    // not this constant.
     double prelandAltitude;
 
     // setDroneInFront()'s standoff-position error (X and Y) must stay under

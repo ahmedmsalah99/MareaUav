@@ -1189,8 +1189,17 @@ bool Lander::setDroneInFront()
   double xTarget = plat_x + gain*sinf(yaw_plat);
   double yTarget = plat_y + gain*cosf(yaw_plat);
 
+  // Z target: platform height + standoffDistance (the same floor the INIT
+  // slope glides down to) + gain (the same horizontal offset used for
+  // xTarget/yTarget above). Using the SAME distance for both the horizontal
+  // leg (gain) and the vertical leg above the slope's floor makes the
+  // approach triangle -- from this standoff point down to where the slope
+  // levels out at platformZ + standoffDistance -- isosceles: a 45-degree
+  // glide slope, not an arbitrary one set by a fixed, pad-unaware altitude.
+  double zTarget = _platformVision.getZ() + param.standoffDistance + gain;
+
   // setting the setpoint finally
-  _setPoint.setPosition(xTarget, yTarget, param.prelandAltitude);
+  _setPoint.setPosition(xTarget, yTarget, zTarget);
   _setPoint.setType(MavState::type::POSITION);
 
   // Genuine physical proximity to the standoff point — NOT the magnitude of
@@ -1225,8 +1234,8 @@ bool Lander::setDroneInFront()
   _approachLogTimer += _dt;
   if (_approachLogTimer >= 1.0) {
     _approachLogTimer = 0.0;
-    std::cout << "[setDroneInFront] target=(" << xTarget << "," << yTarget << ")"
-              << " state=(" << _state.getX() << "," << _state.getY() << ")"
+    std::cout << "[setDroneInFront] target=(" << xTarget << "," << yTarget << "," << zTarget << ")"
+              << " state=(" << _state.getX() << "," << _state.getY() << "," << _state.getZ() << ")"
               << " err=(" << errX << "," << errY << ")"
               << " platVel=(" << _platformVision.getVx() << "," << _platformVision.getVy() << ")"
               << " yawPlat " << yaw_plat
