@@ -25,6 +25,8 @@ Parameters::Parameters() {
     spMaxVelXY         = 0.3;
     reactionLag        = 0.3;
     standoffDistance   = 2.0;
+    standoffCompThld   = 1.7;
+    standoffDescThld   = 2.3;
     compHoldDist       = 1.5;
     compMinDist        = 1.0;
     compResumeDist     = 1.3;
@@ -198,6 +200,12 @@ void Parameters::loadParamFile(const char *config_file) {
 
             else if( !param.compare("STANDOFF_DISTANCE") )
                 standoffDistance = value;
+
+            else if( !param.compare("STANDOFF_COMP_THLD") )
+                standoffCompThld = value;
+
+            else if( !param.compare("STANDOFF_DESC_THLD") )
+                standoffDescThld = value;
 
             else if( !param.compare("COMP_HOLD_DIST") )
                 compHoldDist = value;

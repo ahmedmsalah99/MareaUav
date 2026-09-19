@@ -169,9 +169,26 @@ public:
     double reactionLag;
 
     // Drone->pad vertical distance [m] to descend to and hold before starting
-    // the compensated / aggressive landing (the "standoff"). Also the gap at
-    // which HOLD hands off to COMP.
+    // the compensated / aggressive landing (the "standoff"). Kept as the
+    // nominal reference distance; standoffCompThld/standoffDescThld below are
+    // what HOLD/COMP actually gate transitions on.
     double standoffDistance;
+
+    // Hysteresis band around standoffDistance for the HOLD <-> DESC/COMP/ASCE
+    // transitions (HoldState::handle(), CompState::handle()). Against a
+    // heaving pad, downDist crosses a single threshold every heave cycle;
+    // splitting it into an inner (standoffCompThld) and outer
+    // (standoffDescThld) threshold gives a dead band in between where HOLD
+    // just holds level instead of flip-flopping DESC/ASCE every crossing,
+    // and where compValidTimer can actually accumulate compWaitTime seconds
+    // of continuous validity instead of resetting every crossing.
+    //   downDist > standoffDescThld  -> descend (HOLD's descValid; also
+    //                                   where COMP exits back to HOLD)
+    //   downDist < standoffCompThld  -> eligible for COMP (once sustained +
+    //                                   safe) / ascend if not yet cleared
+    //   in between                   -> just hold level
+    double standoffCompThld;
+    double standoffDescThld;
 
     // ── COMP standoff (comp()) ───────────────────────────────────────────────
     // Drone->pad distance [m] COMP holds while compensating (below standoffDistance).

@@ -71,16 +71,29 @@ void HoldState::handle(){
     bool ultraCompValid = _holding && (fabs(_UltraInfo.getZ()) < ultra_limit+0.1) && _centered;
     (void)ultraCompValid;   // reserved for the final landing phase
 
-    // Enter COMP once we are within the standoff distance (2 m) of the pad,
-    // centred, holding and on a calm sea. COMP then holds compHoldDist (1.5 m).
-    bool compValid = _holding && _centered && (downDist < param.standoffDistance)
+    // Enter COMP once we are within standoffCompThld of the pad, centred,
+    // holding and on a calm sea. COMP then holds compHoldDist (1.5 m).
+    //
+    // compValid/descValid/asceUnderMargin used to all pivot on the exact
+    // same single threshold (standoffDistance), with zero hysteresis. Against
+    // a heaving pad, downDist oscillates back and forth across that one line
+    // every heave cycle, which (a) flip-flopped the state machine between
+    // DESC and ASCE every crossing instead of ever settling, and (b) reset
+    // compValidTimer to 0 on every single crossing below, so it could never
+    // accumulate compWaitTime seconds of continuous validity and COMP was
+    // never reached. Splitting the single threshold into two --
+    // standoffDescThld (outer, triggers descent) and standoffCompThld (inner,
+    // eligible for COMP / ascend-if-not-cleared) -- creates a dead band
+    // between them where the drone just holds level, so a moderate heave
+    // excursion no longer immediately flips the state.
+    bool compValid = _holding && _centered && (downDist < param.standoffCompThld)
                     && _contextL->safeInitialLanding();
 
-    
-    // B1: descend only while farther than the standoff distance (2 m) from the
-    // pad. Once within the standoff we stop descending and hold there; the
-    // compensated/aggressive landing from the standoff comes in later phases.
-    bool descValid = _centered && _holding && (_setPoint.getZ() > param.zMin) && (downDist > param.standoffDistance)
+
+    // B1: descend only while farther than the (outer) descend threshold from
+    // the pad. Once inside it we stop descending; the compensated/aggressive
+    // landing from the standoff comes in later phases.
+    bool descValid = _centered && _holding && (_setPoint.getZ() > param.zMin) && (downDist > param.standoffDescThld)
                     && _contextL->safeInitialLanding();
 
     // Ascend if platform is lost and we are still below zMax (relative to pad).
@@ -89,16 +102,13 @@ void HoldState::handle(){
     // Ascend if setpoint has drifted below zMin (absolute hard floor).
     bool asceUnderMin = (_setPoint.getZ() < param.zMin);
 
-    // Ascend if the drone is closer than the standoff distance and not actively
-    // descending — together with descValid this parks the drone at the standoff.
-    // NOTE: this previously used "downDist > standoffDistance" — the same
-    // range as descValid — which meant it fired whenever descValid dropped
-    // false for ANY reason (e.g. safeInitialLanding()'s calm-sea gate
-    // blipping) while still far above the pad, sending the drone climbing
-    // instead of simply holding level. The comment always said "closer than",
-    // matching descValid's off state should mean "too close, not cleared to
-    // hold there" -- i.e. downDist < standoffDistance, not >.
-    bool asceUnderMargin = _centered && _holding &&  (downDist < param.standoffDistance) && (downDist < param.zMax - 0.1) && !descValid;
+    // Ascend if the drone is closer than the (inner) COMP threshold and not
+    // actively descending -- i.e. too close to be cleared to hold there
+    // (compValid false, e.g. sea not calm) but not far enough out to need a
+    // fresh descent either. Uses the same inner threshold as compValid so
+    // there's no gap between "not close enough to ascend" and "close enough
+    // for COMP".
+    bool asceUnderMargin = _centered && _holding &&  (downDist < param.standoffCompThld) && (downDist < param.zMax - 0.1) && !descValid;
 
     //if the vision data are not available and the drone is at or above zMax, go back to init.
     // bool InitValid = !_VisionPose.VisionDataUpdated && !(_setPoint.getZ() < param.zMax - 0.1);
@@ -116,7 +126,8 @@ void HoldState::handle(){
     {
       static int logTick = 0;
       if ((logTick++ % 50) == 0) {
-        std::cout << "[HOLD] downDist " << downDist << " standoff " << param.standoffDistance
+        std::cout << "[HOLD] downDist " << downDist
+                  << " standoffCompThld " << param.standoffCompThld << " standoffDescThld " << param.standoffDescThld
                   << " compValid " << compValid << " descValid " << descValid
                   << " _holding " << _holding << " _centered " << _centered
                   << " InitValid " << InitValid
@@ -140,15 +151,21 @@ void HoldState::handle(){
         std::cout << "asceUnderMin " << " _setPoint.getZ() " << _setPoint.getZ() << std::endl;
         return;
     }
-    // Require compValid to hold CONTINUOUSLY for compWaitTime seconds before
-    // actually transitioning — a brief flicker into "valid" shouldn't be enough.
-    // Reset (not just pause) the instant compValid drops, so it's a continuous
-    // timer, not a cumulative one; a full state-machine reset back to INIT
-    // clears it too (Lander::initStateMachine()).
+    // Require compValid to hold for close to compWaitTime seconds before
+    // actually transitioning — a brief flicker into "valid" shouldn't be
+    // enough on its own. The timer DECAYS (at the same rate it accumulates)
+    // rather than hard-resetting to 0 the instant compValid drops, so a
+    // single-tick dropout (e.g. safeInitialLanding() blipping false for one
+    // heave-driven sample) only costs back roughly what it cost to earn,
+    // instead of wiping out the whole accumulated window and forcing a full
+    // compWaitTime restart. A genuinely sustained loss of validity still
+    // drains the timer back to 0 over about the same time it took to build
+    // up. A full state-machine reset back to INIT still clears it outright
+    // (Lander::initStateMachine()).
     if (compValid) {
       *_contextL->_compValidTimer += _contextL->_seaState->dt;
     } else {
-      *_contextL->_compValidTimer = 0.0;
+      *_contextL->_compValidTimer = std::max(0.0, *_contextL->_compValidTimer - _contextL->_seaState->dt);
     }
     bool compValidSustained = compValid && (*_contextL->_compValidTimer >= param.compWaitTime);
     if(compValidSustained){
@@ -226,8 +243,11 @@ void CompState::handle() {
       return;
     }
 
-    if(downDist > param.standoffDistance){
-      // Drifted back above the standoff — return to HOLD.
+    if(downDist > param.standoffDescThld){
+      // Drifted back above the (outer) standoff threshold — return to HOLD.
+      // Uses the same outer threshold HOLD's descValid re-engages descent at,
+      // so COMP doesn't get kicked back to HOLD by the same small heave blip
+      // that HOLD's dead band is meant to absorb.
       this->_contextL->setStatePtr(_nextState);
       printStateTransition();
       *_contextL->_landValidTimer = 0.0;   // leaving COMP — reset the dwell timer
