@@ -460,15 +460,15 @@ void Lander::updateSignals() {
     if ((sensorLogTick++ % 25) == 0) {
       const double visionDist = -_VisionPose.getZ() + camOffset;
       const double sonarDist  =  _UltraInfo.getZ()  + sonarOffset;
-      std::cout << "[SENSOR] switchSensor " << switchSensor
-                << " | visionRaw " << -_VisionPose.getZ()
-                << " +off " << camOffset << " = " << visionDist
-                << " | sonarRaw " << _UltraInfo.getZ()
-                << " +off " << sonarOffset << " = " << sonarDist
-                << " | handoverStep " << (sonarDist - visionDist)
-                << " ultraValid " << _UltraInfo.IsValid
-                << " ultraUpdated " << _UltraInfo.UltrasonicDataUpdated
-                << " downDist " << -dz << std::endl;
+      // std::cout << "[SENSOR] switchSensor " << switchSensor
+      //           << " | visionRaw " << -_VisionPose.getZ()
+      //           << " +off " << camOffset << " = " << visionDist
+      //           << " | sonarRaw " << _UltraInfo.getZ()
+      //           << " +off " << sonarOffset << " = " << sonarDist
+      //           << " | handoverStep " << (sonarDist - visionDist)
+      //           << " ultraValid " << _UltraInfo.IsValid
+      //           << " ultraUpdated " << _UltraInfo.UltrasonicDataUpdated
+      //           << " downDist " << -dz << std::endl;
     }
   }
 
@@ -1113,19 +1113,19 @@ void Lander::updatePlatformVision() {
   {
     static int platLogTick = 0;
     if ((platLogTick++ % 10) == 0) {
-      std::cout << "[PLAT] vision pos (" << px << "," << py << "," << pz << ")"
-                << " vel (" << _platVisFiltVx << "," << _platVisFiltVy << ")"
-                << " yaw " << platYaw
-                << " | truth pos (" << _platformState.getX() << "," << _platformState.getY()
-                << "," << _platformState.getZ() << ")"
-                << " vel (" << _platformState.getVx() << "," << _platformState.getVy() << ")"
-                << " yaw " << _platformState.getYaw()
-                << " | dPos (" << (px - _platformState.getX())
-                << "," << (py - _platformState.getY())
-                << "," << (pz - _platformState.getZ()) << ")"
-                << " dVel (" << (_platVisFiltVx - _platformState.getVx())
-                << "," << (_platVisFiltVy - _platformState.getVy()) << ")"
-                << " visionOk " << visionOk << std::endl;
+      // std::cout << "[PLAT] vision pos (" << px << "," << py << "," << pz << ")"
+      //           << " vel (" << _platVisFiltVx << "," << _platVisFiltVy << ")"
+      //           << " yaw " << platYaw
+      //           << " | truth pos (" << _platformState.getX() << "," << _platformState.getY()
+      //           << "," << _platformState.getZ() << ")"
+      //           << " vel (" << _platformState.getVx() << "," << _platformState.getVy() << ")"
+      //           << " yaw " << _platformState.getYaw()
+      //           << " | dPos (" << (px - _platformState.getX())
+      //           << "," << (py - _platformState.getY())
+      //           << "," << (pz - _platformState.getZ()) << ")"
+      //           << " dVel (" << (_platVisFiltVx - _platformState.getVx())
+      //           << "," << (_platVisFiltVy - _platformState.getVy()) << ")"
+      //           << " visionOk " << visionOk << std::endl;
     }
   }
 }
@@ -1499,18 +1499,18 @@ void Lander::trackXY() {
     if ((xyLogTick++ % 10) == 0) {
       const double errNorm = std::sqrt(_VisionPose.getX() * _VisionPose.getX()
                                      + _VisionPose.getY() * _VisionPose.getY());
-      std::cout << "[XY] mode " << param.xyControlMode
-                << " visionOk " << visionOk
-                << " err (" << _VisionPose.getX() << "," << _VisionPose.getY() << ") |err| " << errNorm
-                << " state (" << _state.getX() << "," << _state.getY() << ")"
-                << " platVel (" << _platformVision.getVx() << "," << _platformVision.getVy() << ")"
-                << " ff (" << ffX << "," << ffY << ")"
-                << " pidOut (" << pidOutX << "," << pidOutY << ")"
-                << " cmd (" << _setPoint.getX() << "," << _setPoint.getY() << ")"
-                << " cmdOffset (" << (_setPoint.getX() - _state.getX())
-                << "," << (_setPoint.getY() - _state.getY()) << ")"
-                << " maxOutput " << param.maxOutput
-                << std::endl;
+      // std::cout << "[XY] mode " << param.xyControlMode
+      //           << " visionOk " << visionOk
+      //           << " err (" << _VisionPose.getX() << "," << _VisionPose.getY() << ") |err| " << errNorm
+      //           << " state (" << _state.getX() << "," << _state.getY() << ")"
+      //           << " platVel (" << _platformVision.getVx() << "," << _platformVision.getVy() << ")"
+      //           << " ff (" << ffX << "," << ffY << ")"
+      //           << " pidOut (" << pidOutX << "," << pidOutY << ")"
+      //           << " cmd (" << _setPoint.getX() << "," << _setPoint.getY() << ")"
+      //           << " cmdOffset (" << (_setPoint.getX() - _state.getX())
+      //           << "," << (_setPoint.getY() - _state.getY()) << ")"
+      //           << " maxOutput " << param.maxOutput
+      //           << std::endl;
     }
   }
 
