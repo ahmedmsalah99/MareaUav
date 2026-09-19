@@ -134,12 +134,6 @@ bool Automatic::consumeDisarmRequest() const {
     return false;
 }
 
-bool Automatic::isDisarmOnGoDone() const {
-    if (auto* land = dynamic_cast<Land*>(_actualCommand.get()))
-        return land->isDisarmOnGoDone();
-    return false;
-}
-
 /*
 Inside the Command class there is a function 'virtual void execute() = 0'.
 In this way, adding the specificator virtual, it is possible to guarantee a dynamic association.

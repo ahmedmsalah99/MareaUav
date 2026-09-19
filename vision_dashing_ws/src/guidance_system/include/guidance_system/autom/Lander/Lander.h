@@ -249,25 +249,6 @@ public:
     }
 
     /**
-     * @brief True once disarm-on-GO has committed to LANDING_DONE. The caller
-     * (AutomaticNode) uses this to stop publishing a setpoint entirely --
-     * LANDING_DONE's disarm-mode branch commands Vz=0 under VELOCITY control,
-     * which is an ACTIVE hover, not a no-op. If the force-disarm sent via
-     * consumeDisarmRequest() is delayed or dropped (it's best-effort, and
-     * PX4's commander is free to defer/reject an in-air force-disarm), the
-     * drone stays armed in offboard mode and keeps obeying that hover
-     * setpoint indefinitely -- i.e. it keeps flying instead of coming down,
-     * even though it may have already touched the pad. Sticky: once true for
-     * this landing, stays true (mirrors disarmOnGo's LANDING_DONE being
-     * terminal) -- only initStateMachine() resets it, same as everything else
-     * in this state.
-     */
-
-    bool isDisarmOnGoDone() const {
-        return _actualState == AbstractLandState::states::LANDING_DONE && param.disarmOnGo;
-    }
-
-    /**
      * @brief The core function of the landing procedure. Mainly, it is
      * a switch based on the actual state.
      */

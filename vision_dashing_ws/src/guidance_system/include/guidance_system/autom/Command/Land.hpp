@@ -228,10 +228,6 @@ public:
     bool consumeDisarmRequest() {
         return _lander.consumeDisarmRequest();
     }
-
-    bool isDisarmOnGoDone() const {
-        return _lander.isDisarmOnGoDone();
-    }
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
 };

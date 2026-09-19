@@ -174,17 +174,6 @@ public:
   bool consumeDisarmRequest() const;
 
   /**
-   * @brief True once the active Land command's disarm-on-GO has committed to
-   * LANDING_DONE. False when no Land command is active. See
-   * Lander::isDisarmOnGoDone() for why AutomaticNode needs this: LANDING_DONE's
-   * disarm-mode branch commands an active zero-velocity hover, not a no-op,
-   * so setpoint publishing must be suppressed once this is true rather than
-   * relying on the (best-effort, possibly delayed) disarm command alone.
-   */
-
-  bool isDisarmOnGoDone() const;
-
-  /**
    * @brief M2M_SIM Environment variable value
    */
 
