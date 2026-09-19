@@ -1,34 +1,53 @@
 #!/usr/bin/env python3
-"""Scale velocity/acceleration fields in a ROS 2 bag, leaving position and
-orientation untouched.
+"""Scale per-axis velocity/rate fields in a recorded platform-motion ROS 2
+bag (ulisse_msgs/msg/SimulatedSystem or ulisse_msgs/msg/NavFilterData),
+leaving position and orientation untouched.
 
-Why this only touches rate-like fields:
-  In sim, vision_dashing_ws/src/plugins/landingplat/src/plugin.cpp drives the
-  Gazebo platform from /ulisse/simulated_system (or nav_filter/data replayed
-  the same way): the message's absolute position
-  (inertialframe_linear_position) is deliberately IGNORED and instead the
-  platform's world position is dead-reckoned by integrating
-  bodyframe_linear_velocity each tick (see simulatedSystemCallback() /
-  OnUpdate() there). So scaling velocity is exactly consistent with how the
-  sim already treats this data -- Gazebo recomputes position from whatever
-  velocity you feed it.
+Scope, deliberately narrow: this script only understands the two message
+types the sim/replay pipeline actually uses for platform motion --
+ulisse_msgs/msg/SimulatedSystem (played back as /ulisse/simulated_system by
+landingplat/plugin.cpp) and ulisse_msgs/msg/NavFilterData (the real sensor's
+equivalent, /ulisse/nav_filter/data). Both carry the same six motion fields:
 
-  bodyframe_angular_position (roll/pitch/yaw) is the one exception: it is
-  used directly as the platform's absolute orientation (slew-rate limited,
-  not integrated from bodyframe_angular_velocity). bodyframe_angular_velocity
-  itself only feeds the synthesized IMU gyro output (see the wx/wy/wz block
-  in plugin.cpp), not the commanded rpy. That means scaling angular velocity
-  changes the synthetic IMU's reported rotation rate WITHOUT changing the
-  platform's actual simulated tilt motion (rpy is untouched) -- the two
-  become inconsistent with each other. --scale-angular-velocity defaults to
-  off for this reason; pass it explicitly once you've decided that tradeoff
-  is fine for what you're testing.
+    bodyframe_linear_velocity[0]   x / surge velocity  [m/s]
+    bodyframe_linear_velocity[1]   y / sway velocity   [m/s]
+    bodyframe_linear_velocity[2]   heave velocity      [m/s]  (see
+                                    heave_estimator_node.cpp:46,118, which
+                                    reads this exact index as heave)
+    bodyframe_angular_velocity[0]  roll rate           [rad/s]
+    bodyframe_angular_velocity[1]  pitch rate          [rad/s]  (index order
+    bodyframe_angular_velocity[2]  yaw rate            [rad/s]  matches
+                                    RPY.msg's roll/pitch/yaw field order,
+                                    which plugin.cpp relies on directly)
+
+Each has its own --scale-* option below -- there is no single blanket
+--factor, on purpose: scaling e.g. only heave to test a rougher sea state
+without touching surge/sway/yaw motion is the actual use case this script
+exists for.
+
+Why only these six fields, and nothing else in the message:
+  landingplat/plugin.cpp's OnUpdate() dead-reckons BOTH the platform's
+  position (from bodyframe_linear_velocity) and its orientation (from
+  bodyframe_angular_velocity) -- the message's own absolute position
+  (inertialframe_linear_position) and absolute orientation
+  (bodyframe_angular_position) are only ever used to seed the very first
+  tick, never as a continuous target. So scaling these six velocity/rate
+  fields is exactly consistent with how the sim already treats this data --
+  Gazebo recomputes position and attitude from whatever you feed it here.
+  gyro_bias, inertialframe_water_current, and n_p/n_s (thruster rpm) are
+  left alone: none of them is a platform motion rate this script targets.
+
+Strict rule, not a tunable: message timestamps are never touched, only field
+values -- so there is no separate "acceleration" scale to offer. If this
+script ever needs to scale an acceleration field, physical consistency
+requires it use the exact same factor as the velocity it's the derivative
+of (dt unchanged -> d(k*v)/dt = k*dv/dt), not an independent value.
 
 Usage:
     pip install rosbags
-    ./scale_bag_rates.py INPUT_BAG OUTPUT_BAG --factor 1.5
-    ./scale_bag_rates.py INPUT_BAG OUTPUT_BAG --factor 1.5 --list-fields   # dry run, no output bag written
-    ./scale_bag_rates.py INPUT_BAG OUTPUT_BAG --factor 1.5 --accel-factor 2.25  # e.g. factor**2 for a time-dilation scale
+    ./scale_bag_rates.py INPUT_BAG OUTPUT_BAG --scale-heave-vel 1.5
+    ./scale_bag_rates.py INPUT_BAG OUTPUT_BAG --scale-roll-rate 2.0 --scale-pitch-rate 2.0
+    ./scale_bag_rates.py INPUT_BAG OUTPUT_BAG --scale-heave-vel 1.5 --list-fields   # dry run, no output bag written
 """
 
 import argparse
@@ -51,170 +70,27 @@ STORAGE_PLUGINS = {
     'mcap': StoragePlugin.MCAP,
 }
 
-# ---------------------------------------------------------------------------
-# Field classification
-# ---------------------------------------------------------------------------
-#
-# Two ways a field gets scaled:
-#
-# 1. EXPLICIT_RULES: exact (msgtype, dotted-field-path) entries for message
-#    types this repo actually uses, so there is no ambiguity about what a
-#    field means. Read these from the actual .msg definitions, not guessed.
-#
-# 2. Heuristic fallback (classify_by_name): for any other message type
-#    (e.g. if you point this at a bag with topics not in EXPLICIT_RULES),
-#    fields are scaled based on their name matching velocity/acceleration
-#    tokens, and explicitly NOT scaled if their name matches a
-#    position/orientation token first. This is a safety net, not the primary
-#    mechanism -- always run --list-fields first on an unfamiliar bag and
-#    check the output before trusting it.
-
-# 'vel' entries scale under --factor (velocity scale).
-# 'accel' entries scale under --accel-factor (defaults to --factor).
-# 'angvel' entries scale under --factor but are gated by --scale-angular-velocity.
-EXPLICIT_RULES = {
-    'ulisse_msgs/msg/SimulatedSystem': {
-        'bodyframe_linear_velocity': 'vel',
-        'bodyframe_angular_velocity': 'angvel',
-        # NOT scaled: inertialframe_linear_position (unused by sim -- see
-        # module docstring), bodyframe_angular_position (used directly as
-        # absolute orientation), gyro_bias (a bias, not a rate to rescale),
-        # inertialframe_water_current, n_p/n_s (thruster rpm -- not the
-        # platform motion this script targets).
-    },
-    'ulisse_msgs/msg/NavFilterData': {
-        'bodyframe_linear_velocity': 'vel',
-        'bodyframe_angular_velocity': 'angvel',
-    },
-    'px4_msgs/msg/VehicleOdometry': {
-        'velocity': 'vel',
-        'angular_velocity': 'angvel',
-        # NOT scaled: position, q (orientation quaternion).
-    },
-    'nav_msgs/msg/Odometry': {
-        'twist.twist.linear': 'vel',
-        'twist.twist.angular': 'angvel',
-        # NOT scaled: pose.pose.position, pose.pose.orientation.
-    },
-    'geometry_msgs/msg/TwistStamped': {
-        'twist.linear': 'vel',
-        'twist.angular': 'angvel',
-    },
-    'geometry_msgs/msg/AccelStamped': {
-        'accel.linear': 'accel',
-        'accel.angular': 'accel',
-    },
-    'sensor_msgs/msg/Imu': {
-        'linear_acceleration': 'accel',
-        'angular_velocity': 'angvel',
-        # NOT scaled: orientation.
-    },
-}
-
-# Name tokens for the heuristic fallback, checked in order: a field whose
-# dotted path contains a POSITION_TOKENS token is left alone even if it also
-# contains a rate token (e.g. "angular_position" matches "position" first).
-POSITION_TOKENS = (
-    'position', 'pose', 'orientation', 'quaternion', 'lat', 'lon', 'alt',
-    'latitude', 'longitude', 'altitude', 'gyro_bias', 'bias', 'covariance',
+MSGTYPES = (
+    'ulisse_msgs/msg/SimulatedSystem',
+    'ulisse_msgs/msg/NavFilterData',
 )
-VEL_TOKENS = ('linear_velocity', 'lin_vel', 'twist')
-ANGVEL_TOKENS = ('angular_velocity', 'ang_vel', 'angular_rate', 'gyro')
-ACCEL_TOKENS = ('acceleration', 'accel')
 
-
-def classify_by_name(path: str):
-    lower = path.lower()
-    if any(tok in lower for tok in POSITION_TOKENS):
-        return None
-    if any(tok in lower for tok in ANGVEL_TOKENS):
-        return 'angvel'
-    if any(tok in lower for tok in ACCEL_TOKENS):
-        return 'accel'
-    if any(tok in lower for tok in VEL_TOKENS):
-        return 'vel'
-    return None
-
-
-def resolve_field(msg, dotted_path):
-    """Walk a dotted attribute path, returning (parent_obj, leaf_attr_name)."""
-    parts = dotted_path.split('.')
-    obj = msg
-    for part in parts[:-1]:
-        obj = getattr(obj, part)
-    return obj, parts[-1]
-
-
-def scale_value(value, factor):
-    """Scale a float, a numpy array (rosbags' representation for fixed-size
-    .msg array fields -- element-wise * works directly), or a plain
-    list/tuple sequence (variable-length .msg array fields)."""
-    if type(value).__module__ == 'numpy':
-        return value * factor
-    if isinstance(value, (list, tuple)):
-        return type(value)(v * factor for v in value)
-    return value * factor
-
-
-def iter_leaf_field_paths(msg, prefix=''):
-    """Yield dotted paths to every leaf (non-message) field of a decoded
-    rosbags message, for the heuristic fallback / --list-fields discovery."""
-    for name in getattr(msg, '__dataclass_fields__', {}):
-        value = getattr(msg, name)
-        path = f'{prefix}{name}'
-        if hasattr(value, '__dataclass_fields__'):
-            yield from iter_leaf_field_paths(value, prefix=f'{path}.')
-        else:
-            yield path
-
-
-def build_scaler(msgtype, args, seen_report):
-    """Return a function(msg) -> msg that scales msg in place, and records
-    which field paths it touched (for the --list-fields / summary report)."""
-    explicit = EXPLICIT_RULES.get(msgtype)
-
-    def scale(msg):
-        touched = seen_report.setdefault(msgtype, set())
-        if explicit is not None:
-            for path, category in explicit.items():
-                factor = {
-                    'vel': args.factor,
-                    'accel': args.accel_factor,
-                    'angvel': args.factor if args.scale_angular_velocity else None,
-                }[category]
-                if factor is None:
-                    continue
-                parent, leaf = resolve_field(msg, path)
-                setattr(parent, leaf, scale_value(getattr(parent, leaf), factor))
-                touched.add(f'{path} ({category})')
-        else:
-            for path in iter_leaf_field_paths(msg):
-                category = classify_by_name(path)
-                if category is None:
-                    continue
-                factor = {
-                    'vel': args.factor,
-                    'accel': args.accel_factor,
-                    'angvel': args.factor if args.scale_angular_velocity else None,
-                }[category]
-                if factor is None:
-                    continue
-                parent, leaf = resolve_field(msg, path)
-                value = getattr(parent, leaf)
-                if not isinstance(value, (int, float)) and not hasattr(value, '__len__'):
-                    continue
-                setattr(parent, leaf, scale_value(value, factor))
-                touched.add(f'{path} ({category}, heuristic)')
-        return msg
-
-    return scale
+# CLI dest -> (message field name, index within that field's float64[3]).
+AXES = {
+    'scale_x_vel':    ('bodyframe_linear_velocity',  0),
+    'scale_y_vel':    ('bodyframe_linear_velocity',  1),
+    'scale_heave_vel':('bodyframe_linear_velocity',  2),
+    'scale_roll_rate':('bodyframe_angular_velocity', 0),
+    'scale_pitch_rate':('bodyframe_angular_velocity', 1),
+    'scale_yaw_rate': ('bodyframe_angular_velocity', 2),
+}
 
 
 def register_local_msg_types(typestore, repo_root: Path) -> int:
     """Register every <pkg>/msg/<Name>.msg found under repo_root as
-    '<pkg>/msg/<Name>' -- covers custom types (ulisse_msgs, px4_msgs, ...)
-    for bags old enough to carry no embedded message definitions of their
-    own (pre rosbag2 metadata v8-ish). Returns how many were registered."""
+    '<pkg>/msg/<Name>' -- covers ulisse_msgs for bags old enough to carry no
+    embedded message definitions of their own (pre rosbag2 metadata v8-ish).
+    Returns how many were registered."""
     count = 0
     for msg_path in repo_root.glob('vision_dashing_ws/src/*/msg/*.msg'):
         pkg = msg_path.parent.parent.name
@@ -228,8 +104,33 @@ def register_local_msg_types(typestore, repo_root: Path) -> int:
     return count
 
 
+def build_scale_plan(args):
+    """Return {dest: (field, index, factor)} for every axis the user asked
+    to scale (factor != 1.0), used both to apply the scaling and to report
+    what was touched."""
+    plan = {}
+    for dest, (field, index) in AXES.items():
+        factor = getattr(args, dest)
+        if factor != 1.0:
+            plan[dest] = (field, index, factor)
+    return plan
+
+
+def scale_message(msg, plan, touched: set) -> None:
+    # rosbags hands back read-only numpy views into the deserialized buffer
+    # for fixed-size float64[N] fields -- copy before mutating.
+    touched_fields = {field for field, _, _ in plan.values()}
+    copies = {field: getattr(msg, field).copy() for field in touched_fields}
+    for dest, (field, index, factor) in plan.items():
+        copies[field][index] = copies[field][index] * factor
+        touched.add(f'{field}[{index}] ({dest.replace("scale_", "").replace("_", "-")}) x{factor}')
+    for field, arr in copies.items():
+        setattr(msg, field, arr)
+
+
 def convert(input_path: Path, output_path: Path, args) -> None:
     typestore = get_typestore(Stores.ROS2_HUMBLE)
+    plan = build_scale_plan(args)
     seen_report = {}
     scaled_count = 0
     total_count = 0
@@ -241,21 +142,17 @@ def convert(input_path: Path, output_path: Path, args) -> None:
         # so fall back to scanning the repo's own .msg files for whatever
         # that leaves unregistered.
         for conn in reader.connections:
-            if conn.msgdef and conn.msgdef.data:
+            if conn.msgtype in MSGTYPES and conn.msgdef and conn.msgdef.data:
                 try:
-                    typestore.register(
-                        get_types_from_msg(conn.msgdef.data, conn.msgtype)
-                    )
+                    typestore.register(get_types_from_msg(conn.msgdef.data, conn.msgtype))
                 except Exception:
-                    pass  # already registered, or a built-in type
+                    pass  # already registered
         register_local_msg_types(typestore, args.repo_root)
 
         writer_ctx = None if args.list_fields else Writer(
             output_path, version=HUMBLE_METADATA_VERSION,
             storage_plugin=STORAGE_PLUGINS[args.storage],
         )
-
-        topic_filter = set(args.topics.split(',')) if args.topics else None
 
         def run(writer):
             nonlocal scaled_count, total_count
@@ -271,13 +168,12 @@ def convert(input_path: Path, output_path: Path, args) -> None:
 
             for conn, timestamp, rawdata in reader.messages():
                 total_count += 1
-                do_scale = (topic_filter is None or conn.topic in topic_filter) and \
-                           (conn.msgtype in EXPLICIT_RULES or args.heuristic_fallback)
-                if do_scale:
-                    scaler = build_scaler(conn.msgtype, args, seen_report)
+                if conn.msgtype in MSGTYPES:
+                    entry = seen_report.setdefault((conn.topic, conn.msgtype), {'count': 0, 'fields': set()})
                     msg = typestore.deserialize_cdr(rawdata, conn.msgtype)
-                    msg = scaler(msg)
+                    scale_message(msg, plan, entry['fields'])
                     rawdata = typestore.serialize_cdr(msg, conn.msgtype)
+                    entry['count'] += 1
                     scaled_count += 1
                 if writer is not None:
                     writer.write(conn_map[conn.id], timestamp, rawdata)
@@ -291,14 +187,19 @@ def convert(input_path: Path, output_path: Path, args) -> None:
     print(f'{"[dry run] " if args.list_fields else ""}'
           f'{scaled_count}/{total_count} messages scaled'
           + ('' if args.list_fields else f' -> {output_path}'))
-    print('\nFields touched per message type:')
+    print('\nTopics touched (every topic in the bag whose type is '
+          f'{" or ".join(MSGTYPES)} -- whether or not any of its fields '
+          'actually changed, since a factor of 1.0 for every axis still '
+          'means the topic was inspected):')
     if not seen_report:
-        print('  (none -- check --topics filter, or pass --heuristic-fallback '
-              'if these types are not in EXPLICIT_RULES)')
-    for msgtype, fields in sorted(seen_report.items()):
-        print(f'  {msgtype}:')
-        for f in sorted(fields):
-            print(f'    - {f}')
+        print(f'  (none -- the bag has no topic of type {" / ".join(MSGTYPES)})')
+    for (topic, msgtype), entry in sorted(seen_report.items()):
+        print(f'  {topic}  [{msgtype}]  ({entry["count"]} messages)')
+        if entry['fields']:
+            for f in sorted(entry['fields']):
+                print(f'    - {f}')
+        else:
+            print('    - (no fields changed -- every --scale-* option was left at its default 1.0)')
 
 
 def main() -> None:
@@ -309,27 +210,20 @@ def main() -> None:
     parser.add_argument('input_bag', type=Path)
     parser.add_argument('output_bag', type=Path, nargs='?',
                          help='required unless --list-fields is given')
-    parser.add_argument('--factor', type=float, required=True,
-                         help='scale applied to linear velocity fields')
-    parser.add_argument('--accel-factor', type=float, default=None,
-                         help='scale applied to acceleration fields '
-                              '(default: same as --factor; pass factor**2 '
-                              'if this represents a time-dilation)')
-    parser.add_argument('--scale-angular-velocity', action='store_true',
-                         help='also scale angular velocity / gyro fields. '
-                              'Off by default: in this codebase\'s sim plugin, '
-                              'the platform\'s actual simulated tilt (rpy) is '
-                              'NOT derived from angular velocity, so scaling '
-                              'it only changes the synthetic IMU gyro output, '
-                              'not the real motion -- read the module '
-                              'docstring before turning this on.')
-    parser.add_argument('--topics', type=str, default=None,
-                         help='comma-separated topic names to restrict scaling to '
-                              '(default: all topics whose type is recognized)')
-    parser.add_argument('--heuristic-fallback', action='store_true',
-                         help='also apply name-based heuristic scaling to message '
-                              'types not in EXPLICIT_RULES. Off by default -- '
-                              'verify with --list-fields before trusting it.')
+
+    parser.add_argument('--scale-x-vel', type=float, default=1.0,
+                         help='factor for bodyframe_linear_velocity[0] (x/surge velocity, m/s). Default: 1.0 (unchanged)')
+    parser.add_argument('--scale-y-vel', type=float, default=1.0,
+                         help='factor for bodyframe_linear_velocity[1] (y/sway velocity, m/s). Default: 1.0 (unchanged)')
+    parser.add_argument('--scale-heave-vel', type=float, default=1.0,
+                         help='factor for bodyframe_linear_velocity[2] (heave velocity, m/s). Default: 1.0 (unchanged)')
+    parser.add_argument('--scale-roll-rate', type=float, default=1.0,
+                         help='factor for bodyframe_angular_velocity[0] (roll rate, rad/s). Default: 1.0 (unchanged)')
+    parser.add_argument('--scale-pitch-rate', type=float, default=1.0,
+                         help='factor for bodyframe_angular_velocity[1] (pitch rate, rad/s). Default: 1.0 (unchanged)')
+    parser.add_argument('--scale-yaw-rate', type=float, default=1.0,
+                         help='factor for bodyframe_angular_velocity[2] (yaw rate, rad/s). Default: 1.0 (unchanged)')
+
     parser.add_argument('--storage', choices=STORAGE_PLUGINS.keys(), default='sqlite3')
     parser.add_argument('--list-fields', action='store_true',
                          help='dry run: report which fields would be scaled '
@@ -342,9 +236,6 @@ def main() -> None:
                               'repo)')
     args = parser.parse_args()
 
-    if args.accel_factor is None:
-        args.accel_factor = args.factor
-
     if not args.input_bag.exists():
         sys.exit(f'Input bag not found: {args.input_bag}')
     if not args.list_fields:
@@ -352,6 +243,9 @@ def main() -> None:
             sys.exit('output_bag is required unless --list-fields is given')
         if args.output_bag.exists():
             sys.exit(f'Output path already exists, refusing to overwrite: {args.output_bag}')
+    if not build_scale_plan(args):
+        sys.exit('No --scale-* option given a value != 1.0 -- nothing to do. '
+                  'Pass e.g. --scale-heave-vel 1.5.')
 
     convert(args.input_bag, args.output_bag, args)
 
