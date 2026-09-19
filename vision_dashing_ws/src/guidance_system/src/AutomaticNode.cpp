@@ -316,10 +316,20 @@ private:
       RCLCPP_WARN(get_logger(), "[disarmOnGo] sending FORCED disarm command");
     }
 
-    // Publish the resulting setpoint.
-    auto command = odomFromMavState(autom_._comm);
-    command.header.stamp = this->now();
-    local_position_sp_pub_->publish(command);
+    // Publish the resulting setpoint -- EXCEPT once disarm-on-GO has committed
+    // to LANDING_DONE. That state's setpoint is Vz=0 under VELOCITY control,
+    // an ACTIVE hover command, not a no-op. If the force-disarm sent above is
+    // delayed or dropped (best-effort; PX4's commander can defer/reject an
+    // in-air force-disarm), the drone stays armed in offboard mode and keeps
+    // obeying that hover setpoint -- i.e. it keeps flying instead of coming
+    // down, even after it may have already touched the pad. Stopping
+    // publication here means PX4 falls back to its own failsafe (no fresh
+    // offboard setpoint) instead of being actively held aloft by us.
+    if (!autom_.isDisarmOnGoDone()) {
+      auto command = odomFromMavState(autom_._comm);
+      command.header.stamp = this->now();
+      local_position_sp_pub_->publish(command);
+    }
 
     // Echo platform pose for any downstream consumer of platRob.
     auto plat_rob = odomFromMavState(platform_state_);
