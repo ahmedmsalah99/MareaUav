@@ -25,6 +25,16 @@ Each has its own --scale-* option below -- there is no single blanket
 without touching surge/sway/yaw motion is the actual use case this script
 exists for.
 
+--bias-heave-vel adds a constant [m/s] to the raw heave velocity BEFORE
+--scale-heave-vel is applied (new_v = (raw_v + bias) * factor). This exists
+because a recorded heave signal can have a real DC bias -- e.g. more/faster
+downward samples than upward ones -- which is invisible at the recording's
+own (small) amplitude but becomes an ever-growing downward drift once
+dead-reckoned in landingplat/plugin.cpp (which integrates velocity with no
+absolute position reference) and gets multiplied right along with everything
+else by --scale-heave-vel. Zeroing that bias out here, before scaling,
+fixes it at the source instead of chasing it downstream.
+
 Why only these six fields, and nothing else in the message:
   landingplat/plugin.cpp's OnUpdate() dead-reckons BOTH the platform's
   position (from bodyframe_linear_velocity) and its orientation (from
@@ -47,6 +57,7 @@ Usage:
     pip install rosbags
     ./scale_bag_rates.py INPUT_BAG OUTPUT_BAG --scale-heave-vel 1.5
     ./scale_bag_rates.py INPUT_BAG OUTPUT_BAG --scale-roll-rate 2.0 --scale-pitch-rate 2.0
+    ./scale_bag_rates.py INPUT_BAG OUTPUT_BAG --bias-heave-vel 0.01 --scale-heave-vel 50   # cancel a DC bias, then scale
     ./scale_bag_rates.py INPUT_BAG OUTPUT_BAG --scale-heave-vel 1.5 --list-fields   # dry run, no output bag written
 """
 
@@ -75,14 +86,16 @@ MSGTYPES = (
     'ulisse_msgs/msg/NavFilterData',
 )
 
-# CLI dest -> (message field name, index within that field's float64[3]).
+# CLI dest (of the --scale-* option) -> (message field name, index within
+# that field's float64[3], CLI dest of the matching --bias-* option, or None
+# if that axis has no bias option).
 AXES = {
-    'scale_x_vel':    ('bodyframe_linear_velocity',  0),
-    'scale_y_vel':    ('bodyframe_linear_velocity',  1),
-    'scale_heave_vel':('bodyframe_linear_velocity',  2),
-    'scale_roll_rate':('bodyframe_angular_velocity', 0),
-    'scale_pitch_rate':('bodyframe_angular_velocity', 1),
-    'scale_yaw_rate': ('bodyframe_angular_velocity', 2),
+    'scale_x_vel':     ('bodyframe_linear_velocity',  0, None),
+    'scale_y_vel':      ('bodyframe_linear_velocity',  1, None),
+    'scale_heave_vel':  ('bodyframe_linear_velocity',  2, 'bias_heave_vel'),
+    'scale_roll_rate':  ('bodyframe_angular_velocity', 0, None),
+    'scale_pitch_rate': ('bodyframe_angular_velocity', 1, None),
+    'scale_yaw_rate':   ('bodyframe_angular_velocity', 2, None),
 }
 
 
@@ -105,25 +118,35 @@ def register_local_msg_types(typestore, repo_root: Path) -> int:
 
 
 def build_scale_plan(args):
-    """Return {dest: (field, index, factor)} for every axis the user asked
-    to scale (factor != 1.0), used both to apply the scaling and to report
-    what was touched."""
+    """Return {dest: (field, index, factor, bias)} for every axis the user
+    asked to touch (factor != 1.0 or bias != 0.0), used both to apply the
+    transform and to report what was touched."""
     plan = {}
-    for dest, (field, index) in AXES.items():
+    for dest, (field, index, bias_dest) in AXES.items():
         factor = getattr(args, dest)
-        if factor != 1.0:
-            plan[dest] = (field, index, factor)
+        bias = getattr(args, bias_dest) if bias_dest else 0.0
+        if factor != 1.0 or bias != 0.0:
+            plan[dest] = (field, index, factor, bias)
     return plan
 
 
 def scale_message(msg, plan, touched: set) -> None:
     # rosbags hands back read-only numpy views into the deserialized buffer
     # for fixed-size float64[N] fields -- copy before mutating.
-    touched_fields = {field for field, _, _ in plan.values()}
+    touched_fields = {field for field, _, _, _ in plan.values()}
     copies = {field: getattr(msg, field).copy() for field in touched_fields}
-    for dest, (field, index, factor) in plan.items():
-        copies[field][index] = copies[field][index] * factor
-        touched.add(f'{field}[{index}] ({dest.replace("scale_", "").replace("_", "-")}) x{factor}')
+    for dest, (field, index, factor, bias) in plan.items():
+        # Bias is added BEFORE scaling, on purpose -- see --bias-heave-vel's
+        # help text: it's meant to cancel a DC offset already present in the
+        # raw signal, which must happen before the multiplicative scale or
+        # the scale would blow the uncancelled bias up right along with it.
+        copies[field][index] = (copies[field][index] + bias) * factor
+        axis_name = dest.replace("scale_", "").replace("_", "-")
+        label = f'{field}[{index}] ({axis_name})'
+        if bias != 0.0:
+            label += f' +{bias}'
+        label += f' x{factor}'
+        touched.add(label)
     for field, arr in copies.items():
         setattr(msg, field, arr)
 
@@ -215,8 +238,14 @@ def main() -> None:
                          help='factor for bodyframe_linear_velocity[0] (x/surge velocity, m/s). Default: 1.0 (unchanged)')
     parser.add_argument('--scale-y-vel', type=float, default=1.0,
                          help='factor for bodyframe_linear_velocity[1] (y/sway velocity, m/s). Default: 1.0 (unchanged)')
+    parser.add_argument('--bias-heave-vel', type=float, default=0.0,
+                         help='constant [m/s] added to bodyframe_linear_velocity[2] '
+                              'BEFORE --scale-heave-vel is applied, to cancel a DC bias '
+                              'in the raw signal before it gets multiplied up too. '
+                              'Default: 0.0 (no bias)')
     parser.add_argument('--scale-heave-vel', type=float, default=1.0,
-                         help='factor for bodyframe_linear_velocity[2] (heave velocity, m/s). Default: 1.0 (unchanged)')
+                         help='factor for bodyframe_linear_velocity[2] (heave velocity, m/s), '
+                              'applied AFTER --bias-heave-vel. Default: 1.0 (unchanged)')
     parser.add_argument('--scale-roll-rate', type=float, default=1.0,
                          help='factor for bodyframe_angular_velocity[0] (roll rate, rad/s). Default: 1.0 (unchanged)')
     parser.add_argument('--scale-pitch-rate', type=float, default=1.0,
@@ -244,8 +273,8 @@ def main() -> None:
         if args.output_bag.exists():
             sys.exit(f'Output path already exists, refusing to overwrite: {args.output_bag}')
     if not build_scale_plan(args):
-        sys.exit('No --scale-* option given a value != 1.0 -- nothing to do. '
-                  'Pass e.g. --scale-heave-vel 1.5.')
+        sys.exit('No --scale-* option given a value != 1.0 and no --bias-* option '
+                  'given a value != 0.0 -- nothing to do. Pass e.g. --scale-heave-vel 1.5.')
 
     convert(args.input_bag, args.output_bag, args)
 
