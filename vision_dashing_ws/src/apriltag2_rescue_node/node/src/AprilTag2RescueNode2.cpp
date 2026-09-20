@@ -53,15 +53,12 @@ AprilTag2RescueNode::AprilTag2RescueNode() : Node("apriltag2rescue", "apriltagre
 	intrinsics = {fx, fy, cx,cy};
 	//std::cout<<"K: "<<K<<std::endlrescue_tags;
 
-	// getting the value of the environment variable, to check whenever we are running in SITL or in a RPi
-	char *env_val;
-	env_val = std::getenv("M2M_SIM");
-	bool env_bool;
-
-	if(atoi(env_val) >= 1)
-		env_bool = 1;
-	else
-		env_bool = 0;
+	// getting the value of the environment variable, to check whenever we are running in SITL or in a RPi.
+	// Value-based (not just "is it set"), and null-safe: atoi(nullptr) is UB,
+	// which is exactly what getenv() returns when M2M_SIM is unset -- e.g. on
+	// the current ros2_real.launch.py, which never sets it.
+	char *env_val = std::getenv("M2M_SIM");
+	bool env_bool = env_val && (atoi(env_val) >= 1);
 
 	declare_parameter<std::string>("family", "36h11");
 	declare_parameter<double>("size", 2.0);
