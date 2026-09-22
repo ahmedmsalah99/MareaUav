@@ -1266,6 +1266,9 @@ bool Lander::setDroneInFront()
     // GROUND TRUTH — kept commented for reference:
     // _line_direction[2] = _state.getZ() - (_platformState.getZ() + param.standoffDistance);
     _line_direction[2] = _state.getZ() - (_platformVision.getZ() + param.standoffDistance);
+    // Capture the slope's Z floor once, here, alongside the line direction --
+    // see _slopeZBase's declaration.
+    _slopeZBase = _platformVision.getZ() + param.standoffDistance;
     _approachSettleTimer = 0.0;   // consumed — start clean for next time
     return true;
   }
@@ -1372,24 +1375,21 @@ void Lander::hold() {
       // commanded; _platformState is in the simulator's world frame, so the old
       // form mixed frames as well as using truth.
       //
-      // Uses standoffDistance, not z_margin: the slope should hand off to the
-      // same height the HOLD state machine's descend/COMP thresholds are
-      // already built around, not a separate, independently-configured value
-      // it would then immediately re-adjust away from.
-      double z_base = _platformVision.getZ() + param.standoffDistance;
+      // Uses _slopeZBase (captured ONCE in setDroneInFront(), alongside
+      // _line_direction), not a live platformZ + standoffDistance recomputed
+      // every tick -- the slope's floor is now a fixed point in space for the
+      // whole descent, not one that also drifts with platform heave.
+      double z_base = _slopeZBase;
       double dot    = _VisionPose.getX() * _line_direction[0] + _VisionPose.getY() * _line_direction[1];
       double norm_sq = _line_direction[0] * _line_direction[0] + _line_direction[1] * _line_direction[1];
       double z_adj = z_base + _line_direction[2] * dot / norm_sq;
 
-      // Feed-forward the descent rate implied by the line instead of relying
-      // on PX4's position loop to infer it from a moving setpoint. z_adj
-      // slides every tick as dot closes -- purely commanding the position
-      // makes PX4 chase a receding target and lag behind, which is what the
-      // (removed) position-feedback term was trying, unstably, to paper
-      // over. Differentiate z_adj analytically via the chain rule instead
-      // (dot's own rate is the horizontal closing velocity projected onto
-      // the line direction) -- same feed-forward technique desc()/comp()
-      // already use for their own Vz.
+      // Velocity feed-forward DISABLED for now -- position-only command.
+      // Kept computed (commented use below) since it's still useful for
+      // diagnostics/future reference, but not sent: _setPoint.setVz(NAN)
+      // instead, same "not velocity commanded" convention already used
+      // elsewhere (see comp()'s NaN-vs-velocity note) rather than 0.0, which
+      // would be an active "hold zero Vz" command fighting the position term.
       double closingVx = _platformVision.getVx() - _state.getVx();
       double closingVy = _platformVision.getVy() - _state.getVy();
       double dDotDt = closingVx * _line_direction[0] + closingVy * _line_direction[1];
@@ -1398,7 +1398,8 @@ void Lander::hold() {
       std::cout << "z_base "  << z_base << " z_adj " << z_adj << " zDotFF " << zDotFF << " state z "<< _state.getZ() << " _line_direction[2] " << _line_direction[2]
       << " dot " << dot << " norm_sq " << norm_sq << " dot / norm_sq " << dot / norm_sq  << " _VisionPose.getX() " << (_VisionPose.getX()) <<
       " _VisionPose.getY() " << _VisionPose.getY() << " _state.getX() " <<_state.getX() << std::endl;
-      _setPoint.setVz(zDotFF);
+      // _setPoint.setVz(zDotFF);
+      _setPoint.setVz(NAN);
       _setPoint.setZ(z_adj);
         // std::cout << "hold setting z pos !desc_v " << !desc_v << " !asce_v " << !asce_v
         //           << " !asce_min " << !asce_min << " !asce_margin " << !asce_margin

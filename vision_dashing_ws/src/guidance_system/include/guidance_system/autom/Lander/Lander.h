@@ -714,6 +714,14 @@ private:
 
     Eigen::Vector3d _line_direction;
 
+    // Z floor the INIT slope glides down to (platformZ + standoffDistance),
+    // captured ONCE in setDroneInFront() at the same moment _line_direction
+    // is set, and held fixed for the whole slope -- NOT recomputed from the
+    // platform's live Z each tick. Keeps the slope's target a stationary
+    // line in space instead of one that also shifts with platform heave,
+    // which the velocity feed-forward never accounted for anyway.
+    double _slopeZBase = 0.0;
+
     /**
      * @brief Logic and signals helpers
      * @details It updates the integral error and
