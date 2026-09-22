@@ -722,6 +722,18 @@ private:
     // which the velocity feed-forward never accounted for anyway.
     double _slopeZBase = 0.0;
 
+    // EMA-filtered horizontal vision error, used ONLY to compute the slope's
+    // dot/norm_sq convergence fraction in hold(). Kept separate from the raw
+    // _VisionPose.getX()/getY() (which trackXY()'s direct-mode branch also
+    // filters via _platFiltX/_platFiltY before commanding XY) so the Z
+    // command reacts to the same smoothed signal the drone's XY setpoint
+    // itself is actually built from, instead of raw per-frame vision noise
+    // the XY controller never even sees directly. Seeded lazily on first use
+    // after each slope (re)start; see _slopeVisFiltSeeded.
+    double _slopeVisXFilt = 0.0;
+    double _slopeVisYFilt = 0.0;
+    bool   _slopeVisFiltSeeded = false;
+
     /**
      * @brief Logic and signals helpers
      * @details It updates the integral error and
