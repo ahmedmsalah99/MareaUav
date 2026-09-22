@@ -1263,9 +1263,16 @@ bool Lander::setDroneInFront()
     // _platformState.getX() - (_platformState.getX() + gain*sinf(yaw_plat))
     _line_direction[0] = -gain*sinf(yaw_plat);
     _line_direction[1] = -gain*cosf(yaw_plat);
-    // GROUND TRUTH — kept commented for reference:
-    // _line_direction[2] = _state.getZ() - (_platformState.getZ() + param.standoffDistance);
-    _line_direction[2] = _state.getZ() - (_platformVision.getZ() + param.standoffDistance);
+    // Vertical leg set to the same constant "gain" as the horizontal legs
+    // (line_direction[0]/[1] above), not measured from _state.getZ(). The
+    // horizontal legs are always exactly `gain` by construction regardless of
+    // how well INIT converged; measuring the vertical leg from state instead
+    // inherited whatever residual Z error existed when `ready` fired (bounded
+    // only by initApproachZPosThld), producing an unequal-legs slope. Pinning
+    // it to `gain` matches the isosceles-triangle design intent (zTarget is
+    // already set to platformZ + standoffDistance + gain in setDroneInFront()
+    // above) and makes the leg mismatch zero unconditionally.
+    _line_direction[2] = gain;
     // Capture the slope's Z floor once, here, alongside the line direction --
     // see _slopeZBase's declaration.
     _slopeZBase = _platformVision.getZ() + param.standoffDistance;
