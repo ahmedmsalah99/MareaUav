@@ -336,7 +336,7 @@ private:
   // in setpoint.velocity[2] -- the position target itself is what PX4 tracks,
   // so a feed-forward can't ask for more than this lets the target move.
   static constexpr double kMaxVelocityXY = 0.3;  // m/s
-  static constexpr double kMaxVelocityZ  = 0.3;  // m/s
+  static constexpr double kMaxVelocityZ  = 1.0;  // m/s
   bool         first_pos_sp_ {true};
   rclcpp::Time pos_sp_last_time_;
   double       prev_pos_sp_[3] {0.0, 0.0, 0.0};
