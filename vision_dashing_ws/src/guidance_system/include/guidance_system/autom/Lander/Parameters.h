@@ -207,6 +207,18 @@ public:
     // axis at all.
     double compVelMatchThld;
 
+    // Gain applied to the standoff-distance error (lead = effectiveHoldDist -
+    // gap) in comp()'s position term: new_z = state.getZ() + compZLeadGain *
+    // lead. Needed because comp() ALWAYS commands a Vz feed-forward (vff,
+    // the predicted pad velocity) alongside the position setpoint -- a pure
+    // velocity command has no term pulling the drone back onto the actual
+    // target standoff distance, so without this gain a residual position
+    // error would only converge asymptotically (or not at all) instead of
+    // being corrected. A hardcoded gain of 1 leaves that correction too
+    // weak in practice; this makes it tunable per-drone instead of requiring
+    // a code change.
+    double compZLeadGain;
+
     // Window [s] over which comp() tracks the PEAK recent upward heave
     // velocity (see Lander::_heaveUpSamples/_heaveUpMax) to grow the
     // standoff distance in rougher seas and let it shrink back once that

@@ -1678,7 +1678,7 @@ void Lander::comp() {
   if (_compTracking) {
     double vff  = _seaState.heaveValid ? _seaState.heaveVelPredComp : 0.0;
     double lead = (effectiveHoldDist - gap);
-    new_z = _state.getZ() + 3.0*lead;
+    new_z = _state.getZ() + param.compZLeadGain*lead;
 
     // Two modes, so the position and velocity halves of the setpoint stop
     // fighting each other.
