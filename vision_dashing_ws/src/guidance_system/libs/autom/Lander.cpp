@@ -1276,6 +1276,7 @@ bool Lander::setDroneInFront()
     // Capture the slope's Z floor once, here, alongside the line direction --
     // see _slopeZBase's declaration.
     _slopeZBase = _platformVision.getZ() + param.standoffDistance;
+    _slopeVisFiltSeeded = false;  // re-seed the dot filter fresh for this slope run
     _approachSettleTimer = 0.0;   // consumed — start clean for next time
     return true;
   }
@@ -1387,7 +1388,23 @@ void Lander::hold() {
       // every tick -- the slope's floor is now a fixed point in space for the
       // whole descent, not one that also drifts with platform heave.
       double z_base = _slopeZBase;
-      double dot    = _VisionPose.getX() * _line_direction[0] + _VisionPose.getY() * _line_direction[1];
+
+      // Smooth the horizontal vision error before using it to gate Z, same
+      // as trackXY()'s direct-mode branch already smooths it (_platFiltX/Y)
+      // before commanding the XY setpoint. Using the raw per-frame
+      // _VisionPose.getX()/getY() here let raw vision noise/jitter ripple
+      // almost 1:1 into z_adj (dz_adj/dVisionY ~= -cos(yaw) with the current
+      // gain/norm_sq), independently of whatever the XY controller itself
+      // was actually reacting to.
+      if (!_slopeVisFiltSeeded) {
+        _slopeVisXFilt = _VisionPose.getX();
+        _slopeVisYFilt = _VisionPose.getY();
+        _slopeVisFiltSeeded = true;
+      } else {
+        _slopeVisXFilt = param.spFilterAlpha * _slopeVisXFilt + (1.0 - param.spFilterAlpha) * _VisionPose.getX();
+        _slopeVisYFilt = param.spFilterAlpha * _slopeVisYFilt + (1.0 - param.spFilterAlpha) * _VisionPose.getY();
+      }
+      double dot    = _slopeVisXFilt * _line_direction[0] + _slopeVisYFilt * _line_direction[1];
       double norm_sq = _line_direction[0] * _line_direction[0] + _line_direction[1] * _line_direction[1];
       double z_adj = z_base + _line_direction[2] * dot / norm_sq;
 
@@ -1415,6 +1432,7 @@ void Lander::hold() {
       if(std::fabs(_VisionPose.getX()) < 0.1 && std::fabs(_VisionPose.getY()) < 0.1){
         std::cout << "disabling slope" << std::endl;
         _slopeActive = false;
+        _slopeVisFiltSeeded = false;   // re-seed fresh next time the slope (re)starts
       }
     }
     _setPoint.setType(MavState::POSITION);
