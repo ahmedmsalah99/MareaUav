@@ -160,6 +160,7 @@ void Lander::initStateMachine() {
 	_actualState = 0;
 	_prevState   = 0;
 	_spSeeded    = false;   // re-seed the XY platform-hold filter on (re)init
+	_platformMaxZSeeded = false;   // re-seed the tracked platform peak-Z for a fresh attempt
 	_compTracking = true;   // COMP starts in tracking mode
 	_landingGo    = false;  // GO/NO-GO window
 	_goLatched    = false;
@@ -1105,6 +1106,17 @@ void Lander::updatePlatformVision() {
   _platformVision.setYaw(platYaw);
   _platformVision.IsValid = visionOk;
 
+  // Track the highest platform Z observed this landing attempt -- used by
+  // setDroneInFront() for the INIT standoff altitude instead of the live pz,
+  // so that target doesn't track the pad's instantaneous heave. Reset in
+  // initStateMachine() at the start of each fresh attempt.
+  if (visionOk) {
+    if (!_platformMaxZSeeded || pz > _platformMaxZ) {
+      _platformMaxZ = pz;
+    }
+    _platformMaxZSeeded = true;
+  }
+
   // Vision estimate vs the ground-truth topic, side by side, for verification.
   // _platformState is Landing_Site/pose, which in simulation is the Gazebo
   // plugin echoing the pose it wrote onto the model. Expect a CONSTANT offset
@@ -1197,7 +1209,16 @@ bool Lander::setDroneInFront()
   // approach triangle -- from this standoff point down to where the slope
   // levels out at platformZ + standoffDistance -- isosceles: a 45-degree
   // glide slope, not an arbitrary one set by a fixed, pad-unaware altitude.
-  double zTarget = _platformVision.getZ() + param.standoffDistance + gain;
+  //
+  // Uses _platformMaxZ (the highest platform Z observed so far this landing
+  // attempt, tracked in updatePlatformVision()) instead of the live
+  // _platformVision.getZ() -- the pad heaves, so a live value makes this
+  // standoff altitude bob with it. Sizing against the pad's known peak
+  // instead means the standoff point only ever gets safer (higher) as a
+  // higher peak is actually observed, never lower, and doesn't chase every
+  // heave cycle while INIT is still approaching.
+  double platformZForTarget = _platformMaxZSeeded ? _platformMaxZ : _platformVision.getZ();
+  double zTarget = platformZForTarget + param.standoffDistance + gain;
 
   // setting the setpoint finally
   _setPoint.setPosition(xTarget, yTarget, zTarget);

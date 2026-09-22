@@ -434,6 +434,16 @@ private:
     double _prevVisY      = 0.0;
     bool   _platVisSeeded = false;
 
+    // Highest platform Z seen so far this landing attempt (world/drone frame,
+    // same convention as _platformVision.getZ()), updated every tick in
+    // updatePlatformVision() and reset in initStateMachine(). Used instead of
+    // the live/current platform Z for setDroneInFront()'s INIT standoff
+    // target, so the initial approach altitude doesn't track the pad's
+    // instantaneous heave and only ever gets safer (higher) as a better peak
+    // is observed, never lower.
+    double _platformMaxZ = 0.0;
+    bool   _platformMaxZSeeded = false;
+
     /**
      * @brief Rebuilds _platformVision from the drone state + vision offset.
      * Called every tick from updateSignals(), after _verticalErr is computed.
