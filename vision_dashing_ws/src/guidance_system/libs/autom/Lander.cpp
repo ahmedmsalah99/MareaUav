@@ -1219,7 +1219,7 @@ bool Lander::setDroneInFront()
   double errZ = zTarget - _state.getZ();
   bool closeEnough = fabs(errX) < param.initApproachPosThld
                    && fabs(errY) < param.initApproachPosThld
-                   && fabs(errZ) < param.initApproachPosThld;
+                   && fabs(errZ) < param.initApproachZPosThld;
 
   // Require it to hold CONTINUOUSLY for initApproachWaitTime seconds before
   // actually releasing — same continuous-timer pattern as the HOLD -> COMP

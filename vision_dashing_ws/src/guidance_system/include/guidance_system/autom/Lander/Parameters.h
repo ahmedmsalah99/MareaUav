@@ -124,6 +124,15 @@ public:
     // gap can close), so keep this looser than landXYErrThld.
     double initApproachPosThld;
 
+    // Max Z position error [m] from the standoff point for
+    // setDroneInFront() to consider the drone "close enough" in altitude.
+    // Kept separate from (and tighter than) initApproachPosThld because
+    // _line_direction[2] is captured from state.getZ() at slope-start time --
+    // a loose Z tolerance here seeds the slope with an inaccurate vertical
+    // leg (mismatched against the horizontal leg, which is always exactly
+    // "gain" regardless of convergence accuracy).
+    double initApproachZPosThld;
+
     // Descent velocity (m per tick) applied in desc()
     double descVelocity;
 
