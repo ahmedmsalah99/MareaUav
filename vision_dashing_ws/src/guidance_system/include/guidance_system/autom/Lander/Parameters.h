@@ -127,11 +127,21 @@ public:
     // Max Z position error [m] from the standoff point for
     // setDroneInFront() to consider the drone "close enough" in altitude.
     // Kept separate from (and tighter than) initApproachPosThld because
-    // _line_direction[2] is captured from state.getZ() at slope-start time --
-    // a loose Z tolerance here seeds the slope with an inaccurate vertical
-    // leg (mismatched against the horizontal leg, which is always exactly
-    // "gain" regardless of convergence accuracy).
+    // the slope's point0 (see _slopeStartRelZ) is captured from state.getZ()
+    // at slope-start time -- a loose Z tolerance here seeds the slope's
+    // starting point with more residual error than intended.
     double initApproachZPosThld;
+
+    // Total duration [s] of the time-parameterized INIT->HOLD slope (see
+    // hold(), _slopeActive, _slopeStartRelX/Y/Z, _slopeElapsed). The commanded
+    // pad-relative position interpolates from the drone's offset to the pad
+    // at slope-start (t=0) to (0, 0, standoffDistance) at t=slopeDuration,
+    // and is placed in world using the pad's live position. Tune to the
+    // achievable descent/closing rate for the actual standoff distance --
+    // too short demands an unrealistic velocity from the position
+    // controller, too long leaves the drone loitering above the pad longer
+    // than necessary before COMP can take over.
+    double slopeDuration;
 
     // Descent velocity (m per tick) applied in desc()
     double descVelocity;

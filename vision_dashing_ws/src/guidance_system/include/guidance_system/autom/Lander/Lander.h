@@ -718,31 +718,31 @@ private:
 
     Eigen::Vector3d _err_prev;
 
-    /**
-     * direction of the line the drone has to follow to descend
-     */
-
-    Eigen::Vector3d _line_direction;
-
-    // Z floor the INIT slope glides down to (platformZ + standoffDistance),
-    // captured ONCE in setDroneInFront() at the same moment _line_direction
-    // is set, and held fixed for the whole slope -- NOT recomputed from the
-    // platform's live Z each tick. Keeps the slope's target a stationary
-    // line in space instead of one that also shifts with platform heave,
-    // which the velocity feed-forward never accounted for anyway.
-    double _slopeZBase = 0.0;
-
-    // EMA-filtered horizontal vision error, used ONLY to compute the slope's
-    // dot/norm_sq convergence fraction in hold(). Kept separate from the raw
-    // _VisionPose.getX()/getY() (which trackXY()'s direct-mode branch also
-    // filters via _platFiltX/_platFiltY before commanding XY) so the Z
-    // command reacts to the same smoothed signal the drone's XY setpoint
-    // itself is actually built from, instead of raw per-frame vision noise
-    // the XY controller never even sees directly. Seeded lazily on first use
-    // after each slope (re)start; see _slopeVisFiltSeeded.
-    double _slopeVisXFilt = 0.0;
-    double _slopeVisYFilt = 0.0;
-    bool   _slopeVisFiltSeeded = false;
+    // ── Time-parameterized INIT->HOLD slope (hold(), _slopeActive) ───────────
+    // Replaces the old horizontal-convergence-fraction ("dot/norm_sq") slope:
+    // that law made the Z command a direct function of instantaneous
+    // horizontal vision error, so any stall/wobble in XY convergence stalled
+    // or reversed Z too (see the session history this superseded).
+    //
+    // This one is driven by elapsed TIME and defined in the PAD's frame:
+    // captured once, at slope start (setDroneInFront()'s `ready` block) --
+    //   rel0 = drone position - pad position at that instant (t=0)
+    // -- and every tick thereafter, with s = clamp(elapsed/slopeDuration, 0, 1):
+    //   rel(t) = (1-s)*rel0 + s*(0, 0, standoffDistance)
+    //   cmd(t) = padLive(t) + rel(t)
+    // i.e. at every moment the drone is commanded to a specific position
+    // RELATIVE to the pad, transformed to world using the pad's live
+    // position -- so the whole path rides along with a moving/heaving pad.
+    // At s=1 the slope hands off to normal hold() tracking (trackXY() + live
+    // Z) by clearing _slopeActive.
+    //
+    // If the slope is interrupted (state machine resets back through INIT),
+    // setDroneInFront()'s `ready` block re-captures rel0/elapsed fresh --
+    // no partial resume, the slope restarts from t=0.
+    double _slopeStartRelX = 0.0;
+    double _slopeStartRelY = 0.0;
+    double _slopeStartRelZ = 0.0;
+    double _slopeElapsed = 0.0;
 
     /**
      * @brief Logic and signals helpers

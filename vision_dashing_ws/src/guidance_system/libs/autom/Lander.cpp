@@ -1233,10 +1233,8 @@ bool Lander::setDroneInFront()
   // Also require Z to have actually reached zTarget -- not just X/Y -- before
   // considering the standoff point reached. Without this, INIT could hand
   // off to HOLD's slope while Z still had real distance left to close, which
-  // seeds _line_direction[2] (set right after this, from wherever state.getZ()
-  // actually is) with more than the intended "gain" of vertical distance --
-  // an unequal-legs slope from the very first tick, on top of whatever the
-  // slope's own convergence issues are.
+  // seeds the slope's point0 (_slopeStartRelZ, captured right after this) with
+  // more residual error than intended.
   double errZ = zTarget - _state.getZ();
   bool closeEnough = fabs(errX) < param.initApproachPosThld
                    && fabs(errY) < param.initApproachPosThld
@@ -1280,24 +1278,14 @@ bool Lander::setDroneInFront()
 
   if (ready)
   {
-    // setting the slope vector for the next step, simplifying the computations
-    // _platformState.getX() - (_platformState.getX() + gain*sinf(yaw_plat))
-    _line_direction[0] = -gain*sinf(yaw_plat);
-    _line_direction[1] = -gain*cosf(yaw_plat);
-    // Vertical leg set to the same constant "gain" as the horizontal legs
-    // (line_direction[0]/[1] above), not measured from _state.getZ(). The
-    // horizontal legs are always exactly `gain` by construction regardless of
-    // how well INIT converged; measuring the vertical leg from state instead
-    // inherited whatever residual Z error existed when `ready` fired (bounded
-    // only by initApproachZPosThld), producing an unequal-legs slope. Pinning
-    // it to `gain` matches the isosceles-triangle design intent (zTarget is
-    // already set to platformZ + standoffDistance + gain in setDroneInFront()
-    // above) and makes the leg mismatch zero unconditionally.
-    _line_direction[2] = gain;
-    // Capture the slope's Z floor once, here, alongside the line direction --
-    // see _slopeZBase's declaration.
-    _slopeZBase = _platformVision.getZ() + param.standoffDistance;
-    _slopeVisFiltSeeded = false;  // re-seed the dot filter fresh for this slope run
+    // Capture the time-parameterized slope's point0 (t=0) as the drone's
+    // position RELATIVE TO THE PAD right now (drone - pad), and reset its
+    // elapsed-time clock. This is the ONLY place the slope (re)starts from;
+    // see _slopeStartRelX/Y/Z's declaration for the full trajectory law.
+    _slopeStartRelX = _state.getX() - _platformVision.getX();
+    _slopeStartRelY = _state.getY() - _platformVision.getY();
+    _slopeStartRelZ = _state.getZ() - _platformVision.getZ();
+    _slopeElapsed = 0.0;
     _approachSettleTimer = 0.0;   // consumed — start clean for next time
     return true;
   }
@@ -1398,69 +1386,61 @@ void Lander::hold() {
     // if (_prevState == AbstractLandState::states::INIT)
     if(_slopeActive)
     {
-      // GROUND TRUTH — kept commented for reference:
-      // double z_base = _platformState.getZ() + param.standoffDistance;
-      // The vision-derived Z is also in the DRONE's frame, where the setpoint is
-      // commanded; _platformState is in the simulator's world frame, so the old
-      // form mixed frames as well as using truth.
-      //
-      // Uses _slopeZBase (captured ONCE in setDroneInFront(), alongside
-      // _line_direction), not a live platformZ + standoffDistance recomputed
-      // every tick -- the slope's floor is now a fixed point in space for the
-      // whole descent, not one that also drifts with platform heave.
-      double z_base = _slopeZBase;
+      // Time-parameterized slope in the PAD's frame: the desired position
+      // relative to the pad moves from rel0 (captured at slope start, see
+      // _slopeStartRelX/Y/Z) to relT = (0, 0, standoffDistance) as elapsed
+      // time goes 0 -> slopeDuration. Each tick that pad-relative offset is
+      // transformed back to world by adding the pad's LIVE position, so the
+      // whole path rides along with the moving/heaving pad.
+      _slopeElapsed += _dt;
+      double s = common::clamp(_slopeElapsed / param.slopeDuration, 0.0, 1.0);
 
-      // Smooth the horizontal vision error before using it to gate Z, same
-      // as trackXY()'s direct-mode branch already smooths it (_platFiltX/Y)
-      // before commanding the XY setpoint. Using the raw per-frame
-      // _VisionPose.getX()/getY() here let raw vision noise/jitter ripple
-      // almost 1:1 into z_adj (dz_adj/dVisionY ~= -cos(yaw) with the current
-      // gain/norm_sq), independently of whatever the XY controller itself
-      // was actually reacting to.
-      if (!_slopeVisFiltSeeded) {
-        _slopeVisXFilt = _VisionPose.getX();
-        _slopeVisYFilt = _VisionPose.getY();
-        _slopeVisFiltSeeded = true;
-      } else {
-        _slopeVisXFilt = param.spFilterAlpha * _slopeVisXFilt + (1.0 - param.spFilterAlpha) * _VisionPose.getX();
-        _slopeVisYFilt = param.spFilterAlpha * _slopeVisYFilt + (1.0 - param.spFilterAlpha) * _VisionPose.getY();
-      }
-      double dot    = _slopeVisXFilt * _line_direction[0] + _slopeVisYFilt * _line_direction[1];
-      double norm_sq = _line_direction[0] * _line_direction[0] + _line_direction[1] * _line_direction[1];
-      double z_adj = z_base + _line_direction[2] * dot / norm_sq;
+      double relX = (1.0 - s) * _slopeStartRelX;
+      double relY = (1.0 - s) * _slopeStartRelY;
+      double relZ = (1.0 - s) * _slopeStartRelZ + s * param.standoffDistance;
 
-      // Velocity feed-forward DISABLED for now -- position-only command.
-      // Kept computed (commented use below) since it's still useful for
-      // diagnostics/future reference, but not sent: _setPoint.setVz(NAN)
-      // instead, same "not velocity commanded" convention already used
-      // elsewhere (see comp()'s NaN-vs-velocity note) rather than 0.0, which
-      // would be an active "hold zero Vz" command fighting the position term.
-      double closingVx = _platformVision.getVx() - _state.getVx();
-      double closingVy = _platformVision.getVy() - _state.getVy();
-      double dDotDt = closingVx * _line_direction[0] + closingVy * _line_direction[1];
-      double zDotFF = _line_direction[2] * dDotDt / norm_sq;
+      // Pad's live world position (+ velocity lead, same as setDroneInFront()).
+      double padX = _platformVision.getX() + _platformVision.getVx() * param.reactionLag;
+      double padY = _platformVision.getY() + _platformVision.getVy() * param.reactionLag;
+      double padZ = _platformVision.getZ();
 
-      std::cout << "z_base "  << z_base << " z_adj " << z_adj << " zDotFF " << zDotFF << " state z "<< _state.getZ() << " _line_direction[2] " << _line_direction[2]
-      << " dot " << dot << " norm_sq " << norm_sq << " dot / norm_sq " << dot / norm_sq  << " _VisionPose.getX() " << (_VisionPose.getX()) <<
-      " _VisionPose.getY() " << _VisionPose.getY() << " _state.getX() " <<_state.getX() << std::endl;
-      // _setPoint.setVz(zDotFF);
+      double cmdX = padX + relX;
+      double cmdY = padY + relY;
+      double cmdZ = padZ + relZ;
+
+      std::cout << "slope t " << _slopeElapsed << "/" << param.slopeDuration << " s " << s
+                << " rel0 (" << _slopeStartRelX << "," << _slopeStartRelY << "," << _slopeStartRelZ << ")"
+                << " rel (" << relX << "," << relY << "," << relZ << ")"
+                << " pad (" << padX << "," << padY << "," << padZ << ")"
+                << " cmd (" << cmdX << "," << cmdY << "," << cmdZ << ")"
+                << " state (" << _state.getX() << "," << _state.getY() << "," << _state.getZ() << ")"
+                << std::endl;
+
+      // Position-only command, same "not velocity commanded" NaN convention
+      // used elsewhere (see comp()'s NaN-vs-velocity note) -- a velocity
+      // field of 0 would be an active "hold zero Vz" fighting the position
+      // term instead of leaving Z purely to this position setpoint.
       _setPoint.setVz(NAN);
-      _setPoint.setZ(z_adj);
-        // std::cout << "hold setting z pos !desc_v " << !desc_v << " !asce_v " << !asce_v
-        //           << " !asce_min " << !asce_min << " !asce_margin " << !asce_margin
-        //           << " z_adj " << z_adj << " centered " << _centered << std::endl;
+      _setPoint.setPosition(cmdX, cmdY, cmdZ);
       clampZSP();
-      if(std::fabs(_VisionPose.getX()) < 0.1 && std::fabs(_VisionPose.getY()) < 0.1){
+
+      if (s >= 1.0) {
+        // Slope formally complete -- hand off to normal hold() tracking
+        // (trackXY() + live Z). If the slope is interrupted and restarts,
+        // setDroneInFront()'s `ready` block re-captures point0/elapsed fresh.
         std::cout << "disabling slope" << std::endl;
         _slopeActive = false;
-        _slopeVisFiltSeeded = false;   // re-seed fresh next time the slope (re)starts
       }
     }
     _setPoint.setType(MavState::POSITION);
   }
 
-
-  trackXY();
+  // XY is driven directly by the slope's own time-parameterized command
+  // above while it's active -- trackXY() only takes over once the slope has
+  // handed off (or was never active this tick).
+  if (!_slopeActive) {
+    trackXY();
+  }
 
 }
 
