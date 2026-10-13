@@ -1233,7 +1233,7 @@ bool Lander::setDroneInFront()
   // Also require Z to have actually reached zTarget -- not just X/Y -- before
   // considering the standoff point reached. Without this, INIT could hand
   // off to HOLD's slope while Z still had real distance left to close, which
-  // seeds the slope's point0 (_slopeStartZ, captured right after this) with
+  // seeds the slope's point0 (_slopeStartRelZ, captured right after this) with
   // more residual error than intended.
   double errZ = zTarget - _state.getZ();
   bool closeEnough = fabs(errX) < param.initApproachPosThld
@@ -1278,13 +1278,13 @@ bool Lander::setDroneInFront()
 
   if (ready)
   {
-    // Capture the time-parameterized slope's point0 (t=0) -- the drone's
-    // actual position right now -- and reset its elapsed-time clock. This is
-    // the ONLY place the slope (re)starts from; see _slopeStartX/Y/Z's
-    // declaration for the full trajectory law (hold()).
-    _slopeStartX  = _state.getX();
-    _slopeStartY  = _state.getY();
-    _slopeStartZ  = _state.getZ();
+    // Capture the time-parameterized slope's point0 (t=0) as the drone's
+    // position RELATIVE TO THE PAD right now (drone - pad), and reset its
+    // elapsed-time clock. This is the ONLY place the slope (re)starts from;
+    // see _slopeStartRelX/Y/Z's declaration for the full trajectory law.
+    _slopeStartRelX = _state.getX() - _platformVision.getX();
+    _slopeStartRelY = _state.getY() - _platformVision.getY();
+    _slopeStartRelZ = _state.getZ() - _platformVision.getZ();
     _slopeElapsed = 0.0;
     _approachSettleTimer = 0.0;   // consumed — start clean for next time
     return true;
@@ -1386,32 +1386,32 @@ void Lander::hold() {
     // if (_prevState == AbstractLandState::states::INIT)
     if(_slopeActive)
     {
-      // Time-parameterized slope: interpolate from point0 (captured at slope
-      // start, see _slopeStartX/Y/Z) to the LIVE point above the pad, with
-      // the interpolation fraction driven purely by elapsed time -- not by
-      // how much horizontal error has closed. See _slopeStartX's declaration
-      // for the full rationale.
+      // Time-parameterized slope in the PAD's frame: the desired position
+      // relative to the pad moves from rel0 (captured at slope start, see
+      // _slopeStartRelX/Y/Z) to relT = (0, 0, standoffDistance) as elapsed
+      // time goes 0 -> slopeDuration. Each tick that pad-relative offset is
+      // transformed back to world by adding the pad's LIVE position, so the
+      // whole path rides along with the moving/heaving pad.
       _slopeElapsed += _dt;
       double s = common::clamp(_slopeElapsed / param.slopeDuration, 0.0, 1.0);
 
-      // Live point directly above the pad, recomputed fresh every tick --
-      // same platform-world-position recovery (+ velocity lead) setDroneInFront()
-      // uses, but with NO gain offset: this is the standoff point itself
-      // (platform center, standoffDistance above it), not the far INIT
-      // approach point in front of the platform.
-      double platX = _platformVision.getX() + _platformVision.getVx() * param.reactionLag;
-      double platY = _platformVision.getY() + _platformVision.getVy() * param.reactionLag;
-      double targetX = platX;
-      double targetY = platY;
-      double targetZ = _platformVision.getZ() + param.standoffDistance;
+      double relX = (1.0 - s) * _slopeStartRelX;
+      double relY = (1.0 - s) * _slopeStartRelY;
+      double relZ = (1.0 - s) * _slopeStartRelZ + s * param.standoffDistance;
 
-      double cmdX = (1.0 - s) * _slopeStartX + s * targetX;
-      double cmdY = (1.0 - s) * _slopeStartY + s * targetY;
-      double cmdZ = (1.0 - s) * _slopeStartZ + s * targetZ;
+      // Pad's live world position (+ velocity lead, same as setDroneInFront()).
+      double padX = _platformVision.getX() + _platformVision.getVx() * param.reactionLag;
+      double padY = _platformVision.getY() + _platformVision.getVy() * param.reactionLag;
+      double padZ = _platformVision.getZ();
+
+      double cmdX = padX + relX;
+      double cmdY = padY + relY;
+      double cmdZ = padZ + relZ;
 
       std::cout << "slope t " << _slopeElapsed << "/" << param.slopeDuration << " s " << s
-                << " point0 (" << _slopeStartX << "," << _slopeStartY << "," << _slopeStartZ << ")"
-                << " target (" << targetX << "," << targetY << "," << targetZ << ")"
+                << " rel0 (" << _slopeStartRelX << "," << _slopeStartRelY << "," << _slopeStartRelZ << ")"
+                << " rel (" << relX << "," << relY << "," << relZ << ")"
+                << " pad (" << padX << "," << padY << "," << padZ << ")"
                 << " cmd (" << cmdX << "," << cmdY << "," << cmdZ << ")"
                 << " state (" << _state.getX() << "," << _state.getY() << "," << _state.getZ() << ")"
                 << std::endl;

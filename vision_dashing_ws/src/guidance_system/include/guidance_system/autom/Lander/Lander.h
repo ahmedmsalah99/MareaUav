@@ -724,26 +724,24 @@ private:
     // horizontal vision error, so any stall/wobble in XY convergence stalled
     // or reversed Z too (see the session history this superseded).
     //
-    // This one is driven by elapsed TIME instead: captured once, at slope
-    // start (setDroneInFront()'s `ready` block) --
-    //   point0 = drone's actual position at that instant (t=0)
-    // -- and every tick thereafter, commands
-    //   cmd(t) = (1-s)*point0 + s*pointT(t),   s = clamp(elapsed/slopeDuration, 0, 1)
-    // where pointT(t) is the CURRENT (live) point directly above the pad,
-    // recomputed fresh every tick from the platform's live position -- so
-    // the endpoint tracks a moving platform while s(t) still advances
-    // strictly with time, not with how much horizontal error has closed.
-    // At t=0, s=0, cmd=point0 exactly; at t>=slopeDuration, s=1, cmd tracks
-    // the pad's current standoff point and the slope hands off to normal
-    // hold() tracking (trackXY() + live Z) by clearing _slopeActive.
+    // This one is driven by elapsed TIME and defined in the PAD's frame:
+    // captured once, at slope start (setDroneInFront()'s `ready` block) --
+    //   rel0 = drone position - pad position at that instant (t=0)
+    // -- and every tick thereafter, with s = clamp(elapsed/slopeDuration, 0, 1):
+    //   rel(t) = (1-s)*rel0 + s*(0, 0, standoffDistance)
+    //   cmd(t) = padLive(t) + rel(t)
+    // i.e. at every moment the drone is commanded to a specific position
+    // RELATIVE to the pad, transformed to world using the pad's live
+    // position -- so the whole path rides along with a moving/heaving pad.
+    // At s=1 the slope hands off to normal hold() tracking (trackXY() + live
+    // Z) by clearing _slopeActive.
     //
     // If the slope is interrupted (state machine resets back through INIT),
-    // setDroneInFront()'s `ready` block re-captures point0/elapsed fresh --
-    // there is no partial resume, the whole slope restarts from t=0 at
-    // wherever the drone actually is then.
-    double _slopeStartX = 0.0;
-    double _slopeStartY = 0.0;
-    double _slopeStartZ = 0.0;
+    // setDroneInFront()'s `ready` block re-captures rel0/elapsed fresh --
+    // no partial resume, the slope restarts from t=0.
+    double _slopeStartRelX = 0.0;
+    double _slopeStartRelY = 0.0;
+    double _slopeStartRelZ = 0.0;
     double _slopeElapsed = 0.0;
 
     /**
