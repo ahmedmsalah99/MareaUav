@@ -433,6 +433,15 @@ private:
     vision_system_.setX(msg->transform.translation.x);
     vision_system_.setY(msg->transform.translation.y);
     vision_system_.setZ(msg->transform.translation.z);
+    // Per-frame timestamp [us]: lets Lander::updatePlatformVision() tell a
+    // genuinely new apriltag frame from the 50 Hz control loop re-reading the
+    // same one, and differentiate over the real inter-frame interval. Falls
+    // back to receive time if the publisher leaves header.stamp unset.
+    {
+      rclcpp::Time stamp(msg->header.stamp, get_clock()->get_clock_type());
+      if (stamp.nanoseconds() == 0) stamp = this->now();
+      vision_system_.timestamp = stamp.nanoseconds() / 1000;
+    }
     vision_system_.setVx(0.0);
     vision_system_.setVy(0.0);
     vision_system_.setVz(0.0);

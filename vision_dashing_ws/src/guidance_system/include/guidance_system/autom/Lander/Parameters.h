@@ -143,6 +143,13 @@ public:
     // than necessary before COMP can take over.
     double slopeDuration;
 
+    // Integral gain [1/s] and clamp [m] on the slope's XY tracking error
+    // (commanded slope position - drone position). Removes the steady
+    // trailing offset PX4 settles into behind a moving command without
+    // differentiating anything; reset at every slope start. 0 disables it.
+    double slopeKi;
+    double slopeIntMax;
+
     // Descent velocity (m per tick) applied in desc()
     double descVelocity;
 
@@ -294,10 +301,16 @@ public:
     // Setpoint lead [m] for the committed (aggressive) descent in land().
     double landDescVel;
 
-    // EMA factor [0..1) for the vision-derived platform velocity estimate.
-    // Higher = smoother/slower. Needs to be heavy: the estimate differentiates
-    // the vision offset, so raw vision jitter is amplified by 1/dt.
-    double platVisionVelAlpha;
+    // Low-pass time constant [s] for the vision-derived platform velocity
+    // estimate (updated once per apriltag frame, so frame-rate independent).
+    // The boat moves slowly and steadily, so this can be long: the estimate
+    // differentiates vision, which amplifies jitter, and it now feeds PX4
+    // directly as the slope's XY velocity feed-forward.
+    double platVisionVelTau;
+
+    // Clamp [m/s] on the magnitude of that estimate -- anything above a
+    // plausible boat speed is treated as vision noise.
+    double platVisionVelMax;
 
     // ── Altitude sensor offsets [m] ───────────────────────────────────────────
     // Added to the raw reading of each altitude source to give the drone->pad

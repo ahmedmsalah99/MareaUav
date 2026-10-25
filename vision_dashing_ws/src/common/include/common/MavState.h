@@ -278,8 +278,10 @@ public:
     	
 	this->IsValid = m.IsValid;
     
-	this->UltrasonicDataUpdated = m.UltrasonicDataUpdated; 	
-	
+	this->UltrasonicDataUpdated = m.UltrasonicDataUpdated;
+
+	this->timestamp = m.timestamp;   // per-frame vision stamp (Lander::updatePlatformVision())
+
 	}
 
 	/**
