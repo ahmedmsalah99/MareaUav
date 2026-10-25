@@ -1092,7 +1092,15 @@ void Lander::updatePlatformVision() {
     if (dtFrame > 1e-3 && dtFrame < 0.5) {
       const double rawVx = (px - _prevPadX) / dtFrame;
       const double rawVy = (py - _prevPadY) / dtFrame;
-      const double a = std::exp(-dtFrame / std::max(param.platVisionVelTau, 1e-3));
+      // Warm-up: a plain running mean of the first samples (weight n/(n+1)
+      // on the old estimate) until that would forget faster than the
+      // time-constant filter, then the time-constant filter. Without it the
+      // estimate starts at 0 and, with a long platVisionVelTau, takes ~3*tau
+      // to approach the true velocity.
+      const double aTau = std::exp(-dtFrame / std::max(param.platVisionVelTau, 1e-3));
+      const double aMean = static_cast<double>(_platVelSamples) / (_platVelSamples + 1.0);
+      const double a = std::min(aTau, aMean);
+      ++_platVelSamples;
       _platVisFiltVx = a * _platVisFiltVx + (1.0 - a) * rawVx;
       _platVisFiltVy = a * _platVisFiltVy + (1.0 - a) * rawVy;
 
