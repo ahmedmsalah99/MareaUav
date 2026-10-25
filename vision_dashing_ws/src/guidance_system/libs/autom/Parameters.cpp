@@ -53,7 +53,7 @@ Parameters::Parameters() {
     landVoteThreshold  = 0.6;
     landDescVel       = 2.5;
     landHeaveUpVelLimit = 0.7;
-    platVisionVelTau   = 2.0;
+    platVisionVelTau   = 8.0;
     platVisionVelMax   = 1.0;
     cameraOffsetSim    = 0.03;
     cameraOffsetHw     = 0.0;

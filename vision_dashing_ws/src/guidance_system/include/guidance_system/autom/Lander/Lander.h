@@ -431,6 +431,7 @@ private:
     double   _prevPadY      = 0.0;
     long int _prevVisStamp  = 0;     // timestamp [us] of the previous frame
     bool     _platVisSeeded = false;
+    long int _platVelSamples = 0;    // frames folded into the velocity estimate (warm-up)
 
     // Highest platform Z seen so far this landing attempt (world/drone frame,
     // same convention as _platformVision.getZ()), updated every tick in

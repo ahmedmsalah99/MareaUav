@@ -305,7 +305,10 @@ public:
     // estimate (updated once per apriltag frame, so frame-rate independent).
     // The boat moves slowly and steadily, so this can be long: the estimate
     // differentiates vision, which amplifies jitter, and it now feeds PX4
-    // directly as the slope's XY velocity feed-forward.
+    // directly as the slope's XY velocity feed-forward. It must also span
+    // several wave periods: deck roll/pitch sways the tag back and forth,
+    // and too short a tau passes that sway through as velocity, which the
+    // feed-forward turns into forward/backward surges.
     double platVisionVelTau;
 
     // Clamp [m/s] on the magnitude of that estimate -- anything above a
