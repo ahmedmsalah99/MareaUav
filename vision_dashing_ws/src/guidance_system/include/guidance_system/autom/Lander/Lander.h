@@ -419,20 +419,18 @@ private:
     //               correctToPlatformFrame(), so this is a plain sum)
     //   z         = drone state + _verticalErr    (the offset-corrected,
     //               sensor-selected vertical, so it matches downDist exactly)
-    //   velocity  = drone velocity + d(vision)/dt, low-pass filtered
+    //   velocity  = d(x, y)/dt, updated only on new apriltag frames over the
+    //               real inter-frame interval, low-passed (platVisionVelTau)
+    //               and clamped (platVisionVelMax)
     //   yaw       = drone yaw + vision relative yaw
-    //
-    // Velocity is built that way on purpose: vision offset = platform - drone,
-    // so d(offset)/dt = platform_vel - drone_vel. The drone's own velocity
-    // carries the signal and the differentiated (noisy) vision term is only a
-    // small correction, which is what makes differentiating vision viable here.
     MavState _platformVision;
 
-    double _platVisFiltVx = 0.0;   // low-passed platform Vx estimate [m/s]
-    double _platVisFiltVy = 0.0;
-    double _prevVisX      = 0.0;   // previous vision offset, for the derivative
-    double _prevVisY      = 0.0;
-    bool   _platVisSeeded = false;
+    double   _platVisFiltVx = 0.0;   // low-passed platform Vx estimate [m/s]
+    double   _platVisFiltVy = 0.0;
+    double   _prevPadX      = 0.0;   // pad world XY at the previous frame
+    double   _prevPadY      = 0.0;
+    long int _prevVisStamp  = 0;     // timestamp [us] of the previous frame
+    bool     _platVisSeeded = false;
 
     // Highest platform Z seen so far this landing attempt (world/drone frame,
     // same convention as _platformVision.getZ()), updated every tick in
@@ -743,6 +741,9 @@ private:
     double _slopeStartRelY = 0.0;
     double _slopeStartRelZ = 0.0;
     double _slopeElapsed = 0.0;
+    // Integral of the slope's XY tracking error (slopeKi), reset at slope start.
+    double _slopeIntX = 0.0;
+    double _slopeIntY = 0.0;
 
     /**
      * @brief Logic and signals helpers

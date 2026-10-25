@@ -42,6 +42,8 @@ Parameters::Parameters() {
     initApproachPosThld  = 0.5;
     initApproachZPosThld = 0.15;
     slopeDuration        = 8.0;
+    slopeKi              = 0.3;
+    slopeIntMax          = 1.0;
     landRollLimit      = 0.20;
     landPitchLimit     = 0.20;
     landRollRateLimit  = 0.10;
@@ -51,7 +53,8 @@ Parameters::Parameters() {
     landVoteThreshold  = 0.6;
     landDescVel       = 2.5;
     landHeaveUpVelLimit = 0.7;
-    platVisionVelAlpha = 0.95;
+    platVisionVelTau   = 2.0;
+    platVisionVelMax   = 1.0;
     cameraOffsetSim    = 0.03;
     cameraOffsetHw     = 0.0;
     sonarOffsetSim     = 0.04;
@@ -253,6 +256,12 @@ void Parameters::loadParamFile(const char *config_file) {
             else if( !param.compare("SLOPE_DURATION_S") )
                 slopeDuration = value;
 
+            else if( !param.compare("SLOPE_KI") )
+                slopeKi = value;
+
+            else if( !param.compare("SLOPE_INT_MAX") )
+                slopeIntMax = value;
+
             else if( !param.compare("LAND_ROLL_LIMIT") )
                 landRollLimit = value;
 
@@ -280,8 +289,11 @@ void Parameters::loadParamFile(const char *config_file) {
             else if( !param.compare("LAND_HEAVE_UP_VEL_LIMIT") )
                 landHeaveUpVelLimit = value;
 
-            else if( !param.compare("PLAT_VISION_VEL_ALPHA") )
-                platVisionVelAlpha = value;
+            else if( !param.compare("PLAT_VISION_VEL_TAU_S") )
+                platVisionVelTau = value;
+
+            else if( !param.compare("PLAT_VISION_VEL_MAX") )
+                platVisionVelMax = value;
 
             else if( !param.compare("CAMERA_OFFSET_SIM") )
                 cameraOffsetSim = value;

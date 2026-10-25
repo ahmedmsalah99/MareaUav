@@ -1065,32 +1065,49 @@ void Lander::updatePlatformVision() {
   const double py = _state.getY() + _VisionPose.getY();
   const double pz = _state.getZ() + _verticalErr;
 
-  // Velocity. vision = platform - drone, so d(vision)/dt = plat_vel - drone_vel
-  // and plat_vel = drone_vel + d(vision)/dt. The drone's own velocity carries
-  // the bulk of the signal and the differentiated vision term is a small
-  // correction — which is what makes differentiating a noisy measurement
-  // workable here. Still low-passed, since d/dt amplifies jitter by 1/dt.
-  if (!visionOk || _dt <= 1e-6) {
-    // Nothing trustworthy to differentiate: hold the last estimate and re-seed
-    // when vision returns, so a dropout cannot inject a huge false derivative.
+  // Velocity: differentiate the pad's world position (px, py), ONLY when a new
+  // apriltag frame arrives, over the real inter-frame interval.
+  //
+  // The old estimate (drone_vel + d(vision)/d(tick)) ran every 20 ms control
+  // tick, but the vision offset only changes when a camera frame lands
+  // (VisionDataUpdated stays true between frames). So on most ticks it read
+  // the DRONE's own velocity as the pad's, and spiked on frame ticks. Used as
+  // a velocity feed-forward that is self-reinforcing: the drone moves, the
+  // "pad velocity" follows it, the feed-forward pushes it further.
+  //
+  // Low-passed with a time constant (platVisionVelTau, so it's frame-rate
+  // independent) and clamped to platVisionVelMax: the boat moves slowly and
+  // steadily, so heavy smoothing costs little.
+  if (!visionOk) {
+    // Hold the last estimate; re-seed when vision returns so a dropout can't
+    // inject a huge false derivative.
     _platVisSeeded = false;
-  } else {
-    if (!_platVisSeeded) {
-      _prevVisX = _VisionPose.getX();
-      _prevVisY = _VisionPose.getY();
-      _platVisFiltVx = _state.getVx();
-      _platVisFiltVy = _state.getVy();
-      _platVisSeeded = true;
+  } else if (!_platVisSeeded) {
+    _prevPadX      = px;
+    _prevPadY      = py;
+    _prevVisStamp  = _VisionPose.visionFrameStampUs;
+    _platVisSeeded = true;
+  } else if (_VisionPose.visionFrameStampUs != _prevVisStamp) {
+    const double dtFrame = (_VisionPose.visionFrameStampUs - _prevVisStamp) * 1e-6;
+    if (dtFrame > 1e-3 && dtFrame < 0.5) {
+      const double rawVx = (px - _prevPadX) / dtFrame;
+      const double rawVy = (py - _prevPadY) / dtFrame;
+      const double a = std::exp(-dtFrame / std::max(param.platVisionVelTau, 1e-3));
+      _platVisFiltVx = a * _platVisFiltVx + (1.0 - a) * rawVx;
+      _platVisFiltVy = a * _platVisFiltVy + (1.0 - a) * rawVy;
+
+      const double speed = std::hypot(_platVisFiltVx, _platVisFiltVy);
+      if (speed > param.platVisionVelMax && speed > 1e-9) {
+        const double k = param.platVisionVelMax / speed;
+        _platVisFiltVx *= k;
+        _platVisFiltVy *= k;
+      }
     }
-
-    const double rawVx = _state.getVx() + (_VisionPose.getX() - _prevVisX) / _dt;
-    const double rawVy = _state.getVy() + (_VisionPose.getY() - _prevVisY) / _dt;
-    _prevVisX = _VisionPose.getX();
-    _prevVisY = _VisionPose.getY();
-
-    const double a = param.platVisionVelAlpha;
-    _platVisFiltVx = a * _platVisFiltVx + (1.0 - a) * rawVx;
-    _platVisFiltVy = a * _platVisFiltVy + (1.0 - a) * rawVy;
+    // Out-of-range gap (e.g. frames resumed after a pause): re-anchor only,
+    // keep the current velocity estimate.
+    _prevPadX     = px;
+    _prevPadY     = py;
+    _prevVisStamp = _VisionPose.visionFrameStampUs;
   }
 
   // Yaw. _VisionPose's quaternion is the platform's orientation relative to the
@@ -1294,6 +1311,8 @@ bool Lander::setDroneInFront()
     _slopeStartRelY = _state.getY() - _platformVision.getY();
     _slopeStartRelZ = _state.getZ() - _platformVision.getZ();
     _slopeElapsed = 0.0;
+    _slopeIntX    = 0.0;
+    _slopeIntY    = 0.0;
     _approachSettleTimer = 0.0;   // consumed — start clean for next time
     return true;
   }
@@ -1422,6 +1441,8 @@ void Lander::hold() {
                 << " rel (" << relX << "," << relY << "," << relZ << ")"
                 << " pad (" << padX << "," << padY << "," << padZ << ")"
                 << " cmd (" << cmdX << "," << cmdY << "," << cmdZ << ")"
+                << " int (" << _slopeIntX << "," << _slopeIntY << ")"
+                << " padVel (" << _platformVision.getVx() << "," << _platformVision.getVy() << ")"
                 << " state (" << _state.getX() << "," << _state.getY() << "," << _state.getZ() << ")"
                 << std::endl;
 
@@ -1430,6 +1451,15 @@ void Lander::hold() {
       // field of 0 would be an active "hold zero Vz" fighting the position
       // term instead of leaving Z purely to this position setpoint.
       _setPoint.setVz(NAN);
+      // Slow integral on the XY tracking error against the NOMINAL slope
+      // command: removes the steady offset PX4 trails a moving command by,
+      // without differentiating vision. Clamped; reset at slope start.
+      _slopeIntX = common::clamp(_slopeIntX + param.slopeKi * (cmdX - _state.getX()) * _dt,
+                                 -param.slopeIntMax, param.slopeIntMax);
+      _slopeIntY = common::clamp(_slopeIntY + param.slopeKi * (cmdY - _state.getY()) * _dt,
+                                 -param.slopeIntMax, param.slopeIntMax);
+      cmdX += _slopeIntX;
+      cmdY += _slopeIntY;
       _setPoint.setPosition(cmdX, cmdY, cmdZ);
       // XY feed-forward = d(cmd)/dt = pad velocity + d(rel)/dt. rel shrinks
       // linearly from rel0 to 0 over slopeDuration, so d(rel)/dt =
