@@ -1,4 +1,5 @@
 #include "guidance_system/autom/Automatic.h"
+#include <cmath>
 using namespace common;
 Automatic::Automatic()
 {
@@ -113,6 +114,13 @@ void Automatic::handleCommands() {
 
 }
 void Automatic::executeCommand() {
+    // The bridge forwards XY velocity as a feed-forward on POSITION setpoints,
+    // and _comm is shared by every command. Reset XY to NaN (= position-only)
+    // each tick so commands that never touch it (Move, TakeOff, ...) don't
+    // publish MavState's default 0 -- an active "hold zero XY velocity" --
+    // or a stale value left by a previous command.
+    _comm.setVx(NAN);
+    _comm.setVy(NAN);
     this->_actualCommand->execute();
 }
 

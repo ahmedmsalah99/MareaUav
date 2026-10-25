@@ -812,6 +812,11 @@ void Lander::run() {
   // any state that falls through without touching Vz publishes zero
   // feed-forward instead of leaking a stale value from a previous tick.
   _setPoint.setVz(0.0);
+  // XY feed-forward: NaN (= not velocity commanded) unless a state sets it
+  // this tick -- setDroneInFront() and hold()'s slope lead with the pad's
+  // velocity; everything else stays position-only on XY as before.
+  _setPoint.setVx(NAN);
+  _setPoint.setVy(NAN);
   static bool initDone = false;
   switch (_actualState){
 
@@ -1222,6 +1227,12 @@ bool Lander::setDroneInFront()
 
   // setting the setpoint finally
   _setPoint.setPosition(xTarget, yTarget, zTarget);
+  // The standoff point moves with the pad, so lead with the pad's velocity:
+  // a position-only target moving at v makes PX4 settle a constant ~v*tau
+  // behind it, which both delays `ready` and bakes a trailing offset into
+  // the slope's rel0.
+  _setPoint.setVx(_platformVision.getVx());
+  _setPoint.setVy(_platformVision.getVy());
   _setPoint.setType(MavState::type::POSITION);
 
   // Genuine physical proximity to the standoff point — NOT the magnitude of
@@ -1282,8 +1293,10 @@ bool Lander::setDroneInFront()
     // position RELATIVE TO THE PAD right now (drone - pad), and reset its
     // elapsed-time clock. This is the ONLY place the slope (re)starts from;
     // see _slopeStartRelX/Y/Z's declaration for the full trajectory law.
-    _slopeStartRelX = _state.getX() - _platformVision.getX();
-    _slopeStartRelY = _state.getY() - _platformVision.getY();
+    // Measured against the SAME led pad position hold() adds back
+    // (pad + v*reactionLag), so the transform round-trips exactly at t=0.
+    _slopeStartRelX = _state.getX() - (_platformVision.getX() + _platformVision.getVx() * param.reactionLag);
+    _slopeStartRelY = _state.getY() - (_platformVision.getY() + _platformVision.getVy() * param.reactionLag);
     _slopeStartRelZ = _state.getZ() - _platformVision.getZ();
     _slopeElapsed = 0.0;
     _approachSettleTimer = 0.0;   // consumed — start clean for next time
@@ -1422,6 +1435,14 @@ void Lander::hold() {
       // term instead of leaving Z purely to this position setpoint.
       _setPoint.setVz(NAN);
       _setPoint.setPosition(cmdX, cmdY, cmdZ);
+      // XY feed-forward = d(cmd)/dt = pad velocity + d(rel)/dt. rel shrinks
+      // linearly from rel0 to 0 over slopeDuration, so d(rel)/dt =
+      // -rel0/slopeDuration while s<1 (0 once complete). Without it PX4
+      // trails the moving command by ~v*tau opposite the pad's motion, which
+      // rotates the approach toward the trailing side.
+      double relRate = (s < 1.0 && param.slopeDuration > 0.0) ? 1.0 / param.slopeDuration : 0.0;
+      _setPoint.setVx(_platformVision.getVx() - _slopeStartRelX * relRate);
+      _setPoint.setVy(_platformVision.getVy() - _slopeStartRelY * relRate);
       clampZSP();
 
       if (s >= 1.0) {
