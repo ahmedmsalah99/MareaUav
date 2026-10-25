@@ -280,7 +280,7 @@ public:
     
 	this->UltrasonicDataUpdated = m.UltrasonicDataUpdated;
 
-	this->timestamp = m.timestamp;   // per-frame vision stamp (Lander::updatePlatformVision())
+	this->visionFrameStampUs = m.visionFrameStampUs;
 
 	}
 
@@ -289,6 +289,13 @@ public:
 	 */
 
     long int timestamp;
+
+    /**
+     * Capture time [us] of the apriltag frame this vision pose came from.
+     * Set only on the vision pose (AutomaticNode::onPlatformCenter()); lets
+     * Lander::updatePlatformVision() detect genuinely new frames. 0 = unset.
+     */
+    long int visionFrameStampUs = 0;
 	
     /**
      *Bool variable to check if vision data are updated.

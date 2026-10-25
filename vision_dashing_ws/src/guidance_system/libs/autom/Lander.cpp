@@ -1085,10 +1085,10 @@ void Lander::updatePlatformVision() {
   } else if (!_platVisSeeded) {
     _prevPadX      = px;
     _prevPadY      = py;
-    _prevVisStamp  = _VisionPose.timestamp;
+    _prevVisStamp  = _VisionPose.visionFrameStampUs;
     _platVisSeeded = true;
-  } else if (_VisionPose.timestamp != _prevVisStamp) {
-    const double dtFrame = (_VisionPose.timestamp - _prevVisStamp) * 1e-6;
+  } else if (_VisionPose.visionFrameStampUs != _prevVisStamp) {
+    const double dtFrame = (_VisionPose.visionFrameStampUs - _prevVisStamp) * 1e-6;
     if (dtFrame > 1e-3 && dtFrame < 0.5) {
       const double rawVx = (px - _prevPadX) / dtFrame;
       const double rawVy = (py - _prevPadY) / dtFrame;
@@ -1107,7 +1107,7 @@ void Lander::updatePlatformVision() {
     // keep the current velocity estimate.
     _prevPadX     = px;
     _prevPadY     = py;
-    _prevVisStamp = _VisionPose.timestamp;
+    _prevVisStamp = _VisionPose.visionFrameStampUs;
   }
 
   // Yaw. _VisionPose's quaternion is the platform's orientation relative to the
