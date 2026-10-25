@@ -1407,10 +1407,9 @@ void Lander::hold() {
       double relY = (1.0 - s) * _slopeStartRelY;
       double relZ = (1.0 - s) * _slopeStartRelZ + s * param.standoffDistance;
 
-      // Pad's live world position. No position lead here: the pad's motion is
-      // handled by the XY velocity feed-forward set below.
-      double padX = _platformVision.getX();
-      double padY = _platformVision.getY();
+      // Pad's live world position (+ velocity lead, same as setDroneInFront()).
+      double padX = _platformVision.getX() + _platformVision.getVx() * param.reactionLag;
+      double padY = _platformVision.getY() + _platformVision.getVy() * param.reactionLag;
       double padZ = _platformVision.getZ();
 
       double cmdX = padX + relX;
@@ -1431,14 +1430,9 @@ void Lander::hold() {
       // term instead of leaving Z purely to this position setpoint.
       _setPoint.setVz(NAN);
       _setPoint.setPosition(cmdX, cmdY, cmdZ);
-      // XY feed-forward = d(cmd)/dt = pad velocity + d(rel)/dt. rel shrinks
-      // linearly from rel0 to 0 over slopeDuration, so d(rel)/dt =
-      // -rel0/slopeDuration while s<1 (0 once complete). Without it PX4
-      // trails the moving command by ~v*tau opposite the pad's motion, which
-      // rotates the approach toward the trailing side.
-      double relRate = (s < 1.0 && param.slopeDuration > 0.0) ? 1.0 / param.slopeDuration : 0.0;
-      _setPoint.setVx(_platformVision.getVx() - _slopeStartRelX * relRate);
-      _setPoint.setVy(_platformVision.getVy() - _slopeStartRelY * relRate);
+      // No XY velocity feed-forward (Vx/Vy stay NaN from Lander::run()): the
+      // vision-derived pad velocity is too noisy to feed straight to PX4 and
+      // made the slope unstable.
       clampZSP();
 
       if (s >= 1.0) {
