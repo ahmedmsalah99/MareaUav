@@ -1187,10 +1187,16 @@ bool Lander::setDroneInFront()
 
   // The platform's current absolute world position, recovered from the
   // drone's own pose plus the (relative) vision measurement — same trick
-  // trackXY() uses. No position lead: the pad's motion is handled by the XY
-  // velocity feed-forward set alongside the setpoint below.
-  double plat_x = _platformVision.getX();
-  double plat_y = _platformVision.getY();
+  // trackXY() uses. Led by the platform's own measured velocity
+  // (feed-forward): without this, a moving platform makes the desired
+  // standoff point perpetually recede — a pure position-error law with no
+  // leading term settles to a nonzero steady-state tracking lag against a
+  // steadily drifting target and never actually closes the gap.
+  // GROUND TRUTH — kept commented for reference:
+  // double plat_x = _state.getX() + _VisionPose.getX() + _platformState.getVx() * param.reactionLag;
+  // double plat_y = _state.getY() + _VisionPose.getY() + _platformState.getVy() * param.reactionLag;
+  double plat_x = _platformVision.getX() + _platformVision.getVx() * param.reactionLag;
+  double plat_y = _platformVision.getY() + _platformVision.getVy() * param.reactionLag;
 
   // then, depending on how the platform is oriented, the desired position changes.
   // yaw_plat is PX4's raw native yaw (0 = North, +ve = North->East) — see the
@@ -1221,12 +1227,9 @@ bool Lander::setDroneInFront()
 
   // setting the setpoint finally
   _setPoint.setPosition(xTarget, yTarget, zTarget);
-  // The standoff point moves with the pad, so lead with the pad's velocity:
-  // a position-only target moving at v makes PX4 settle a constant ~v*tau
-  // behind it, which both delays `ready` and bakes a trailing offset into
-  // the slope's rel0.
-  _setPoint.setVx(_platformVision.getVx());
-  _setPoint.setVy(_platformVision.getVy());
+  // No XY velocity feed-forward here (Vx/Vy stay NaN from Lander::run()):
+  // the vision-derived pad velocity is too noisy at INIT range, and feeding
+  // it straight to PX4 made the approach unstable.
   _setPoint.setType(MavState::type::POSITION);
 
   // Genuine physical proximity to the standoff point — NOT the magnitude of
