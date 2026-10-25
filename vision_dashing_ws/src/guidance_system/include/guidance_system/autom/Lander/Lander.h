@@ -422,7 +422,8 @@ private:
     //   velocity  = d(x, y)/dt, updated only on new apriltag frames over the
     //               real inter-frame interval, low-passed (platVisionVelTau)
     //               and clamped (platVisionVelMax)
-    //   yaw       = drone yaw + vision relative yaw
+    //   yaw       = absolute heading published by the apriltag node
+    //               (+ platformYawOffset)
     MavState _platformVision;
 
     double   _platVisFiltVx = 0.0;   // low-passed platform Vx estimate [m/s]

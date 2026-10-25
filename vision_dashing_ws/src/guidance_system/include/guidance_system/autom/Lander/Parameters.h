@@ -311,6 +311,11 @@ public:
     // feed-forward turns into forward/backward surges.
     double platVisionVelTau;
 
+    // Constant offset [rad] added to the vision-derived platform heading:
+    // the angle from the apriltag reference tag's (TAG5) x-axis to the
+    // boat's bow. Calibrate in sim from the [PLATYAW] log (est vs truthConv).
+    double platformYawOffset;
+
     // Clamp [m/s] on the magnitude of that estimate -- anything above a
     // plausible boat speed is treated as vision noise.
     double platVisionVelMax;

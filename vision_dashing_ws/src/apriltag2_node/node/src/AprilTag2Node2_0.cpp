@@ -9,6 +9,7 @@
 #include <tag25h9.h>
 #include <tag36h11.h>
 #include <math.h>
+#include <cmath>
 #include <Eigen/Dense>
 #include <cstdlib>
 static Platform_tag TAGS;
@@ -298,6 +299,15 @@ void AprilTag2Node::publish_data_center(const apriltag_msgs::msg::AprilTagDetect
 		int num_of_valid_ids = 0;
 		std::vector<double> xs, ys, zs;
 
+		// Platform heading: weighted circular mean (sum of sin/cos) of each
+		// tag's forward axis, using the same weights as the position. Each
+		// tag's rotation (from pnp(): TAG5 frame in the drone body frame, via
+		// robot_T_cam) gives the TAG5 x-axis as a body-frame vector; pushing it
+		// through correctToPlatformFrame() -- the same linear rotation/remap the
+		// position goes through -- puts it in exactly the frame the published
+		// position (and the guidance node's drone state) lives in.
+		double yawSinSum = 0.0, yawCosSum = 0.0;
+
 		for( int i = 0; i< tagAreaWeights.rows(); i++ ) {
 			vision_pose.transform.translation.x += transforms.transforms.at( tagAreaWeights(i, 0) ).transform.translation.x * tagAreaWeights(i, 1);
 			vision_pose.transform.translation.y += transforms.transforms.at( tagAreaWeights(i, 0) ).transform.translation.y * tagAreaWeights(i, 1);
@@ -324,6 +334,18 @@ void AprilTag2Node::publish_data_center(const apriltag_msgs::msg::AprilTagDetect
 			zs.push_back(transforms.transforms.at( tagAreaWeights(i, 0) ).transform.translation.z);
 
 			totalWeight += tagAreaWeights(i, 1);
+
+			{
+				const auto& r = transforms.transforms.at( tagAreaWeights(i, 0) ).transform.rotation;
+				const Eigen::Matrix3d R = Eigen::Quaterniond(r.w, r.x, r.y, r.z).normalized().toRotationMatrix();
+				double fx_w, fy_w;
+				correctToPlatformFrame(R(0, 0), R(1, 0), fx_w, fy_w);
+				// Same convention the guidance node uses for headings in this
+				// frame: forward unit vector = (sin(yaw), cos(yaw)).
+				const double tagYaw = std::atan2(fx_w, fy_w);
+				yawSinSum += std::sin(tagYaw) * tagAreaWeights(i, 1);
+				yawCosSum += std::cos(tagYaw) * tagAreaWeights(i, 1);
+			}
 
 			double xx = transforms.transforms.at( tagAreaWeights(i, 0) ).transform.translation.x;
 			double yy = transforms.transforms.at( tagAreaWeights(i, 0) ).transform.translation.y;
@@ -483,7 +505,19 @@ void AprilTag2Node::publish_data_center(const apriltag_msgs::msg::AprilTagDetect
 		msg_tf.transform.translation.x = fx;
 		msg_tf.transform.translation.y = fy;
 		msg_tf.transform.translation.z = fz;
-		msg_tf.transform.rotation.w    = valid ? 1.0 : 0.0;  // IsValid carrier
+		// Rotation = platform heading as a pure yaw quaternion, in the same
+		// frame as the translation (forward = (sin(yaw), cos(yaw))). Validity
+		// used to be carried in rotation.w, which left x/y/z at 0 so the
+		// guidance node always read a relative yaw of 0; it now rides on
+		// child_frame_id instead.
+		{
+			const double platYaw = std::atan2(yawSinSum, yawCosSum);
+			msg_tf.transform.rotation.w = std::cos(platYaw / 2.0);
+			msg_tf.transform.rotation.x = 0.0;
+			msg_tf.transform.rotation.y = 0.0;
+			msg_tf.transform.rotation.z = std::sin(platYaw / 2.0);
+		}
+		msg_tf.child_frame_id = valid ? "platform_center" : "platform_center_invalid";
 		pub_platformCenter->publish(msg_tf);
 
 		geometry_msgs::msg::TransformStamped gt_msg_tf;
