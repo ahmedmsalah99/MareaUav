@@ -1293,10 +1293,8 @@ bool Lander::setDroneInFront()
     // position RELATIVE TO THE PAD right now (drone - pad), and reset its
     // elapsed-time clock. This is the ONLY place the slope (re)starts from;
     // see _slopeStartRelX/Y/Z's declaration for the full trajectory law.
-    // Measured against the SAME led pad position hold() adds back
-    // (pad + v*reactionLag), so the transform round-trips exactly at t=0.
-    _slopeStartRelX = _state.getX() - (_platformVision.getX() + _platformVision.getVx() * param.reactionLag);
-    _slopeStartRelY = _state.getY() - (_platformVision.getY() + _platformVision.getVy() * param.reactionLag);
+    _slopeStartRelX = _state.getX() - _platformVision.getX();
+    _slopeStartRelY = _state.getY() - _platformVision.getY();
     _slopeStartRelZ = _state.getZ() - _platformVision.getZ();
     _slopeElapsed = 0.0;
     _approachSettleTimer = 0.0;   // consumed — start clean for next time
@@ -1412,9 +1410,10 @@ void Lander::hold() {
       double relY = (1.0 - s) * _slopeStartRelY;
       double relZ = (1.0 - s) * _slopeStartRelZ + s * param.standoffDistance;
 
-      // Pad's live world position (+ velocity lead, same as setDroneInFront()).
-      double padX = _platformVision.getX() + _platformVision.getVx() * param.reactionLag;
-      double padY = _platformVision.getY() + _platformVision.getVy() * param.reactionLag;
+      // Pad's live world position. No position lead here: the pad's motion is
+      // handled by the XY velocity feed-forward set below.
+      double padX = _platformVision.getX();
+      double padY = _platformVision.getY();
       double padZ = _platformVision.getZ();
 
       double cmdX = padX + relX;
