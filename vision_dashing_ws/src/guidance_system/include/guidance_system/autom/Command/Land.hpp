@@ -137,6 +137,8 @@ private:
                 _comm->setX(x_target);
                 _comm->setY(y_target);
                 _comm->setZ(h-10);
+                _comm->setVx(NAN);   // position-only: don't leak the velocity-mode Vx/Vy above
+                _comm->setVy(NAN);
                 _comm->setType(MavState::POSITION);
             }
 

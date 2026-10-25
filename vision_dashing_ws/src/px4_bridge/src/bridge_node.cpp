@@ -242,10 +242,13 @@ private:
         msg->pose.pose.orientation.y,
         msg->pose.pose.orientation.z);
       setpoint.yaw = -yawFromQuaternion(q);
-      // XY feed-forward stays NaN (position-only tracking there); Z carries
-      // the heave feed-forward velocity (0 outside COMP — see Lander::run()).
-      setpoint.velocity[0] = NAN;
-      setpoint.velocity[1] = NAN;
+      // Velocity feed-forward alongside the position target, ENU -> NED.
+      // Lander::run() resets XY to NaN every tick, so XY is only
+      // velocity-commanded where a state sets it explicitly (INIT approach,
+      // HOLD's slope); NaN passes through as NaN (position-only on that axis).
+      // Z carries the heave feed-forward (0 outside COMP — see Lander::run()).
+      setpoint.velocity[0] =  msg->twist.twist.linear.y;
+      setpoint.velocity[1] =  msg->twist.twist.linear.x;
       setpoint.velocity[2] = -msg->twist.twist.linear.z;  // ENU -> NED
 
       position_enabled_ = true;
