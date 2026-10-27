@@ -55,6 +55,7 @@ Parameters::Parameters() {
     landHeaveUpVelLimit = 0.7;
     platVisionVelTau   = 8.0;
     platVisionVelMax   = 1.0;
+    platformYawOffset  = 0.0;
     cameraOffsetSim    = 0.03;
     cameraOffsetHw     = 0.0;
     sonarOffsetSim     = 0.04;
@@ -294,6 +295,9 @@ void Parameters::loadParamFile(const char *config_file) {
 
             else if( !param.compare("PLAT_VISION_VEL_MAX") )
                 platVisionVelMax = value;
+
+            else if( !param.compare("PLATFORM_YAW_OFFSET") )
+                platformYawOffset = value;
 
             else if( !param.compare("CAMERA_OFFSET_SIM") )
                 cameraOffsetSim = value;

@@ -1118,15 +1118,36 @@ void Lander::updatePlatformVision() {
     _prevVisStamp = _VisionPose.visionFrameStampUs;
   }
 
-  // Yaw. _VisionPose's quaternion is the platform's orientation relative to the
-  // drone body, so the platform's heading is the drone's plus that relative
-  // term. Stored via setYaw() because MavState::setOrientation() does NOT touch
-  // the _yaw scalar that getYaw() returns — which is exactly why the old
-  // _platformState.getYaw() was always 0 (mavStateFromNavOdom only ever calls
-  // setOrientation), pinning the approach slope to the Y axis.
-  double platYaw = _state.getYawFromQuat() + _VisionPose.getYawFromQuat();
+  // Yaw. /platform_center's rotation is the platform's ABSOLUTE heading, in
+  // the same frame as its translation and _state (the apriltag node rotates
+  // each tag's forward axis through the same transform as the position;
+  // forward = (sin(yaw), cos(yaw))), so no drone yaw is added here. Until
+  // that was published, rotation.x/y/z were always 0, so this read the
+  // drone's own yaw as the boat's: the drone never aligned to the boat and
+  // the INIT offset point sat along whatever heading the drone had.
+  // platformYawOffset calibrates which tag axis is the boat's bow.
+  // Stored via setYaw() because MavState::setOrientation() does NOT touch the
+  // _yaw scalar that getYaw() returns.
+  double platYaw = _VisionPose.getYawFromQuat() + param.platformYawOffset;
   while (platYaw >   PI) platYaw -= 2.0 * PI;
   while (platYaw <= -PI) platYaw += 2.0 * PI;
+
+  // Calibration aid (sim): estimated vs ground-truth heading, ~1 Hz. Truth is
+  // the Gazebo pose's yaw (CCW from +x); in this frame's convention that is
+  // pi/2 - truthYaw if Gazebo's world is ENU-aligned with _state.
+  if (_envSim) {
+    static int yawLogTick = 0;
+    if ((yawLogTick++ % 50) == 0) {
+      const double truthYaw = _platformState.getYawFromQuat();
+      double truthConv = PI / 2.0 - truthYaw;
+      while (truthConv >   PI) truthConv -= 2.0 * PI;
+      while (truthConv <= -PI) truthConv += 2.0 * PI;
+      std::cout << "[PLATYAW] est " << platYaw
+                << " (raw " << _VisionPose.getYawFromQuat() << " + offset " << param.platformYawOffset << ")"
+                << " truthConv " << truthConv << " truthRaw " << truthYaw
+                << " droneYaw " << _state.getYawFromQuat() << std::endl;
+    }
+  }
 
   _platformVision.setX(px);
   _platformVision.setY(py);
