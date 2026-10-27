@@ -446,8 +446,8 @@ void AprilTag2Node::publish_data_center(const apriltag_msgs::msg::AprilTagDetect
 		const double fz = std::isnan(vision_pose.transform.translation.z) ? -1.0 : vision_pose.transform.translation.z;
 
 		// ── Validity detection: max velocity + shaking ──────────────────────────
-		// We always publish the position; validity is signalled in rotation.w
-		// (1.0 = valid, 0.0 = invalid) and consumed downstream as MavState.IsValid.
+		// Computed and logged (RCLCPP_WARN) but not currently published -- see
+		// the TODO where /platform_center is filled.
 		bool valid = true;
 		const rclcpp::Time now = this->now();
 
@@ -505,11 +505,21 @@ void AprilTag2Node::publish_data_center(const apriltag_msgs::msg::AprilTagDetect
 		msg_tf.transform.translation.x = fx;
 		msg_tf.transform.translation.y = fy;
 		msg_tf.transform.translation.z = fz;
+		// Frame: origin at the drone, axes world-aligned (correctToPlatformFrame()
+		// removes the drone's heading). The translation is the drone->platform
+		// offset; the rotation is the platform's absolute heading in those axes.
+		// Stamp = the camera frame's capture time, so consumers can detect new
+		// frames and time-difference them.
+		msg_tf.header.stamp    = detections.header.stamp;
+		msg_tf.header.frame_id = "drone_world_aligned";
+		msg_tf.child_frame_id  = "platform_center";
 		// Rotation = platform heading as a pure yaw quaternion, in the same
-		// frame as the translation (forward = (sin(yaw), cos(yaw))). Validity
-		// used to be carried in rotation.w, which left x/y/z at 0 so the
-		// guidance node always read a relative yaw of 0; it now rides on
-		// child_frame_id instead.
+		// frame as the translation (forward = (sin(yaw), cos(yaw))). The
+		// validity flag that used to be carried in rotation.w (leaving x/y/z at
+		// 0, so the guidance node always read a relative yaw of 0) is no longer
+		// published; AutomaticNode ignored it anyway (IsValid = true).
+		// TODO(improvement stage): give validity a proper channel.
+		(void)valid;
 		{
 			const double platYaw = std::atan2(yawSinSum, yawCosSum);
 			msg_tf.transform.rotation.w = std::cos(platYaw / 2.0);
@@ -517,7 +527,6 @@ void AprilTag2Node::publish_data_center(const apriltag_msgs::msg::AprilTagDetect
 			msg_tf.transform.rotation.y = 0.0;
 			msg_tf.transform.rotation.z = std::sin(platYaw / 2.0);
 		}
-		msg_tf.child_frame_id = valid ? "platform_center" : "platform_center_invalid";
 		pub_platformCenter->publish(msg_tf);
 
 		geometry_msgs::msg::TransformStamped gt_msg_tf;
