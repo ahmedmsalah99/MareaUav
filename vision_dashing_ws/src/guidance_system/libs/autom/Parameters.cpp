@@ -31,6 +31,7 @@ Parameters::Parameters() {
     compMinDist        = 1.0;
     compResumeDist     = 1.3;
     compVelMatchThld   = 0.1;
+    compZLeadGain      = 3.0;
     compHeaveMarginWindow = 7.5;
     compHeaveMarginMax = 0.7;
     landHeightMarginMax = 0.5;
@@ -223,6 +224,9 @@ void Parameters::loadParamFile(const char *config_file) {
 
             else if( !param.compare("COMP_VEL_MATCH_THLD") )
                 compVelMatchThld = value;
+
+            else if( !param.compare("COMP_Z_LEAD_GAIN") )
+                compZLeadGain = value;
 
             else if( !param.compare("COMP_HEAVE_MARGIN_WINDOW_S") )
                 compHeaveMarginWindow = value;
