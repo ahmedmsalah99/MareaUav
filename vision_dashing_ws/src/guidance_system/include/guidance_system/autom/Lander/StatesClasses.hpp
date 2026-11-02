@@ -147,13 +147,13 @@ public:
     /** Pending disarm-on-GO request, owned by Lander and consumed via Lander::consumeDisarmRequest(). */
     bool *_disarmRequest;
 
-    /** Raised by CompState::handle() when param.disarmOnGo is enabled and the GO signal arrives. */
+    /** Raised by CompState::handle() when param.landDisarmOnGo is enabled and the GO signal arrives. */
     void requestDisarm() { *_disarmRequest = true; }
 
     /** Continuous time [s] compValid has held in HoldState::handle() — reset to 0
      * the instant compValid goes false, and on any full state-machine reset
      * (initStateMachine()). Only the accumulator; the HOLD -> COMP wait
-     * threshold (param.compWaitTime) is applied by HoldState itself. */
+     * threshold (param.holdToCompWait) is applied by HoldState itself. */
     double *_compValidTimer;
 
     /** True while hold()'s INIT slope is still driving Z along the approach
@@ -166,7 +166,7 @@ public:
     /** Continuous time [s] the COMP -> LAND transition condition has held in
      * CompState::handle() — reset to 0 the instant the condition goes false,
      * and on any full state-machine reset (initStateMachine()). Only the
-     * accumulator; the COMP -> LAND wait threshold (param.compToLandWaitTime)
+     * accumulator; the COMP -> LAND wait threshold (param.goHold)
      * is applied by CompState itself. */
     double *_landValidTimer;
 
@@ -186,7 +186,7 @@ public:
      *   2. The platform roll/pitch angles (estimation) are within their
      *      (generous) calm-sea limits.
      *   3. The platform heave velocity and the roll/pitch angular rates have all
-     *      stayed within their configured limits continuously for calmDuration
+     *      stayed within their configured limits continuously for seaCalmHold
      *      seconds — after which the sea is considered calm.
      * Any frame that breaks a condition resets the calm timer. The calm timer is
      * accumulated with the control-loop dt supplied in the SeaState.
@@ -201,27 +201,27 @@ public:
         }
 
         // 2. Roll/pitch attitude (estimation) within the calm-sea limits.
-        bool attitudeCalm = (std::fabs(_seaState->roll)  < param->rollLimit)
-                         && (std::fabs(_seaState->pitch) < param->pitchLimit);
+        bool attitudeCalm = (std::fabs(_seaState->roll)  < param->seaCalmRollMax)
+                         && (std::fabs(_seaState->pitch) < param->seaCalmPitchMax);
 
         // 3. Heave velocity and roll/pitch angular rates within limits.
-        bool ratesCalm = (std::fabs(_seaState->heaveVel)  < param->heaveVelLimit)
-                      && (std::fabs(_seaState->rollRate)  < param->rollRateLimit)
-                      && (std::fabs(_seaState->pitchRate) < param->pitchRateLimit);
+        bool ratesCalm = (std::fabs(_seaState->heaveVel)  < param->seaCalmHeaveSpeedMax)
+                      && (std::fabs(_seaState->rollRate)  < param->seaCalmRollRateMax)
+                      && (std::fabs(_seaState->pitchRate) < param->seaCalmPitchRateMax);
         
         if (!attitudeCalm || !ratesCalm) {
             _calmTimer = 0.0;
-            std::cout << "roll lim " << (std::fabs(_seaState->roll)  < param->rollLimit) << " pitch lim " << (std::fabs(_seaState->pitch) < param->pitchLimit) << std::endl;
-            std::cout << "roll rate lim " << (std::fabs(_seaState->rollRate)  < param->rollRateLimit)
-            << " pitch rate lim " << (std::fabs(_seaState->pitchRate) < param->pitchRateLimit)
-            << " heave vel limit " << (std::fabs(_seaState->heaveVel)  < param->heaveVelLimit) << " heaveVel " << _seaState->heaveVel << std::endl;
+            std::cout << "roll lim " << (std::fabs(_seaState->roll)  < param->seaCalmRollMax) << " pitch lim " << (std::fabs(_seaState->pitch) < param->seaCalmPitchMax) << std::endl;
+            std::cout << "roll rate lim " << (std::fabs(_seaState->rollRate)  < param->seaCalmRollRateMax)
+            << " pitch rate lim " << (std::fabs(_seaState->pitchRate) < param->seaCalmPitchRateMax)
+            << " heave vel limit " << (std::fabs(_seaState->heaveVel)  < param->seaCalmHeaveSpeedMax) << " heaveVel " << _seaState->heaveVel << std::endl;
             return false;
         }
         // Calm conditions held this tick — accumulate and require it to be
-        // sustained for calmDuration before declaring the sea calm.
+        // sustained for seaCalmHold before declaring the sea calm.
         _calmTimer += _seaState->dt;
         // std::cout << "_calmTimer " << _calmTimer << std::endl;
-        return _calmTimer >= param->calmDuration;
+        return _calmTimer >= param->seaCalmHold;
     }
 
 private:
@@ -737,7 +737,7 @@ public:
   	AbstractLandState* _nextHoveringState;
 
     /**
-     * Terminal state to jump to directly when param.disarmOnGo is enabled —
+     * Terminal state to jump to directly when param.landDisarmOnGo is enabled —
      * skips LandState's descent/touchdown detection entirely.
      */
 

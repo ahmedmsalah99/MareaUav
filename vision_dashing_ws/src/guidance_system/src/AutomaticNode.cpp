@@ -290,7 +290,7 @@ private:
     // Tick the active command's state machine.
     autom_.executeCommand();
 
-    // disarmOnGo: send a forced component-disarm to PX4 whenever the guidance
+    // landDisarmOnGo: send a forced component-disarm to PX4 whenever the guidance
     // asks. The Lander re-raises the request a few times over a bounded window
     // after entering LANDING_DONE, since this topic is published best-effort
     // and a single dropped command would leave the drone armed and hovering.
@@ -313,7 +313,7 @@ private:
       cmd.source_component = 1;
       cmd.from_external = true;
       vehicle_command_pub_->publish(cmd);
-      RCLCPP_WARN(get_logger(), "[disarmOnGo] sending FORCED disarm command");
+      RCLCPP_WARN(get_logger(), "[landDisarmOnGo] sending FORCED disarm command");
     }
 
     // Publish the resulting setpoint.
