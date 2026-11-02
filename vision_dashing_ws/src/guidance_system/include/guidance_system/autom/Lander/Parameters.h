@@ -385,6 +385,30 @@ public:
     // touchdown instant itself.
     double logPredLookback;
 
+
+    // ── Values moved out of the code (see Landing_params.txt for meaning) ──
+    double inspecCircleRadiusGrowth;
+    double altMaxAbovePadMargin;
+    double xyDirectOvershootGain;
+    double padEstVelSkipIfFrameGapAbove;
+    double sensorSwitchHeight;
+    int initWaitTicks;
+    double holdDescendAllowedMaxXYSpeed;
+    double compHeightPGain;
+    double landDisarmResendInterval;
+    double landDisarmResendFor;
+    double touchAccelClip;
+    int touchAccelAvgSamples;
+    double simpleLandXYGain;
+    double simpleLandXYTol;
+    double simpleLandDescSpeedMax;
+    double simpleLandDescSpeedMaxAbove;
+    double simpleLandDescSpeedMin;
+    double simpleLandDescSpeedMinBelow;
+    double simpleLandFinalHeight;
+    double simpleLandPushDown;
+    double emergLandFinalDescSpeed;
+
 };
 
 

@@ -3,10 +3,15 @@
 
 #include "Command.hpp"
 #include "math.h"
+#include "guidance_system/autom/Lander/Parameters.h"
+#include <ament_index_cpp/get_package_share_directory.hpp>
+#include <string>
 
 class EmergLand : public Command
 {
   private:
+
+    Parameters _param;
 
     void emergLand()
     {
@@ -26,7 +31,7 @@ class EmergLand : public Command
           _comm->setVz(-desc);
       } // else means we are already under the threshold, so we can cut motors, by giving a negative desired velocity;
       // the drone will then disarm itself once touched the ground, according to its safety parameters
-      else _comm->setVz(-1);
+      else _comm->setVz(-_param.emergLandFinalDescSpeed);
     }
 
     double computeDescendRate(double dz)
@@ -42,7 +47,12 @@ class EmergLand : public Command
 
   public:
 
-    EmergLand(MavState *_state, MavState *_comm,exec::task *_actualTask) : Command(_state, _comm, _actualTask) {}
+    EmergLand(MavState *_state, MavState *_comm,exec::task *_actualTask) : Command(_state, _comm, _actualTask)
+    {
+      const std::string path = ament_index_cpp::get_package_share_directory("guidance_system")
+                               + "/params/Landing_params.txt";
+      _param.loadConfigFile(path.c_str());
+    }
 
     void execute() override
     {

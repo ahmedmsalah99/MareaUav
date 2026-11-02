@@ -11,6 +11,8 @@ INSPEC_ENABLE=1
 INSPEC_CIRCLE_RADIUS_M=1
 # Speed along the INSPE search circle [m/s].
 INSPEC_CIRCLE_SPEED_MPS=0.3
+# The INSPE circle radius grows by this after each full lap [m].
+INSPEC_CIRCLE_RADIUS_GROWTH_M=0.5
 # Absolute world altitude flown in INSPE and HOVERING [m].
 INSPEC_ALTITUDE_M=6.0
 
@@ -23,6 +25,8 @@ ALT_MAX_ABOVE_PAD_M=3.0
 ALT_MIN_WORLD_M=0.0
 # When not deliberately descending, the drone climbs back if it gets closer to the pad than this [m].
 ALT_MIN_ABOVE_PAD_M=1.0
+# HOLD's climbs (pad lost, or too close to the pad) stop this far below ALT_MAX_ABOVE_PAD_M [m].
+ALT_MAX_ABOVE_PAD_MARGIN_M=0.1
 
 # ======================================================================
 # CENTERED OVER THE PAD (checked on every new vision frame)
@@ -72,6 +76,9 @@ XY_PID_OUTPUT_MAX_M=1.5
 XY_DIRECT_FILTER_ALPHA=0.5
 # Speed limit on that target [m/s] (mode 0).
 XY_DIRECT_MAX_SPEED_MPS=3.0
+# Mode 0 only: command = target + gain * (target - drone), i.e. aim past the target by this fraction of the
+#   current XY error so PX4 closes the gap faster (an extra P term). 0 = command the target itself.
+XY_DIRECT_OVERSHOOT_GAIN=0.5
 
 # ======================================================================
 # PAD ESTIMATE FROM VISION
@@ -80,11 +87,14 @@ XY_DIRECT_MAX_SPEED_MPS=3.0
 PAD_EST_VEL_FILTER_TAU_S=10.0
 # Pad velocity estimates faster than this are treated as noise and clipped [m/s].
 PAD_EST_VEL_MAX_MPS=1.0
+# Two consecutive vision frames further apart than this are not used to compute the pad velocity
+#   (the estimate restarts from the new frame) [s].
+PAD_EST_VEL_SKIP_IF_FRAME_GAP_ABOVE_S=0.5
 # Angle from the reference apriltag's (TAG5) x-axis to the boat's bow [rad].
 PAD_EST_YAW_OFFSET_RAD=1.57
 
 # ======================================================================
-# SENSOR MOUNTING
+# HEIGHT SENSORS
 # Vertical distance from each height sensor to the drone's centre (reference point) [m], positive when the sensor is BELOW the centre.
 # Used to turn the sensor's reading into the drone-centre-to-pad height. *_SIM is used when M2M_MODE=0, *_HW for 1/2.
 # Camera and sonar must be measured to the SAME point, or the height jumps when the Lander switches between them.
@@ -93,6 +103,8 @@ CAMERA_TO_DRONE_CENTER_Z_SIM_M=0.03
 CAMERA_TO_DRONE_CENTER_Z_HW_M=0.0
 SONAR_TO_DRONE_CENTER_Z_SIM_M=0.04
 SONAR_TO_DRONE_CENTER_Z_HW_M=0.082
+# Above this camera-measured height the height comes from the camera, below it from the sonar [m].
+SENSOR_SWITCH_HEIGHT_M=0.83
 
 # ======================================================================
 # INIT: fly to the START POINT
@@ -107,6 +119,8 @@ INIT_START_POINT_XY_TOL_M=0.5
 INIT_START_POINT_Z_TOL_M=0.5
 # Drone must stay at the start point this long before the slope begins [s].
 INIT_START_POINT_HOLD_S=2.0
+# Control ticks INIT waits before choosing between the approach and INSPE/HOVERING.
+INIT_WAIT_TICKS=20
 
 # ======================================================================
 # SLOPE: timed glide from the start point down to HOLD_HEIGHT_M above the pad
@@ -131,6 +145,8 @@ HOLD_COMP_BELOW_M=1.2
 HOLD_DESCEND_STEP_M=0.5
 # Setpoint step per control tick when climbing [m].
 HOLD_ASCEND_STEP_M=0.5
+# HOLD only steps down while the drone's horizontal speed (X and Y each) is under this [m/s].
+HOLD_DESCEND_ALLOWED_MAX_XY_SPEED_MPS=0.3
 # COMP conditions must hold without a break this long before COMP starts [s].
 HOLD_TO_COMP_WAIT_S=3.0
 
@@ -169,6 +185,8 @@ COMP_RESUME_ABOVE_M=0.15
 COMP_VEL_MATCH_ABOVE_MPS=0.1
 # How far ahead the heave prediction is used [s]; should match the heave estimator's prediction horizon.
 COMP_LEAD_TIME_S=0.1
+# COMP height command = drone Z + gain * (wanted COMP height - current gap).
+COMP_HEIGHT_P_GAIN=3.0
 
 # ======================================================================
 # GO DECISION: commit to landing (COMP -> LAND)
@@ -205,6 +223,10 @@ GO_LATCH_S=0.25
 LAND_DESCEND_SPEED_MPS=1.0
 # 1 = disarm immediately at GO and skip the descent and touchdown detection.
 LAND_DISARM_ON_GO=1
+# With LAND_DISARM_ON_GO=1: time between two disarm messages (the topic is best-effort, one may be lost) [s].
+LAND_DISARM_RESEND_INTERVAL_S=0.1
+# How long after GO the disarm messages keep being sent [s].
+LAND_DISARM_RESEND_FOR_S=2.0
 
 # ======================================================================
 # TOUCHDOWN DETECTION (LAND -> LANDING_DONE)
@@ -223,9 +245,40 @@ TOUCH_IMPACT_ACCEL_MPS2=3.0
 TOUCH_IMPACT_WINDOW_S=0.5
 # Stage 2 must hold this long [s].
 TOUCH_CONFIRM_HOLD_S=0.3
+# Each raw acceleration sample is clipped to +/- this before use [m/s^2] (anything larger is a sensor glitch).
+TOUCH_ACCEL_CLIP_MPS2=20.0
+# Accelerations are averaged over this many latest samples.
+TOUCH_ACCEL_AVG_SAMPLES=5
 
 # ======================================================================
 # LOGGING ONLY
 # ======================================================================
 # How far back [s] to take the prediction compared with the real values at touchdown in the CSV log.
 LOG_PRED_LOOKBACK_S=0.5
+
+# ======================================================================
+# SIMPLE LAND: the LAND task's basic mode (task parameter 0 = no platform)
+# Lands straight down on the spot where the task started, without the pad or vision. Heights are world Z.
+# ======================================================================
+# Horizontal velocity command = gain * distance to the landing spot [1/s].
+SIMPLE_LAND_XY_GAIN=1.0
+# Descends only while within this horizontal distance of the spot (X and Y each) [m].
+SIMPLE_LAND_XY_TOL_M=0.25
+# Descent speed while higher than SIMPLE_LAND_DESC_SPEED_MAX_ABOVE_M [m/s].
+SIMPLE_LAND_DESC_SPEED_MAX_MPS=0.3
+# Above this height (world Z) the max descent speed is used [m].
+SIMPLE_LAND_DESC_SPEED_MAX_ABOVE_M=1.6
+# Descent speed while lower than SIMPLE_LAND_DESC_SPEED_MIN_BELOW_M; linear in between [m/s].
+SIMPLE_LAND_DESC_SPEED_MIN_MPS=0.1
+# Below this height (world Z) the min descent speed is used [m].
+SIMPLE_LAND_DESC_SPEED_MIN_BELOW_M=0.7
+# Below this height above world Z=0, switch to the final push-down [m].
+SIMPLE_LAND_FINAL_HEIGHT_M=0.25
+# In the final push-down the setpoint is put this far below Z=0, so the drone keeps pressing down until PX4 detects the landing [m].
+SIMPLE_LAND_PUSH_DOWN_M=10.0
+
+# ======================================================================
+# EMERGENCY LAND
+# ======================================================================
+# Once below the task's motor-cut threshold, descend at this speed until PX4 disarms [m/s].
+EMERG_LAND_FINAL_DESC_SPEED_MPS=1.0

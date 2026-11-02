@@ -17,20 +17,7 @@
 
 #define DEBUG
 #define PI              3.141592653589
-#define Kland           1
-#define THRE            0.25
-#define DRATE_MIN       0.1
-#define DRATE_MAX       0.3
-#define TMAX            1.6
-#define TMIN            0.7
-#define PLATFORM_OFFSET 0.0
 
-// Touchdown-detector accel-estimate smoothing (smoothAccel()): clip each raw IMU
-// sample to this magnitude [m/s^2] before it enters the moving average — no real
-// drone/pad acceleration should exceed this, so a clipped value only ever means
-// "a sensor glitch/dropout", not a real event.
-#define kAccelEstimateClip   20.0
-#define kAccelEstimateWindow 5
 
 // Standard gravity [m/s^2], used to remove each accel source's own known
 // constant gravity-reaction offset before comparing drone vs pad acceleration
@@ -241,6 +228,8 @@ public:
      * signal arrives. Edge-triggered so the caller (AutomaticNode) sends the
      * disarm command exactly once.
      */
+
+    const Parameters& getParams() const { return param; }
 
     bool consumeDisarmRequest() {
         bool req = _disarmRequest;

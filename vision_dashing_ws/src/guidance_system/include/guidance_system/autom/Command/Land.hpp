@@ -121,22 +121,23 @@ private:
 
         // Be sure that we are on top of the target
 
-        double x_target_v = Kland * (dx);
-        double y_target_v = Kland * (dy);
+        const Parameters& p = _lander.getParams();
+        double x_target_v = p.simpleLandXYGain * (dx);
+        double y_target_v = p.simpleLandXYGain * (dy);
 
         _comm->setVx(x_target_v);
         _comm->setVy(y_target_v);
         _comm->setType(MavState::VELOCITY);
         //TODO: add security checks on vz
-        if(fabs(dx) <= THRE && fabs(dy) <= THRE){
+        if(fabs(dx) <= p.simpleLandXYTol && fabs(dy) <= p.simpleLandXYTol){
             //Descending is safe, is it?
-            double desc = calculateDescendRate(fabs(dz), DRATE_MAX, DRATE_MIN, TMAX, TMIN);
+            double desc = calculateDescendRate(fabs(dz), p.simpleLandDescSpeedMax, p.simpleLandDescSpeedMin, p.simpleLandDescSpeedMaxAbove, p.simpleLandDescSpeedMinBelow);
             _comm->setVz(-desc);
 
-            if (fabs(dz) < THRE){
+            if (fabs(dz) < p.simpleLandFinalHeight){
                 _comm->setX(x_target);
                 _comm->setY(y_target);
-                _comm->setZ(h-10);
+                _comm->setZ(h - p.simpleLandPushDown);
                 _comm->setVx(NAN);   // position-only: don't leak the velocity-mode Vx/Vy above
                 _comm->setVy(NAN);
                 _comm->setType(MavState::POSITION);
