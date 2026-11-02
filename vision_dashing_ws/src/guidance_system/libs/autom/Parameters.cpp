@@ -67,6 +67,27 @@ Parameters::Parameters() {
     touchImpactWindow = 0.5;
     touchConfirmHold      = 0.3;
     logPredLookback     = 0.5;
+    inspecCircleRadiusGrowth = 0.5;
+    altMaxAbovePadMargin = 0.1;
+    xyDirectOvershootGain = 0.5;
+    padEstVelSkipIfFrameGapAbove = 0.5;
+    sensorSwitchHeight = 0.83;
+    initWaitTicks = 20;
+    holdDescendAllowedMaxXYSpeed = 0.3;
+    compHeightPGain = 3.0;
+    landDisarmResendInterval = 0.1;
+    landDisarmResendFor = 2.0;
+    touchAccelClip = 20.0;
+    touchAccelAvgSamples = 5;
+    simpleLandXYGain = 1.0;
+    simpleLandXYTol = 0.25;
+    simpleLandDescSpeedMax = 0.3;
+    simpleLandDescSpeedMaxAbove = 1.6;
+    simpleLandDescSpeedMin = 0.1;
+    simpleLandDescSpeedMinBelow = 0.7;
+    simpleLandFinalHeight = 0.25;
+    simpleLandPushDown = 10.0;
+    emergLandFinalDescSpeed = 1.0;
 }
 
 void Parameters::loadConfigFile(const char *config_file) {
@@ -331,6 +352,69 @@ void Parameters::loadParamFile(const char *config_file) {
 
             else if( !param.compare("LOG_PRED_LOOKBACK_S") )
                 logPredLookback = value;
+
+            else if( !param.compare("INSPEC_CIRCLE_RADIUS_GROWTH_M") )
+                inspecCircleRadiusGrowth = value;
+
+            else if( !param.compare("ALT_MAX_ABOVE_PAD_MARGIN_M") )
+                altMaxAbovePadMargin = value;
+
+            else if( !param.compare("XY_DIRECT_OVERSHOOT_GAIN") )
+                xyDirectOvershootGain = value;
+
+            else if( !param.compare("PAD_EST_VEL_SKIP_IF_FRAME_GAP_ABOVE_S") )
+                padEstVelSkipIfFrameGapAbove = value;
+
+            else if( !param.compare("SENSOR_SWITCH_HEIGHT_M") )
+                sensorSwitchHeight = value;
+
+            else if( !param.compare("INIT_WAIT_TICKS") )
+                initWaitTicks = value;
+
+            else if( !param.compare("HOLD_DESCEND_ALLOWED_MAX_XY_SPEED_MPS") )
+                holdDescendAllowedMaxXYSpeed = value;
+
+            else if( !param.compare("COMP_HEIGHT_P_GAIN") )
+                compHeightPGain = value;
+
+            else if( !param.compare("LAND_DISARM_RESEND_INTERVAL_S") )
+                landDisarmResendInterval = value;
+
+            else if( !param.compare("LAND_DISARM_RESEND_FOR_S") )
+                landDisarmResendFor = value;
+
+            else if( !param.compare("TOUCH_ACCEL_CLIP_MPS2") )
+                touchAccelClip = value;
+
+            else if( !param.compare("TOUCH_ACCEL_AVG_SAMPLES") )
+                touchAccelAvgSamples = value;
+
+            else if( !param.compare("SIMPLE_LAND_XY_GAIN") )
+                simpleLandXYGain = value;
+
+            else if( !param.compare("SIMPLE_LAND_XY_TOL_M") )
+                simpleLandXYTol = value;
+
+            else if( !param.compare("SIMPLE_LAND_DESC_SPEED_MAX_MPS") )
+                simpleLandDescSpeedMax = value;
+
+            else if( !param.compare("SIMPLE_LAND_DESC_SPEED_MAX_ABOVE_M") )
+                simpleLandDescSpeedMaxAbove = value;
+
+            else if( !param.compare("SIMPLE_LAND_DESC_SPEED_MIN_MPS") )
+                simpleLandDescSpeedMin = value;
+
+            else if( !param.compare("SIMPLE_LAND_DESC_SPEED_MIN_BELOW_M") )
+                simpleLandDescSpeedMinBelow = value;
+
+            else if( !param.compare("SIMPLE_LAND_FINAL_HEIGHT_M") )
+                simpleLandFinalHeight = value;
+
+            else if( !param.compare("SIMPLE_LAND_PUSH_DOWN_M") )
+                simpleLandPushDown = value;
+
+            else if( !param.compare("EMERG_LAND_FINAL_DESC_SPEED_MPS") )
+                emergLandFinalDescSpeed = value;
 
         }
 		cFile.close();

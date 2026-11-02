@@ -15,12 +15,12 @@ void InitState::handle(){
     static int wait = 0;
     std::cout << "start param.inspecEnable " << param.inspecEnable << std::endl;
     //Wait 20 iterations
-    if( wait++ > 20 && _VisionPose.VisionDataUpdated && _readyToLand) {
+    if( wait++ > param.initWaitTicks && _VisionPose.VisionDataUpdated && _readyToLand) {
         this->_contextL->setStatePtr(_nextState);
         printStateTransition(); //print the actual state
         wait=0;
     }
-	  else if(wait++ > 20 && !_VisionPose.VisionDataUpdated) {
+	  else if(wait++ > param.initWaitTicks && !_VisionPose.VisionDataUpdated) {
         std::cout << "param.inspecEnable " << param.inspecEnable << std::endl;
       if(param.inspecEnable){
           this->_contextL->setStatePtr(_nextInspeState);
@@ -65,11 +65,6 @@ void HoldState::handle(){
     getSignals();
     double downDist = -_verticalErr;
     
-    double ultra_limit = 0.83 - 0.2;
-    // Old close-range (ultrasonic) condition, kept under a new name for the final
-    // landing phase.
-    bool ultraCompValid = _holding && (fabs(_UltraInfo.getZ()) < ultra_limit+0.1) && _centered;
-    (void)ultraCompValid;   // reserved for the final landing phase
 
     // Enter COMP once we are within holdDescendAbove of the pad, centred,
     // holding and on a calm sea. COMP then holds compHeightBase (1.5 m).
@@ -91,7 +86,7 @@ void HoldState::handle(){
                     && _contextL->safeInitialLanding();
 
     // Ascend if platform is lost and we are still below zMax (relative to pad).
-    bool asceValid = _lost && (downDist < param.altMaxAbovePad - 0.1);
+    bool asceValid = _lost && (downDist < param.altMaxAbovePad - param.altMaxAbovePadMargin);
 
     // Ascend if setpoint has drifted below zMin (absolute hard floor).
     bool asceUnderMin = (_setPoint.getZ() < param.altMinWorld);
@@ -102,10 +97,10 @@ void HoldState::handle(){
     // fresh descent either. Uses the same inner threshold as compValid so
     // there's no gap between "not close enough to ascend" and "close enough
     // for COMP".
-    bool asceUnderMargin = _centered && _holding &&  (downDist < param.holdCompBelow) && (downDist < param.altMaxAbovePad - 0.1) && !descValid;
+    bool asceUnderMargin = _centered && _holding &&  (downDist < param.holdCompBelow) && (downDist < param.altMaxAbovePad - param.altMaxAbovePadMargin) && !descValid;
 
     //if the vision data are not available and the drone is at or above zMax, go back to init.
-    // bool InitValid = !_VisionPose.VisionDataUpdated && !(_setPoint.getZ() < param.altMaxAbovePad - 0.1);
+    // bool InitValid = !_VisionPose.VisionDataUpdated && !(_setPoint.getZ() < param.altMaxAbovePad - param.altMaxAbovePadMargin);
     bool InitValid = !_VisionPose.VisionDataUpdated;
 
     //comp is a middle state between land state and hold state.

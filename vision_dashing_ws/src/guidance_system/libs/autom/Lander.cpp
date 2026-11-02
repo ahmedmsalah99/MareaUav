@@ -281,10 +281,10 @@ void Lander::setSeaState(const SeaState seaState) {
 double Lander::smoothAccel(double rawSample, std::deque<double> &buf) {
   // Clip before averaging: a single sensor glitch/dropout would otherwise
   // dominate the short window and read out as a wildly oversized "acceleration".
-  double clipped = common::clamp(rawSample, -kAccelEstimateClip, kAccelEstimateClip);
+  double clipped = common::clamp(rawSample, -param.touchAccelClip, param.touchAccelClip);
 
   buf.push_back(clipped);
-  if (buf.size() > kAccelEstimateWindow) buf.pop_front();
+  if (buf.size() > static_cast<size_t>(param.touchAccelAvgSamples)) buf.pop_front();
   double sum = 0.0;
   for (double v : buf) sum += v;
   return sum / static_cast<double>(buf.size());
@@ -433,7 +433,7 @@ void Lander::updateSignals() {
 	double dz;
 
 
-	switchSensor = (fabs( _VisionPose.getZ() ) > 0.83); 
+	switchSensor = (fabs( _VisionPose.getZ() ) > param.sensorSwitchHeight); 
   //above half meters use vision system for altitude value
   //otherwise, ultrasonic sensors.
 
@@ -967,10 +967,10 @@ void Lander::run() {
         // Re-send the disarm for a bounded window — the command goes out
         // best-effort, so one dropped message would leave the drone armed and
         // hovering here indefinitely.
-        if (_disarmRetryElapsed < 2.0) {
+        if (_disarmRetryElapsed < param.landDisarmResendFor) {
           _disarmRetryElapsed += _dt;
           _disarmRetrySince   += _dt;
-          if (_disarmRetrySince >= 0.1) {
+          if (_disarmRetrySince >= param.landDisarmResendInterval) {
             _disarmRetrySince = 0.0;
             _disarmRequest    = true;
           }
@@ -1090,7 +1090,7 @@ void Lander::updatePlatformVision() {
     _platVisSeeded = true;
   } else if (_VisionPose.visionFrameStampUs != _prevVisStamp) {
     const double dtFrame = (_VisionPose.visionFrameStampUs - _prevVisStamp) * 1e-6;
-    if (dtFrame > 1e-3 && dtFrame < 0.5) {
+    if (dtFrame > 1e-3 && dtFrame < param.padEstVelSkipIfFrameGapAbove) {
       const double rawVx = (px - _prevPadX) / dtFrame;
       const double rawVy = (py - _prevPadY) / dtFrame;
       // Warm-up: a plain running mean of the first samples (weight n/(n+1)
@@ -1381,7 +1381,7 @@ void Lander::inspection() {
 
   if(time > Period){
       time = 0;
-      RadiusInspection += 0.5;
+      RadiusInspection += param.inspecCircleRadiusGrowth;
       Period = (2*PI*RadiusInspection)/param.inspecCircleSpeed;
   }
 
@@ -1435,10 +1435,6 @@ void Lander::hold() {
   // Apply slope Z adjustment only when HOLD is in a neutral state — no ascend
   // or descend transition is pending. Mirrors the condition checks in HoldState::handle().
   {
-    bool desc_v        = _centered && _holding && (_setPoint.getZ() > param.altMinWorld + 0.1) && _machine.safeInitialLanding();
-    bool asce_v        = _lost    && (_verticalErr < param.altMaxAbovePad - 0.1);
-    bool asce_min      = (_setPoint.getZ() < param.altMinWorld);
-    bool asce_margin   = _holding && _centered && (_verticalErr < param.altMinAbovePad) && (_verticalErr < param.altMaxAbovePad - 0.1) && !desc_v;
 
     // if (_prevState == AbstractLandState::states::INIT)
     if(_slopeActive)
@@ -1612,7 +1608,7 @@ void Lander::trackXY() {
     if(param.xyControlMode == 1)
       _setPoint.setPosition(sp_x, sp_y, _setPoint.getZ());
     else
-       _setPoint.setPosition(sp_x + 0.5*(sp_x - _state.getX()), sp_y + 0.5*(sp_y - _state.getY()), _setPoint.getZ());
+       _setPoint.setPosition(sp_x + param.xyDirectOvershootGain*(sp_x - _state.getX()), sp_y + param.xyDirectOvershootGain*(sp_y - _state.getY()), _setPoint.getZ());
   }
 
   // XY tracking diagnostic, throttled to ~5 Hz.
@@ -1663,7 +1659,7 @@ void Lander::asce() {
 
 void Lander::desc() {
   std::cout << "In desc " << std::endl;
-  double v_hor_calm = std::fabs(_state.getVx()) < 0.3 && std::fabs(_state.getVy()) < 0.3;
+  double v_hor_calm = std::fabs(_state.getVx()) < param.holdDescendAllowedMaxXYSpeed && std::fabs(_state.getVy()) < param.holdDescendAllowedMaxXYSpeed;
   if (!v_hor_calm)
     return;
   double new_z = std::max(_setPoint.getZ() - param.holdDescendStep,_state.getZ() - param.holdDescendStep);
@@ -1735,7 +1731,7 @@ void Lander::comp() {
   if (_compTracking) {
     double vff  = _seaState.heaveValid ? _seaState.heaveVelPredComp : 0.0;
     double lead = (effectiveHoldDist - gap);
-    new_z = _state.getZ() + 3.0*lead;
+    new_z = _state.getZ() + param.compHeightPGain*lead;
 
     // Two modes, so the position and velocity halves of the setpoint stop
     // fighting each other.
