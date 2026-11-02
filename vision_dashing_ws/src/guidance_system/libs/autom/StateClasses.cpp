@@ -14,13 +14,14 @@ void InitState::handle(){
     getSignals();
     static int wait = 0;
     std::cout << "start param.inspecEnable " << param.inspecEnable << std::endl;
-    //Wait 20 iterations
-    if( wait++ > param.initWaitTicks && _VisionPose.VisionDataUpdated && _readyToLand) {
+    // Wait initWaitTicks control ticks (counted once per tick) before deciding.
+    ++wait;
+    if( wait > param.initWaitTicks && _VisionPose.VisionDataUpdated && _readyToLand) {
         this->_contextL->setStatePtr(_nextState);
         printStateTransition(); //print the actual state
         wait=0;
     }
-	  else if(wait++ > param.initWaitTicks && !_VisionPose.VisionDataUpdated) {
+	  else if(wait > param.initWaitTicks && !_VisionPose.VisionDataUpdated) {
         std::cout << "param.inspecEnable " << param.inspecEnable << std::endl;
       if(param.inspecEnable){
           this->_contextL->setStatePtr(_nextInspeState);

@@ -71,6 +71,7 @@ Parameters::Parameters() {
     touchImpactWindow = 0.5;
     touchConfirmHold      = 0.3;
     logPredLookback     = 0.5;
+    goForceIfSonarBelow = 0.2;
     inspecCircleRadiusGrowth = 0.5;
     altMaxAbovePadMargin = 0.1;
     xyDirectOvershootGain = 0.5;
@@ -315,6 +316,9 @@ bool Parameters::setKey(const std::string& param, double value) {
 
             else if( !param.compare("GO_PITCH_RATE_MAX_RADPS") )
                 goPitchRateMax = value;
+
+            else if( !param.compare("GO_FORCE_IF_SONAR_BELOW_M") )
+                goForceIfSonarBelow = value;
 
             else if( !param.compare("GO_LATCH_S") )
                 goLatch = value;
@@ -610,6 +614,7 @@ const std::vector<std::string>& Parameters::allKeys() {
         "GO_PITCH_MAX_RAD",
         "GO_ROLL_RATE_MAX_RADPS",
         "GO_PITCH_RATE_MAX_RADPS",
+        "GO_FORCE_IF_SONAR_BELOW_M",
         "GO_LATCH_S",
         "GO_VOTE_WINDOW_S",
         "GO_VOTE_FRACTION",

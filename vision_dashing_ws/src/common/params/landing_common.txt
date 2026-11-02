@@ -168,6 +168,9 @@ GO_VOTE_WINDOW_S=1.5
 GO_VOTE_FRACTION=0.6
 # A GO or NO-GO decision is kept at least this long [s].
 GO_LATCH_S=0.25
+# A fresh, valid sonar reading under this makes the sea-state GO true whatever the roll/pitch/heave limits say [m]
+# (the drone is effectively down). The position and height checks of COMP -> LAND still apply.
+GO_FORCE_IF_SONAR_BELOW_M=0.2
 
 # ======================================================================
 # LAND: committed descent after GO
