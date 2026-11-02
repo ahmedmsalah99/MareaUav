@@ -96,6 +96,12 @@ public:
   AutomaticNode()
   : rclcpp::Node("automatic")
   {
+    // Angle [rad] added to the drone->target heading in the rescue (SEARCH)
+    // pose so the CAMERA, not the nose, faces the target. The camera is
+    // mounted turned 90 deg from the body x-axis (see camera_mount.yaw in the
+    // apriltag cfg). No in-code default: set it from the launch file.
+    rescue_camera_heading_offset_ = declare_parameter<double>("rescue_camera_heading_offset_rad");
+
     auto px4_qos      = rclcpp::QoS(rclcpp::KeepLast(1)).best_effort();
     auto reliable_qos = rclcpp::QoS(rclcpp::KeepLast(1)).reliable();
 
@@ -654,7 +660,7 @@ private:
 
       double platform_pos[3] = {
         platform_state_.getX(), platform_state_.getY(), platform_state_.getZ()};
-      double yaw_temp = computeDesiredYaw(autom_.getState(), platform_pos) + 1.57; // +π/2: 90° offset to align camera forward direction with target
+      double yaw_temp = computeDesiredYaw(autom_.getState(), platform_pos) + rescue_camera_heading_offset_;
 
       Eigen::Quaterniond orient = getQuatFromYaw(yaw_temp);
       rescue.pose.pose.orientation.w = orient.w();
@@ -699,6 +705,7 @@ private:
   int         current_action_ {actions::IDLE};
   std::string current_target_ {""};
 
+  double      rescue_camera_heading_offset_ {0.0};
   double      gps_lon_ {0.0};
   double      gps_lat_ {0.0};
   double      gps_alt_ {0.0};

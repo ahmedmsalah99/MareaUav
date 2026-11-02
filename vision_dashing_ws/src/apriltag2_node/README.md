@@ -23,7 +23,8 @@ The relative pose between platform center and the drone is published on the topi
 The platform center is estimated knowing the transformation matrices between each tag respect to the tag in the center. 
 Subsequently, the pose respect to the camera is transferred on drone frame (ENU).
 
-These information are stored in : `include/LandingPlatform.h`
+The camera intrinsics, the camera mounting and the pad's tag layout are ROS parameters, one file per mode:
+`cfg/apriltag_sim.yaml`, `cfg/apriltag_mocap.yaml`, `cfg/apriltag_hw.yaml` (pick the one matching `M2M_MODE`).
 
 ## Configuration
 
@@ -78,5 +79,5 @@ To run the node and load the configuration, pass the configuration file to `__pa
 ```bash
 ros2 run apriltag2_node apriltag2_node \
     /apriltag/image/compressed:=/camera/image/compressed \
-    __params:=`ros2 pkg prefix apriltag2_node`/share/apriltag2_node/cfg/platform.yaml
+    __params:=`ros2 pkg prefix apriltag2_node`/share/apriltag2_node/cfg/apriltag_sim.yaml
 ```

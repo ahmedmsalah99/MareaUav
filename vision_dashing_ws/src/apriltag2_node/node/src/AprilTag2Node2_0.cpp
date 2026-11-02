@@ -1,6 +1,5 @@
 #include <AprilTag2Node.hpp>
 #include <class_loader/register_macro.hpp>
-#include "LandingPlatform.h"
 #include <sstream>
 #include <stdexcept>
 #include <string>
@@ -14,7 +13,6 @@
 #include <cmath>
 #include <Eigen/Dense>
 #include <cstdlib>
-static Platform_tag TAGS;
 
 std::ofstream detectionLog;
 
@@ -34,27 +32,6 @@ AprilTag2Node::AprilTag2Node() : Node("apriltag2", "apriltag", rclcpp::NodeOptio
 	pub_platformCenter = this->create_publisher<geometry_msgs::msg::TransformStamped>("/platform_center",1);
 	pub_platformCenter_gt = this->create_publisher<geometry_msgs::msg::TransformStamped>("/platform_center_gt",1);
 
-	// calibration values for 640x480
-	const double cx = 323.83127;
-	const double cy = 248.651286;
-	const double fx = 381.36246688113556;
-	const double fy = 381.36246688113556;
-
-	K << fx, 0, cx, 0, fy, cy, 0, 0, 1;
-	intrinsics = {fx, fy, cx,cy};
-	//std::cout<<"K: "<<K<<std::endl;
-	// getting the value of the environment variable, to check whenever we are running in SITL or in a RPi
-	char *env_val;
-	// M2M_MODE: 0 = sim, 1 = mocap, 2 = hw. Only sim uses the simulated tag
-	// layout; mocap and hw both fly the real platform.
-	env_val = std::getenv("M2M_MODE");
-	const std::string mode_str = env_val ? env_val : "";
-	if (mode_str != "0" && mode_str != "1" && mode_str != "2")
-		throw std::runtime_error("M2M_MODE must be set to 0 (sim), 1 (mocap) or 2 (hw); got '" + mode_str + "'");
-	bool env_bool = (mode_str == "0");
-
-	std::cout << "M2M_MODE IS " << mode_str << " (sim tag layout: " << env_bool << ")" << std::endl;
-
 	declare_parameter<std::string>("family", "36h11");
 	declare_parameter<double>("size", 2.0);
 	declare_parameter<int>("max_hamming", 0);
@@ -65,19 +42,9 @@ AprilTag2Node::AprilTag2Node() : Node("apriltag2", "apriltag", rclcpp::NodeOptio
 	get_parameter("z_up", z_up);
 
 
-	static const std::string tag_prefix = "tag_";
-	declare_parameter<int>("n_tags", 0);
-	get_parameter("n_tags", n_tags);
-
-	for(int i=0; i<n_tags; i++)
-	{
-		std::string tag_name = tag_prefix+std::to_string(i);
-		declare_parameter<double>(tag_name, 2.0);
-		get_parameter(tag_name, platform_tags[i]);
-		// tracked_tags[i+1]=i+1;
-	}
-
-	SetMatrix(&TAGS, env_bool); //load transformation matrices respect to the platform center
+	// Per-mode parameters (cfg/apriltag_<sim|mocap|hw>.yaml). No in-code
+	// defaults: a missing value stops the node at startup.
+	loadCameraAndPadParams();
 
 
 	if(!tag_create.count(tag_family)) {
@@ -196,6 +163,9 @@ void AprilTag2Node::onImage(const sensor_msgs::msg::CompressedImage::SharedPtr m
 
 		//This function computes the relative translation and rotation of each tag in the scene w.r.t the camera.
 		//Then, it projects this information in the centre of the platform (related to the tag in the centre).
+		// ignore tags that are not part of the configured pad layout
+		if (!_tagToRef.count(det->id)) { continue; }
+
 		try{
 			tagTransform.transform = pnp(det, intrinsics, platform_tags[det->id], det->id);
 		}catch (const cv::Exception& e) {
@@ -574,39 +544,9 @@ void AprilTag2Node::getPose(const matd_t& H, geometry_msgs::msg::Transform& t, c
 	// RCLCPP_INFO(get_logger(), "TAG RECOGNIZED, ID: %li ", ID);
 
 
-	if (ID == 0) {
-		pose = pose * TAGS.TAG0_T_TAG5;
-	} else if (ID == 1) {
-		pose = pose * TAGS.TAG1_T_TAG5;
-	} else if (ID == 2) {
-		pose = pose * TAGS.TAG2_T_TAG5;
-	} else if (ID == 3) {
-		pose = pose * TAGS.TAG3_T_TAG5;
-	} else if (ID == 4) {
-		pose = pose * TAGS.TAG4_T_TAG5;
-	} else if (ID == 5) {
-		pose = pose * TAGS.TAG5_T_TAG5;
-	} else if (ID == 6) {
-		pose = pose * TAGS.TAG6_T_TAG5;
-	} else if (ID == 7) {
-		pose = pose * TAGS.TAG7_T_TAG5;
-	} else if (ID == 8) {
-		pose = pose * TAGS.TAG8_T_TAG5;
-	} else if (ID == 9) {
-		pose = pose * TAGS.TAG9_T_TAG5;
-		detectionLog << "BABBALA9" << "\n";
-	} else if (ID == 10) {
-		pose = pose * TAGS.TAG10_T_TAG5;
-		detectionLog << "BABBALA10" << "\n";
-	} else if (ID == 11) {
-		pose = pose * TAGS.TAG11_T_TAG5;
-		detectionLog << "BABBALA11" << "\n";
-	} else if (ID == 12) {
-		pose = pose * TAGS.TAG12_T_TAG5;
-		detectionLog << "BABBALA12" << "\n";
-	}
+	pose = pose * _tagToRef.at(ID);
 
-	pose = TAGS.robot_T_cam * pose;
+	pose = _robotTcam * pose;
 
 	const Eigen::Quaterniond q(R);
 
@@ -749,39 +689,9 @@ AprilTag2Node::pnp(apriltag_detection_t* const detection, const std::array<doubl
 		pose(i, 3) = tvec.at<double>(i);
 	}
 
-	if (detection->id == 0) {
-		pose = pose * TAGS.TAG0_T_TAG5;
-	} else if (detection->id == 1) {
-		pose = pose * TAGS.TAG1_T_TAG5;
-	} else if (detection->id == 2) {
-		pose = pose * TAGS.TAG2_T_TAG5;
-	} else if (detection->id == 3) {
-		pose = pose * TAGS.TAG3_T_TAG5;
-	} else if (detection->id == 4) {
-		pose = pose * TAGS.TAG4_T_TAG5;
-	} else if (detection->id == 5) {
-		pose = pose * TAGS.TAG5_T_TAG5;
-	} else if (detection->id == 6) {
-		pose = pose * TAGS.TAG6_T_TAG5;
-	} else if (detection->id == 7) {
-		pose = pose * TAGS.TAG7_T_TAG5;
-	} else if (detection->id == 8) {
-		pose = pose * TAGS.TAG8_T_TAG5;
-	} else if (detection->id == 9) {
-		pose = pose * TAGS.TAG9_T_TAG5;
-		detectionLog << "BABBALA9" << "\n";
-	} else if (detection->id == 10) {
-		pose = pose * TAGS.TAG10_T_TAG5;
-		detectionLog << "BABBALA10" << "\n";
-	} else if (detection->id == 11) {
-		pose = pose * TAGS.TAG11_T_TAG5;
-		detectionLog << "BABBALA11" << "\n";
-	} else if (detection->id == 12) {
-		pose = pose * TAGS.TAG12_T_TAG5;
-		detectionLog << "BABBALA12" << "\n";
-	}
+	pose = pose * _tagToRef.at(detection->id);
 
-	pose = TAGS.robot_T_cam * pose;
+	pose = _robotTcam * pose;
 	Eigen::Matrix3d final_rotation = pose.block<3, 3>(0, 0);
 	Eigen::Quaterniond q(final_rotation);
 	geometry_msgs::msg::Transform t;
@@ -840,3 +750,51 @@ std::map<std::string, void (*)(apriltag_family_t*)> AprilTag2Node::tag_destroy =
 };
 
 CLASS_LOADER_REGISTER_CLASS(AprilTag2Node, rclcpp::Node)
+
+void AprilTag2Node::loadCameraAndPadParams()
+{
+	// Camera intrinsics [pixels].
+	const double fx = declare_parameter<double>("camera.fx");
+	const double fy = declare_parameter<double>("camera.fy");
+	const double cx = declare_parameter<double>("camera.cx");
+	const double cy = declare_parameter<double>("camera.cy");
+	K << fx, 0, cx, 0, fy, cy, 0, 0, 1;
+	intrinsics = {fx, fy, cx, cy};
+
+	// Camera pose in the drone body frame: R = Rz(yaw) * Ry(pitch) * Rx(roll).
+	const double mx    = declare_parameter<double>("camera_mount.x");
+	const double my    = declare_parameter<double>("camera_mount.y");
+	const double mz    = declare_parameter<double>("camera_mount.z");
+	const double roll  = declare_parameter<double>("camera_mount.roll");
+	const double pitch = declare_parameter<double>("camera_mount.pitch");
+	const double yaw   = declare_parameter<double>("camera_mount.yaw");
+	const Eigen::Matrix3d R = (Eigen::AngleAxisd(yaw,   Eigen::Vector3d::UnitZ()) *
+	                           Eigen::AngleAxisd(pitch, Eigen::Vector3d::UnitY()) *
+	                           Eigen::AngleAxisd(roll,  Eigen::Vector3d::UnitX())).toRotationMatrix();
+	_robotTcam = Eigen::Matrix4d::Identity();
+	_robotTcam.block<3, 3>(0, 0) = R;
+	_robotTcam(0, 3) = mx;
+	_robotTcam(1, 3) = my;
+	_robotTcam(2, 3) = mz;
+
+	// Pad layout: per tag, its edge size and where the pad reference point is
+	// in that tag's own frame.
+	const auto ids   = declare_parameter<std::vector<int64_t>>("tags.ids");
+	const auto sizes = declare_parameter<std::vector<double>>("tags.size");
+	const auto refX  = declare_parameter<std::vector<double>>("tags.ref_x");
+	const auto refY  = declare_parameter<std::vector<double>>("tags.ref_y");
+	if (ids.empty() || sizes.size() != ids.size() || refX.size() != ids.size() || refY.size() != ids.size())
+		throw std::runtime_error("tags.ids, tags.size, tags.ref_x and tags.ref_y must be non-empty and the same length");
+	for (size_t i = 0; i < ids.size(); ++i) {
+		const int id = static_cast<int>(ids[i]);
+		if (_tagToRef.count(id))
+			throw std::runtime_error("tags.ids lists tag " + std::to_string(id) + " twice");
+		Eigen::Matrix4d T = Eigen::Matrix4d::Identity();
+		T(0, 3) = refX[i];
+		T(1, 3) = refY[i];
+		_tagToRef[id]     = T;
+		platform_tags[id] = sizes[i];
+	}
+	RCLCPP_INFO(get_logger(), "camera fx=%.2f fy=%.2f cx=%.2f cy=%.2f, mount (%.3f, %.3f, %.3f) rpy (%.3f, %.3f, %.3f), %zu pad tags",
+	            fx, fy, cx, cy, mx, my, mz, roll, pitch, yaw, ids.size());
+}
