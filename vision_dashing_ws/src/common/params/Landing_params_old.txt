@@ -1,3 +1,5 @@
+# DEPRECATED: not loaded by anything. The Lander reads landing_common.txt + landing_<sim|mocap|hw>.txt
+# (selected by M2M_MODE). Kept only as a historical alternative parameter set.
 SEARCH=0
 INSPECTION_RADIUS=1
 VELOCITY_INSPECTION=0.3

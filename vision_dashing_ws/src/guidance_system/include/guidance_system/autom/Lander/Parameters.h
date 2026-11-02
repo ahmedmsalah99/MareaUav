@@ -14,6 +14,9 @@
 #include <iostream>
 #include <fstream>
 #include <algorithm>
+#include <functional>
+#include <map>
+#include <set>
 
 
 class Parameters {
@@ -21,13 +24,27 @@ class Parameters {
 public:
     Parameters();
 
+    // Lenient single-file loader (Searcher / Searching_params.txt): unknown
+    // keys are ignored, missing keys keep their constructor default.
     void loadConfigFile(const char* config_file);
+
+    // Strict landing loader: reads <dir>/landing_common.txt, then
+    // <dir>/landing_<mode>.txt (mode = "sim" | "mocap" | "hw").
+    // Throws std::runtime_error, listing every problem, if any key is
+    // unknown, duplicated, in the wrong file (common vs per-mode), or missing.
+    void loadLandingParams(const std::string& dir, const std::string& mode);
+
+    // Keys that MUST live in the per-mode file (and never in landing_common.txt).
+    static const std::set<std::string>& perModeKeys();
 
 private:
 
     bool loaded;
 
     void loadParamFile(const char* config_file);
+
+    // KEY -> setter, the single source of truth for both loaders.
+    std::map<std::string, std::function<void(double)>> keyTable();
 
 public:
 
@@ -328,19 +345,15 @@ public:
     // sonar constant was negative and subtracted — same result, but it lets all
     // four read consistently.)
     //
-    // SIM and HW are ALTERNATIVES, not terms to be summed: exactly one pair is
-    // used per run, chosen by the M2M_MODE environment variable (SIM for mode 0,
-    // HW for modes 1/2; the same flag Automatic and Executioner switch on). The simulated camera and
-    // sonar sit at different places relative to the drone reference point than
-    // the real ones do, so each environment needs its own pair.
+    // Per-mode keys (CAMERA_OFFSET / SONAR_OFFSET in landing_<mode>.txt): the
+    // simulated camera and sonar sit at different places relative to the drone
+    // reference point than the real ones do, so each mode has its own pair.
     //
     // NOTE the camera and sonar values must be referenced to the SAME plane, or
     // downDist steps at the switchSensor handover — which shows up as a jump in
     // both the landing height gate and comp()'s tracking error.
-    double cameraOffsetSim;
-    double cameraOffsetHw;
-    double sonarOffsetSim;
-    double sonarOffsetHw;
+    double cameraOffset;
+    double sonarOffset;
 
     // Max UPWARD platform heave velocity [m/s] allowed to commit to landing.
     // One-sided on purpose: the pad may descend as fast as it likes (the gap

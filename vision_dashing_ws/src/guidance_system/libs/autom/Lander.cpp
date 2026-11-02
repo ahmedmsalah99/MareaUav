@@ -4,6 +4,7 @@
 
 #include <iostream>
 #include "common/RunMode.h"
+#include <stdexcept>
 #include <algorithm>
 #include <fstream>
 #include <chrono>
@@ -18,6 +19,16 @@
 #include "guidance_system/autom/param.h"
 #include "ament_index_cpp/get_package_share_directory.hpp"
 
+// File suffix of the per-mode landing params: landing_<sim|mocap|hw>.txt.
+static std::string landingParamsModeName() {
+  switch (common::runModeFromEnv()) {
+    case common::RunMode::Sim:   return "sim";
+    case common::RunMode::Mocap: return "mocap";
+    case common::RunMode::Hw:    return "hw";
+  }
+  throw std::runtime_error("unreachable RunMode");
+}
+
 Lander::Lander()
         : _horizontaErr((double)0)    , _tauHold((double)0), _tauLost((double)0), _NHold(0),
           _NLost(0),_NComp(0) , _initS(&_machine) , _inspeS(&_machine) , _hoveringS(&_machine) , _holdS(&_machine)  , _asceS(&_machine)  , _descS(&_machine),_compS(&_machine),
@@ -29,13 +40,12 @@ Lander::Lander()
   initStateMachine();
   ////Load parameters
   std::string pkg_path = ament_index_cpp::get_package_share_directory("guidance_system");
-  std::string params_path = pkg_path + "/params/Landing_params.txt";
-	param.loadConfigFile(params_path.c_str());
+	param.loadLandingParams(pkg_path + "/params", landingParamsModeName());
 
 	_envSim = (common::runModeFromEnv() == common::RunMode::Sim);
 	std::cout << "[OFFSETS] M2M_MODE " << common::runModeName(common::runModeFromEnv())
-	          << " -> camera " << (_envSim ? param.cameraOffsetSim : param.cameraOffsetHw)
-	          << " sonar "    << (_envSim ? param.sonarOffsetSim  : param.sonarOffsetHw)
+	          << " -> camera " << param.cameraOffset
+	          << " sonar "    << param.sonarOffset
 	          << std::endl;
 
 	// std::cout<<"Params: "<<param.zMax<<std::endl;
@@ -100,8 +110,7 @@ MavState Lander::getCommand() {
 void Lander::loadMachine() {
   std::cout << "parsing landing params " << std::endl;
   std::string pkg_path = ament_index_cpp::get_package_share_directory("guidance_system");
-  std::string params_path = pkg_path + "/params/Landing_params.txt";
-	param.loadConfigFile(params_path.c_str());
+	param.loadLandingParams(pkg_path + "/params", landingParamsModeName());
 	std::cout << "REACTION_LAG_S " << param.reactionLag << std::endl;
 
 	_holdPIDX.reset();
@@ -437,13 +446,11 @@ void Lander::updateSignals() {
   //above half meters use vision system for altitude value
   //otherwise, ultrasonic sensors.
 
-  // Offset per source, SELECTED by environment — the sim and hardware values
-  // are alternatives, never summed. The simulated sensors sit at different
-  // places relative to the drone reference point than the real ones, so each
-  // environment gets its own pair. Same M2M_MODE flag Automatic and Executioner
-  // switch on (SIM for mode 0, HW for mocap and hw).
-  const double camOffset   = _envSim ? param.cameraOffsetSim : param.cameraOffsetHw;
-  const double sonarOffset = _envSim ? param.sonarOffsetSim  : param.sonarOffsetHw;
+  // Offset per source, from the per-mode file (landing_<mode>.txt): the
+  // simulated sensors sit at different places relative to the drone reference
+  // point than the real ones, so each M2M_MODE has its own pair.
+  const double camOffset   = param.cameraOffset;
+  const double sonarOffset = param.sonarOffset;
 
   // dz is negative-down (downDist = -dz), so a positive offset is SUBTRACTED
   // here to push the reported distance up in both branches.
@@ -719,7 +726,7 @@ void Lander::printSignals() {
   std::cout << "HERRV: " << _verticalErr<< std::endl;
 
 	std::cout<<"Vision_Z:"<<_VisionPose.getZ()<<std::endl;
-	std::cout<<"Ultrasonic_Z:"<<(_UltraInfo.getZ() + (_envSim ? param.sonarOffsetSim : param.sonarOffsetHw))<<std::endl;
+	std::cout<<"Ultrasonic_Z:"<<(_UltraInfo.getZ() + param.sonarOffset)<<std::endl;
 	std::cout<<"UltrasonicValid? "<<_UltraInfo.IsValid<<std::endl;
 
 	std::cout << "switchSensor: " << switchSensor << std::endl;
