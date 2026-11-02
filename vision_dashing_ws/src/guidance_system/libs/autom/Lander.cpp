@@ -568,7 +568,12 @@ void Lander::updateSignals() {
     for (auto &s : _goVoteHistory) if (s.second) voteCount++;
     double voteFraction = _goVoteHistory.empty() ? 0.0
                          : static_cast<double>(voteCount) / _goVoteHistory.size();
-    bool votedGo = voteFraction >= param.goVoteFraction || std::abs(_UltraInfo.getZ() < 0.2);
+    // Override: a fresh, valid sonar reading this close to the pad forces GO
+    // (the drone is effectively already down). Requires real sonar data --
+    // a missing/stale sonar reads Z = 0 and must NOT force GO.
+    const bool sonarSaysDown = _UltraInfo.UltrasonicDataUpdated && _UltraInfo.IsValid
+                               && std::abs(_UltraInfo.getZ()) < param.goForceIfSonarBelow;
+    bool votedGo = voteFraction >= param.goVoteFraction || sonarSaysDown;
 
     _goLatchTimer += _seaState.dt;
     if (votedGo != _goLatched && _goLatchTimer >= param.goLatch) {

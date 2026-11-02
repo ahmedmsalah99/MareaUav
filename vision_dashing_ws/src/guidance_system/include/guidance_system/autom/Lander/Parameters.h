@@ -401,6 +401,7 @@ public:
 
 
     // ── Values moved out of the code (see landing_*.txt for meaning) ──
+    double goForceIfSonarBelow;
     double inspecCircleRadiusGrowth;
     double altMaxAbovePadMargin;
     double xyDirectOvershootGain;
