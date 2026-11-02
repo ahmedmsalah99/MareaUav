@@ -405,8 +405,8 @@ private:
 
     // Set by CompState::handle() when param.disarmOnGo is enabled and the GO
     // signal arrives — consumed (and cleared) via consumeDisarmRequest().
-    // M2M_SIM environment flag, cached at construction — selects the simulated
-    // vs hardware altitude sensor offsets. Same flag Automatic/Executioner use.
+    // True when M2M_MODE is 0 (sim), cached at construction — selects the
+    // simulated vs hardware altitude sensor offsets. Same flag Automatic/Executioner use.
     // ── Platform state derived from VISION (not the ground-truth topic) ───────
     // _platformState comes from Landing_Site/pose, which in simulation is the
     // Gazebo plugin publishing the pose it just wrote onto the model — i.e.

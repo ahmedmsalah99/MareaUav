@@ -3,7 +3,8 @@ source /opt/ros/humble/setup.bash
 source ./install/setup.bash
 #for opencv-3.1 with pkg_config
 export PKG_CONFIG_PATH=$PKG_CONFIG_PATH:/usr/local/lib/pkgconfig
-export M2M_SIM=1
+# 0 = sim, 1 = mocap, 2 = hw
+export M2M_MODE=0
 export TURTLEBOT3_MODEL=waffle
 
 echo "done!!!"

@@ -31,7 +31,7 @@ set(COMMON_SRC_DIR     ${CMAKE_CURRENT_SOURCE_DIR}/../common/src)
 set(COMMON_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../common/include)
 
 set(CMAKE_AUTOMOC ON)
-set(M2M_SIM "$ENV{M2M_SIM}")
+set(M2M_MODE "$ENV{M2M_MODE}")
 
 
 add_subdirectory(libs/StateMachine)

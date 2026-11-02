@@ -124,8 +124,8 @@ def generate_launch_description():
 
     return LaunchDescription([
         SetEnvironmentVariable(
-			name='M2M_SIM',
-			value='1'
+			name='M2M_MODE',
+			value='0'
 		),
         bridge_launch,
         px4_bridge_node,

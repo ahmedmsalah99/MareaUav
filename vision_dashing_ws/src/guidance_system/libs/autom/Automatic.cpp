@@ -1,10 +1,11 @@
 #include "guidance_system/autom/Automatic.h"
+#include "common/RunMode.h"
 #include <cmath>
 using namespace common;
 Automatic::Automatic()
 {
   _defaultYaw = 0;
-  env_sim = (bool)std::getenv("M2M_SIM");
+  env_sim = (runModeFromEnv() == RunMode::Sim);
 }
 
 MavState Automatic::getState()

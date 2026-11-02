@@ -1,4 +1,5 @@
 #include <iostream>
+#include "common/RunMode.h"
 #include "guidance_system/exec/Executioner.h"
 
 
@@ -26,7 +27,7 @@ Executioner::Executioner(){
     isCameraSafetyTaskRunning = 0;
     isSonarSafetyTaskRunning = 0;
     isGoingInSafeHarbor = 0;
-    env_sim = (bool)std::getenv("M2M_SIM");
+    env_sim = (common::runModeFromEnv() == common::RunMode::Sim);
 
 }
 
