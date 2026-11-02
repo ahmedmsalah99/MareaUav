@@ -177,7 +177,7 @@ install(DIRECTORY
 )
 # Touchdown-stats CSVs (Lander::logTouchdownCsv()) are written at runtime into
 # the installed share/results directory (resolved via
-# ament_index_cpp::get_package_share_directory(), same as Landing_params.txt) —
+# ament_index_cpp::get_package_share_directory(), same as the landing_*.txt params) —
 # install an empty placeholder so the directory exists after a fresh colcon build.
 install(DIRECTORY
   ../common/results

@@ -14,6 +14,8 @@
 #include <iostream>
 #include <fstream>
 #include <algorithm>
+#include <set>
+#include <vector>
 
 
 class Parameters {
@@ -21,7 +23,21 @@ class Parameters {
 public:
     Parameters();
 
+    // Lenient single-file loader (Searcher): unknown keys are ignored and
+    // missing keys keep their constructor default.
     void loadConfigFile(const char* config_file);
+
+    // Strict landing loader: landing_common.txt + landing_<sim|mocap|hw>.txt
+    // from the installed share/params, mode chosen by M2M_MODE. Throws, listing
+    // every problem, if a key is missing, unknown, duplicated or in the wrong file.
+    void loadLanding();
+    void loadLanding(const std::string& dir, const std::string& mode);
+
+    // Sets the field for KEY; returns false for an unknown key.
+    bool setKey(const std::string& key, double value);
+
+    static const std::set<std::string>& perModeKeys();
+    static const std::vector<std::string>& allKeys();
 
 private:
 
@@ -337,10 +353,8 @@ public:
     // NOTE the camera and sonar values must be referenced to the SAME plane, or
     // downDist steps at the switchSensor handover — which shows up as a jump in
     // both the landing height gate and comp()'s tracking error.
-    double cameraToDroneCenterZSim;
-    double cameraToDroneCenterZHw;
-    double sonarToDroneCenterZSim;
-    double sonarToDroneCenterZHw;
+    double cameraToDroneCenterZ;
+    double sonarToDroneCenterZ;
 
     // Max UPWARD platform heave velocity [m/s] allowed to commit to landing.
     // One-sided on purpose: the pad may descend as fast as it likes (the gap
@@ -386,7 +400,7 @@ public:
     double logPredLookback;
 
 
-    // ── Values moved out of the code (see Landing_params.txt for meaning) ──
+    // ── Values moved out of the code (see landing_*.txt for meaning) ──
     double inspecCircleRadiusGrowth;
     double altMaxAbovePadMargin;
     double xyDirectOvershootGain;

@@ -28,14 +28,12 @@ Lander::Lander()
   //set the state machine
   initStateMachine();
   ////Load parameters
-  std::string pkg_path = ament_index_cpp::get_package_share_directory("guidance_system");
-  std::string params_path = pkg_path + "/params/Landing_params.txt";
-	param.loadConfigFile(params_path.c_str());
+	param.loadLanding();
 
 	_envSim = (common::runModeFromEnv() == common::RunMode::Sim);
 	std::cout << "[OFFSETS] M2M_MODE " << common::runModeName(common::runModeFromEnv())
-	          << " -> camera " << (_envSim ? param.cameraToDroneCenterZSim : param.cameraToDroneCenterZHw)
-	          << " sonar "    << (_envSim ? param.sonarToDroneCenterZSim  : param.sonarToDroneCenterZHw)
+	          << " -> camera " << param.cameraToDroneCenterZ
+	          << " sonar "    << param.sonarToDroneCenterZ
 	          << std::endl;
 
 	// std::cout<<"Params: "<<param.altMaxAbovePad<<std::endl;
@@ -99,9 +97,7 @@ MavState Lander::getCommand() {
 
 void Lander::loadMachine() {
   std::cout << "parsing landing params " << std::endl;
-  std::string pkg_path = ament_index_cpp::get_package_share_directory("guidance_system");
-  std::string params_path = pkg_path + "/params/Landing_params.txt";
-	param.loadConfigFile(params_path.c_str());
+	param.loadLanding();
 	std::cout << "COMP_LEAD_TIME_S " << param.compLeadTime << std::endl;
 
 	_holdPIDX.reset();
@@ -437,13 +433,10 @@ void Lander::updateSignals() {
   //above half meters use vision system for altitude value
   //otherwise, ultrasonic sensors.
 
-  // Offset per source, SELECTED by environment — the sim and hardware values
-  // are alternatives, never summed. The simulated sensors sit at different
-  // places relative to the drone reference point than the real ones, so each
-  // environment gets its own pair. Same M2M_MODE flag Automatic and Executioner
-  // switch on (SIM for mode 0, HW for mocap and hw).
-  const double camOffset   = _envSim ? param.cameraToDroneCenterZSim : param.cameraToDroneCenterZHw;
-  const double sonarOffset = _envSim ? param.sonarToDroneCenterZSim  : param.sonarToDroneCenterZHw;
+  // Sensor mounting comes from the per-mode file (landing_<mode>.txt): the
+  // simulated sensors sit at different places than the real ones.
+  const double camOffset   = param.cameraToDroneCenterZ;
+  const double sonarOffset = param.sonarToDroneCenterZ;
 
   // dz is negative-down (downDist = -dz), so a positive offset is SUBTRACTED
   // here to push the reported distance up in both branches.
@@ -719,7 +712,7 @@ void Lander::printSignals() {
   std::cout << "HERRV: " << _verticalErr<< std::endl;
 
 	std::cout<<"Vision_Z:"<<_VisionPose.getZ()<<std::endl;
-	std::cout<<"Ultrasonic_Z:"<<(_UltraInfo.getZ() + (_envSim ? param.sonarToDroneCenterZSim : param.sonarToDroneCenterZHw))<<std::endl;
+	std::cout<<"Ultrasonic_Z:"<<(_UltraInfo.getZ() + param.sonarToDroneCenterZ)<<std::endl;
 	std::cout<<"UltrasonicValid? "<<_UltraInfo.IsValid<<std::endl;
 
 	std::cout << "switchSensor: " << switchSensor << std::endl;
