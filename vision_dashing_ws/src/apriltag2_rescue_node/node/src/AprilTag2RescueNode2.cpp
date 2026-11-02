@@ -4,6 +4,8 @@
 // #include <apriltag_pose.h>
 // #include <apriltag.h>
 #include <sstream>
+#include <stdexcept>
+#include <string>
 
 
 // default tag families
@@ -55,13 +57,13 @@ AprilTag2RescueNode::AprilTag2RescueNode() : Node("apriltag2rescue", "apriltagre
 
 	// getting the value of the environment variable, to check whenever we are running in SITL or in a RPi
 	char *env_val;
-	env_val = std::getenv("M2M_SIM");
-	bool env_bool;
-
-	if(atoi(env_val) >= 1)
-		env_bool = 1;
-	else
-		env_bool = 0;
+	// M2M_MODE: 0 = sim, 1 = mocap, 2 = hw. Only sim uses the simulated tag
+	// layout; mocap and hw both fly the real platform.
+	env_val = std::getenv("M2M_MODE");
+	const std::string mode_str = env_val ? env_val : "";
+	if (mode_str != "0" && mode_str != "1" && mode_str != "2")
+		throw std::runtime_error("M2M_MODE must be set to 0 (sim), 1 (mocap) or 2 (hw); got '" + mode_str + "'");
+	bool env_bool = (mode_str == "0");
 
 	declare_parameter<std::string>("family", "36h11");
 	declare_parameter<double>("size", 2.0);

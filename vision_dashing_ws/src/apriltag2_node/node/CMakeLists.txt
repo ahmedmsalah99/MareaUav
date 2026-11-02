@@ -23,7 +23,7 @@ pkg_search_module(apriltag REQUIRED apriltag)
 
 
 
-set(M2M_SIM "$ENV{M2M_SIM}")
+set(M2M_MODE "$ENV{M2M_MODE}")
 
 include_directories(${apriltag_INCLUDE_DIRS})
 link_directories(${apriltag_LIBDIR})

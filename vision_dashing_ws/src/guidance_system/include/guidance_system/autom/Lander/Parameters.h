@@ -329,8 +329,8 @@ public:
     // four read consistently.)
     //
     // SIM and HW are ALTERNATIVES, not terms to be summed: exactly one pair is
-    // used per run, chosen by the M2M_SIM environment variable (the same flag
-    // Automatic and Executioner already switch on). The simulated camera and
+    // used per run, chosen by the M2M_MODE environment variable (SIM for mode 0,
+    // HW for modes 1/2; the same flag Automatic and Executioner switch on). The simulated camera and
     // sonar sit at different places relative to the drone reference point than
     // the real ones do, so each environment needs its own pair.
     //

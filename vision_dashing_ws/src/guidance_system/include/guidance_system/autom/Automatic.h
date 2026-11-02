@@ -174,7 +174,7 @@ public:
   bool consumeDisarmRequest() const;
 
   /**
-   * @brief M2M_SIM Environment variable value
+   * @brief True when M2M_MODE is 0 (simulation)
    */
 
   bool env_sim;

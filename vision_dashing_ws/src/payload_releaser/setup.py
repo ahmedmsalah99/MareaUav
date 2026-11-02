@@ -2,16 +2,15 @@ from setuptools import setup
 
 import os
 
-m2m_sim = os.environ['M2M_SIM']
+# M2M_MODE: 0 = sim, 1 = mocap, 2 = hw. Mocap and hw both run the real releaser.
+m2m_mode = os.environ.get('M2M_MODE', '')
 
-if m2m_sim=="1":
+if m2m_mode == "0":
 	file_comp = 'payload_releaser = payload_releaser.payload_releaser_sim:main'
-elif m2m_sim=="0":
+elif m2m_mode in ("1", "2"):
 	file_comp = 'payload_releaser = payload_releaser.payload_releaser_rasp:main'
 else:
-	print("M2M_SIM variable not set; HINT: export M2M_SIM=1 if running simulation, 0 else")
-	print("Compiling simulation files by default")
-	file_comp = 'payload_releaser = payload_releaser.payload_releaser_sim:main'
+	raise SystemExit("M2M_MODE must be set to 0 (sim), 1 (mocap) or 2 (hw); got '" + m2m_mode + "'")
 
 package_name = 'payload_releaser'
 

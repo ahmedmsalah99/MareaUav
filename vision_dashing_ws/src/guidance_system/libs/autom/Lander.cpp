@@ -3,6 +3,7 @@
 //
 
 #include <iostream>
+#include "common/RunMode.h"
 #include <algorithm>
 #include <fstream>
 #include <chrono>
@@ -31,8 +32,8 @@ Lander::Lander()
   std::string params_path = pkg_path + "/params/Landing_params.txt";
 	param.loadConfigFile(params_path.c_str());
 
-	_envSim = (bool)std::getenv("M2M_SIM");
-	std::cout << "[OFFSETS] M2M_SIM " << _envSim
+	_envSim = (common::runModeFromEnv() == common::RunMode::Sim);
+	std::cout << "[OFFSETS] M2M_MODE " << common::runModeName(common::runModeFromEnv())
 	          << " -> camera " << (_envSim ? param.cameraOffsetSim : param.cameraOffsetHw)
 	          << " sonar "    << (_envSim ? param.sonarOffsetSim  : param.sonarOffsetHw)
 	          << std::endl;
@@ -439,8 +440,8 @@ void Lander::updateSignals() {
   // Offset per source, SELECTED by environment — the sim and hardware values
   // are alternatives, never summed. The simulated sensors sit at different
   // places relative to the drone reference point than the real ones, so each
-  // environment gets its own pair. Same M2M_SIM flag Automatic and Executioner
-  // already switch on.
+  // environment gets its own pair. Same M2M_MODE flag Automatic and Executioner
+  // switch on (SIM for mode 0, HW for mocap and hw).
   const double camOffset   = _envSim ? param.cameraOffsetSim : param.cameraOffsetHw;
   const double sonarOffset = _envSim ? param.sonarOffsetSim  : param.sonarOffsetHw;
 

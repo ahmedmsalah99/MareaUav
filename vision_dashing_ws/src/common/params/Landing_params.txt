@@ -67,7 +67,7 @@ LAND_HEAVE_UP_VEL_LIMIT=0.7
 PLAT_VISION_VEL_TAU_S=10.0
 PLAT_VISION_VEL_MAX=1.0
 PLATFORM_YAW_OFFSET=1.57
-# Altitude sensor offsets [m]. SIM vs HW are alternatives, selected by M2M_SIM.
+# Altitude sensor offsets [m]. SIM vs HW are alternatives, selected by M2M_MODE (SIM for 0, HW for 1/2).
 CAMERA_OFFSET_SIM=0.03
 CAMERA_OFFSET_HW=0.0
 SONAR_OFFSET_SIM=0.04
