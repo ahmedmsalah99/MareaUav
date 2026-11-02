@@ -4,8 +4,6 @@
 #include "Command.hpp"
 #include "math.h"
 #include "guidance_system/autom/Lander/Parameters.h"
-#include <ament_index_cpp/get_package_share_directory.hpp>
-#include <string>
 
 class EmergLand : public Command
 {
@@ -49,9 +47,7 @@ class EmergLand : public Command
 
     EmergLand(MavState *_state, MavState *_comm,exec::task *_actualTask) : Command(_state, _comm, _actualTask)
     {
-      const std::string path = ament_index_cpp::get_package_share_directory("guidance_system")
-                               + "/params/Landing_params.txt";
-      _param.loadConfigFile(path.c_str());
+      _param.loadLanding();
     }
 
     void execute() override
