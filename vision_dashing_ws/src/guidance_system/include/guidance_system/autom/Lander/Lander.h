@@ -70,7 +70,7 @@ struct LandGoDiagnostics {
     bool   rawGo         = false;   // this tick's instantaneous decision
     double voteFraction  = 0.0;     // fraction of the vote window that was GO
     int    voteWindowSize = 0;      // number of samples in the vote window
-    bool   votedGo        = false;  // majority vote over landVoteWindow
+    bool   votedGo        = false;  // majority vote over goVoteWindow
     double latchTimer     = 0.0;    // time since the latch last flipped
     bool   landingGo      = false;  // final latched GO/NO-GO (== getLandingGoSignal())
 
@@ -84,9 +84,9 @@ struct LandGoDiagnostics {
     bool   touchConfirmed     = false;  // stage 2: contact + a recent positive impact spike
     bool   touchedDown        = false;  // latched final verdict (== getTouchedDown())
     // Timers driving the two stages above (seconds) — how close each is to tripping.
-    double touchContactTimer   = 0.0;  // time accel-matched + xy-settled has held (-> touchContactTime)
-    double touchConfirmTimer   = 0.0;  // time contact+recent-spike has held (-> touchConfirmTime)
-    double touchTimeSinceSpike = 0.0;  // time since the last positive impact spike (vs touchAccelSpikeWindow)
+    double touchContactTimer   = 0.0;  // time accel-matched + xy-settled has held (-> touchContactHold)
+    double touchConfirmTimer   = 0.0;  // time contact+recent-spike has held (-> touchConfirmHold)
+    double touchTimeSinceSpike = 0.0;  // time since the last positive impact spike (vs touchImpactWindow)
 };
 
 
@@ -237,7 +237,7 @@ public:
 
     /**
      * @brief Consumes (returns and clears) the pending disarm-on-GO request,
-     * set by CompState::handle() when param.disarmOnGo is enabled and the GO
+     * set by CompState::handle() when param.landDisarmOnGo is enabled and the GO
      * signal arrives. Edge-triggered so the caller (AutomaticNode) sends the
      * disarm command exactly once.
      */
@@ -310,7 +310,7 @@ public:
 
   	double desc_velocity;
 
-    // T = min(|verticalErr| / descVelocity, predHorizonMax) — updated every tick
+    // T = min(|verticalErr| / holdDescendStep, predHorizonMax) — updated every tick
     double _predictionHorizon;
 
     bool startFromBeginning;
@@ -393,8 +393,8 @@ private:
     // the drone was actually in is visible per tick.
     bool   _compVelMatching = false;
 
-    // COMP standoff hysteresis: true = track compHoldDist, false = backing off
-    // (ascending) because the gap dropped below compMinDist.
+    // COMP standoff hysteresis: true = track compHeightBase, false = backing off
+    // (ascending) because the gap dropped below compBackoffBelow.
     bool   _compTracking = true;
 
     // Landing GO/NO-GO window (computed each tick in updateSignals()).
@@ -403,7 +403,7 @@ private:
     double _goLatchTimer = 0.0;    // time [s] since the last GO<->NO-GO switch
     bool   _goLogPrev   = false;   // for edge-triggered logging
 
-    // Set by CompState::handle() when param.disarmOnGo is enabled and the GO
+    // Set by CompState::handle() when param.landDisarmOnGo is enabled and the GO
     // signal arrives — consumed (and cleared) via consumeDisarmRequest().
     // True when M2M_MODE is 0 (sim), cached at construction — selects the
     // simulated vs hardware altitude sensor offsets. Same flag Automatic/Executioner use.
@@ -420,10 +420,10 @@ private:
     //   z         = drone state + _verticalErr    (the offset-corrected,
     //               sensor-selected vertical, so it matches downDist exactly)
     //   velocity  = d(x, y)/dt, updated only on new apriltag frames over the
-    //               real inter-frame interval, low-passed (platVisionVelTau)
-    //               and clamped (platVisionVelMax)
+    //               real inter-frame interval, low-passed (padEstVelFilterTau)
+    //               and clamped (padEstVelMax)
     //   yaw       = absolute heading published by the apriltag node
-    //               (+ platformYawOffset)
+    //               (+ padEstYawOffset)
     MavState _platformVision;
 
     double   _platVisFiltVx = 0.0;   // low-passed platform Vx estimate [m/s]
@@ -465,7 +465,7 @@ private:
     // Rolling window of the raw (instantaneous) GO decision, used to majority-vote
     // a smoothed decision before it feeds the latch — a single noisy sample must
     // not be able to flip the landing decision. Each entry is (dt, rawGo) for that
-    // tick; the window covers the last landVoteWindow seconds.
+    // tick; the window covers the last goVoteWindow seconds.
     std::deque<std::pair<double,bool>> _goVoteHistory;
 
     // Snapshot of the GO decision variables, published for plotting/debugging.
@@ -533,7 +533,7 @@ private:
      bool _slopeActive = true;
     // Rolling history of the SPA/heave PREDICTIONS (not the raw estimates),
     // tracked unconditionally every tick regardless of state, so
-    // logTouchdownCsv() can look up "what the predictor said touchPredLookback
+    // logTouchdownCsv() can look up "what the predictor said logPredLookback
     // seconds before touchdown" for comparison against the raw value it logs at
     // touchdown itself. Each entry is (dt, value) for that tick.
     std::deque<std::pair<double,double>> _predHistRoll;
@@ -728,7 +728,7 @@ private:
     // captured once, at slope start (setDroneInFront()'s `ready` block) --
     //   rel0 = drone position - pad position at that instant (t=0)
     // -- and every tick thereafter, with s = clamp(elapsed/slopeDuration, 0, 1):
-    //   rel(t) = (1-s)*rel0 + s*(0, 0, standoffDistance)
+    //   rel(t) = (1-s)*rel0 + s*(0, 0, holdHeight)
     //   cmd(t) = padLive(t) + rel(t)
     // i.e. at every moment the drone is commanded to a specific position
     // RELATIVE to the pad, transformed to world using the pad's live
@@ -743,7 +743,7 @@ private:
     double _slopeStartRelY = 0.0;
     double _slopeStartRelZ = 0.0;
     double _slopeElapsed = 0.0;
-    // Integral of the slope's XY tracking error (slopeKi), reset at slope start.
+    // Integral of the slope's XY tracking error (slopeXYKi), reset at slope start.
     double _slopeIntX = 0.0;
     double _slopeIntY = 0.0;
 
@@ -882,7 +882,7 @@ private:
 
     /**
      * @brief Pushes (dt, value) onto a rolling history buffer, trimming entries
-     * older than maxAge seconds — used to keep touchPredLookback seconds (plus
+     * older than maxAge seconds — used to keep logPredLookback seconds (plus
      * margin) of the SPA/heave prediction signals available for
      * logTouchdownCsv() to look back into.
      */

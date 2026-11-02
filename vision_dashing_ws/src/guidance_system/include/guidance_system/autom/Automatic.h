@@ -166,7 +166,7 @@ public:
 
   /**
    * @brief Consumes (returns and clears) the active Land command's pending
-   * disarm-on-GO request, set when param.disarmOnGo is enabled and the GO
+   * disarm-on-GO request, set when param.landDisarmOnGo is enabled and the GO
    * signal arrives in COMP. False when no Land command is active or none
    * is pending.
    */

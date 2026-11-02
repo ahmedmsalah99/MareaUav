@@ -6,67 +6,67 @@
 #include "guidance_system/autom/Lander/Parameters.h"
 
 Parameters::Parameters() {
-    disarmOnGo         = false;
-    z_margin           = 1.0;
-    hold_threshold_min = 0.60;
-    comp_threshold_min = 0.30;
-    lost_threshold_min = 0.80;
-    cone_z_ref         = 5.0;
-    descVelocity       = 0.1;
-    asceVelocity       = 0.1;
-    rollLimit          = 0.7;
-    pitchLimit         = 0.7;
-    heaveVelLimit      = 2.0;
-    rollRateLimit      = 0.1;
-    pitchRateLimit     = 0.1;
-    calmDuration       = 5.0;
+    landDisarmOnGo         = false;
+    altMinAbovePad           = 1.0;
+    centeredConeRadiusMin = 0.60;
+    compCenteredConeRadiusMin = 0.30;
+    offCenterConeRadiusMin = 0.80;
+    centeredConeHeight         = 5.0;
+    holdDescendStep       = 0.1;
+    holdAscendStep       = 0.1;
+    seaCalmRollMax          = 0.7;
+    seaCalmPitchMax         = 0.7;
+    seaCalmHeaveSpeedMax      = 2.0;
+    seaCalmRollRateMax      = 0.1;
+    seaCalmPitchRateMax     = 0.1;
+    seaCalmHold       = 5.0;
     xyControlMode      = 0;
-    spFilterAlpha      = 0.9;
-    spMaxVelXY         = 0.3;
-    reactionLag        = 0.3;
-    standoffDistance   = 2.0;
-    standoffCompThld   = 1.7;
-    standoffDescThld   = 2.3;
-    compHoldDist       = 1.5;
-    compMinDist        = 1.0;
-    compResumeDist     = 1.3;
-    compVelMatchThld   = 0.1;
-    compHeaveMarginWindow = 7.5;
-    compHeaveMarginMax = 0.7;
-    landHeightMarginMax = 0.5;
-    compWaitTime       = 1.0;
-    compToLandWaitTime = 3.0;
-    landXYErrThld      = 0.05;
-    landHeightThld     = 0.5;
-    initApproachWaitTime = 2.0;
-    initApproachPosThld  = 0.5;
-    initApproachZPosThld = 0.15;
+    xyDirectFilterAlpha      = 0.9;
+    xyDirectMaxSpeed         = 0.3;
+    compLeadTime        = 0.3;
+    holdHeight   = 2.0;
+    holdCompBelow   = 1.7;
+    holdDescendAbove   = 2.3;
+    compHeightBase       = 1.5;
+    compBackoffBelow        = 1.0;
+    compResumeAbove     = 1.3;
+    compVelMatchAbove   = 0.1;
+    compHeavePeakWindow = 7.5;
+    compHeightCap = 0.7;
+    goHeightCap = 0.5;
+    holdToCompWait       = 1.0;
+    goHold = 3.0;
+    goXYErrMax      = 0.05;
+    goHeightBase     = 0.5;
+    initStartPointHold = 2.0;
+    initStartPointXYTol  = 0.5;
+    initStartPointZTol = 0.15;
     slopeDuration        = 8.0;
-    slopeKi              = 0.3;
-    slopeIntMax          = 1.0;
-    landRollLimit      = 0.20;
-    landPitchLimit     = 0.20;
-    landRollRateLimit  = 0.10;
-    landPitchRateLimit = 0.10;
-    landLatchTime      = 0.25;
-    landVoteWindow     = 1.5;
-    landVoteThreshold  = 0.6;
-    landDescVel       = 2.5;
-    landHeaveUpVelLimit = 0.7;
-    platVisionVelTau   = 8.0;
-    platVisionVelMax   = 1.0;
-    platformYawOffset  = 0.0;
-    cameraOffsetSim    = 0.03;
-    cameraOffsetHw     = 0.0;
-    sonarOffsetSim     = 0.04;
-    sonarOffsetHw      = 0.082;   // was params_automatic::OffsetUltraSensor
+    slopeXYKi              = 0.3;
+    slopeXYIntMax          = 1.0;
+    goRollMax      = 0.20;
+    goPitchMax     = 0.20;
+    goRollRateMax  = 0.10;
+    goPitchRateMax = 0.10;
+    goLatch      = 0.25;
+    goVoteWindow     = 1.5;
+    goVoteFraction  = 0.6;
+    landDescendSpeed       = 2.5;
+    goHeaveUpSpeedMax = 0.7;
+    padEstVelFilterTau   = 8.0;
+    padEstVelMax   = 1.0;
+    padEstYawOffset  = 0.0;
+    cameraToDroneCenterZSim    = 0.03;
+    cameraToDroneCenterZHw     = 0.0;
+    sonarToDroneCenterZSim     = 0.04;
+    sonarToDroneCenterZHw      = 0.082;   // was params_automatic::OffsetUltraSensor
     touchAccelMatchTol    = 1.0;
-    touchVelRelMax        = 1.0;
-    touchContactTime      = 0.15;
-    touchAccelSpike       = 5.0;
-    touchAccelSpikeWindow = 0.5;
-    touchConfirmTime      = 0.3;
-    touchPredLookback     = 0.5;
+    touchXYSpeedMax        = 1.0;
+    touchContactHold      = 0.15;
+    touchImpactAccel       = 5.0;
+    touchImpactWindow = 0.5;
+    touchConfirmHold      = 0.3;
+    logPredLookback     = 0.5;
 }
 
 void Parameters::loadConfigFile(const char *config_file) {
@@ -92,245 +92,245 @@ void Parameters::loadParamFile(const char *config_file) {
             double value = std::stod( line.substr(delimiterPos+1) );
 
 
-			if ( !param.compare("SEARCH") )
-                search = value;
+			if ( !param.compare("INSPEC_ENABLE") )
+                inspecEnable = value;
 
-            if ( !param.compare("DISARM_ON_GO") )
-                disarmOnGo = value;
+            if ( !param.compare("LAND_DISARM_ON_GO") )
+                landDisarmOnGo = value;
 
-            if ( !param.compare("INSPECTION_RADIUS") )
-                inspeRadius = value;
+            if ( !param.compare("INSPEC_CIRCLE_RADIUS_M") )
+                inspecCircleRadius = value;
 
-            else if( !param.compare("VELOCITY_INSPECTION") )
-                inspeLinVel = value;
+            else if( !param.compare("INSPEC_CIRCLE_SPEED_MPS") )
+                inspecCircleSpeed = value;
 
-            else if( !param.compare("FRAMES_FOR_HOLDING") )
-                NFramesHold = value;
+            else if( !param.compare("CENTERED_FRAMES_REQUIRED") )
+                centeredFramesRequired = value;
 
-            else if( !param.compare("FRAMES_FOR_LOST") )
-                NFramesLost = value;
+            else if( !param.compare("OFF_CENTER_FRAMES_TO_LOSE_PAD") )
+                offCenterFramesToLosePad = value;
 
-            else if( !param.compare("HOLD_THRESHOLD") )
-                hold_threshold = value;
+            else if( !param.compare("CENTERED_CONE_RADIUS_MAX_M") )
+                centeredConeRadiusMax = value;
 
-            else if( !param.compare("COMP_THRESHOLD") )
-                comp_threshold = value;
+            else if( !param.compare("COMP_CENTERED_CONE_RADIUS_MAX_M") )
+                compCenteredConeRadiusMax = value;
 
-            else if( !param.compare("LOST_THRESHOLD") )
-                lost_threshold = value;
+            else if( !param.compare("OFF_CENTER_CONE_RADIUS_MAX_M") )
+                offCenterConeRadiusMax = value;
 
-            else if( !param.compare("Z_MARGIN") )
-                z_margin = value;
+            else if( !param.compare("ALT_MIN_ABOVE_PAD_M") )
+                altMinAbovePad = value;
 
-            else if( !param.compare("HOLD_THRESHOLD_MIN") )
-                hold_threshold_min = value;
+            else if( !param.compare("CENTERED_CONE_RADIUS_MIN_M") )
+                centeredConeRadiusMin = value;
 
-            else if( !param.compare("COMP_THRESHOLD_MIN") )
-                comp_threshold_min = value;
+            else if( !param.compare("COMP_CENTERED_CONE_RADIUS_MIN_M") )
+                compCenteredConeRadiusMin = value;
 
-            else if( !param.compare("LOST_THRESHOLD_MIN") )
-                lost_threshold_min = value;
+            else if( !param.compare("OFF_CENTER_CONE_RADIUS_MIN_M") )
+                offCenterConeRadiusMin = value;
 
-            else if( !param.compare("CONE_Z_REF") )
-                cone_z_ref = value;
+            else if( !param.compare("CENTERED_CONE_HEIGHT_M") )
+                centeredConeHeight = value;
 
-            else if( !param.compare("FRAMES_FOR_COMP") )
-                NFramesComp = value;
+            else if( !param.compare("COMP_CENTERED_FRAMES_REQUIRED") )
+                compCenteredFramesRequired = value;
 
-            else if( !param.compare("MAX_ALTITUDE") )
-                zMax = value;
+            else if( !param.compare("ALT_MAX_ABOVE_PAD_M") )
+                altMaxAbovePad = value;
 
-            else if( !param.compare("MIN_ALTITUDE") )
-                zMin = value;
+            else if( !param.compare("ALT_MIN_WORLD_M") )
+                altMinWorld = value;
 
-            else if( !param.compare("KP_HOLD") )
-                KpHold = value;
+            else if( !param.compare("XY_PID_KP") )
+                xyPidKp = value;
 
-            else if( !param.compare("KD_HOLD") )
-                KdHold = value;
+            else if( !param.compare("XY_PID_KD") )
+                xyPidKd = value;
 
-            else if( !param.compare("KI_HOLD") )
-                KiHold = value;
+            else if( !param.compare("XY_PID_KI") )
+                xyPidKi = value;
 
-            else if( !param.compare("MAX_INT_VALUE") )
-                maxIntValue = value;
+            else if( !param.compare("XY_PID_INT_MAX") )
+                xyPidIntMax = value;
 
-            else if( !param.compare("MIN_INT_VALUE") )
-                minIntValue = value;
+            else if( !param.compare("XY_PID_INT_MIN") )
+                xyPidIntMin = value;
 
-            else if( !param.compare("MAX_OUTPUT") )
-                maxOutput = value;
+            else if( !param.compare("XY_PID_OUTPUT_MAX_M") )
+                xyPidOutputMax = value;
 
-            else if( !param.compare("DISTANCE_FROM_CENTER") )
-                distanceFromCenter = value;
+            else if( !param.compare("INIT_START_POINT_XY_DIST_M") )
+                initStartPointXYDist = value;
 
-            else if( !param.compare("PRELAND_ALTITUDE") )
-                prelandAltitude = value;
+            else if( !param.compare("INSPEC_ALTITUDE_M") )
+                inspecAltitude = value;
 
-            else if( !param.compare("DESC_VELOCITY") )
-                descVelocity = value;
+            else if( !param.compare("HOLD_DESCEND_STEP_M") )
+                holdDescendStep = value;
 
-            else if( !param.compare("ASCE_VELOCITY") )
-                asceVelocity = value;
+            else if( !param.compare("HOLD_ASCEND_STEP_M") )
+                holdAscendStep = value;
 
-            else if( !param.compare("ROLL_LIMIT") )
-                rollLimit = value;
+            else if( !param.compare("SEA_CALM_ROLL_MAX_RAD") )
+                seaCalmRollMax = value;
 
-            else if( !param.compare("PITCH_LIMIT") )
-                pitchLimit = value;
+            else if( !param.compare("SEA_CALM_PITCH_MAX_RAD") )
+                seaCalmPitchMax = value;
 
-            else if( !param.compare("HEAVE_VEL_LIMIT") )
-                heaveVelLimit = value;
+            else if( !param.compare("SEA_CALM_HEAVE_SPEED_MAX_MPS") )
+                seaCalmHeaveSpeedMax = value;
 
-            else if( !param.compare("ROLL_RATE_LIMIT") )
-                rollRateLimit = value;
+            else if( !param.compare("SEA_CALM_ROLL_RATE_MAX_RADPS") )
+                seaCalmRollRateMax = value;
 
-            else if( !param.compare("PITCH_RATE_LIMIT") )
-                pitchRateLimit = value;
+            else if( !param.compare("SEA_CALM_PITCH_RATE_MAX_RADPS") )
+                seaCalmPitchRateMax = value;
 
-            else if( !param.compare("CALM_DURATION_S") )
-                calmDuration = value;
+            else if( !param.compare("SEA_CALM_HOLD_S") )
+                seaCalmHold = value;
 
             else if( !param.compare("XY_CONTROL_MODE") )
                 xyControlMode = value;
 
-            else if( !param.compare("SP_XY_FILTER_ALPHA") )
-                spFilterAlpha = value;
+            else if( !param.compare("XY_DIRECT_FILTER_ALPHA") )
+                xyDirectFilterAlpha = value;
 
-            else if( !param.compare("SP_XY_MAX_VEL") )
-                spMaxVelXY = value;
+            else if( !param.compare("XY_DIRECT_MAX_SPEED_MPS") )
+                xyDirectMaxSpeed = value;
 
-            else if( !param.compare("REACTION_LAG_S") )
-                reactionLag = value;
+            else if( !param.compare("COMP_LEAD_TIME_S") )
+                compLeadTime = value;
 
-            else if( !param.compare("STANDOFF_DISTANCE") )
-                standoffDistance = value;
+            else if( !param.compare("HOLD_HEIGHT_M") )
+                holdHeight = value;
 
-            else if( !param.compare("STANDOFF_COMP_THLD") )
-                standoffCompThld = value;
+            else if( !param.compare("HOLD_COMP_BELOW_M") )
+                holdCompBelow = value;
 
-            else if( !param.compare("STANDOFF_DESC_THLD") )
-                standoffDescThld = value;
+            else if( !param.compare("HOLD_DESCEND_ABOVE_M") )
+                holdDescendAbove = value;
 
-            else if( !param.compare("COMP_HOLD_DIST") )
-                compHoldDist = value;
+            else if( !param.compare("COMP_HEIGHT_BASE_M") )
+                compHeightBase = value;
 
-            else if( !param.compare("COMP_MIN_DIST") )
-                compMinDist = value;
+            else if( !param.compare("COMP_BACKOFF_BELOW_M") )
+                compBackoffBelow = value;
 
-            else if( !param.compare("COMP_RESUME_DIST") )
-                compResumeDist = value;
+            else if( !param.compare("COMP_RESUME_ABOVE_M") )
+                compResumeAbove = value;
 
-            else if( !param.compare("COMP_VEL_MATCH_THLD") )
-                compVelMatchThld = value;
+            else if( !param.compare("COMP_VEL_MATCH_ABOVE_MPS") )
+                compVelMatchAbove = value;
 
-            else if( !param.compare("COMP_HEAVE_MARGIN_WINDOW_S") )
-                compHeaveMarginWindow = value;
+            else if( !param.compare("COMP_HEAVE_PEAK_WINDOW_S") )
+                compHeavePeakWindow = value;
 
-            else if( !param.compare("COMP_HEAVE_MARGIN_MAX") )
-                compHeaveMarginMax = value;
+            else if( !param.compare("COMP_HEIGHT_CAP_M") )
+                compHeightCap = value;
 
-            else if( !param.compare("LAND_HEIGHT_MARGIN_MAX") )
-                landHeightMarginMax = value;
+            else if( !param.compare("GO_HEIGHT_CAP_M") )
+                goHeightCap = value;
 
-            else if( !param.compare("COMP_WAIT_TIME_S") )
-                compWaitTime = value;
+            else if( !param.compare("HOLD_TO_COMP_WAIT_S") )
+                holdToCompWait = value;
 
-            else if( !param.compare("COMP_TO_LAND_WAIT_TIME_S") )
-                compToLandWaitTime = value;
+            else if( !param.compare("GO_HOLD_S") )
+                goHold = value;
 
-            else if( !param.compare("LAND_XY_ERR_THLD") )
-                landXYErrThld = value;
+            else if( !param.compare("GO_XY_ERR_MAX_M") )
+                goXYErrMax = value;
 
-            else if( !param.compare("LAND_HEIGHT_THLD") )
-                landHeightThld = value;
+            else if( !param.compare("GO_HEIGHT_BASE_M") )
+                goHeightBase = value;
 
-            else if( !param.compare("INIT_APPROACH_WAIT_TIME_S") )
-                initApproachWaitTime = value;
+            else if( !param.compare("INIT_START_POINT_HOLD_S") )
+                initStartPointHold = value;
 
-            else if( !param.compare("INIT_APPROACH_POS_THLD") )
-                initApproachPosThld = value;
+            else if( !param.compare("INIT_START_POINT_XY_TOL_M") )
+                initStartPointXYTol = value;
 
-            else if( !param.compare("INIT_APPROACH_Z_POS_THLD") )
-                initApproachZPosThld = value;
+            else if( !param.compare("INIT_START_POINT_Z_TOL_M") )
+                initStartPointZTol = value;
 
             else if( !param.compare("SLOPE_DURATION_S") )
                 slopeDuration = value;
 
-            else if( !param.compare("SLOPE_KI") )
-                slopeKi = value;
+            else if( !param.compare("SLOPE_XY_KI") )
+                slopeXYKi = value;
 
-            else if( !param.compare("SLOPE_INT_MAX") )
-                slopeIntMax = value;
+            else if( !param.compare("SLOPE_XY_INT_MAX_M") )
+                slopeXYIntMax = value;
 
-            else if( !param.compare("LAND_ROLL_LIMIT") )
-                landRollLimit = value;
+            else if( !param.compare("GO_ROLL_MAX_RAD") )
+                goRollMax = value;
 
-            else if( !param.compare("LAND_PITCH_LIMIT") )
-                landPitchLimit = value;
+            else if( !param.compare("GO_PITCH_MAX_RAD") )
+                goPitchMax = value;
 
-            else if( !param.compare("LAND_ROLL_RATE_LIMIT") )
-                landRollRateLimit = value;
+            else if( !param.compare("GO_ROLL_RATE_MAX_RADPS") )
+                goRollRateMax = value;
 
-            else if( !param.compare("LAND_PITCH_RATE_LIMIT") )
-                landPitchRateLimit = value;
+            else if( !param.compare("GO_PITCH_RATE_MAX_RADPS") )
+                goPitchRateMax = value;
 
-            else if( !param.compare("LAND_LATCH_TIME") )
-                landLatchTime = value;
+            else if( !param.compare("GO_LATCH_S") )
+                goLatch = value;
 
-            else if( !param.compare("LAND_VOTE_WINDOW_S") )
-                landVoteWindow = value;
+            else if( !param.compare("GO_VOTE_WINDOW_S") )
+                goVoteWindow = value;
 
-            else if( !param.compare("LAND_VOTE_THRESHOLD") )
-                landVoteThreshold = value;
+            else if( !param.compare("GO_VOTE_FRACTION") )
+                goVoteFraction = value;
 
-            else if( !param.compare("LAND_DESC_VEL") )
-                landDescVel = value;
+            else if( !param.compare("LAND_DESCEND_SPEED_MPS") )
+                landDescendSpeed = value;
 
-            else if( !param.compare("LAND_HEAVE_UP_VEL_LIMIT") )
-                landHeaveUpVelLimit = value;
+            else if( !param.compare("GO_HEAVE_UP_SPEED_MAX_MPS") )
+                goHeaveUpSpeedMax = value;
 
-            else if( !param.compare("PLAT_VISION_VEL_TAU_S") )
-                platVisionVelTau = value;
+            else if( !param.compare("PAD_EST_VEL_FILTER_TAU_S") )
+                padEstVelFilterTau = value;
 
-            else if( !param.compare("PLAT_VISION_VEL_MAX") )
-                platVisionVelMax = value;
+            else if( !param.compare("PAD_EST_VEL_MAX_MPS") )
+                padEstVelMax = value;
 
-            else if( !param.compare("PLATFORM_YAW_OFFSET") )
-                platformYawOffset = value;
+            else if( !param.compare("PAD_EST_YAW_OFFSET_RAD") )
+                padEstYawOffset = value;
 
-            else if( !param.compare("CAMERA_OFFSET_SIM") )
-                cameraOffsetSim = value;
+            else if( !param.compare("CAMERA_TO_DRONE_CENTER_Z_SIM_M") )
+                cameraToDroneCenterZSim = value;
 
-            else if( !param.compare("CAMERA_OFFSET_HW") )
-                cameraOffsetHw = value;
+            else if( !param.compare("CAMERA_TO_DRONE_CENTER_Z_HW_M") )
+                cameraToDroneCenterZHw = value;
 
-            else if( !param.compare("SONAR_OFFSET_SIM") )
-                sonarOffsetSim = value;
+            else if( !param.compare("SONAR_TO_DRONE_CENTER_Z_SIM_M") )
+                sonarToDroneCenterZSim = value;
 
-            else if( !param.compare("SONAR_OFFSET_HW") )
-                sonarOffsetHw = value;
+            else if( !param.compare("SONAR_TO_DRONE_CENTER_Z_HW_M") )
+                sonarToDroneCenterZHw = value;
 
-            else if( !param.compare("TOUCH_ACCEL_MATCH_TOL") )
+            else if( !param.compare("TOUCH_ACCEL_MATCH_TOL_MPS2") )
                 touchAccelMatchTol = value;
 
-            else if( !param.compare("TOUCH_VEL_REL_MAX") )
-                touchVelRelMax = value;
+            else if( !param.compare("TOUCH_XY_SPEED_MAX_MPS") )
+                touchXYSpeedMax = value;
 
-            else if( !param.compare("TOUCH_CONTACT_TIME") )
-                touchContactTime = value;
+            else if( !param.compare("TOUCH_CONTACT_HOLD_S") )
+                touchContactHold = value;
 
-            else if( !param.compare("TOUCH_ACCEL_SPIKE") )
-                touchAccelSpike = value;
+            else if( !param.compare("TOUCH_IMPACT_ACCEL_MPS2") )
+                touchImpactAccel = value;
 
-            else if( !param.compare("TOUCH_ACCEL_SPIKE_WINDOW") )
-                touchAccelSpikeWindow = value;
+            else if( !param.compare("TOUCH_IMPACT_WINDOW_S") )
+                touchImpactWindow = value;
 
-            else if( !param.compare("TOUCH_CONFIRM_TIME") )
-                touchConfirmTime = value;
+            else if( !param.compare("TOUCH_CONFIRM_HOLD_S") )
+                touchConfirmHold = value;
 
-            else if( !param.compare("TOUCH_PRED_LOOKBACK_S") )
-                touchPredLookback = value;
+            else if( !param.compare("LOG_PRED_LOOKBACK_S") )
+                logPredLookback = value;
 
         }
 		cFile.close();
