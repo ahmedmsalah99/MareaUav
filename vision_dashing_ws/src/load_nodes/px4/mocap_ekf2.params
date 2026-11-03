@@ -11,7 +11,7 @@ param set EKF2_HGT_REF 3         # height reference = vision
 param set EKF2_BARO_CTRL 0       # do not fuse the barometer (drifts indoors, conflicts with mocap height)
 param set EKF2_MAG_TYPE 5        # no magnetometer fusion: heading comes from mocap (indoor magnetic field is unreliable)
 param set EKF2_EV_NOISE_MD 0     # use the variances sent in the message (mocap_bridge.yaml position_std_m / orientation_std_rad)
-param set EKF2_EV_DELAY 0        # [ms] mocap-to-PX4 delay. 0 in sim; in the lab measure/tune it (typically a few ms to ~20 ms over Wi-Fi)
+param set EKF2_EV_DELAY 10       # [ms] mocap-to-PX4 delay, best guess: mocap processing + ROS 2/uXRCE-DDS transport (a few ms in sim, ~5-20 ms in the lab over Wi-Fi). Tune in the lab from the EKF2 innovation logs.
 param set COM_ARM_WO_GPS 1       # allow arming without a GPS fix
 
 # To go back to normal GPS flight (M2M_MODE=0):
