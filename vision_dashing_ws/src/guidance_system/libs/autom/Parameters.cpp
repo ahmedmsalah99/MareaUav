@@ -7,6 +7,7 @@
 #include "common/RunMode.h"
 
 #include <ament_index_cpp/get_package_share_directory.hpp>
+#include <yaml-cpp/yaml.h>
 #include <map>
 #include <stdexcept>
 #include <vector>
@@ -441,7 +442,7 @@ bool Parameters::setKey(const std::string& param, double value) {
 
 const std::set<std::string>& Parameters::perModeKeys() {
     // Keys that differ between sim, mocap and real hardware. They must be in
-    // landing_<mode>.txt and must NOT be in landing_common.txt.
+    // landing_<mode>.yaml and must NOT be in landing_common.yaml.
     static const std::set<std::string> keys = {
         "ALT_MAX_ABOVE_PAD_M",
         "ALT_MIN_WORLD_M",
@@ -489,8 +490,8 @@ void Parameters::loadLanding() {
 }
 
 void Parameters::loadLanding(const std::string& dir, const std::string& mode) {
-    const std::string commonFile = dir + "/landing_common.txt";
-    const std::string modeFile   = dir + "/landing_" + mode + ".txt";
+    const std::string commonFile = dir + "/landing_common.yaml";
+    const std::string modeFile   = dir + "/landing_" + mode + ".yaml";
     const auto& perMode = perModeKeys();
 
     // Collect every problem first, then fail once with the full list.
@@ -500,43 +501,47 @@ void Parameters::loadLanding(const std::string& dir, const std::string& mode) {
 
     Parameters probe;   // scratch object: only used to ask setKey() whether a key exists
 
+    // File layout: top-level sections (only for grouping) holding KEY: value.
     auto readFile = [&](const std::string& path, bool isModeFile) {
         std::cout << "config_file " << path << std::endl;
-        std::ifstream f(path);
-        if (!f.is_open()) { errors.push_back("cannot open " + path); return; }
-        std::string line;
-        int lineNo = 0;
-        while (getline(f, line)) {
-            ++lineNo;
-            const std::string at = path + ":" + std::to_string(lineNo);
-            line.erase(std::remove_if(line.begin(), line.end(), isspace), line.end());
-            if (line.empty() || line[0] == '#') continue;
-            const auto eq = line.find('=');
-            if (eq == std::string::npos) { errors.push_back(at + ": no '=' in line"); continue; }
-            const std::string key = line.substr(0, eq);
-            double value;
-            try { value = std::stod(line.substr(eq + 1)); }
-            catch (const std::exception&) { errors.push_back(at + ": bad number for " + key); continue; }
+        YAML::Node root;
+        try { root = YAML::LoadFile(path); }
+        catch (const std::exception& e) { errors.push_back("cannot read " + path + ": " + e.what()); return; }
+        if (!root.IsMap()) { errors.push_back(path + ": top level must be sections (a map)"); return; }
+        for (const auto& section : root) {
+            const std::string sectionName = section.first.as<std::string>();
+            if (!section.second.IsMap()) {
+                errors.push_back(path + ":" + std::to_string(section.first.Mark().line + 1) + ": '" + sectionName +
+                                 "' must be a section holding KEY: value entries");
+                continue;
+            }
+            for (const auto& entry : section.second) {
+                const std::string key = entry.first.as<std::string>();
+                const std::string at  = path + ":" + std::to_string(entry.first.Mark().line + 1);
+                double value;
+                try { value = entry.second.as<double>(); }
+                catch (const std::exception&) { errors.push_back(at + ": bad number for " + key); continue; }
 
-            if (!probe.setKey(key, value)) { errors.push_back(at + ": unknown key " + key); continue; }
-            const bool keyIsPerMode = perMode.count(key) > 0;
-            if (keyIsPerMode != isModeFile) {
-                errors.push_back(at + ": " + key + " belongs in " + (keyIsPerMode ? modeFile : commonFile));
-                continue;
+                if (!probe.setKey(key, value)) { errors.push_back(at + ": unknown key " + key); continue; }
+                const bool keyIsPerMode = perMode.count(key) > 0;
+                if (keyIsPerMode != isModeFile) {
+                    errors.push_back(at + ": " + key + " belongs in " + (keyIsPerMode ? modeFile : commonFile));
+                    continue;
+                }
+                if (where.count(key)) {
+                    errors.push_back(at + ": duplicate key " + key + " (already set at " + where[key] + ")");
+                    continue;
+                }
+                where[key]  = at;
+                values[key] = value;
             }
-            if (where.count(key)) {
-                errors.push_back(at + ": duplicate key " + key + " (already set at " + where[key] + ")");
-                continue;
-            }
-            where[key]  = at;
-            values[key] = value;
         }
     };
     readFile(commonFile, false);
     readFile(modeFile, true);
 
     // Missing: every key setKey() knows must be set exactly once, per-mode
-    // keys in the mode file and the rest in landing_common.txt.
+    // keys in the mode file and the rest in landing_common.yaml.
     for (const auto& key : allKeys())
         if (!values.count(key))
             errors.push_back("missing key " + key + " (expected in " +

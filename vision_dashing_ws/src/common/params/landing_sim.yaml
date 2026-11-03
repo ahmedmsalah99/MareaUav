@@ -1,0 +1,56 @@
+# Per-mode landing parameters for M2M_MODE=0 (Gazebo simulation).
+# Every key here must also be in the other two mode files; shared keys live in landing_common.yaml.
+# Units are in the name: _M metres, _S seconds, _MPS m/s, _MPS2 m/s^2, _RAD radians, _RADPS rad/s.
+# The Lander refuses to start if a key is missing, unknown, duplicated, or in the wrong file.
+# Format: section -> KEY: value  # meaning. Section names only group keys; KEY names must be unique.
+
+altitude:                                          # ALTITUDE SAFETY LIMITS
+  ALT_MAX_ABOVE_PAD_M:                   3.0       # The altitude setpoint never goes higher than pad height + this [m].
+  ALT_MIN_WORLD_M:                       0.0       # Absolute floor for the altitude setpoint, in world Z [m].
+
+pad_estimate:                                      # PAD ESTIMATE FROM VISION
+  PAD_EST_VEL_FILTER_TAU_S:              10.0      # Time constant of the pad velocity filter [s]. Long, so deck roll/pitch sway is not read as boat motion.
+  PAD_EST_VEL_MAX_MPS:                   1.0       # Pad velocity estimates faster than this are treated as noise and clipped [m/s].
+  PAD_EST_YAW_OFFSET_RAD:                1.57      # Angle from the reference apriltag's (TAG5) x-axis to the boat's bow [rad].
+
+height_sensors:                                    # HEIGHT SENSORS
+  # Vertical distance from each height sensor to the drone's centre (reference point) [m], positive when the sensor is BELOW the centre.
+  # Used to turn the sensor's reading into the drone-centre-to-pad height.
+  # Camera and sonar must be measured to the SAME point, or the height jumps when the Lander switches between them.
+  CAMERA_TO_DRONE_CENTER_Z_M:            0.03      # Camera [m].
+  SONAR_TO_DRONE_CENTER_Z_M:             0.04      # Sonar [m].
+  SENSOR_SWITCH_HEIGHT_M:                0.83      # Above this camera-measured height the height comes from the camera, below it from the sonar [m].
+
+sea_calm:                                          # CALM-SEA GATE: the sea must be calm before COMP starts
+  SEA_CALM_ROLL_MAX_RAD:                 0.7       # Largest deck roll [rad].
+  SEA_CALM_PITCH_MAX_RAD:                0.7       # Largest deck pitch [rad].
+  SEA_CALM_ROLL_RATE_MAX_RADPS:          0.3       # Largest deck roll rate [rad/s].
+  SEA_CALM_PITCH_RATE_MAX_RADPS:         0.3       # Largest deck pitch rate [rad/s].
+  SEA_CALM_HEAVE_SPEED_MAX_MPS:          2.0       # Largest deck up/down speed [m/s].
+  SEA_CALM_HOLD_S:                       5.0       # All of the above must hold without a break this long [s].
+
+go:                                                # GO DECISION: commit to landing (COMP -> LAND)
+  GO_ROLL_MAX_RAD:                       0.20      # Largest PREDICTED deck roll [rad].
+  GO_PITCH_MAX_RAD:                      0.20      # Largest PREDICTED deck pitch [rad].
+  GO_ROLL_RATE_MAX_RADPS:                0.10      # Largest deck roll rate [rad/s].
+  GO_PITCH_RATE_MAX_RADPS:               0.10      # Largest deck pitch rate [rad/s].
+  GO_HEAVE_UP_SPEED_MAX_MPS:             0.7       # Largest predicted pad speed TOWARDS the drone [m/s] (one-sided: a falling pad is fine).
+
+land:                                              # LAND: committed descent after GO
+  LAND_DISARM_RESEND_INTERVAL_S:         0.1       # With LAND_DISARM_ON_GO=1: time between two disarm messages (the topic is best-effort, one may be lost) [s].
+  LAND_DISARM_RESEND_FOR_S:              2.0       # How long after GO the disarm messages keep being sent [s].
+
+touchdown:                                         # TOUCHDOWN DETECTION (LAND -> LANDING_DONE)
+  # Stage 1 (contact): drone and pad vertical accelerations match and horizontal speed is low, for TOUCH_CONTACT_HOLD_S.
+  # Stage 2 (confirm): stage 1 plus a recent upward impact spike on the drone, for TOUCH_CONFIRM_HOLD_S.
+  TOUCH_ACCEL_MATCH_TOL_MPS2:            1.0       # Largest difference between drone and pad vertical acceleration [m/s^2].
+  TOUCH_XY_SPEED_MAX_MPS:                1.0       # Largest drone horizontal speed [m/s].
+  TOUCH_CONTACT_HOLD_S:                  0.15      # Stage 1 must hold this long [s].
+  TOUCH_IMPACT_ACCEL_MPS2:               3.0       # Upward acceleration spike that counts as an impact [m/s^2].
+  TOUCH_IMPACT_WINDOW_S:                 0.5       # The spike must be within this recent window [s].
+  TOUCH_CONFIRM_HOLD_S:                  0.3       # Stage 2 must hold this long [s].
+  TOUCH_ACCEL_CLIP_MPS2:                 20.0      # Each raw acceleration sample is clipped to +/- this before use [m/s^2] (anything larger is a sensor glitch).
+  TOUCH_ACCEL_AVG_SAMPLES:               5         # Accelerations are averaged over this many latest samples.
+
+emergency_land:                                    # EMERGENCY LAND
+  EMERG_LAND_FINAL_DESC_SPEED_MPS:       1.0       # Once below the task's motor-cut threshold, descend at this speed until PX4 disarms [m/s].
