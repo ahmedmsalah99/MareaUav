@@ -10,8 +10,8 @@ from launch.actions import SetEnvironmentVariable
 
 
 # Mocap in sim (M2M_MODE=3): Gazebo flown as in the mocap lab.
-#   - the landingplat plugin keeps the pad still and publishes fake OptiTrack
-#     poses on /drone/pose and /pad/pose (Gazebo must ALSO run with M2M_MODE=3:
+#   - the landingplat plugin stops driving the pad and publishes fake OptiTrack
+#     poses of every model on /mocap/<model>/pose (Gazebo must ALSO run with M2M_MODE=3:
 #     export it in the terminal that starts `make px4_sitl gazebo-classic_...`)
 #   - mocap_bridge feeds PX4 external vision and the pad sea-state topics
 #   - do NOT play the boat bag: the pad's nav_filter/IMU come from mocap_bridge
@@ -136,7 +136,14 @@ def generate_launch_description():
         package='mocap_bridge',
         executable='mocap_bridge_node',
         output='screen',
-        parameters=[os.path.join(get_package_share_directory('mocap_bridge'), 'config', 'mocap_bridge.yaml')],
+        parameters=[
+            os.path.join(get_package_share_directory('mocap_bridge'), 'config', 'mocap_bridge.yaml'),
+            # In sim the landingplat plugin publishes every Gazebo model on
+            # /mocap/<model>/pose; pick the drone and the pad (in the lab these
+            # are natnet_ros2's rigid-body topics from mocap_bridge.yaml).
+            {'drone_pose_topic': '/mocap/iris/pose',
+             'pad_pose_topic':   '/mocap/Landing_Site/pose'},
+        ],
     )
 
     return LaunchDescription([
