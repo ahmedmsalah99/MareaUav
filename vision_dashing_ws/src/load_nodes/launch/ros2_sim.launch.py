@@ -65,7 +65,8 @@ def generate_launch_description():
     exec_node = Node(
         package='guidance_system',
         executable='executioner_node',
-        output='screen'
+        output='screen',
+        parameters=[{'mission_list': 'list.txt'}],
     )
 
     autom_node = Node(
