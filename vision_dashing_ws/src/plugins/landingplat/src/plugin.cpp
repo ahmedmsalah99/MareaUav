@@ -15,6 +15,8 @@
 #include <px4_msgs/msg/vehicle_odometry.hpp>
 #include <sensor_msgs/msg/imu.hpp>
 #include <ulisse_msgs/msg/simulated_system.hpp>
+#include <geometry_msgs/msg/pose_stamped.hpp>
+#include <cstdlib>
 
 #include "WaveGen.h"
 
@@ -188,6 +190,19 @@ namespace gazebo
         } _sim_system_raw;
 
         bool _use_sim_system = false;   // latched true on the first message heard
+
+        // ---- Mocap-in-sim mode (M2M_MODE=3) --------------------------------
+        // The pad sits still (optionally tilted) like the pad on the lab floor,
+        // and the plugin plays OptiTrack: it publishes the drone's and the
+        // pad's true Gazebo poses as geometry_msgs/PoseStamped, Z-up, on the
+        // same topics natnet_ros2 uses in the lab (/<rigid body>/pose).
+        bool _mocap_mode = false;
+        ignition::math::Pose3d _mocap_pad_pose;
+        std::string _mocap_drone_model;          // Gazebo model name of the drone
+        double _mocap_period = 0.0;              // [s] between fake mocap frames
+        double _mocap_last_pub = -1.0;
+        rclcpp::Publisher<geometry_msgs::msg::PoseStamped>::SharedPtr _mocap_drone_pub;
+        rclcpp::Publisher<geometry_msgs::msg::PoseStamped>::SharedPtr _mocap_pad_pub;
 
         // Slew-rate-limited values actually used to drive the simulation —
         // updated once per OnUpdate() tick (not once per message), so a
@@ -372,6 +387,37 @@ namespace gazebo
 
                 wave.init(10,2.0,0.5,7.0);
 
+                // ---- Mocap-in-sim mode (M2M_MODE=3) ----
+                {
+                    const char* m = std::getenv("M2M_MODE");
+                    _mocap_mode = (m && std::string(m) == "3");
+                }
+                if (_mocap_mode) {
+                    auto getd = [&](const std::string& name, double def) {
+                        return _sdf->Get<double>(name, def).first;
+                    };
+                    const ignition::math::Pose3d start = _model.get()->WorldPose();
+                    _mocap_pad_pose.Set(
+                        ignition::math::Vector3d(getd("mocap_pad_x", start.Pos().X()),
+                                                 getd("mocap_pad_y", start.Pos().Y()),
+                                                 getd("mocap_pad_z", 0.0)),
+                        ignition::math::Vector3d(getd("mocap_pad_roll", 0.0),
+                                                 getd("mocap_pad_pitch", 0.0),
+                                                 getd("mocap_pad_yaw", 0.0)));
+                    _mocap_drone_model = _sdf->Get<std::string>("mocap_drone_model", "iris").first;
+                    _mocap_period      = 1.0 / getd("mocap_rate_hz", 120.0);
+                    const std::string droneTopic = _sdf->Get<std::string>("mocap_drone_topic", "/drone/pose").first;
+                    const std::string padTopic   = _sdf->Get<std::string>("mocap_pad_topic",   "/pad/pose").first;
+                    _mocap_drone_pub = _ros_node->create_publisher<geometry_msgs::msg::PoseStamped>(droneTopic, rclcpp::SensorDataQoS());
+                    _mocap_pad_pub   = _ros_node->create_publisher<geometry_msgs::msg::PoseStamped>(padTopic,   rclcpp::SensorDataQoS());
+                    RCLCPP_INFO(_ros_node->get_logger(),
+                        "M2M_MODE=3 (mocap in sim): static pad at (%.2f, %.2f, %.2f) rpy (%.3f, %.3f, %.3f); "
+                        "fake mocap '%s' -> %s, pad -> %s at %.0f Hz",
+                        _mocap_pad_pose.Pos().X(), _mocap_pad_pose.Pos().Y(), _mocap_pad_pose.Pos().Z(),
+                        _mocap_pad_pose.Rot().Roll(), _mocap_pad_pose.Rot().Pitch(), _mocap_pad_pose.Rot().Yaw(),
+                        _mocap_drone_model.c_str(), droneTopic.c_str(), padTopic.c_str(), 1.0 / _mocap_period);
+                }
+
                 _pose = _model.get()->WorldPose();
                 _prev_pose      = _pose;
                 _prev_prev_pose = _pose;
@@ -403,6 +449,38 @@ namespace gazebo
                 _first_rb = true;
                 RCLCPP_INFO(_ros_node->get_logger(), "PlatformManager LOADED");
             }
+            // Plays OptiTrack/natnet_ros2 in M2M_MODE=3: true Gazebo poses of the
+            // drone and the pad as PoseStamped (ENU, Z-up, frame "world").
+            void publishFakeMocap()
+            {
+                if (_mocap_last_pub >= 0.0 && _actual_sim_time - _mocap_last_pub < _mocap_period) return;
+                _mocap_last_pub = _actual_sim_time;
+
+                auto toMsg = [&](const ignition::math::Pose3d& p) {
+                    geometry_msgs::msg::PoseStamped msg;
+                    msg.header.stamp    = _ros_node->now();
+                    msg.header.frame_id = "world";
+                    msg.pose.position.x = p.Pos().X();
+                    msg.pose.position.y = p.Pos().Y();
+                    msg.pose.position.z = p.Pos().Z();
+                    msg.pose.orientation.w = p.Rot().W();
+                    msg.pose.orientation.x = p.Rot().X();
+                    msg.pose.orientation.y = p.Rot().Y();
+                    msg.pose.orientation.z = p.Rot().Z();
+                    return msg;
+                };
+
+                _mocap_pad_pub->publish(toMsg(_model.get()->WorldPose()));
+
+                physics::ModelPtr drone = _model.get()->GetWorld()->ModelByName(_mocap_drone_model);
+                if (drone) {
+                    _mocap_drone_pub->publish(toMsg(drone->WorldPose()));
+                } else {
+                    RCLCPP_WARN_THROTTLE(_ros_node->get_logger(), *_ros_node->get_clock(), 5000,
+                        "fake mocap: no Gazebo model named '%s' (set <mocap_drone_model>)", _mocap_drone_model.c_str());
+                }
+            }
+
             void invertDirection(){
 
                 _dir = -_dir;
@@ -426,7 +504,12 @@ namespace gazebo
 
                 double yaw_des = 0.0;
 
-                if(_use_sim_system)
+                if(_mocap_mode)
+                {
+                  // Static pad on the floor (mocap lab). Ignores the bag and waves.
+                  _pose = _mocap_pad_pose;
+                }
+                else if(_use_sim_system)
                 {
                   // Snapshot the raw sample while still locked.
                   SimSystemData raw = _sim_system_raw;
@@ -628,6 +711,8 @@ namespace gazebo
                 }
 
                 _pose_pub->publish(plat_pose);
+
+                if (_mocap_mode) publishFakeMocap();
 
                 // ---- IMU publishing ----
                 // Derive readings from observed platform motion (three-point history):
