@@ -129,6 +129,18 @@ public:
   MavState _comm;
 
   /**
+   * @brief Keeps every outgoing setpoint inside the configured box
+   * (GEOFENCE_* and ALT_MAX_WORLD_M in landing_<mode>.yaml). Position targets
+   * are clamped into the box; velocity components that would push the drone
+   * further out while it is at/over a wall are zeroed. No-op when
+   * GEOFENCE_ENABLE is 0.
+   */
+  void applyGeofence();
+
+  /// Landing parameters (only the geofence keys are used here).
+  Parameters _fenceParams;
+
+  /**
    * @brief Actual task
    */
 

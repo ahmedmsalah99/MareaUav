@@ -73,6 +73,12 @@ Parameters::Parameters() {
     touchConfirmHold      = 0.3;
     logPredLookback     = 0.5;
     goForceIfSonarBelow = 0.2;
+    geofenceEnable = false;
+    geofenceXMin = -1e9;
+    geofenceXMax =  1e9;
+    geofenceYMin = -1e9;
+    geofenceYMax =  1e9;
+    altMaxWorld  =  1e9;
     inspecCircleRadiusGrowth = 0.5;
     altMaxAbovePadMargin = 0.1;
     xyDirectOvershootGain = 0.5;
@@ -318,6 +324,24 @@ bool Parameters::setKey(const std::string& param, double value) {
             else if( !param.compare("GO_PITCH_RATE_MAX_RADPS") )
                 goPitchRateMax = value;
 
+            else if( !param.compare("GEOFENCE_ENABLE") )
+                geofenceEnable = value;
+
+            else if( !param.compare("GEOFENCE_X_MIN_M") )
+                geofenceXMin = value;
+
+            else if( !param.compare("GEOFENCE_X_MAX_M") )
+                geofenceXMax = value;
+
+            else if( !param.compare("GEOFENCE_Y_MIN_M") )
+                geofenceYMin = value;
+
+            else if( !param.compare("GEOFENCE_Y_MAX_M") )
+                geofenceYMax = value;
+
+            else if( !param.compare("ALT_MAX_WORLD_M") )
+                altMaxWorld = value;
+
             else if( !param.compare("GO_FORCE_IF_SONAR_BELOW_M") )
                 goForceIfSonarBelow = value;
 
@@ -475,6 +499,12 @@ const std::set<std::string>& Parameters::perModeKeys() {
         "TOUCH_ACCEL_AVG_SAMPLES",
         "EMERG_LAND_FINAL_DESC_SPEED_MPS",
         // Airframe tuning and room size (mocap is confined).
+        "GEOFENCE_ENABLE",
+        "GEOFENCE_X_MIN_M",
+        "GEOFENCE_X_MAX_M",
+        "GEOFENCE_Y_MIN_M",
+        "GEOFENCE_Y_MAX_M",
+        "ALT_MAX_WORLD_M",
         "INSPEC_ENABLE",
         "INSPEC_CIRCLE_RADIUS_M",
         "INSPEC_CIRCLE_SPEED_MPS",
@@ -646,6 +676,12 @@ const std::vector<std::string>& Parameters::allKeys() {
         "GO_PITCH_MAX_RAD",
         "GO_ROLL_RATE_MAX_RADPS",
         "GO_PITCH_RATE_MAX_RADPS",
+        "GEOFENCE_ENABLE",
+        "GEOFENCE_X_MIN_M",
+        "GEOFENCE_X_MAX_M",
+        "GEOFENCE_Y_MIN_M",
+        "GEOFENCE_Y_MAX_M",
+        "ALT_MAX_WORLD_M",
         "GO_FORCE_IF_SONAR_BELOW_M",
         "GO_LATCH_S",
         "GO_VOTE_WINDOW_S",

@@ -12,6 +12,15 @@ inspec:                                            # INSPEC: what INIT does if t
   INSPEC_CIRCLE_RADIUS_GROWTH_M:         0.5       # The INSPE circle radius grows by this after each full lap [m].
   INSPEC_ALTITUDE_M:                     6.0       # Absolute world altitude flown in INSPE and HOVERING [m].
 
+geofence:                                          # GEOFENCE: box every setpoint is kept inside (PLACEHOLDER room numbers: measure the real room)
+  # Position setpoints are clamped into the box; velocity pushing further out at a wall is zeroed. No floor (the drone must reach the pad).
+  GEOFENCE_ENABLE:                       1         # 1 = enforce the box below, 0 = off.
+  GEOFENCE_X_MIN_M:                      -2.0      # World X lower wall [m].
+  GEOFENCE_X_MAX_M:                      2.0       # World X upper wall [m].
+  GEOFENCE_Y_MIN_M:                      -2.0      # World Y lower wall [m].
+  GEOFENCE_Y_MAX_M:                      2.0       # World Y upper wall [m].
+  ALT_MAX_WORLD_M:                       2.5       # Ceiling: highest world Z any setpoint may reach [m].
+
 altitude:                                          # ALTITUDE SAFETY LIMITS
   ALT_MAX_ABOVE_PAD_M:                   3.0       # The altitude setpoint never goes higher than pad height + this [m].
   ALT_MIN_WORLD_M:                       0.0       # Absolute floor for the altitude setpoint, in world Z [m].
