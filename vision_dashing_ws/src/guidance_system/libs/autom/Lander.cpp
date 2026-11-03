@@ -30,7 +30,7 @@ Lander::Lander()
   ////Load parameters
 	param.loadLanding();
 
-	_envSim = (common::runModeFromEnv() == common::RunMode::Sim);
+	_envSim = common::runModeIsGazebo(common::runModeFromEnv());
 	std::cout << "[OFFSETS] M2M_MODE " << common::runModeName(common::runModeFromEnv())
 	          << " -> camera " << param.cameraToDroneCenterZ
 	          << " sonar "    << param.sonarToDroneCenterZ

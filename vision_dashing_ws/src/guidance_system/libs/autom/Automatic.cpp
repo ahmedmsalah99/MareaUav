@@ -5,7 +5,7 @@ using namespace common;
 Automatic::Automatic()
 {
   _defaultYaw = 0;
-  env_sim = (runModeFromEnv() == RunMode::Sim);
+  env_sim = runModeIsGazebo(runModeFromEnv());
   _fenceParams.loadLanding();
 }
 

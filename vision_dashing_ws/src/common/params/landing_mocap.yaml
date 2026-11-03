@@ -1,5 +1,5 @@
 # Per-mode landing parameters for M2M_MODE=1 (real drone, motion capture). Copied from sim except the sensor mounting (HW values) and INSPEC_ENABLE=0: NOT tuned yet.
-# Every key here must also be in the other two mode files; shared keys live in landing_common.yaml.
+# Every key here must also be in the other mode files; shared keys live in landing_common.yaml.
 # Units are in the name: _M metres, _S seconds, _MPS m/s, _MPS2 m/s^2, _RAD radians, _RADPS rad/s.
 # The Lander refuses to start if a key is missing, unknown, duplicated, or in the wrong file.
 # Format: section -> KEY: value  # meaning. Section names only group keys; KEY names must be unique.
