@@ -6,6 +6,7 @@ Automatic::Automatic()
 {
   _defaultYaw = 0;
   env_sim = (runModeFromEnv() == RunMode::Sim);
+  _fenceParams.loadLanding();
 }
 
 MavState Automatic::getState()
@@ -123,6 +124,46 @@ void Automatic::executeCommand() {
     _comm.setVx(NAN);
     _comm.setVy(NAN);
     this->_actualCommand->execute();
+    applyGeofence();
+}
+
+void Automatic::applyGeofence() {
+    const Parameters& p = _fenceParams;
+    if (!p.geofenceEnable) return;
+
+    const double lo[3] = {p.geofenceXMin, p.geofenceYMin, -1e9};   // no floor: landing must reach the pad
+    const double hi[3] = {p.geofenceXMax, p.geofenceYMax, p.altMaxWorld};
+    const double pos[3] = {_state.getX(), _state.getY(), _state.getZ()};
+    bool changed = false;
+    int  clampedDir[3] = {0, 0, 0};   // +1: target was above hi, -1: below lo
+
+    if (_comm.getType() == MavState::POSITION) {
+        double sp[3] = {_comm.getX(), _comm.getY(), _comm.getZ()};
+        for (int i = 0; i < 3; ++i) {
+            const double c = common::clamp(sp[i], lo[i], hi[i]);
+            if (c != sp[i]) { clampedDir[i] = (sp[i] > c) ? 1 : -1; sp[i] = c; changed = true; }
+        }
+        if (changed) _comm.setPosition(sp[0], sp[1], sp[2]);
+    }
+
+    // Velocity (a VELOCITY command, or the feed-forward on a POSITION one):
+    // never push further out while at or beyond a wall.
+    double v[3] = {_comm.getVx(), _comm.getVy(), _comm.getVz()};
+    bool vChanged = false;
+    for (int i = 0; i < 3; ++i) {
+        if (std::isnan(v[i])) continue;
+        const bool pushOutHi = v[i] > 0.0 && (pos[i] >= hi[i] || clampedDir[i] == 1);
+        const bool pushOutLo = v[i] < 0.0 && (pos[i] <= lo[i] || clampedDir[i] == -1);
+        if (pushOutHi || pushOutLo) { v[i] = 0.0; vChanged = true; }
+    }
+    if (vChanged) _comm.setV(v[0], v[1], v[2]);
+
+    if (changed || vChanged) {
+        static int throttle = 0;
+        if (throttle++ % 25 == 0)
+            std::cout << "[GEOFENCE] setpoint limited to box x[" << lo[0] << ", " << hi[0] << "] y[" << lo[1] << ", " << hi[1]
+                      << "] z<=" << hi[2] << "  drone (" << pos[0] << ", " << pos[1] << ", " << pos[2] << ")" << std::endl;
+    }
 }
 
 double Automatic::getPredictionHorizon() const {
