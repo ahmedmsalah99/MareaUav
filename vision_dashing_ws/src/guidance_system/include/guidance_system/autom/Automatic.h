@@ -186,7 +186,7 @@ public:
   bool consumeDisarmRequest() const;
 
   /**
-   * @brief True when M2M_MODE is 0 (simulation)
+   * @brief True when Gazebo is running (M2M_MODE 0 = sim or 3 = mocap in sim)
    */
 
   bool env_sim;
