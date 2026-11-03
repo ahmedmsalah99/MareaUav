@@ -433,7 +433,7 @@ void Lander::updateSignals() {
   //above half meters use vision system for altitude value
   //otherwise, ultrasonic sensors.
 
-  // Sensor mounting comes from the per-mode file (landing_<mode>.txt): the
+  // Sensor mounting comes from the per-mode file (landing_<mode>.yaml): the
   // simulated sensors sit at different places than the real ones.
   const double camOffset   = param.cameraToDroneCenterZ;
   const double sonarOffset = param.sonarToDroneCenterZ;

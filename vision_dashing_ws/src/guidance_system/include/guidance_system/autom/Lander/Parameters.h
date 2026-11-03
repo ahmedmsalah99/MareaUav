@@ -27,7 +27,7 @@ public:
     // missing keys keep their constructor default.
     void loadConfigFile(const char* config_file);
 
-    // Strict landing loader: landing_common.txt + landing_<sim|mocap|hw>.txt
+    // Strict landing loader: landing_common.yaml + landing_<sim|mocap|hw>.yaml
     // from the installed share/params, mode chosen by M2M_MODE. Throws, listing
     // every problem, if a key is missing, unknown, duplicated or in the wrong file.
     void loadLanding();
@@ -400,7 +400,7 @@ public:
     double logPredLookback;
 
 
-    // ── Values moved out of the code (see landing_*.txt for meaning) ──
+    // ── Values moved out of the code (see landing_*.yaml for meaning) ──
     double goForceIfSonarBelow;
     double inspecCircleRadiusGrowth;
     double altMaxAbovePadMargin;
