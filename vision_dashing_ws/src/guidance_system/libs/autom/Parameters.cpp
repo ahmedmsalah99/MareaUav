@@ -542,7 +542,7 @@ void Parameters::loadLanding() {
         case common::RunMode::Sim:   mode = "sim";   break;
         case common::RunMode::Mocap: mode = "mocap"; break;
         case common::RunMode::Hw:    mode = "hw";    break;
-        case common::RunMode::SimMocap: mode = "sim_mocap"; break;
+        case common::RunMode::SimMocap: mode = "mocap"; break;   // mocap in sim flies the mocap parameters
     }
     loadLanding(dir, mode);
 }
