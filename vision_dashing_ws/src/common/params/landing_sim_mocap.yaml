@@ -76,8 +76,8 @@ abort:                                             # ABORT: give up if COMP is n
   ABORT_ALTITUDE_M:                      2.5       # Abort: climb to this world altitude, fly to the take-off point at it, then land with the simple-landing descent [m].
 
 sea_calm:                                          # CALM-SEA GATE: the sea must be calm before COMP starts
-  SEA_CALM_ROLL_MAX_RAD:                 0.7       # Largest deck roll [rad].
-  SEA_CALM_PITCH_MAX_RAD:                0.7       # Largest deck pitch [rad].
+  SEA_CALM_ROLL_MAX_RAD:                 0.1       # Largest deck roll [rad]. MOCAP: ~6 deg; a still pad tilted more than this blocks COMP, which tests the abort. (sim: 0.7)
+  SEA_CALM_PITCH_MAX_RAD:                0.1       # Largest deck pitch [rad]. MOCAP: ~6 deg; a still pad tilted more than this blocks COMP, which tests the abort. (sim: 0.7)
   SEA_CALM_ROLL_RATE_MAX_RADPS:          0.3       # Largest deck roll rate [rad/s].
   SEA_CALM_PITCH_RATE_MAX_RADPS:         0.3       # Largest deck pitch rate [rad/s].
   SEA_CALM_HEAVE_SPEED_MAX_MPS:          2.0       # Largest deck up/down speed [m/s].
