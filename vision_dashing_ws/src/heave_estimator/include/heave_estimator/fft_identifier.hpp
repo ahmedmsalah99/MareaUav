@@ -32,6 +32,18 @@ public:
     int bufferedSamples() const { return static_cast<int>(buffer_.size()); }
     int windowSize() const { return window_size_; }
 
+    // Standard deviation of the buffered window (0 if empty). Used by the node's
+    // calm-sea fallback: no periodic mode AND a quiet signal = a still platform.
+    double bufferStdDev() const {
+        if (buffer_.empty()) return 0.0;
+        double m = 0.0;
+        for (double v : buffer_) m += v;
+        m /= buffer_.size();
+        double var = 0.0;
+        for (double v : buffer_) var += (v - m) * (v - m);
+        return std::sqrt(var / buffer_.size());
+    }
+
     // Runs identification. Returns true if at least one mode found.
     bool identify(std::vector<HeaveMode>& modes);
 

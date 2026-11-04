@@ -26,6 +26,11 @@ public:
         // Static fallback horizon, used until the guidance node starts publishing
         // a dynamic one on spa/prediction_horizon.
         T_pred_               = declare_parameter("prediction_horizon_s",        1.0);
+        // Calm-sea fallback, per axis: when the FFT window is full, no mode is
+        // found and the buffered angle's std dev is below this [rad], the axis
+        // is treated as still: estimate = prediction = the measured angle (for a
+        // tilted static pad, its tilt). No in-code default: set it from the launch file.
+        calm_angle_std_max_   = declare_parameter<double>("calm_angle_std_max_rad");
 
         dt_             = 1.0 / timer_rate;
         reident_period_ = reident_period;
@@ -119,6 +124,7 @@ private:
         }
 
         bool any_ready = false;
+        bool calm[3]   = {false, false, false};
         double est[3]  = {0, 0, 0};
         double pred[3] = {0, 0, 0};
 
@@ -127,10 +133,22 @@ private:
                 est[i]  = observers_[i].estimate();
                 pred[i] = observers_[i].predict(T_pred);
                 any_ready = true;
+            } else if (!observers_[i].isInitialized() && identifiers_[i].isReady()
+                       && identifiers_[i].bufferStdDev() < calm_angle_std_max_) {
+                est[i]  = angles[i];   // still axis: nothing periodic to predict
+                pred[i] = angles[i];
+                any_ready = true;
+                calm[i] = true;
             }
         }
 
         if (!any_ready) return;
+
+        if ((calm[0] || calm[1] || calm[2]) && (now - last_calm_log_time_) >= 5.0) {
+            last_calm_log_time_ = now;
+            RCLCPP_INFO(get_logger(), "Calm sea (no mode, quiet signal) on roll=%d pitch=%d yaw=%d -> publishing the measured angles.",
+                        calm[0], calm[1], calm[2]);
+        }
 
         auto stamp = this->now();
 
@@ -157,6 +175,8 @@ private:
     rclcpp::Publisher<geometry_msgs::msg::Vector3Stamped>::SharedPtr predict_pub_;
     rclcpp::TimerBase::SharedPtr timer_;
 
+    double calm_angle_std_max_ = 0.0;
+    double last_calm_log_time_ = 0.0;
     std::vector<FFTIdentifier> identifiers_;
     std::vector<SPAObserver>   observers_;
 
