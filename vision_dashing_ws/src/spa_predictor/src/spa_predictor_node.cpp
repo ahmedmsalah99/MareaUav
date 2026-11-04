@@ -119,6 +119,7 @@ private:
         }
 
         bool any_ready = false;
+        bool calm[3]   = {false, false, false};
         double est[3]  = {0, 0, 0};
         double pred[3] = {0, 0, 0};
 
@@ -127,10 +128,23 @@ private:
                 est[i]  = observers_[i].estimate();
                 pred[i] = observers_[i].predict(T_pred);
                 any_ready = true;
+            } else if (!observers_[i].isInitialized() && identifiers_[i].isReady()) {
+                // Window full but no mode on this axis: publish the measured
+                // angle as estimate and prediction (a tilted still pad = its tilt).
+                est[i]  = angles[i];
+                pred[i] = angles[i];
+                any_ready = true;
+                calm[i] = true;
             }
         }
 
         if (!any_ready) return;
+
+        if ((calm[0] || calm[1] || calm[2]) && (now - last_calm_log_time_) >= 5.0) {
+            last_calm_log_time_ = now;
+            RCLCPP_INFO(get_logger(), "No mode on roll=%d pitch=%d yaw=%d: publishing the measured angles as estimate and prediction.",
+                        calm[0], calm[1], calm[2]);
+        }
 
         auto stamp = this->now();
 
@@ -157,6 +171,7 @@ private:
     rclcpp::Publisher<geometry_msgs::msg::Vector3Stamped>::SharedPtr predict_pub_;
     rclcpp::TimerBase::SharedPtr timer_;
 
+    double last_calm_log_time_ = 0.0;
     std::vector<FFTIdentifier> identifiers_;
     std::vector<SPAObserver>   observers_;
 
