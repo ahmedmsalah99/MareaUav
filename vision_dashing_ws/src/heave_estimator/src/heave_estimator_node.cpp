@@ -97,11 +97,6 @@ public:
         // makes comp() lead the pad the wrong way and ADD to the relative
         // motion instead of cancelling it.)
         heave_sign_         = declare_parameter("heave_sign",                  1.0);
-        // Calm-sea fallback: when the FFT window is full, no wave mode is found
-        // and the buffered heave velocity's std dev is below this [m/s], the
-        // platform is treated as still and a "no heave" estimate is published
-        // instead of nothing. No in-code default: set it from the launch file.
-        calm_vel_std_max_   = declare_parameter<double>("calm_vel_std_max_mps");
 
         dt_             = 1.0 / timer_rate;
         reident_period_ = reident_period;
@@ -234,14 +229,14 @@ private:
         }
 
         if (!ekf_->isInitialized()) {
-            // No wave model yet. If the platform is genuinely still, say so.
-            if (identifier_->isReady() && identifier_->bufferStdDev() < calm_vel_std_max_) {
-                publishCalm(heave_vel);
+            // The window is full but no wave mode was found: nothing periodic to
+            // model or predict. Publish the measurement itself (a still platform,
+            // e.g. the mocap pad, reads as heave 0 / velocity ~0).
+            if (identifier_->isReady()) {
+                publishMeasured(heave_vel);
                 if ((now - last_calm_log_time_) >= 5.0) {
                     last_calm_log_time_ = now;
-                    RCLCPP_INFO(get_logger(),
-                        "Calm sea: no heave mode and velocity std %.4f m/s < %.4f -> publishing a still estimate.",
-                        identifier_->bufferStdDev(), calm_vel_std_max_);
+                    RCLCPP_INFO(get_logger(), "No heave mode: publishing the measured velocity %.4f m/s (position 0) as estimate and prediction.", heave_vel);
                 }
             }
             return;
@@ -288,9 +283,9 @@ private:
         pred_vel_comp_pub_->publish(pred_vel_comp_msg);
     }
 
-    // Still platform: heave position 0, velocity = measured (~0), and the
-    // predictions equal the current values (nothing periodic to extrapolate).
-    void publishCalm(double heave_vel)
+    // No wave mode: heave position 0, velocity = measured, and the predictions
+    // equal the current values (nothing periodic to extrapolate).
+    void publishMeasured(double heave_vel)
     {
         std_msgs::msg::Float64 pos, vel;
         pos.data = 0.0;
@@ -325,7 +320,6 @@ private:
     double min_omega_           = 0.5;
     double heave_sign_          = 1.0;
     double last_diag_log_time_  = 0.0;
-    double calm_vel_std_max_    = 0.0;
     double last_calm_log_time_  = 0.0;
 };
 

@@ -122,16 +122,14 @@ def generate_launch_description():
         package='spa_predictor',
         executable='spa_predictor_node',
         output='screen',
-        parameters=[{'sample_rate': 10.0, 'fft_window_size': 256, 'peak_threshold': 0.2,
-                     'calm_angle_std_max_rad': 0.01}],   # calm-sea fallback (still platform)
+        parameters=[{'sample_rate': 10.0, 'fft_window_size': 256, 'peak_threshold': 0.2}],
     )
 
     heave_node = Node(
         package='heave_estimator',
         executable='heave_estimator_node',
         output='screen',
-        parameters=[{'sample_rate': 10.0, 'fft_window_size': 256,
-                     'calm_vel_std_max_mps': 0.02}],      # calm-sea fallback (still platform)
+        parameters=[{'sample_rate': 10.0, 'fft_window_size': 256}],
     )
 
     mocap_bridge_node = Node(
