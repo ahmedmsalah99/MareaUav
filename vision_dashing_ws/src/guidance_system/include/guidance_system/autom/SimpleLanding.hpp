@@ -15,7 +15,7 @@
 //      until within SIMPLE_LAND_XY_TOL_M on X and Y;
 //   2. descend at a height-dependent speed (SIMPLE_LAND_DESC_SPEED_* profile,
 //      velocity mode all the way down);
-//   3. within SIMPLE_LAND_DISARM_HEIGHT_M of the ground, stop and request a
+//   3. within SIMPLE_LAND_FINAL_HEIGHT_M of the ground, stop and request a
 //      disarm (re-sent every LAND_DISARM_RESEND_INTERVAL_S for
 //      LAND_DISARM_RESEND_FOR_S): the drone drops the last few centimetres.
 namespace simple_landing {
@@ -54,7 +54,7 @@ private:
 };
 
 // One step. Returns true on the ticks where the caller must raise a disarm
-// request (the drone is within SIMPLE_LAND_DISARM_HEIGHT_M of the ground).
+// request (the drone is within SIMPLE_LAND_FINAL_HEIGHT_M of the ground).
 inline bool step(const MavState& state, double x_target, double y_target, double h,
                  const Parameters& p, MavState& comm, DisarmResender& disarm)
 {
@@ -63,7 +63,7 @@ inline bool step(const MavState& state, double x_target, double y_target, double
     const double dz = -state.getZ() + h;
 
     // Close enough to the ground: stop commanding a descent and cut the motors.
-    if (std::fabs(dz) < p.simpleLandDisarmHeight) {
+    if (std::fabs(dz) < p.simpleLandFinalHeight) {
         comm.setType(MavState::VELOCITY);
         comm.setVx(0.0);
         comm.setVy(0.0);
@@ -72,7 +72,7 @@ inline bool step(const MavState& state, double x_target, double y_target, double
         if (req && !disarm.logged) {
             disarm.logged = true;
             std::cout << "[SIMPLE LAND] " << std::fabs(dz) << " m above the ground (< "
-                      << p.simpleLandDisarmHeight << "): disarming" << std::endl;
+                      << p.simpleLandFinalHeight << "): disarming" << std::endl;
         }
         return req;
     }

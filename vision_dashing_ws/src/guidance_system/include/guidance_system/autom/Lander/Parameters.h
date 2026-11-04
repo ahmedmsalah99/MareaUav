@@ -402,7 +402,7 @@ public:
 
     // ── Values moved out of the code (see landing_*.yaml for meaning) ──
     double goForceIfSonarBelow;
-    double simpleLandDisarmHeight;
+    double simpleLandFinalHeight;
     double holdToCompTimeout;
     double abortAltitude;
     double abortArrivedTol;
