@@ -21,7 +21,7 @@
 Lander::Lander()
         : _horizontaErr((double)0)    , _tauHold((double)0), _tauLost((double)0), _NHold(0),
           _NLost(0),_NComp(0) , _initS(&_machine) , _inspeS(&_machine) , _hoveringS(&_machine) , _holdS(&_machine)  , _asceS(&_machine)  , _descS(&_machine),_compS(&_machine),
-          _rtolS(&_machine),_landS(&_machine),_landingDoneS(&_machine), _err(0,0,0), _err_int(0,0,0), _dt(0), _prevTime(0), _actualTime(0),
+          _rtolS(&_machine),_landS(&_machine),_landingDoneS(&_machine),_abortS(&_machine), _err(0,0,0), _err_int(0,0,0), _dt(0), _prevTime(0), _actualTime(0),
           _actualState(0),_prevState(0), _verticalErr(0), _holdPIDX(0,0,0),
           _holdPIDY(0,0,0)
 {
@@ -176,6 +176,9 @@ void Lander::initStateMachine() {
 	_touchedDown         = false;
 	_touchdownLogged     = false;
 	_compValidTimer      = 0.0;
+	_holdWaitTimer       = 0.0;
+	_abortPhase          = 0;
+	_abortStarted        = false;
 	_landValidTimer      = 0.0;
 	_disarmRequest       = false;
 	_disarmRetryElapsed  = 0.0;
@@ -206,6 +209,7 @@ void Lander::initStateMachine() {
   _machine._touchedDown  =  &_touchedDown;
   _machine._disarmRequest = &_disarmRequest;
   _machine._compValidTimer = &_compValidTimer;
+  _machine._holdWaitTimer  = &_holdWaitTimer;
   _machine._slopeActive    = &_slopeActive;
   _machine._landValidTimer = &_landValidTimer;
   _machine._heaveUpMax    = &_heaveUpMax;
@@ -233,6 +237,7 @@ void Lander::initStateMachine() {
   _holdS._nextState        = &_rtolS;
   _holdS._nextInitState    = &_initS;
   _holdS._nextHoveringState = &_hoveringS;
+  _holdS._nextAbortState    = &_abortS;   // COMP not reached in time -> return and land at take-off
 
   _asceS._nextState    = &_holdS;
 
@@ -980,6 +985,13 @@ void Lander::run() {
       }
 
       _setPoint.setType(MavState::VELOCITY);
+      break;
+
+    case (AbstractLandState::states::ABORT):
+
+      if (print > 30) std::cout<<"ABORT"<<std::endl;
+
+      abortReturn();
       break;
 
     default:
@@ -1837,4 +1849,56 @@ void Lander::align() {
     _setPoint.setOrientation(q_interm);
     _setPoint.setType(MavState::POSITION);
 
+}
+
+// HOLD gave up waiting for COMP: climb to ABORT_ALTITUDE_M, fly to the
+// take-off point, then land there with the simple-landing descent profile.
+void Lander::abortReturn() {
+  if (!_abortStarted) {
+    _abortStarted = true;
+    _abortPhase   = 0;
+    _abortStartX  = _state.getX();
+    _abortStartY  = _state.getY();
+    if (!_takeoffSet) {
+      // No TAKE_OFF task seen in this mission: land below where the abort started.
+      _takeoffX = _abortStartX; _takeoffY = _abortStartY; _takeoffZ = 0.0;
+      std::cout << "[ABORT] no take-off point recorded: landing below the abort point" << std::endl;
+    }
+    std::cout << "[ABORT] climb to " << param.abortAltitude << " m, return to take-off ("
+              << _takeoffX << ", " << _takeoffY << "), land" << std::endl;
+  }
+
+  const double tol = param.abortArrivedTol;
+  _setPoint.setVx(NAN);
+  _setPoint.setVy(NAN);
+  _setPoint.setVz(NAN);
+
+  if (_abortPhase == 0) {                       // climb in place
+    _setPoint.setType(MavState::POSITION);
+    _setPoint.setPosition(_abortStartX, _abortStartY, param.abortAltitude);
+    if (std::fabs(_state.getZ() - param.abortAltitude) < tol) {
+      _abortPhase = 1;
+      std::cout << "[ABORT] at altitude -> returning to the take-off point" << std::endl;
+    }
+  } else if (_abortPhase == 1) {                // fly to the take-off point at altitude
+    _setPoint.setType(MavState::POSITION);
+    _setPoint.setPosition(_takeoffX, _takeoffY, param.abortAltitude);
+    if (std::hypot(_state.getX() - _takeoffX, _state.getY() - _takeoffY) < tol) {
+      _abortPhase = 2;
+      std::cout << "[ABORT] above the take-off point -> landing" << std::endl;
+    }
+  } else {                                      // descend: same profile as the LAND task's simple landing
+    const double dx = _takeoffX - _state.getX();
+    const double dy = _takeoffY - _state.getY();
+    const double h  = _state.getZ() - _takeoffZ;
+    double rate;
+    if      (h > param.simpleLandDescSpeedMaxAbove) rate = param.simpleLandDescSpeedMax;
+    else if (h < param.simpleLandDescSpeedMinBelow) rate = param.simpleLandDescSpeedMin;
+    else rate = param.simpleLandDescSpeedMin + (param.simpleLandDescSpeedMax - param.simpleLandDescSpeedMin)
+                * (h - param.simpleLandDescSpeedMinBelow) / (param.simpleLandDescSpeedMaxAbove - param.simpleLandDescSpeedMinBelow);
+    _setPoint.setType(MavState::VELOCITY);
+    _setPoint.setVx(param.simpleLandXYGain * dx);
+    _setPoint.setVy(param.simpleLandXYGain * dy);
+    _setPoint.setVz(-rate);
+  }
 }

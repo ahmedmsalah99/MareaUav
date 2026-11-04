@@ -88,13 +88,21 @@ void Automatic::handleCommands() {
             break;
 
         case actions::TAKE_OFF:
+            // Remember where we took off: a landing abort returns and lands here.
+            _takeoffX = _state.getX(); _takeoffY = _state.getY(); _takeoffZ = _state.getZ();
+            _takeoffSet = true;
+            std::cout << "Take-off point recorded: (" << _takeoffX << ", " << _takeoffY << ", " << _takeoffZ << ")" << std::endl;
             _actualCommand.reset(new TakeOff(&_state,&_comm,&_actualTask));
            // _actualCommand = std::unique_ptr<Command>(new TakeOff(&_state,&_comm,&_actualTask));
             std::cout << "Actual command: TakeOff" << std::endl;
             break;
 
         case actions::LAND:
-            _actualCommand = std::unique_ptr<Command>(new Land(&_state,&_comm,&_actualTask,&_platformState,&_visionFeedbackPose,&_UltrasonicInfo,&_seaState));
+        {
+            Land* land = new Land(&_state,&_comm,&_actualTask,&_platformState,&_visionFeedbackPose,&_UltrasonicInfo,&_seaState);
+            if (_takeoffSet) land->setTakeoffPosition(_takeoffX, _takeoffY, _takeoffZ);
+            _actualCommand = std::unique_ptr<Command>(land);
+        }
             std::cout << "Actual command: Land" << std::endl;
             break;
         case actions::ROTATE:

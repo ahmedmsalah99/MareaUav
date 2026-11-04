@@ -209,6 +209,9 @@ private:
     }
 
 public:
+    /** Where the drone took off: a landing abort returns and lands here. */
+    void setTakeoffPosition(double x, double y, double z) { _lander.setTakeoffPosition(x, y, z); }
+
     Land(MavState *_state, MavState *_comm,exec::task *_actualTask, MavState* _platform, MavState* _Vision, MavState* _Ultrasonic, SeaState* _Sea) : Command(_state, _comm, _actualTask) , _plat(_plat), _platformPose(_platform), _VisionPose(_Vision),_UltrasonicInfo(_Ultrasonic),_seaState(_Sea){}
 
     /**

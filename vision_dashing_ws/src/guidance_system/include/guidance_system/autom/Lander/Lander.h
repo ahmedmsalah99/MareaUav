@@ -231,6 +231,11 @@ public:
 
     const Parameters& getParams() const { return param; }
 
+    /** Where the drone took off: the abort returns and lands here. */
+    void setTakeoffPosition(double x, double y, double z) {
+        _takeoffX = x; _takeoffY = y; _takeoffZ = z; _takeoffSet = true;
+    }
+
     bool consumeDisarmRequest() {
         bool req = _disarmRequest;
         _disarmRequest = false;
@@ -483,6 +488,16 @@ private:
     // HOLD -> COMP wait gate. Reset to 0 the instant compValid goes false, and
     // on any full state-machine reset (initStateMachine()).
     double _compValidTimer = 0.0;
+    double _holdWaitTimer  = 0.0;   // see LandMachine::_holdWaitTimer
+
+    // ── Abort (HOLD -> ABORT when COMP is not reached in time) ───────────────
+    // Take-off point, given by Automatic (where the TAKE_OFF task started).
+    bool   _takeoffSet = false;
+    double _takeoffX = 0.0, _takeoffY = 0.0, _takeoffZ = 0.0;
+    int    _abortPhase = 0;         // 0 climb, 1 fly to the take-off point, 2 descend
+    double _abortStartX = 0.0, _abortStartY = 0.0;
+    bool   _abortStarted = false;
+    void   abortReturn();
 
     // Continuous time [s] the COMP -> LAND transition condition has held
     // (CompState::handle()) — the COMP -> LAND wait gate. Reset to 0 the
@@ -584,6 +599,7 @@ private:
      */
 
     LandingDoneState _landingDoneS;
+    AbortState _abortS;
 
     InspectionState _inspeS;    //its constructor set its ID to INSPE
   	/**
