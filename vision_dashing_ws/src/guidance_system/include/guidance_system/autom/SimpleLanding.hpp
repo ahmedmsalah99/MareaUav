@@ -11,10 +11,11 @@
 // One control step towards the ground point (x_target, y_target, h):
 //   1. fly over the point (XY velocity = SIMPLE_LAND_XY_GAIN * error), no descent
 //      until within SIMPLE_LAND_XY_TOL_M on X and Y;
-//   2. descend at a height-dependent speed (SIMPLE_LAND_DESC_SPEED_* profile);
-//   3. below SIMPLE_LAND_FINAL_HEIGHT_M, switch to a position setpoint
-//      SIMPLE_LAND_PUSH_DOWN_M under the ground so the drone keeps pressing
-//      down until PX4 detects the landing.
+//   2. descend at a height-dependent speed (SIMPLE_LAND_DESC_SPEED_* profile),
+//      ending at SIMPLE_LAND_DESC_SPEED_MIN_MPS near the ground, and keep that
+//      gentle descent through touchdown until PX4's land detector disarms.
+//      (Velocity mode all the way down: no switch to a far position target, so
+//      no sudden drop and no velocity/position ping-pong near the ground.)
 namespace simple_landing {
 
 // Descent speed for a height dz above the target: max above tmax, min below
@@ -45,15 +46,6 @@ inline void step(const MavState& state, double x_target, double y_target, double
         const double desc = descendRate(std::fabs(dz), p.simpleLandDescSpeedMax, p.simpleLandDescSpeedMin,
                                         p.simpleLandDescSpeedMaxAbove, p.simpleLandDescSpeedMinBelow);
         comm.setVz(-desc);
-
-        if (std::fabs(dz) < p.simpleLandFinalHeight) {
-            comm.setX(x_target);
-            comm.setY(y_target);
-            comm.setZ(h - p.simpleLandPushDown);
-            comm.setVx(NAN);   // position-only: don't leak the velocity-mode Vx/Vy above
-            comm.setVy(NAN);
-            comm.setType(MavState::POSITION);
-        }
     }
     else comm.setVz(0);
 }
