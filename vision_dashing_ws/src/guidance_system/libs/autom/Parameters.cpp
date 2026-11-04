@@ -73,6 +73,7 @@ Parameters::Parameters() {
     touchConfirmHold      = 0.3;
     logPredLookback     = 0.5;
     goForceIfSonarBelow = 0.2;
+    simpleLandFinalHeight = 0.25;
     holdToCompTimeout = 60.0;
     abortAltitude = 6.0;
     abortArrivedTol = 0.3;
@@ -351,6 +352,9 @@ bool Parameters::setKey(const std::string& param, double value) {
 
             else if( !param.compare("ABORT_ARRIVED_TOL_M") )
                 abortArrivedTol = value;
+
+            else if( !param.compare("SIMPLE_LAND_FINAL_HEIGHT_M") )
+                simpleLandFinalHeight = value;
 
             else if( !param.compare("GO_FORCE_IF_SONAR_BELOW_M") )
                 goForceIfSonarBelow = value;
@@ -694,6 +698,7 @@ const std::vector<std::string>& Parameters::allKeys() {
         "HOLD_TO_COMP_TIMEOUT_S",
         "ABORT_ALTITUDE_M",
         "ABORT_ARRIVED_TOL_M",
+        "SIMPLE_LAND_FINAL_HEIGHT_M",
         "GO_FORCE_IF_SONAR_BELOW_M",
         "GO_LATCH_S",
         "GO_VOTE_WINDOW_S",

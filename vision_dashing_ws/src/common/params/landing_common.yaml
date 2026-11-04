@@ -75,5 +75,6 @@ simple_land:                                       # SIMPLE LAND: the LAND task'
   # Lands straight down on the spot where the task started, without the pad or vision. Heights are world Z.
   SIMPLE_LAND_XY_TOL_M:                  0.25      # Descends only while within this horizontal distance of the spot (X and Y each) [m].
   SIMPLE_LAND_DESC_SPEED_MAX_MPS:        0.3       # Descent speed while higher than SIMPLE_LAND_DESC_SPEED_MAX_ABOVE_M [m/s].
-  SIMPLE_LAND_DESC_SPEED_MIN_MPS:        0.1       # Descent speed while lower than SIMPLE_LAND_DESC_SPEED_MIN_BELOW_M, kept through touchdown until PX4 disarms; linear in between [m/s].
+  SIMPLE_LAND_DESC_SPEED_MIN_MPS:        0.1       # Descent speed while lower than SIMPLE_LAND_DESC_SPEED_MIN_BELOW_M; linear in between [m/s].
   SIMPLE_LAND_DESC_SPEED_MIN_BELOW_M:    0.7       # Below this height (world Z) the min descent speed is used [m].
+  SIMPLE_LAND_FINAL_HEIGHT_M:            0.25      # Within this height above the landing point: stop and disarm (the drone drops the rest); re-sent per LAND_DISARM_RESEND_* [m].

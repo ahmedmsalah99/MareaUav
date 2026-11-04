@@ -1901,6 +1901,7 @@ void Lander::abortReturn() {
       std::cout << "[ABORT] above the take-off point -> landing" << std::endl;
     }
   } else {                                      // land at the take-off point: the LAND task's simple landing
-    simple_landing::step(_state, _takeoffX, _takeoffY, _takeoffZ, param, _setPoint);
+    if (simple_landing::step(_state, _takeoffX, _takeoffY, _takeoffZ, param, _setPoint, _abortDisarm))
+      _disarmRequest = true;
   }
 }

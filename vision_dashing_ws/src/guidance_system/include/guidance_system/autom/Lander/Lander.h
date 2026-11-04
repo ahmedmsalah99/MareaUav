@@ -14,6 +14,7 @@
 #include "common/common.h"
 #include "miniPID/MiniPID.h"
 #include "Parameters.h"
+#include "guidance_system/autom/SimpleLanding.hpp"
 
 #define DEBUG
 #define PI              3.141592653589
@@ -235,6 +236,9 @@ public:
     void setTakeoffPosition(double x, double y, double z) {
         _takeoffX = x; _takeoffY = y; _takeoffZ = z; _takeoffSet = true;
     }
+
+    /** Raise a disarm request (consumed by Automatic, sent by AutomaticNode). */
+    void requestDisarm() { _disarmRequest = true; }
 
     bool consumeDisarmRequest() {
         bool req = _disarmRequest;
@@ -498,6 +502,7 @@ private:
     double _abortStartX = 0.0, _abortStartY = 0.0;
     bool   _abortStarted = false;
     void   abortReturn();
+    simple_landing::DisarmResender _abortDisarm;
 
     // Continuous time [s] the COMP -> LAND transition condition has held
     // (CompState::handle()) — the COMP -> LAND wait gate. Reset to 0 the
