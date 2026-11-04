@@ -18,8 +18,8 @@ geofence:                                          # GEOFENCE: box every setpoin
   GEOFENCE_ENABLE:                       1         # 1 = enforce the box below, 0 = off.
   GEOFENCE_X_MIN_M:                      -2.5      # World X lower wall [m]. Room ~6 m long along X (walls at +-3 m), 0.5 m margin.
   GEOFENCE_X_MAX_M:                      2.5       # World X upper wall [m]. Room ~6 m long along X (walls at +-3 m), 0.5 m margin.
-  GEOFENCE_Y_MIN_M:                      -1.5      # World Y lower wall [m]. Room ~4 m wide along Y (walls at +-2 m), 0.5 m margin.
-  GEOFENCE_Y_MAX_M:                      1.5       # World Y upper wall [m]. Room ~4 m wide along Y (walls at +-2 m), 0.5 m margin.
+  GEOFENCE_Y_MIN_M:                      -2.5      # World Y lower wall [m]. MOCAP SIM: widened to +-2.5 m (lab file: +-1.5) so the sim drone, spawned at y=2 in iris.world, starts inside the fence.
+  GEOFENCE_Y_MAX_M:                      2.5       # World Y upper wall [m]. MOCAP SIM: widened to +-2.5 m (lab file: +-1.5) so the sim drone, spawned at y=2 in iris.world, starts inside the fence.
   ALT_MAX_WORLD_M:                       4.0       # Ceiling: highest world Z any setpoint may reach [m]. Room ~5 m high, 1 m margin.
 
 altitude:                                          # ALTITUDE SAFETY LIMITS
