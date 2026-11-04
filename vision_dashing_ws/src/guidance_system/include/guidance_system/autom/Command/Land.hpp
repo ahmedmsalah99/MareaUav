@@ -86,7 +86,8 @@ private:
      */
 
     void simpleLanding(float x_target, float y_target, float h) {
-        simple_landing::step(*_state, x_target, y_target, h, _lander.getParams(), *_comm);
+        if (simple_landing::step(*_state, x_target, y_target, h, _lander.getParams(), *_comm, _simpleDisarm))
+            _lander.requestDisarm();
     }
 
     /**
@@ -171,6 +172,8 @@ public:
     LandGoDiagnostics getGoDiagnostics() const {
         return _lander.getGoDiagnostics();
     }
+
+    simple_landing::DisarmResender _simpleDisarm;
 
     bool consumeDisarmRequest() {
         return _lander.consumeDisarmRequest();
