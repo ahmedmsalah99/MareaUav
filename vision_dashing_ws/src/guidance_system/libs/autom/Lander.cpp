@@ -1865,6 +1865,18 @@ void Lander::abortReturn() {
       _takeoffX = _abortStartX; _takeoffY = _abortStartY; _takeoffZ = 0.0;
       std::cout << "[ABORT] no take-off point recorded: landing below the abort point" << std::endl;
     }
+    // The take-off point may lie outside the geofence (e.g. a drone spawned
+    // outside the mocap box): aim at the nearest point inside it instead, or
+    // the fence would hold the drone short of a target it can never reach.
+    if (param.geofenceEnable) {
+      const double x = common::clamp(_takeoffX, param.geofenceXMin, param.geofenceXMax);
+      const double y = common::clamp(_takeoffY, param.geofenceYMin, param.geofenceYMax);
+      if (x != _takeoffX || y != _takeoffY)
+        std::cout << "[ABORT] take-off point (" << _takeoffX << ", " << _takeoffY
+                  << ") is outside the geofence: landing at (" << x << ", " << y << ") instead" << std::endl;
+      _takeoffX = x;
+      _takeoffY = y;
+    }
     std::cout << "[ABORT] climb to " << param.abortAltitude << " m, return to take-off ("
               << _takeoffX << ", " << _takeoffY << "), land" << std::endl;
   }

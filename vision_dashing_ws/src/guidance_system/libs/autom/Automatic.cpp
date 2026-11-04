@@ -92,6 +92,18 @@ void Automatic::handleCommands() {
             _takeoffX = _state.getX(); _takeoffY = _state.getY(); _takeoffZ = _state.getZ();
             _takeoffSet = true;
             std::cout << "Take-off point recorded: (" << _takeoffX << ", " << _takeoffY << ", " << _takeoffZ << ")" << std::endl;
+            {
+                const Parameters& f = _fenceParams;
+                if (f.geofenceEnable &&
+                    (_takeoffX < f.geofenceXMin || _takeoffX > f.geofenceXMax ||
+                     _takeoffY < f.geofenceYMin || _takeoffY > f.geofenceYMax)) {
+                    std::cout << "[GEOFENCE] WARNING: take-off point (" << _takeoffX << ", " << _takeoffY
+                              << ") is OUTSIDE the geofence x[" << f.geofenceXMin << ", " << f.geofenceXMax
+                              << "] y[" << f.geofenceYMin << ", " << f.geofenceYMax
+                              << "]: setpoints will be clamped, and an abort will land inside the fence instead."
+                              << std::endl;
+                }
+            }
             _actualCommand.reset(new TakeOff(&_state,&_comm,&_actualTask));
            // _actualCommand = std::unique_ptr<Command>(new TakeOff(&_state,&_comm,&_actualTask));
             std::cout << "Actual command: TakeOff" << std::endl;
