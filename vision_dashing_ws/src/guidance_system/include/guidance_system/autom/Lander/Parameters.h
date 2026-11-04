@@ -429,8 +429,6 @@ public:
     double simpleLandDescSpeedMaxAbove;
     double simpleLandDescSpeedMin;
     double simpleLandDescSpeedMinBelow;
-    double simpleLandFinalHeight;
-    double simpleLandPushDown;
     double emergLandFinalDescSpeed;
 
 };

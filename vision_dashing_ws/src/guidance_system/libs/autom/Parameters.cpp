@@ -100,8 +100,6 @@ Parameters::Parameters() {
     simpleLandDescSpeedMaxAbove = 1.6;
     simpleLandDescSpeedMin = 0.1;
     simpleLandDescSpeedMinBelow = 0.7;
-    simpleLandFinalHeight = 0.25;
-    simpleLandPushDown = 10.0;
     emergLandFinalDescSpeed = 1.0;
 }
 
@@ -462,11 +460,7 @@ bool Parameters::setKey(const std::string& param, double value) {
             else if( !param.compare("SIMPLE_LAND_DESC_SPEED_MIN_BELOW_M") )
                 simpleLandDescSpeedMinBelow = value;
 
-            else if( !param.compare("SIMPLE_LAND_FINAL_HEIGHT_M") )
-                simpleLandFinalHeight = value;
 
-            else if( !param.compare("SIMPLE_LAND_PUSH_DOWN_M") )
-                simpleLandPushDown = value;
 
             else if( !param.compare("EMERG_LAND_FINAL_DESC_SPEED_MPS") )
                 emergLandFinalDescSpeed = value;
@@ -736,8 +730,6 @@ const std::vector<std::string>& Parameters::allKeys() {
         "SIMPLE_LAND_DESC_SPEED_MAX_ABOVE_M",
         "SIMPLE_LAND_DESC_SPEED_MIN_MPS",
         "SIMPLE_LAND_DESC_SPEED_MIN_BELOW_M",
-        "SIMPLE_LAND_FINAL_HEIGHT_M",
-        "SIMPLE_LAND_PUSH_DOWN_M",
         "EMERG_LAND_FINAL_DESC_SPEED_MPS"
     };
     return keys;
