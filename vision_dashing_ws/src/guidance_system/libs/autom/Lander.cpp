@@ -3,6 +3,7 @@
 //
 
 #include <iostream>
+#include "guidance_system/autom/SimpleLanding.hpp"
 #include "common/RunMode.h"
 #include <algorithm>
 #include <fstream>
@@ -1852,7 +1853,7 @@ void Lander::align() {
 }
 
 // HOLD gave up waiting for COMP: climb to ABORT_ALTITUDE_M, fly to the
-// take-off point, then land there with the simple-landing descent profile.
+// take-off point, then land there with the simple landing (SimpleLanding.hpp).
 void Lander::abortReturn() {
   if (!_abortStarted) {
     _abortStarted = true;
@@ -1887,18 +1888,7 @@ void Lander::abortReturn() {
       _abortPhase = 2;
       std::cout << "[ABORT] above the take-off point -> landing" << std::endl;
     }
-  } else {                                      // descend: same profile as the LAND task's simple landing
-    const double dx = _takeoffX - _state.getX();
-    const double dy = _takeoffY - _state.getY();
-    const double h  = _state.getZ() - _takeoffZ;
-    double rate;
-    if      (h > param.simpleLandDescSpeedMaxAbove) rate = param.simpleLandDescSpeedMax;
-    else if (h < param.simpleLandDescSpeedMinBelow) rate = param.simpleLandDescSpeedMin;
-    else rate = param.simpleLandDescSpeedMin + (param.simpleLandDescSpeedMax - param.simpleLandDescSpeedMin)
-                * (h - param.simpleLandDescSpeedMinBelow) / (param.simpleLandDescSpeedMaxAbove - param.simpleLandDescSpeedMinBelow);
-    _setPoint.setType(MavState::VELOCITY);
-    _setPoint.setVx(param.simpleLandXYGain * dx);
-    _setPoint.setVy(param.simpleLandXYGain * dy);
-    _setPoint.setVz(-rate);
+  } else {                                      // land at the take-off point: the LAND task's simple landing
+    simple_landing::step(_state, _takeoffX, _takeoffY, _takeoffZ, param, _setPoint);
   }
 }
