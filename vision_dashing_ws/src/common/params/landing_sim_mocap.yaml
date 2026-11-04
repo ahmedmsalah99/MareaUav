@@ -11,7 +11,7 @@ inspec:                                            # INSPEC: what INIT does if t
   INSPEC_CIRCLE_RADIUS_M:                0.5       # Radius of the INSPE search circle [m]. (sim: 1)
   INSPEC_CIRCLE_SPEED_MPS:               0.3       # Speed along the INSPE search circle [m/s].
   INSPEC_CIRCLE_RADIUS_GROWTH_M:         0.5       # The INSPE circle radius grows by this after each full lap [m].
-  INSPEC_ALTITUDE_M:                     1.5       # Absolute world altitude flown in INSPE and HOVERING [m]. MOCAP: also the HOVERING altitude (INSPEC_ENABLE=0), kept under the ceiling. (sim: 6.0)
+  INSPEC_ALTITUDE_M:                     2.5       # Absolute world altitude flown in INSPE and HOVERING [m]. MOCAP: also the HOVERING altitude (INSPEC_ENABLE=0), above the 2.0 m mission altitude for a wider camera view, under the 4.0 m ceiling. (sim: 6.0)
 
 geofence:                                          # GEOFENCE: box every setpoint is kept inside (room estimate ~6 x 4 x 5 m, origin assumed at the room centre, X along the length)
   # Position setpoints are clamped into the box; velocity pushing further out at a wall is zeroed. No floor (the drone must reach the pad).
