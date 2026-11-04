@@ -137,6 +137,11 @@ public:
    */
   void applyGeofence();
 
+  /// Take-off point (where the last TAKE_OFF task started), handed to the
+  /// Lander so a landing abort can return and land there.
+  bool   _takeoffSet = false;
+  double _takeoffX = 0.0, _takeoffY = 0.0, _takeoffZ = 0.0;
+
   /// Landing parameters (only the geofence keys are used here).
   Parameters _fenceParams;
 

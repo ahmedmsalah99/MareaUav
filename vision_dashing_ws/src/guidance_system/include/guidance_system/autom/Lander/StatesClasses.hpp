@@ -156,6 +156,12 @@ public:
      * threshold (param.holdToCompWait) is applied by HoldState itself. */
     double *_compValidTimer;
 
+    /** Time [s] spent in HOLD since the slope finished without reaching COMP
+     * (the "preparing for COMP" wait). Reset on entering COMP and in INIT.
+     * Past param.holdToCompTimeout, HOLD aborts (ABORT: climb, return to the
+     * take-off point, land there). */
+    double *_holdWaitTimer;
+
     /** True while hold()'s INIT slope is still driving Z along the approach
      * line (Lander::_slopeActive) -- see HoldState::handle(), which skips its
      * own compValid/descValid/asceValid/asceUnderMargin transitions entirely
@@ -264,7 +270,8 @@ public:
         R2LA,
         COMP,
         LAND,
-        LANDING_DONE
+        LANDING_DONE,
+        ABORT
     };
 
     /**
@@ -558,6 +565,12 @@ public:
      */
 
   	AbstractLandState* _nextHoveringState;
+
+    /**
+     * The hold state is linked with the abort state (COMP not reached in time)
+     */
+
+    AbstractLandState* _nextAbortState;
 
     /**
      * @brief Constructor of the derived class
@@ -855,5 +868,33 @@ public:
 };
 
 
+/** @ingroup Automatic
+ * @brief Derived class of the AbstractLandState
+ * @details Terminal state entered from HOLD when COMP was not reached within
+ * param.holdToCompTimeout. Lander::run() flies the abort (abortReturn()):
+ * climb to ABORT_ALTITUDE_M, fly to the take-off point, land there. No
+ * transitions out; a fresh landing task reinitialises the state machine.
+ */
+
+class AbortState : public AbstractLandState {
+
+public:
+
+    AbortState(LandMachine *context) : AbstractLandState(context) {
+        setId();
+    }
+
+    void setId() override {
+
+        _id = ABORT;
+
+    }
+
+    /**
+     * @brief No-op: this state never transitions anywhere.
+     */
+
+    void handle();
+};
 
 #endif //MOCAP2MAV_STATESCLASSES_HPP

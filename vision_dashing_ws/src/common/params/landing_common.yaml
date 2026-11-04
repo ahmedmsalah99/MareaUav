@@ -51,6 +51,9 @@ comp:                                              # COMP: follow the heaving pa
   COMP_RESUME_ABOVE_M:                   0.15      # Resume following once farther than this [m].
   COMP_VEL_MATCH_ABOVE_MPS:              0.1       # When the pad rises faster than this, also match its vertical speed [m/s].
 
+abort:                                             # ABORT: give up if COMP is not reached, return to the take-off point and land there
+  ABORT_ARRIVED_TOL_M:                   0.3       # Abort: counts as at the abort altitude / above the take-off point within this distance [m].
+
 go:                                                # GO DECISION: commit to landing (COMP -> LAND)
   GO_XY_ERR_MAX_M:                       0.1       # X and Y errors to the pad centre must each be under this [m].
   GO_HEIGHT_BASE_M:                      0.3       # Drone-to-pad height must be under this in a calm sea [m].

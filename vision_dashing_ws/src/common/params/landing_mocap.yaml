@@ -70,6 +70,11 @@ hold:                                              # HOLD: hover above the pad (
   HOLD_DESCEND_ABOVE_M:                  1.2       # Higher than this: step down [m]. (sim: 1.8)
   HOLD_COMP_BELOW_M:                     0.9       # Lower than this: COMP may start [m]. Between the two: just hold. (sim: 1.2)
 
+abort:                                             # ABORT: give up if COMP is not reached, return to the take-off point and land there
+  # Runs once the slope has finished and HOLD is waiting for COMP (calm-sea checks, catamaran data, centring).
+  HOLD_TO_COMP_TIMEOUT_S:                10        # If COMP is not entered within this long in HOLD, abort [s]. Not reset by flickering checks; reset on entering COMP and in INIT.
+  ABORT_ALTITUDE_M:                      2.5       # Abort: climb to this world altitude, fly to the take-off point at it, then land with the simple-landing descent [m].
+
 sea_calm:                                          # CALM-SEA GATE: the sea must be calm before COMP starts
   SEA_CALM_ROLL_MAX_RAD:                 0.7       # Largest deck roll [rad].
   SEA_CALM_PITCH_MAX_RAD:                0.7       # Largest deck pitch [rad].

@@ -73,6 +73,9 @@ Parameters::Parameters() {
     touchConfirmHold      = 0.3;
     logPredLookback     = 0.5;
     goForceIfSonarBelow = 0.2;
+    holdToCompTimeout = 60.0;
+    abortAltitude = 6.0;
+    abortArrivedTol = 0.3;
     geofenceEnable = false;
     geofenceXMin = -1e9;
     geofenceXMax =  1e9;
@@ -342,6 +345,15 @@ bool Parameters::setKey(const std::string& param, double value) {
             else if( !param.compare("ALT_MAX_WORLD_M") )
                 altMaxWorld = value;
 
+            else if( !param.compare("HOLD_TO_COMP_TIMEOUT_S") )
+                holdToCompTimeout = value;
+
+            else if( !param.compare("ABORT_ALTITUDE_M") )
+                abortAltitude = value;
+
+            else if( !param.compare("ABORT_ARRIVED_TOL_M") )
+                abortArrivedTol = value;
+
             else if( !param.compare("GO_FORCE_IF_SONAR_BELOW_M") )
                 goForceIfSonarBelow = value;
 
@@ -499,6 +511,8 @@ const std::set<std::string>& Parameters::perModeKeys() {
         "TOUCH_ACCEL_AVG_SAMPLES",
         "EMERG_LAND_FINAL_DESC_SPEED_MPS",
         // Airframe tuning and room size (mocap is confined).
+        "HOLD_TO_COMP_TIMEOUT_S",
+        "ABORT_ALTITUDE_M",
         "GEOFENCE_ENABLE",
         "GEOFENCE_X_MIN_M",
         "GEOFENCE_X_MAX_M",
@@ -683,6 +697,9 @@ const std::vector<std::string>& Parameters::allKeys() {
         "GEOFENCE_Y_MIN_M",
         "GEOFENCE_Y_MAX_M",
         "ALT_MAX_WORLD_M",
+        "HOLD_TO_COMP_TIMEOUT_S",
+        "ABORT_ALTITUDE_M",
+        "ABORT_ARRIVED_TOL_M",
         "GO_FORCE_IF_SONAR_BELOW_M",
         "GO_LATCH_S",
         "GO_VOTE_WINDOW_S",

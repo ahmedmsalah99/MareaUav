@@ -402,6 +402,9 @@ public:
 
     // ── Values moved out of the code (see landing_*.yaml for meaning) ──
     double goForceIfSonarBelow;
+    double holdToCompTimeout;
+    double abortAltitude;
+    double abortArrivedTol;
     bool   geofenceEnable;
     double geofenceXMin;
     double geofenceXMax;
