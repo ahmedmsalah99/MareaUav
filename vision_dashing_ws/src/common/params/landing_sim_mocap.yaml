@@ -1,0 +1,116 @@
+# Per-mode landing parameters for M2M_MODE=3 (mocap in sim). Same values as landing_mocap.yaml, except the
+# height_sensors section, which uses the sim drone's sensor mounting (from landing_sim.yaml). Keep the rest in sync with landing_mocap.yaml.
+# Every key here must also be in the other mode files; shared keys live in landing_common.yaml.
+# Units are in the name: _M metres, _S seconds, _MPS m/s, _MPS2 m/s^2, _RAD radians, _RADPS rad/s.
+# The Lander refuses to start if a key is missing, unknown, duplicated, or in the wrong file.
+# Format: section -> KEY: value  # meaning. Section names only group keys; KEY names must be unique.
+
+inspec:                                            # INSPEC: what INIT does if the pad is NOT seen at the start
+  # Not used once the landing has started (losing the pad mid-landing makes the drone climb, see OFF_CENTER_* below).
+  INSPEC_ENABLE:                         0         # 1 = INSPE mode: fly a circle looking for the pad. 0 = HOVERING mode: hover in place. MOCAP: 0, the mocap room is too small to search.
+  INSPEC_CIRCLE_RADIUS_M:                0.5       # Radius of the INSPE search circle [m]. (sim: 1)
+  INSPEC_CIRCLE_SPEED_MPS:               0.3       # Speed along the INSPE search circle [m/s].
+  INSPEC_CIRCLE_RADIUS_GROWTH_M:         0.5       # The INSPE circle radius grows by this after each full lap [m].
+  INSPEC_ALTITUDE_M:                     1.5       # Absolute world altitude flown in INSPE and HOVERING [m]. MOCAP: also the HOVERING altitude (INSPEC_ENABLE=0), kept under the ceiling. (sim: 6.0)
+
+geofence:                                          # GEOFENCE: box every setpoint is kept inside (room estimate ~6 x 4 x 5 m, origin assumed at the room centre, X along the length)
+  # Position setpoints are clamped into the box; velocity pushing further out at a wall is zeroed. No floor (the drone must reach the pad).
+  GEOFENCE_ENABLE:                       1         # 1 = enforce the box below, 0 = off.
+  GEOFENCE_X_MIN_M:                      -2.5      # World X lower wall [m]. Room ~6 m long along X (walls at +-3 m), 0.5 m margin.
+  GEOFENCE_X_MAX_M:                      2.5       # World X upper wall [m]. Room ~6 m long along X (walls at +-3 m), 0.5 m margin.
+  GEOFENCE_Y_MIN_M:                      -1.5      # World Y lower wall [m]. Room ~4 m wide along Y (walls at +-2 m), 0.5 m margin.
+  GEOFENCE_Y_MAX_M:                      1.5       # World Y upper wall [m]. Room ~4 m wide along Y (walls at +-2 m), 0.5 m margin.
+  ALT_MAX_WORLD_M:                       4.0       # Ceiling: highest world Z any setpoint may reach [m]. Room ~5 m high, 1 m margin.
+
+altitude:                                          # ALTITUDE SAFETY LIMITS
+  ALT_MAX_ABOVE_PAD_M:                   2.0       # The altitude setpoint never goes higher than pad height + this [m]. (sim: 3.0)
+  ALT_MIN_WORLD_M:                       0.0       # Absolute floor for the altitude setpoint, in world Z [m].
+
+centered:                                          # CENTERED OVER THE PAD (checked on every new vision frame)
+  # Each frame compares the drone's horizontal distance to the pad centre with a radius that depends on height:
+  # the radius is *_MIN at the pad (height 0), grows linearly to *_MAX at CENTERED_CONE_HEIGHT_M, and stays *_MAX above it
+  # (a cone: the lower the drone, the more precisely it must be centred).
+  CENTERED_CONE_HEIGHT_M:                2.0       # Height above the pad at which the cone radii reach their *_MAX value [m]. MOCAP: the flying heights here stay under ~2 m, so the cone reaches its MAX radius at 2 m. (sim: 5.0)
+  CENTERED_CONE_RADIUS_MIN_M:            0.6       # Centred radius at the pad [m]. Distance under the cone radius = frame counts as CENTRED.
+  CENTERED_CONE_RADIUS_MAX_M:            1.5       # Centred radius at/above the cone height [m].
+  COMP_CENTERED_CONE_RADIUS_MIN_M:       0.30      # Same as CENTERED_CONE_RADIUS_MIN_M, but used instead of it while in COMP [m].
+  COMP_CENTERED_CONE_RADIUS_MAX_M:       1.0       # Same as CENTERED_CONE_RADIUS_MAX_M, but used instead of it while in COMP [m].
+  OFF_CENTER_CONE_RADIUS_MIN_M:          0.80      # Off-centre radius at the pad [m]. Distance above the cone radius = frame counts as OFF-CENTRE.
+  OFF_CENTER_CONE_RADIUS_MAX_M:          2.0       # Off-centre radius at/above the cone height [m].
+
+xy:                                                # HORIZONTAL (XY) CONTROLLER -- used in HOLD (after the slope) and in COMP only
+  XY_PID_KP:                             0.45      # PID proportional gain (mode 1).
+  XY_PID_KI:                             0.002     # PID integral gain (mode 1).
+  XY_PID_KD:                             0.0       # PID derivative gain (mode 1).
+
+pad_estimate:                                      # PAD ESTIMATE FROM VISION
+  PAD_EST_VEL_FILTER_TAU_S:              10.0      # Time constant of the pad velocity filter [s]. Long, so deck roll/pitch sway is not read as boat motion.
+  PAD_EST_VEL_MAX_MPS:                   1.0       # Pad velocity estimates faster than this are treated as noise and clipped [m/s].
+  PAD_EST_YAW_OFFSET_RAD:                1.57      # Angle from the reference apriltag's (TAG5) x-axis to the boat's bow [rad].
+
+height_sensors:                                    # HEIGHT SENSORS
+  # Vertical distance from each height sensor to the drone's centre (reference point) [m], positive when the sensor is BELOW the centre.
+  # Used to turn the sensor's reading into the drone-centre-to-pad height.
+  # Camera and sonar must be measured to the SAME point, or the height jumps when the Lander switches between them.
+  CAMERA_TO_DRONE_CENTER_Z_M:            0.03      # Camera [m].
+  SONAR_TO_DRONE_CENTER_Z_M:             0.04      # Sonar [m].
+  SENSOR_SWITCH_HEIGHT_M:                0.83      # Above this camera-measured height the height comes from the camera, below it from the sonar [m].
+
+init:                                              # INIT: fly to the START POINT
+  # The start point is behind the pad and above it; the SLOPE then glides from it to HOLD_HEIGHT_M above the pad.
+  INIT_START_POINT_XY_DIST_M:            0.8       # Horizontal distance of the start point from the pad centre [m]. NOTE: the start point's height is (highest pad height seen) + HOLD_HEIGHT_M + this same value, giving a 45-degree slope. MOCAP: start point height = pad + HOLD_HEIGHT_M (1.0) + 0.8 = 1.8 m, under the 4.0 m geofence ceiling; 0.8 m from the pad fits the room. (sim: 2.5)
+  INIT_START_POINT_XY_TOL_M:             0.2       # Drone counts as AT the start point when its X and Y errors to it are each under this [m]. (sim: 0.5)
+  INIT_START_POINT_Z_TOL_M:              0.2       # Same, for height [m]. (sim: 0.5)
+
+slope:                                             # SLOPE: timed glide from the start point down to HOLD_HEIGHT_M above the pad
+  SLOPE_XY_KI:                           0.3       # Integral gain removing the drone's trailing lag behind the moving target [1/s]. 0 = off.
+
+hold:                                              # HOLD: hover above the pad (all heights are drone-to-pad)
+  HOLD_HEIGHT_M:                         1.0       # Target hover height [m]; the slope ends here. MOCAP: kept above SENSOR_SWITCH_HEIGHT_M (0.83) so HOLD does not sit on the camera/sonar handover. (sim: 1.5)
+  HOLD_DESCEND_ABOVE_M:                  1.2       # Higher than this: step down [m]. (sim: 1.8)
+  HOLD_COMP_BELOW_M:                     0.9       # Lower than this: COMP may start [m]. Between the two: just hold. (sim: 1.2)
+
+sea_calm:                                          # CALM-SEA GATE: the sea must be calm before COMP starts
+  SEA_CALM_ROLL_MAX_RAD:                 0.7       # Largest deck roll [rad].
+  SEA_CALM_PITCH_MAX_RAD:                0.7       # Largest deck pitch [rad].
+  SEA_CALM_ROLL_RATE_MAX_RADPS:          0.3       # Largest deck roll rate [rad/s].
+  SEA_CALM_PITCH_RATE_MAX_RADPS:         0.3       # Largest deck pitch rate [rad/s].
+  SEA_CALM_HEAVE_SPEED_MAX_MPS:          2.0       # Largest deck up/down speed [m/s].
+  SEA_CALM_HOLD_S:                       5.0       # All of the above must hold without a break this long [s].
+
+comp:                                              # COMP: follow the heaving pad at close range
+  # Heave margin: the peak UPWARD pad speed over the last COMP_HEAVE_PEAK_WINDOW_S seconds, added (as metres) to the COMP height
+  # and to the GO height gate, so both grow in rough seas. Each sum is then capped.
+  COMP_LEAD_TIME_S:                      0.1       # How far ahead the heave prediction is used [s]; should match the heave estimator's prediction horizon.
+  COMP_HEIGHT_P_GAIN:                    3.0       # COMP height command = drone Z + gain * (wanted COMP height - current gap).
+
+go:                                                # GO DECISION: commit to landing (COMP -> LAND)
+  GO_ROLL_MAX_RAD:                       0.20      # Largest PREDICTED deck roll [rad].
+  GO_PITCH_MAX_RAD:                      0.20      # Largest PREDICTED deck pitch [rad].
+  GO_ROLL_RATE_MAX_RADPS:                0.10      # Largest deck roll rate [rad/s].
+  GO_PITCH_RATE_MAX_RADPS:               0.10      # Largest deck pitch rate [rad/s].
+  GO_HEAVE_UP_SPEED_MAX_MPS:             0.7       # Largest predicted pad speed TOWARDS the drone [m/s] (one-sided: a falling pad is fine).
+
+land:                                              # LAND: committed descent after GO
+  LAND_DISARM_RESEND_INTERVAL_S:         0.1       # With LAND_DISARM_ON_GO=1: time between two disarm messages (the topic is best-effort, one may be lost) [s].
+  LAND_DISARM_RESEND_FOR_S:              2.0       # How long after GO the disarm messages keep being sent [s].
+
+touchdown:                                         # TOUCHDOWN DETECTION (LAND -> LANDING_DONE)
+  # Stage 1 (contact): drone and pad vertical accelerations match and horizontal speed is low, for TOUCH_CONTACT_HOLD_S.
+  # Stage 2 (confirm): stage 1 plus a recent upward impact spike on the drone, for TOUCH_CONFIRM_HOLD_S.
+  TOUCH_ACCEL_MATCH_TOL_MPS2:            1.0       # Largest difference between drone and pad vertical acceleration [m/s^2].
+  TOUCH_XY_SPEED_MAX_MPS:                1.0       # Largest drone horizontal speed [m/s].
+  TOUCH_CONTACT_HOLD_S:                  0.15      # Stage 1 must hold this long [s].
+  TOUCH_IMPACT_ACCEL_MPS2:               3.0       # Upward acceleration spike that counts as an impact [m/s^2].
+  TOUCH_IMPACT_WINDOW_S:                 0.5       # The spike must be within this recent window [s].
+  TOUCH_CONFIRM_HOLD_S:                  0.3       # Stage 2 must hold this long [s].
+  TOUCH_ACCEL_CLIP_MPS2:                 20.0      # Each raw acceleration sample is clipped to +/- this before use [m/s^2] (anything larger is a sensor glitch).
+  TOUCH_ACCEL_AVG_SAMPLES:               5         # Accelerations are averaged over this many latest samples.
+
+simple_land:                                       # SIMPLE LAND: the LAND task's basic mode (task parameter 0 = no platform)
+  # Lands straight down on the spot where the task started, without the pad or vision. Heights are world Z.
+  SIMPLE_LAND_XY_GAIN:                   1.0       # Horizontal velocity command = gain * distance to the landing spot [1/s].
+  SIMPLE_LAND_DESC_SPEED_MAX_ABOVE_M:    1.6       # Above this height (world Z) the max descent speed is used [m].
+
+emergency_land:                                    # EMERGENCY LAND
+  EMERG_LAND_FINAL_DESC_SPEED_MPS:       1.0       # Once below the task's motor-cut threshold, descend at this speed until PX4 disarms [m/s].

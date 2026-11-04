@@ -1,4 +1,4 @@
-# Per-mode landing parameters for M2M_MODE=1 (real drone, motion capture) and M2M_MODE=3 (mocap in sim: same file). Room-sized values from an ESTIMATE of the room (~6 m long, 4 m wide, 5 m high; each
+# Per-mode landing parameters for M2M_MODE=1 (real drone, motion capture). Room-sized values from an ESTIMATE of the room (~6 m long, 4 m wide, 5 m high; each
 # changed key notes its sim value): check them in the real room. Other values copied from sim; sensor mounting = HW values; INSPEC_ENABLE=0.
 # Every key here must also be in the other mode files; shared keys live in landing_common.yaml.
 # Units are in the name: _M metres, _S seconds, _MPS m/s, _MPS2 m/s^2, _RAD radians, _RADPS rad/s.
