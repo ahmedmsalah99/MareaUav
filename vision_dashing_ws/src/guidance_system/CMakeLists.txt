@@ -22,7 +22,6 @@ find_package(yaml-cpp REQUIRED)
 find_package(ultrasonic_sensor REQUIRED)
 # further dependencies manually.
 # find_package(<dependency> REQUIRED)
-pkg_search_module(LCM REQUIRED lcm)
 
 # Local source dir (same as the original)
 set(PROJECT_SRC_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src)
@@ -124,7 +123,7 @@ add_executable(autom_node ${AUTOM_SRCS})
 
 target_link_libraries(safety_handler_node Safetylib)
 target_link_libraries(executioner_node Execlib)
-target_link_libraries(autom_node Automlib ${LCM_LIBRARIES})
+target_link_libraries(autom_node Automlib)
 
 ament_target_dependencies(safety_handler_node
   rclcpp
