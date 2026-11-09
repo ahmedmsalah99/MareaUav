@@ -8,6 +8,7 @@
 #include "Command.hpp"
 #include "common/conversions.h"
 #include "guidance_system/autom/Lander/Lander.h"
+#include "guidance_system/autom/SimpleLanding.hpp"
 
 /** @ingroup Automatic
  * @brief Derived class of the Command class.
@@ -79,73 +80,14 @@ private:
     bool first = true;
 
     /**
-     * @brief Such method calculates the descend rate profile (linear) through y = mx + q
-     * @param dz vertical distance between robot and the platform
-     * @param drate_max Maximum rate
-     * @param drate_min Minimum rate
-     * @param tmax Maximum time
-     * @param tmin Minimum time
-     * @return setpoint position on Z axis
-     */
-
-    double calculateDescendRate(double dz,double drate_max,double drate_min, double tmax, double tmin){
-
-        //where x is vertical distance between robot and platform
-        if(dz > tmax)      return drate_max;
-        else if(dz < tmin) return drate_min;
-        else{
-
-            double m = (drate_max - drate_min) / (tmax - tmin);
-            double q = drate_min - m * tmin;
-            return m * dz + q;
-
-        }
-    }
-
-    /**
-     * @brief The core method for simple landing action
-     * @details Such method allows to land from the current X and Y position.
-     *
-     * @param x_target Actual X position of the drone
-     * @param y_target Actual Y position of the drone
-     * @param h Height from which the land should start
+     * @brief Basic landing: lands at (x_target, y_target) on the ground height h,
+     * without the pad or vision. The algorithm is simple_landing::step()
+     * (SimpleLanding.hpp), shared with the Lander's abort.
      */
 
     void simpleLanding(float x_target, float y_target, float h) {
-
-        //Calculate difference
-
-        double dx = - _state->getX() + x_target;
-        double dy = - _state->getY() + y_target;
-        double dz = - _state->getZ() + h;
-
-        // Be sure that we are on top of the target
-
-        const Parameters& p = _lander.getParams();
-        double x_target_v = p.simpleLandXYGain * (dx);
-        double y_target_v = p.simpleLandXYGain * (dy);
-
-        _comm->setVx(x_target_v);
-        _comm->setVy(y_target_v);
-        _comm->setType(MavState::VELOCITY);
-        //TODO: add security checks on vz
-        if(fabs(dx) <= p.simpleLandXYTol && fabs(dy) <= p.simpleLandXYTol){
-            //Descending is safe, is it?
-            double desc = calculateDescendRate(fabs(dz), p.simpleLandDescSpeedMax, p.simpleLandDescSpeedMin, p.simpleLandDescSpeedMaxAbove, p.simpleLandDescSpeedMinBelow);
-            _comm->setVz(-desc);
-
-            if (fabs(dz) < p.simpleLandFinalHeight){
-                _comm->setX(x_target);
-                _comm->setY(y_target);
-                _comm->setZ(h - p.simpleLandPushDown);
-                _comm->setVx(NAN);   // position-only: don't leak the velocity-mode Vx/Vy above
-                _comm->setVy(NAN);
-                _comm->setType(MavState::POSITION);
-            }
-
-        }
-        else _comm->setVz(0);
-
+        if (simple_landing::step(*_state, x_target, y_target, h, _lander.getParams(), *_comm, _simpleDisarm))
+            _lander.requestDisarm();
     }
 
     /**
@@ -209,6 +151,9 @@ private:
     }
 
 public:
+    /** Where the drone took off: a landing abort returns and lands here. */
+    void setTakeoffPosition(double x, double y, double z) { _lander.setTakeoffPosition(x, y, z); }
+
     Land(MavState *_state, MavState *_comm,exec::task *_actualTask, MavState* _platform, MavState* _Vision, MavState* _Ultrasonic, SeaState* _Sea) : Command(_state, _comm, _actualTask) , _plat(_plat), _platformPose(_platform), _VisionPose(_Vision),_UltrasonicInfo(_Ultrasonic),_seaState(_Sea){}
 
     /**
@@ -227,6 +172,8 @@ public:
     LandGoDiagnostics getGoDiagnostics() const {
         return _lander.getGoDiagnostics();
     }
+
+    simple_landing::DisarmResender _simpleDisarm;
 
     bool consumeDisarmRequest() {
         return _lander.consumeDisarmRequest();

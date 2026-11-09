@@ -51,9 +51,9 @@ ${sensor_msgs_INCLUDE_DIRS}
 # package no longer needs M2M_INCLUDE (mocap2mav/include) or LCM.
 include_directories(include)
 
-# M2M_MODE: 0 = sim, 1 = mocap, 2 = hw. Mocap and hw both use the real sensor.
+# M2M_MODE: 0 = sim, 1 = mocap, 2 = hw, 3 = mocap in sim. Gazebo modes (0, 3) use the sim sensor.
 set(M2M_MODE "$ENV{M2M_MODE}")
-if("${M2M_MODE}" STREQUAL "0")
+if("${M2M_MODE}" STREQUAL "0" OR "${M2M_MODE}" STREQUAL "3")
  set(SOURCE FILES source/UltrasonicSensorSim.cpp include/UltrasonicSensor.h)
  add_library(UltrasonicSensor source/UltrasonicSensorSim.cpp include/UltrasonicSensor.h)
 elseif("${M2M_MODE}" STREQUAL "1" OR "${M2M_MODE}" STREQUAL "2")
@@ -62,7 +62,7 @@ elseif("${M2M_MODE}" STREQUAL "1" OR "${M2M_MODE}" STREQUAL "2")
  find_library(wiringPi_LIB wiringPi)
  target_link_libraries(UltrasonicSensor ${wiringPi_LIB})
 else()
- message(FATAL_ERROR "M2M_MODE must be set to 0 (sim), 1 (mocap) or 2 (hw); got '${M2M_MODE}'")
+ message(FATAL_ERROR "M2M_MODE must be set to 0 (sim), 1 (mocap), 2 (hw) or 3 (mocap in sim); got '${M2M_MODE}'")
 endif()
 
 

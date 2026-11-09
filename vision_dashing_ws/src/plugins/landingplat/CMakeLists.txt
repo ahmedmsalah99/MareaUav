@@ -14,6 +14,7 @@ find_package(std_msgs REQUIRED)
 find_package(px4_msgs REQUIRED)
 find_package(sensor_msgs REQUIRED)
 find_package(ulisse_msgs REQUIRED)
+find_package(geometry_msgs REQUIRED)
 find_package(gazebo REQUIRED)
 
 include_directories(include ${GAZEBO_INCLUDE_DIRS})
@@ -35,6 +36,7 @@ ament_target_dependencies(platformPlugin
   std_msgs
   px4_msgs
   sensor_msgs
+  geometry_msgs
   ulisse_msgs)
 
 target_link_libraries(platformPlugin ${GAZEBO_LIBRARIES})

@@ -13,6 +13,7 @@ void InitState::handle(){
     //Got everything (assume it)
     getSignals();
     static int wait = 0;
+    *_contextL->_holdWaitTimer = 0.0;   // fresh approach: restart the HOLD -> COMP timeout
     std::cout << "start param.inspecEnable " << param.inspecEnable << std::endl;
     // Wait initWaitTicks control ticks (counted once per tick) before deciding.
     ++wait;
@@ -152,6 +153,20 @@ void HoldState::handle(){
         return;
     }
 
+    // Preparing for COMP: count the time since the slope finished. If COMP has
+    // not been reached within holdToCompTimeout (sea never calm enough, no
+    // catamaran data, ...), give up: ABORT climbs, returns to the take-off
+    // point and lands there. Not reset by compValid flickering; reset on
+    // entering COMP and in INIT.
+    *_contextL->_holdWaitTimer += _contextL->_seaState->dt;
+    if (*_contextL->_holdWaitTimer >= param.holdToCompTimeout) {
+        std::cout << "[ABORT] COMP not reached after " << *_contextL->_holdWaitTimer
+                  << " s in HOLD (limit " << param.holdToCompTimeout << " s): returning to the take-off point" << std::endl;
+        this->_contextL->setStatePtr(_nextAbortState);
+        printStateTransition();
+        return;
+    }
+
     // Require compValid to hold for close to holdToCompWait seconds before
     // actually transitioning — a brief flicker into "valid" shouldn't be
     // enough on its own. The timer DECAYS (at the same rate it accumulates)
@@ -174,6 +189,7 @@ void HoldState::handle(){
         printStateTransition();
         waitComp = 0;
         *_contextL->_compValidTimer = 0.0;   // consumed — start clean for next time
+        *_contextL->_holdWaitTimer  = 0.0;   // COMP reached: the timeout starts over if we ever come back
         return;
     }
 
@@ -405,4 +421,8 @@ void LandingDoneState::handle() {
     // Terminal: no transitions out. The drone stays put (Lander::run() freezes
     // the setpoint at the current position for this state) until an external
     // reset reinitialises the whole state machine.
+}
+
+void AbortState::handle() {
+    // Terminal: no transitions out. Lander::run() flies the abort.
 }

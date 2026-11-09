@@ -27,7 +27,7 @@ Executioner::Executioner(){
     isCameraSafetyTaskRunning = 0;
     isSonarSafetyTaskRunning = 0;
     isGoingInSafeHarbor = 0;
-    env_sim = (common::runModeFromEnv() == common::RunMode::Sim);
+    env_sim = common::runModeIsGazebo(common::runModeFromEnv());
 
 }
 

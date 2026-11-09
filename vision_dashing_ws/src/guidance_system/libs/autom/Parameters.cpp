@@ -7,6 +7,7 @@
 #include "common/RunMode.h"
 
 #include <ament_index_cpp/get_package_share_directory.hpp>
+#include <yaml-cpp/yaml.h>
 #include <map>
 #include <stdexcept>
 #include <vector>
@@ -72,6 +73,16 @@ Parameters::Parameters() {
     touchConfirmHold      = 0.3;
     logPredLookback     = 0.5;
     goForceIfSonarBelow = 0.2;
+    simpleLandFinalHeight = 0.25;
+    holdToCompTimeout = 60.0;
+    abortAltitude = 6.0;
+    abortArrivedTol = 0.3;
+    geofenceEnable = false;
+    geofenceXMin = -1e9;
+    geofenceXMax =  1e9;
+    geofenceYMin = -1e9;
+    geofenceYMax =  1e9;
+    altMaxWorld  =  1e9;
     inspecCircleRadiusGrowth = 0.5;
     altMaxAbovePadMargin = 0.1;
     xyDirectOvershootGain = 0.5;
@@ -90,8 +101,6 @@ Parameters::Parameters() {
     simpleLandDescSpeedMaxAbove = 1.6;
     simpleLandDescSpeedMin = 0.1;
     simpleLandDescSpeedMinBelow = 0.7;
-    simpleLandFinalHeight = 0.25;
-    simpleLandPushDown = 10.0;
     emergLandFinalDescSpeed = 1.0;
 }
 
@@ -317,6 +326,36 @@ bool Parameters::setKey(const std::string& param, double value) {
             else if( !param.compare("GO_PITCH_RATE_MAX_RADPS") )
                 goPitchRateMax = value;
 
+            else if( !param.compare("GEOFENCE_ENABLE") )
+                geofenceEnable = value;
+
+            else if( !param.compare("GEOFENCE_X_MIN_M") )
+                geofenceXMin = value;
+
+            else if( !param.compare("GEOFENCE_X_MAX_M") )
+                geofenceXMax = value;
+
+            else if( !param.compare("GEOFENCE_Y_MIN_M") )
+                geofenceYMin = value;
+
+            else if( !param.compare("GEOFENCE_Y_MAX_M") )
+                geofenceYMax = value;
+
+            else if( !param.compare("ALT_MAX_WORLD_M") )
+                altMaxWorld = value;
+
+            else if( !param.compare("HOLD_TO_COMP_TIMEOUT_S") )
+                holdToCompTimeout = value;
+
+            else if( !param.compare("ABORT_ALTITUDE_M") )
+                abortAltitude = value;
+
+            else if( !param.compare("ABORT_ARRIVED_TOL_M") )
+                abortArrivedTol = value;
+
+            else if( !param.compare("SIMPLE_LAND_FINAL_HEIGHT_M") )
+                simpleLandFinalHeight = value;
+
             else if( !param.compare("GO_FORCE_IF_SONAR_BELOW_M") )
                 goForceIfSonarBelow = value;
 
@@ -425,11 +464,7 @@ bool Parameters::setKey(const std::string& param, double value) {
             else if( !param.compare("SIMPLE_LAND_DESC_SPEED_MIN_BELOW_M") )
                 simpleLandDescSpeedMinBelow = value;
 
-            else if( !param.compare("SIMPLE_LAND_FINAL_HEIGHT_M") )
-                simpleLandFinalHeight = value;
 
-            else if( !param.compare("SIMPLE_LAND_PUSH_DOWN_M") )
-                simpleLandPushDown = value;
 
             else if( !param.compare("EMERG_LAND_FINAL_DESC_SPEED_MPS") )
                 emergLandFinalDescSpeed = value;
@@ -441,7 +476,7 @@ bool Parameters::setKey(const std::string& param, double value) {
 
 const std::set<std::string>& Parameters::perModeKeys() {
     // Keys that differ between sim, mocap and real hardware. They must be in
-    // landing_<mode>.txt and must NOT be in landing_common.txt.
+    // landing_<mode>.yaml and must NOT be in landing_common.yaml.
     static const std::set<std::string> keys = {
         "ALT_MAX_ABOVE_PAD_M",
         "ALT_MIN_WORLD_M",
@@ -472,7 +507,42 @@ const std::set<std::string>& Parameters::perModeKeys() {
         "TOUCH_CONFIRM_HOLD_S",
         "TOUCH_ACCEL_CLIP_MPS2",
         "TOUCH_ACCEL_AVG_SAMPLES",
-        "EMERG_LAND_FINAL_DESC_SPEED_MPS"
+        "EMERG_LAND_FINAL_DESC_SPEED_MPS",
+        // Airframe tuning and room size (mocap is confined).
+        "HOLD_TO_COMP_TIMEOUT_S",
+        "ABORT_ALTITUDE_M",
+        "GEOFENCE_ENABLE",
+        "GEOFENCE_X_MIN_M",
+        "GEOFENCE_X_MAX_M",
+        "GEOFENCE_Y_MIN_M",
+        "GEOFENCE_Y_MAX_M",
+        "ALT_MAX_WORLD_M",
+        "INSPEC_ENABLE",
+        "INSPEC_CIRCLE_RADIUS_M",
+        "INSPEC_CIRCLE_SPEED_MPS",
+        "INSPEC_CIRCLE_RADIUS_GROWTH_M",
+        "INSPEC_ALTITUDE_M",
+        "CENTERED_CONE_HEIGHT_M",
+        "CENTERED_CONE_RADIUS_MIN_M",
+        "CENTERED_CONE_RADIUS_MAX_M",
+        "COMP_CENTERED_CONE_RADIUS_MIN_M",
+        "COMP_CENTERED_CONE_RADIUS_MAX_M",
+        "OFF_CENTER_CONE_RADIUS_MIN_M",
+        "OFF_CENTER_CONE_RADIUS_MAX_M",
+        "XY_PID_KP",
+        "XY_PID_KI",
+        "XY_PID_KD",
+        "INIT_START_POINT_XY_DIST_M",
+        "INIT_START_POINT_XY_TOL_M",
+        "INIT_START_POINT_Z_TOL_M",
+        "SLOPE_XY_KI",
+        "HOLD_HEIGHT_M",
+        "HOLD_DESCEND_ABOVE_M",
+        "HOLD_COMP_BELOW_M",
+        "COMP_HEIGHT_P_GAIN",
+        "COMP_LEAD_TIME_S",
+        "SIMPLE_LAND_XY_GAIN",
+        "SIMPLE_LAND_DESC_SPEED_MAX_ABOVE_M",
     };
     return keys;
 }
@@ -484,13 +554,14 @@ void Parameters::loadLanding() {
         case common::RunMode::Sim:   mode = "sim";   break;
         case common::RunMode::Mocap: mode = "mocap"; break;
         case common::RunMode::Hw:    mode = "hw";    break;
+        case common::RunMode::SimMocap: mode = "sim_mocap"; break;
     }
     loadLanding(dir, mode);
 }
 
 void Parameters::loadLanding(const std::string& dir, const std::string& mode) {
-    const std::string commonFile = dir + "/landing_common.txt";
-    const std::string modeFile   = dir + "/landing_" + mode + ".txt";
+    const std::string commonFile = dir + "/landing_common.yaml";
+    const std::string modeFile   = dir + "/landing_" + mode + ".yaml";
     const auto& perMode = perModeKeys();
 
     // Collect every problem first, then fail once with the full list.
@@ -500,43 +571,47 @@ void Parameters::loadLanding(const std::string& dir, const std::string& mode) {
 
     Parameters probe;   // scratch object: only used to ask setKey() whether a key exists
 
+    // File layout: top-level sections (only for grouping) holding KEY: value.
     auto readFile = [&](const std::string& path, bool isModeFile) {
         std::cout << "config_file " << path << std::endl;
-        std::ifstream f(path);
-        if (!f.is_open()) { errors.push_back("cannot open " + path); return; }
-        std::string line;
-        int lineNo = 0;
-        while (getline(f, line)) {
-            ++lineNo;
-            const std::string at = path + ":" + std::to_string(lineNo);
-            line.erase(std::remove_if(line.begin(), line.end(), isspace), line.end());
-            if (line.empty() || line[0] == '#') continue;
-            const auto eq = line.find('=');
-            if (eq == std::string::npos) { errors.push_back(at + ": no '=' in line"); continue; }
-            const std::string key = line.substr(0, eq);
-            double value;
-            try { value = std::stod(line.substr(eq + 1)); }
-            catch (const std::exception&) { errors.push_back(at + ": bad number for " + key); continue; }
+        YAML::Node root;
+        try { root = YAML::LoadFile(path); }
+        catch (const std::exception& e) { errors.push_back("cannot read " + path + ": " + e.what()); return; }
+        if (!root.IsMap()) { errors.push_back(path + ": top level must be sections (a map)"); return; }
+        for (const auto& section : root) {
+            const std::string sectionName = section.first.as<std::string>();
+            if (!section.second.IsMap()) {
+                errors.push_back(path + ":" + std::to_string(section.first.Mark().line + 1) + ": '" + sectionName +
+                                 "' must be a section holding KEY: value entries");
+                continue;
+            }
+            for (const auto& entry : section.second) {
+                const std::string key = entry.first.as<std::string>();
+                const std::string at  = path + ":" + std::to_string(entry.first.Mark().line + 1);
+                double value;
+                try { value = entry.second.as<double>(); }
+                catch (const std::exception&) { errors.push_back(at + ": bad number for " + key); continue; }
 
-            if (!probe.setKey(key, value)) { errors.push_back(at + ": unknown key " + key); continue; }
-            const bool keyIsPerMode = perMode.count(key) > 0;
-            if (keyIsPerMode != isModeFile) {
-                errors.push_back(at + ": " + key + " belongs in " + (keyIsPerMode ? modeFile : commonFile));
-                continue;
+                if (!probe.setKey(key, value)) { errors.push_back(at + ": unknown key " + key); continue; }
+                const bool keyIsPerMode = perMode.count(key) > 0;
+                if (keyIsPerMode != isModeFile) {
+                    errors.push_back(at + ": " + key + " belongs in " + (keyIsPerMode ? modeFile : commonFile));
+                    continue;
+                }
+                if (where.count(key)) {
+                    errors.push_back(at + ": duplicate key " + key + " (already set at " + where[key] + ")");
+                    continue;
+                }
+                where[key]  = at;
+                values[key] = value;
             }
-            if (where.count(key)) {
-                errors.push_back(at + ": duplicate key " + key + " (already set at " + where[key] + ")");
-                continue;
-            }
-            where[key]  = at;
-            values[key] = value;
         }
     };
     readFile(commonFile, false);
     readFile(modeFile, true);
 
     // Missing: every key setKey() knows must be set exactly once, per-mode
-    // keys in the mode file and the rest in landing_common.txt.
+    // keys in the mode file and the rest in landing_common.yaml.
     for (const auto& key : allKeys())
         if (!values.count(key))
             errors.push_back("missing key " + key + " (expected in " +
@@ -614,6 +689,16 @@ const std::vector<std::string>& Parameters::allKeys() {
         "GO_PITCH_MAX_RAD",
         "GO_ROLL_RATE_MAX_RADPS",
         "GO_PITCH_RATE_MAX_RADPS",
+        "GEOFENCE_ENABLE",
+        "GEOFENCE_X_MIN_M",
+        "GEOFENCE_X_MAX_M",
+        "GEOFENCE_Y_MIN_M",
+        "GEOFENCE_Y_MAX_M",
+        "ALT_MAX_WORLD_M",
+        "HOLD_TO_COMP_TIMEOUT_S",
+        "ABORT_ALTITUDE_M",
+        "ABORT_ARRIVED_TOL_M",
+        "SIMPLE_LAND_FINAL_HEIGHT_M",
         "GO_FORCE_IF_SONAR_BELOW_M",
         "GO_LATCH_S",
         "GO_VOTE_WINDOW_S",
@@ -650,8 +735,6 @@ const std::vector<std::string>& Parameters::allKeys() {
         "SIMPLE_LAND_DESC_SPEED_MAX_ABOVE_M",
         "SIMPLE_LAND_DESC_SPEED_MIN_MPS",
         "SIMPLE_LAND_DESC_SPEED_MIN_BELOW_M",
-        "SIMPLE_LAND_FINAL_HEIGHT_M",
-        "SIMPLE_LAND_PUSH_DOWN_M",
         "EMERG_LAND_FINAL_DESC_SPEED_MPS"
     };
     return keys;

@@ -17,10 +17,11 @@ find_package(px4_msgs REQUIRED)
 find_package(ulisse_msgs REQUIRED)
 find_package(Eigen3 REQUIRED)# uncomment the following section in order to fill in
 find_package(ament_index_cpp REQUIRED)
+find_package(yaml_cpp_vendor REQUIRED)   # provides yaml-cpp (landing_*.yaml params)
+find_package(yaml-cpp REQUIRED)
 find_package(ultrasonic_sensor REQUIRED)
 # further dependencies manually.
 # find_package(<dependency> REQUIRED)
-pkg_search_module(LCM REQUIRED lcm)
 
 # Local source dir (same as the original)
 set(PROJECT_SRC_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src)
@@ -101,7 +102,7 @@ ament_target_dependencies(Automlib
   ultrasonic_sensor
   ulisse_msgs
 )
-target_link_libraries(Automlib StateMachine miniPID)
+target_link_libraries(Automlib StateMachine miniPID yaml-cpp)
 
 set(SAFETY_SRCS
   ${PROJECT_SRC_DIR}/SafetyNode.cpp
@@ -122,7 +123,7 @@ add_executable(autom_node ${AUTOM_SRCS})
 
 target_link_libraries(safety_handler_node Safetylib)
 target_link_libraries(executioner_node Execlib)
-target_link_libraries(autom_node Automlib ${LCM_LIBRARIES})
+target_link_libraries(autom_node Automlib)
 
 ament_target_dependencies(safety_handler_node
   rclcpp
@@ -177,7 +178,7 @@ install(DIRECTORY
 )
 # Touchdown-stats CSVs (Lander::logTouchdownCsv()) are written at runtime into
 # the installed share/results directory (resolved via
-# ament_index_cpp::get_package_share_directory(), same as the landing_*.txt params) —
+# ament_index_cpp::get_package_share_directory(), same as the landing_*.yaml params) —
 # install an empty placeholder so the directory exists after a fresh colcon build.
 install(DIRECTORY
   ../common/results

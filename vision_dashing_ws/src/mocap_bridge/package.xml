@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
+  <name>mocap_bridge</name>
+  <version>0.1.0</version>
+  <description>Feeds motion-capture rigid-body poses (natnet_ros2, or the landingplat plugin's fake mocap in M2M_MODE=3) to PX4 as external vision and to the guidance stack as the pad's nav_filter/IMU data.</description>
+  <maintainer email="ahmed.msalah99@gmail.com">Ahmed Salah</maintainer>
+  <license>TODO</license>
+
+  <buildtool_depend>ament_cmake</buildtool_depend>
+  <depend>rclcpp</depend>
+  <depend>geometry_msgs</depend>
+  <depend>sensor_msgs</depend>
+  <depend>px4_msgs</depend>
+  <depend>ulisse_msgs</depend>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>

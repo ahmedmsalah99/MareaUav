@@ -15,6 +15,9 @@
 #include <px4_msgs/msg/vehicle_odometry.hpp>
 #include <sensor_msgs/msg/imu.hpp>
 #include <ulisse_msgs/msg/simulated_system.hpp>
+#include <geometry_msgs/msg/pose_stamped.hpp>
+#include <cstdlib>
+#include <map>
 
 #include "WaveGen.h"
 
@@ -188,6 +191,17 @@ namespace gazebo
         } _sim_system_raw;
 
         bool _use_sim_system = false;   // latched true on the first message heard
+
+        // ---- Mocap-in-sim mode (M2M_MODE=3) --------------------------------
+        // The plugin stops driving the pad (no bag, no waves): it stays where
+        // it is, and can be moved/tilted from the Gazebo GUI like the real pad.
+        // It plays OptiTrack instead: every model's true world pose is
+        // published as geometry_msgs/PoseStamped (ENU, Z-up) on
+        // /mocap/<model name>/pose, like natnet_ros2 does per rigid body.
+        static constexpr double kMocapRateHz = 120.0;   // typical OptiTrack frame rate
+        bool _mocap_mode = false;
+        double _mocap_last_pub = -1.0;
+        std::map<std::string, rclcpp::Publisher<geometry_msgs::msg::PoseStamped>::SharedPtr> _mocap_pubs;
 
         // Slew-rate-limited values actually used to drive the simulation —
         // updated once per OnUpdate() tick (not once per message), so a
@@ -372,6 +386,17 @@ namespace gazebo
 
                 wave.init(10,2.0,0.5,7.0);
 
+                // ---- Mocap-in-sim mode (M2M_MODE=3) ----
+                {
+                    const char* m = std::getenv("M2M_MODE");
+                    _mocap_mode = (m && std::string(m) == "3");
+                }
+                if (_mocap_mode) {
+                    RCLCPP_INFO(_ros_node->get_logger(),
+                        "M2M_MODE=3 (mocap in sim): pad left where it is (move it in the GUI); "
+                        "publishing every model's pose on /mocap/<model>/pose at %.0f Hz", kMocapRateHz);
+                }
+
                 _pose = _model.get()->WorldPose();
                 _prev_pose      = _pose;
                 _prev_prev_pose = _pose;
@@ -403,6 +428,37 @@ namespace gazebo
                 _first_rb = true;
                 RCLCPP_INFO(_ros_node->get_logger(), "PlatformManager LOADED");
             }
+            // Plays OptiTrack/natnet_ros2 in M2M_MODE=3: the true Gazebo pose of
+            // every model, as PoseStamped (ENU, Z-up, frame "world") on
+            // /mocap/<model name>/pose. Which topic is the drone and which the
+            // pad is mocap_bridge's configuration, not the plugin's.
+            void publishFakeMocap()
+            {
+                if (_mocap_last_pub >= 0.0 && _actual_sim_time - _mocap_last_pub < 1.0 / kMocapRateHz) return;
+                _mocap_last_pub = _actual_sim_time;
+
+                for (const auto& model : _model.get()->GetWorld()->Models()) {
+                    const std::string name = model->GetName();
+                    auto it = _mocap_pubs.find(name);
+                    if (it == _mocap_pubs.end()) {
+                        it = _mocap_pubs.emplace(name, _ros_node->create_publisher<geometry_msgs::msg::PoseStamped>(
+                                 "/mocap/" + name + "/pose", rclcpp::SensorDataQoS())).first;
+                    }
+                    const ignition::math::Pose3d p = model->WorldPose();
+                    geometry_msgs::msg::PoseStamped msg;
+                    msg.header.stamp    = _ros_node->now();
+                    msg.header.frame_id = "world";
+                    msg.pose.position.x = p.Pos().X();
+                    msg.pose.position.y = p.Pos().Y();
+                    msg.pose.position.z = p.Pos().Z();
+                    msg.pose.orientation.w = p.Rot().W();
+                    msg.pose.orientation.x = p.Rot().X();
+                    msg.pose.orientation.y = p.Rot().Y();
+                    msg.pose.orientation.z = p.Rot().Z();
+                    it->second->publish(msg);
+                }
+            }
+
             void invertDirection(){
 
                 _dir = -_dir;
@@ -426,7 +482,12 @@ namespace gazebo
 
                 double yaw_des = 0.0;
 
-                if(_use_sim_system)
+                if(_mocap_mode)
+                {
+                  // Mocap lab: nothing drives the pad. Keep whatever pose it has
+                  // (spawn pose, or wherever it was moved/tilted in the GUI).
+                }
+                else if(_use_sim_system)
                 {
                   // Snapshot the raw sample while still locked.
                   SimSystemData raw = _sim_system_raw;
@@ -628,6 +689,8 @@ namespace gazebo
                 }
 
                 _pose_pub->publish(plat_pose);
+
+                if (_mocap_mode) publishFakeMocap();
 
                 // ---- IMU publishing ----
                 // Derive readings from observed platform motion (three-point history):
