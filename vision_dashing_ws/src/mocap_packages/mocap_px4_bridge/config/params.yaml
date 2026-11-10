@@ -1,4 +1,5 @@
+# Drone rigid body (mocap_optitrack) -> PX4 external vision. Single drone, no namespace.
 /mocap_px4_bridge:
   ros__parameters:
-    mocap_topic: /x500_2/pose
-    px4_topic: /x500_2/fmu/in/vehicle_visual_odometry
+    mocap_topic: /drone/pose
+    px4_topic: /fmu/in/vehicle_visual_odometry

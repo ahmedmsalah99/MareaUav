@@ -1,17 +1,26 @@
 #
 # Definition of all trackable objects
-# Identifier corresponds to Trackable ID set in Tracking Tools
+# Identifier corresponds to the rigid body's Streaming ID in Motive (single digit: the node
+# parses only one character of the ID).
+# Motive must stream with Up Axis = Z: mocap_px4_bridge's axis conversion assumes it.
 #
 mocap_node:
     ros__parameters:
         rigid_bodies:
-            2:
-                pose: "x500_2/pose"
-                pose2d: "" #"x500_2/ground_pose"
-                odom: "" #"x500_2/Odom"
-                tf: "" #"tf"
-                child_frame_id: "x500_2/base_link"
-                parent_frame_id: "" #"world"
+            2:                                # drone (the lab's x500_2 body). Check the Streaming ID in Motive.
+                pose: "/drone/pose"           # -> mocap_px4_bridge (mocap_topic) -> PX4 external vision
+                pose2d: ""
+                odom: ""
+                tf: ""
+                child_frame_id: "drone/base_link"
+                parent_frame_id: "world"
+            3:                                # landing pad. PLACEHOLDER ID: set it to the pad's Streaming ID in Motive.
+                pose: "/pad/pose"             # -> mocap_pad_bridge (pad_pose_topic) -> pad sea-state topics
+                pose2d: ""
+                odom: ""
+                tf: ""
+                child_frame_id: "pad/base_link"
+                parent_frame_id: "world"
         optitrack_config:
                 multicast_address: "239.255.42.99"
                 command_port: 1510
