@@ -3,14 +3,16 @@
 # Paste the `param set` lines into the PX4 shell (pxh> in SITL, MAVLink console in QGC on the drone),
 # then `param save` and reboot PX4. Check each name/value in QGC's parameter list for your PX4 version.
 #
-# mocap_bridge publishes the drone pose on /fmu/in/vehicle_visual_odometry (NED/FRD, position + attitude).
+# mocap_px4_bridge (lab package) publishes the drone pose on /fmu/in/vehicle_visual_odometry (FRD, position + attitude).
 
 param set EKF2_GPS_CTRL 0        # do not fuse GPS (none indoors; in sim the simulated GPS is ignored)
 param set EKF2_EV_CTRL 11        # fuse external vision: horizontal position (1) + vertical position (2) + yaw (8)
 param set EKF2_HGT_REF 3         # height reference = vision
 param set EKF2_BARO_CTRL 0       # do not fuse the barometer (drifts indoors, conflicts with mocap height)
 param set EKF2_MAG_TYPE 5        # no magnetometer fusion: heading comes from mocap (indoor magnetic field is unreliable)
-param set EKF2_EV_NOISE_MD 0     # use the variances sent in the message (mocap_bridge.yaml position_std_m / orientation_std_rad)
+param set EKF2_EV_NOISE_MD 1     # use the noise parameters below: the lab's mocap_px4_bridge sends no variances
+param set EKF2_EVP_NOISE 0.02    # [m] mocap position noise (OptiTrack: millimetres; 2 cm leaves margin)
+param set EKF2_EVA_NOISE 0.05    # [rad] mocap attitude noise
 param set EKF2_EV_DELAY 10       # [ms] mocap-to-PX4 delay, best guess: mocap processing + ROS 2/uXRCE-DDS transport (a few ms in sim, ~5-20 ms in the lab over Wi-Fi). Tune in the lab from the EKF2 innovation logs.
 param set COM_ARM_WO_GPS 1       # allow arming without a GPS fix
 

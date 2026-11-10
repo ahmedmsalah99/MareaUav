@@ -1,0 +1,10 @@
+# mocap_pad_bridge parameters (mocap lab, M2M_MODE=1, and mocap in sim, M2M_MODE=3).
+# The pad rigid body comes from mocap_optitrack in the lab, from the landingplat plugin in sim
+# (the sim launch file overrides pad_pose_topic). No in-code defaults: a missing key stops the node.
+mocap_pad_bridge:
+  ros__parameters:
+    pad_pose_topic:            /pad/pose       # PoseStamped of the pad rigid body (mocap_optitrack config/mocap.yaml)
+    pose_timeout_s:            0.3             # Pad not seen for this long: stop publishing (warns) [s]
+    pad_nav_rate_hz:           10.0            # Rate of /ulisse/nav_filter/data (the recorded boat data is ~10 Hz) [Hz]
+    pad_imu_rate_hz:           50.0            # Rate of /adnav_node/imu_raw [Hz]
+    pad_velocity_tau_s:        0.2             # Low-pass time constant on the pad's differentiated velocity/rates [s]

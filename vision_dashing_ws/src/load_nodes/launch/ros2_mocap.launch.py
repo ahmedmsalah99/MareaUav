@@ -2,9 +2,8 @@ import os
 
 from launch import LaunchDescription
 from launch.actions import (DeclareLaunchArgument, ExecuteProcess,
-                            IncludeLaunchDescription, SetEnvironmentVariable)
+                            SetEnvironmentVariable)
 from launch.conditions import IfCondition
-from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.substitutions import LaunchConfiguration
 
 from launch_ros.actions import Node
@@ -13,32 +12,28 @@ from ament_index_python.packages import get_package_share_directory
 
 # Mocap lab (M2M_MODE=1): the real drone (Raspberry Pi + Pixracer) flown on
 # OptiTrack.
-#   OptiTrack/Motive --NatNet--> natnet_ros2 --> /<rigid body>/pose
-#                                 mocap_bridge --> PX4 external vision
-#                                              --> pad nav_filter/data + IMU
+#   OptiTrack/Motive --NatNet--> mocap_optitrack --> /drone/pose, /pad/pose
+#        /drone/pose --> mocap_px4_bridge --> PX4 external vision
+#        /pad/pose   --> mocap_pad_bridge --> pad nav_filter/data + IMU
+#   px4_global_origin --> PX4 global origin (no GPS indoors)
 #   Pi camera (v4l2_camera) --> apriltag2_node --> guidance
 #   MicroXRCEAgent <--serial--> PX4 (uXRCE-DDS)
 #
 # Build with M2M_MODE=1 exported (real ultrasonic / payload code).
 # PX4 must fuse vision instead of GPS: see load_nodes/px4/mocap_ekf2.params.
-# In Motive: rigid bodies named like mocap_bridge.yaml's topics (default
-# "drone" and "pad"), Up Axis = Z, NatNet streaming on.
+# In Motive: Up Axis = Z (mocap_px4_bridge's axis conversion assumes it),
+# NatNet streaming (multicast) on, and the drone/pad Streaming IDs matching
+# mocap_optitrack/config/mocap.yaml.
 #
 # Example:
-#   ros2 launch load_nodes ros2_mocap.launch.py server_ip:=192.168.1.10 client_ip:=192.168.1.20
+#   ros2 launch load_nodes ros2_mocap.launch.py
 # Pieces that run elsewhere or are not installed can be switched off:
-#   start_natnet:=false start_camera:=false start_agent:=false
+#   start_optitrack:=false start_camera:=false start_agent:=false
 def generate_launch_description():
 
     args = [
-        DeclareLaunchArgument('start_natnet', default_value='true',
-                              description='Start natnet_ros2 (OptiTrack client) here'),
-        DeclareLaunchArgument('server_ip', default_value='192.168.0.100',
-                              description='Motive PC IP (its Local Interface in Motive)'),
-        DeclareLaunchArgument('client_ip', default_value='192.168.0.103',
-                              description='IP of this machine on the mocap network'),
-        DeclareLaunchArgument('server_type', default_value='multicast',
-                              description='NatNet streaming: multicast or unicast'),
+        DeclareLaunchArgument('start_optitrack', default_value='true',
+                              description='Start mocap_optitrack (OptiTrack NatNet client) here'),
         DeclareLaunchArgument('start_camera', default_value='true',
                               description='Start the Pi camera driver (v4l2_camera)'),
         DeclareLaunchArgument('video_device', default_value='/dev/video0',
@@ -56,25 +51,25 @@ def generate_launch_description():
                                    'cfg', 'apriltag_mocap.yaml')
     rescue_params = os.path.join(get_package_share_directory('apriltag2_rescue_node'),
                                  'cfg', 'tag_real.yaml')
-    mocap_bridge_params = os.path.join(get_package_share_directory('mocap_bridge'),
-                                       'config', 'mocap_bridge.yaml')
+    optitrack_params = os.path.join(get_package_share_directory('mocap_optitrack'),
+                                    'config', 'mocap.yaml')
+    mocap_px4_bridge_params = os.path.join(get_package_share_directory('mocap_px4_bridge'),
+                                           'config', 'params.yaml')
+    mocap_pad_bridge_params = os.path.join(get_package_share_directory('mocap_pad_bridge'),
+                                           'config', 'mocap_pad_bridge.yaml')
+    px4_global_origin_params = os.path.join(get_package_share_directory('px4_global_origin'),
+                                            'config', 'px4_global_origin.yaml')
 
     # ---------- External pieces (optional) ----------
-    # OptiTrack client: publishes each Motive rigid body as PoseStamped on
-    # /<name>/pose. pub_rigid_body must be true (its default is false).
-    # _share_or_empty(): the launch file still loads when natnet_ros2 is not
-    # installed, as long as start_natnet:=false.
-    natnet = IncludeLaunchDescription(
-        PythonLaunchDescriptionSource(
-            os.path.join(_share_or_empty('natnet_ros2'), 'launch', 'natnet_ros2.launch.py')),
-        launch_arguments={
-            'serverIP': LaunchConfiguration('server_ip'),
-            'clientIP': LaunchConfiguration('client_ip'),
-            'serverType': LaunchConfiguration('server_type'),
-            'pub_rigid_body': 'true',
-            'activate': 'true',
-        }.items(),
-        condition=IfCondition(LaunchConfiguration('start_natnet')),
+    # OptiTrack client (lab package): one PoseStamped per rigid body listed in
+    # mocap_optitrack/config/mocap.yaml (drone -> /drone/pose, pad -> /pad/pose).
+    optitrack = Node(
+        package='mocap_optitrack',
+        executable='mocap_node',
+        name='mocap_node',
+        output='screen',
+        parameters=[optitrack_params],
+        condition=IfCondition(LaunchConfiguration('start_optitrack')),
     )
 
     # Pi camera v2 on the legacy camera stack (/dev/video0). The compressed
@@ -130,14 +125,23 @@ def generate_launch_description():
     heave_node = Node(package='heave_estimator', executable='heave_estimator_node', output='screen',
                       parameters=[{'sample_rate': 10.0, 'fft_window_size': 256}])
 
-    # Drone/pad rigid-body topics come from mocap_bridge.yaml (/drone/pose, /pad/pose).
-    mocap_bridge_node = Node(package='mocap_bridge', executable='mocap_bridge_node', output='screen',
-                             parameters=[mocap_bridge_params])
+    # Drone pose -> PX4 external vision (lab package, config/params.yaml).
+    mocap_px4_bridge_node = Node(package='mocap_px4_bridge', executable='mocap_px4_bridge',
+                                 name='mocap_px4_bridge', output='screen',
+                                 parameters=[mocap_px4_bridge_params])
+
+    # Pad pose -> catamaran-style sea-state topics for the guidance.
+    mocap_pad_bridge_node = Node(package='mocap_pad_bridge', executable='mocap_pad_bridge_node',
+                                 output='screen', parameters=[mocap_pad_bridge_params])
+
+    # Global origin for PX4 (no GPS indoors).
+    px4_global_origin_node = Node(package='px4_global_origin', executable='px4_global_origin_node',
+                                  output='screen', parameters=[px4_global_origin_params])
 
     return LaunchDescription(args + [
         SetEnvironmentVariable(name='M2M_MODE', value='1'),
         agent,
-        natnet,
+        optitrack,
         camera,
         px4_bridge_node,
         ultrasonic_node,
@@ -149,14 +153,8 @@ def generate_launch_description():
         autom_node,
         spa_node,
         heave_node,
-        mocap_bridge_node,
+        mocap_px4_bridge_node,
+        mocap_pad_bridge_node,
+        px4_global_origin_node,
     ])
 
-
-def _share_or_empty(package):
-    """Share dir of a package, or '' if it is not installed (so the launch file
-    still loads with that piece switched off)."""
-    try:
-        return get_package_share_directory(package)
-    except Exception:
-        return ''

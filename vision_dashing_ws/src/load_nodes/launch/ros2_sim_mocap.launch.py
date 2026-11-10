@@ -13,8 +13,9 @@ from launch.actions import SetEnvironmentVariable
 #   - the landingplat plugin stops driving the pad and publishes fake OptiTrack
 #     poses of every model on /mocap/<model>/pose (Gazebo must ALSO run with M2M_MODE=3:
 #     export it in the terminal that starts `make px4_sitl gazebo-classic_...`)
-#   - mocap_bridge feeds PX4 external vision and the pad sea-state topics
-#   - do NOT play the boat bag: the pad's nav_filter/IMU come from mocap_bridge
+#   - mocap_px4_bridge (lab package) feeds PX4 external vision, mocap_pad_bridge the
+#     pad sea-state topics, px4_global_origin PX4's global origin
+#   - do NOT play the boat bag: the pad's nav_filter/IMU come from mocap_pad_bridge
 #   - PX4 must fuse vision instead of GPS: see load_nodes/px4/mocap_ekf2.params
 def generate_launch_description():
 
@@ -132,18 +133,35 @@ def generate_launch_description():
         parameters=[{'sample_rate': 10.0, 'fft_window_size': 256}],
     )
 
-    mocap_bridge_node = Node(
-        package='mocap_bridge',
-        executable='mocap_bridge_node',
+    # Same chain as the lab: the landingplat plugin plays mocap_optitrack and
+    # publishes every Gazebo model on /mocap/<model>/pose; pick the drone and
+    # the pad here (in the lab, mocap_optitrack's config gives /drone/pose and
+    # /pad/pose).
+    mocap_px4_bridge_node = Node(
+        package='mocap_px4_bridge',
+        executable='mocap_px4_bridge',
+        name='mocap_px4_bridge',
+        output='screen',
+        parameters=[{'mocap_topic': '/mocap/iris/pose',
+                     'px4_topic': '/fmu/in/vehicle_visual_odometry'}],
+    )
+
+    mocap_pad_bridge_node = Node(
+        package='mocap_pad_bridge',
+        executable='mocap_pad_bridge_node',
         output='screen',
         parameters=[
-            os.path.join(get_package_share_directory('mocap_bridge'), 'config', 'mocap_bridge.yaml'),
-            # In sim the landingplat plugin publishes every Gazebo model on
-            # /mocap/<model>/pose; pick the drone and the pad (in the lab these
-            # are natnet_ros2's rigid-body topics from mocap_bridge.yaml).
-            {'drone_pose_topic': '/mocap/iris/pose',
-             'pad_pose_topic':   '/mocap/Landing_Site/pose'},
+            os.path.join(get_package_share_directory('mocap_pad_bridge'), 'config', 'mocap_pad_bridge.yaml'),
+            {'pad_pose_topic': '/mocap/Landing_Site/pose'},
         ],
+    )
+
+    # PX4 has no GPS fusion in this mode: give it a global origin (lab coordinates).
+    px4_global_origin_node = Node(
+        package='px4_global_origin',
+        executable='px4_global_origin_node',
+        output='screen',
+        parameters=[os.path.join(get_package_share_directory('px4_global_origin'), 'config', 'px4_global_origin.yaml')],
     )
 
     return LaunchDescription([
@@ -162,5 +180,7 @@ def generate_launch_description():
         autom_node,
         spa_node,
         heave_node,
-        mocap_bridge_node
+        mocap_px4_bridge_node,
+        mocap_pad_bridge_node,
+        px4_global_origin_node
     ])
