@@ -197,7 +197,7 @@ namespace gazebo
         // it is, and can be moved/tilted from the Gazebo GUI like the real pad.
         // It plays OptiTrack instead: every model's true world pose is
         // published as geometry_msgs/PoseStamped (ENU, Z-up) on
-        // /mocap/<model name>/pose, like natnet_ros2 does per rigid body.
+        // /mocap/<model name>/pose, like mocap_optitrack does per rigid body in the lab.
         static constexpr double kMocapRateHz = 120.0;   // typical OptiTrack frame rate
         bool _mocap_mode = false;
         double _mocap_last_pub = -1.0;
@@ -428,33 +428,49 @@ namespace gazebo
                 _first_rb = true;
                 RCLCPP_INFO(_ros_node->get_logger(), "PlatformManager LOADED");
             }
-            // Plays OptiTrack/natnet_ros2 in M2M_MODE=3: the true Gazebo pose of
-            // every model, as PoseStamped (ENU, Z-up, frame "world") on
+            // Plays the lab's OptiTrack chain in M2M_MODE=3: for every model it
+            // publishes exactly what mocap_optitrack publishes in the lab
+            // (geometry_msgs/PoseStamped, reliable QoS, wall-clock stamp) on
             // /mocap/<model name>/pose. Which topic is the drone and which the
-            // pad is mocap_bridge's configuration, not the plugin's.
+            // pad is the launch file's job, not the plugin's.
+            //
+            // The lab chain (Motive set to Z-up -> mocap_optitrack -> mocap_px4_bridge)
+            // swaps axes; the pose is emulated as if Motive's axes were Gazebo's
+            // rotated 180 deg about Z and each rigid body's frame were the model
+            // frame rotated +90 deg about Z. Through that same chain PX4 then
+            // receives the Gazebo pose in NED/FRD, so PX4's local frame equals
+            // Gazebo's world (checked numerically against the expected NED pose).
             void publishFakeMocap()
             {
                 if (_mocap_last_pub >= 0.0 && _actual_sim_time - _mocap_last_pub < 1.0 / kMocapRateHz) return;
                 _mocap_last_pub = _actual_sim_time;
+
+                static const ignition::math::Quaterniond kWorldRot(0, 0, 0, 1);              // 180 deg about Z (w,x,y,z)
+                static const ignition::math::Quaterniond kBodyRot(M_SQRT1_2, 0, 0, M_SQRT1_2); // +90 deg about Z
+                rclcpp::Clock wall(RCL_SYSTEM_TIME);   // lab stamps are wall time
 
                 for (const auto& model : _model.get()->GetWorld()->Models()) {
                     const std::string name = model->GetName();
                     auto it = _mocap_pubs.find(name);
                     if (it == _mocap_pubs.end()) {
                         it = _mocap_pubs.emplace(name, _ros_node->create_publisher<geometry_msgs::msg::PoseStamped>(
-                                 "/mocap/" + name + "/pose", rclcpp::SensorDataQoS())).first;
+                                 "/mocap/" + name + "/pose", rclcpp::QoS(10))).first;
                     }
                     const ignition::math::Pose3d p = model->WorldPose();
+                    // Raw Motive (Z-up) pose of this body.
+                    const ignition::math::Vector3d    pm = kWorldRot.RotateVector(p.Pos());
+                    const ignition::math::Quaterniond qm = kWorldRot * p.Rot() * kBodyRot;
+                    // mocap_optitrack's conversion for Motive >= 2.0.
                     geometry_msgs::msg::PoseStamped msg;
-                    msg.header.stamp    = _ros_node->now();
+                    msg.header.stamp    = wall.now();
                     msg.header.frame_id = "world";
-                    msg.pose.position.x = p.Pos().X();
-                    msg.pose.position.y = p.Pos().Y();
-                    msg.pose.position.z = p.Pos().Z();
-                    msg.pose.orientation.w = p.Rot().W();
-                    msg.pose.orientation.x = p.Rot().X();
-                    msg.pose.orientation.y = p.Rot().Y();
-                    msg.pose.orientation.z = p.Rot().Z();
+                    msg.pose.position.x =  pm.X();
+                    msg.pose.position.y = -pm.Z();
+                    msg.pose.position.z =  pm.Y();
+                    msg.pose.orientation.w =  qm.W();
+                    msg.pose.orientation.x =  qm.X();
+                    msg.pose.orientation.y = -qm.Z();
+                    msg.pose.orientation.z =  qm.Y();
                     it->second->publish(msg);
                 }
             }

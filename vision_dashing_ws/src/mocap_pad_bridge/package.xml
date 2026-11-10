@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
+  <name>mocap_pad_bridge</name>
+  <version>0.1.0</version>
+  <description>Turns the pad rigid body from motion capture (mocap_optitrack in the lab, the landingplat plugin in M2M_MODE=3) into the catamaran sensor topics the guidance stack reads (/ulisse/nav_filter/data, /adnav_node/imu_raw). The drone pose goes to PX4 through mocap_px4_bridge.</description>
+  <maintainer email="ahmed.msalah99@gmail.com">Ahmed Salah</maintainer>
+  <license>TODO</license>
+
+  <buildtool_depend>ament_cmake</buildtool_depend>
+  <depend>rclcpp</depend>
+  <depend>geometry_msgs</depend>
+  <depend>sensor_msgs</depend>
+  <depend>ulisse_msgs</depend>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>
