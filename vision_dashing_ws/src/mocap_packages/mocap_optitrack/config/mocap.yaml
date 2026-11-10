@@ -1,0 +1,19 @@
+#
+# Definition of all trackable objects
+# Identifier corresponds to Trackable ID set in Tracking Tools
+#
+mocap_node:
+    ros__parameters:
+        rigid_bodies:
+            2:
+                pose: "x500_2/pose"
+                pose2d: "" #"x500_2/ground_pose"
+                odom: "" #"x500_2/Odom"
+                tf: "" #"tf"
+                child_frame_id: "x500_2/base_link"
+                parent_frame_id: "" #"world"
+        optitrack_config:
+                multicast_address: "239.255.42.99"
+                command_port: 1510
+                data_port: 1511
+                enable_optitrack: true
