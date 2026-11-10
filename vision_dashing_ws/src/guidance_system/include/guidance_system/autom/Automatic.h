@@ -191,6 +191,12 @@ public:
   bool consumeDisarmRequest() const;
 
   /**
+   * @brief Returns and clears the active Search command's pending
+   * payload-release request (AutomaticNode publishes it on "release_payload").
+   */
+  bool consumePayloadRelease() const;
+
+  /**
    * @brief True when Gazebo is running (M2M_MODE 0 = sim or 3 = mocap in sim)
    */
 
