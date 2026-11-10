@@ -57,7 +57,7 @@ AprilTag2Node::AprilTag2Node() : Node("apriltag2", "apriltag", rclcpp::NodeOptio
 	declare_parameter<float>("blur", 0.0);
 	declare_parameter<int>("threads", 1);
 	declare_parameter<int>("debug", 0);
-	declare_parameter<int>("refine", 1);
+	declare_parameter<int>("refine-edges", 1);
 	declare_parameter<double>("x_err_thld", 100.0);
 	declare_parameter<double>("y_err_thld", 100.0);
 	declare_parameter<double>("z_err_thld", 100.0);
@@ -66,8 +66,16 @@ AprilTag2Node::AprilTag2Node() : Node("apriltag2", "apriltag", rclcpp::NodeOptio
 	get_parameter("decimate", _tagDetector->quad_decimate);
 	get_parameter("blur", _tagDetector->quad_sigma);
 	get_parameter("threads", _tagDetector->nthreads);
-	get_parameter("debug", _tagDetector->debug);
-	get_parameter("refine-edges", _tagDetector->refine_edges);
+	// debug / refine_edges are int in older apriltag releases and bool in newer
+	// ones (e.g. a fresh AprilRobotics build): read as int, then assign, so the
+	// parameter type matches whichever library version is installed.
+	{
+		int debug = 0, refine_edges = 1;
+		get_parameter("debug", debug);
+		get_parameter("refine-edges", refine_edges);
+		_tagDetector->debug = debug;
+		_tagDetector->refine_edges = refine_edges;
+	}
 	get_parameter("x_err_thld", _x_err_thld);
 	get_parameter("y_err_thld", _y_err_thld);
 	get_parameter("z_err_thld", _z_err_thld);
