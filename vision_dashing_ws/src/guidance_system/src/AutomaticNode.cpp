@@ -110,6 +110,9 @@ public:
       create_publisher<nav_msgs::msg::Odometry>("local_position_sp",       reliable_qos);
     vehicle_command_pub_       =
       create_publisher<px4_msgs::msg::VehicleCommand>("/fmu/in/vehicle_command", px4_qos);
+    // Payload release command for payload_releaser (was an LCM publish in Search).
+    release_payload_pub_       =
+      create_publisher<std_msgs::msg::String>("release_payload", reliable_qos);
     landing_site_pose_cmd_pub_ =
       create_publisher<nav_msgs::msg::Odometry>("Landing_Site/pose_cmd",   reliable_qos);
     plat_rob_pub_              =
@@ -320,6 +323,14 @@ private:
       cmd.from_external = true;
       vehicle_command_pub_->publish(cmd);
       RCLCPP_WARN(get_logger(), "[landDisarmOnGo] sending FORCED disarm command");
+    }
+
+    // Search asked to drop the payload.
+    if (autom_.consumePayloadRelease()) {
+      std_msgs::msg::String msg;
+      msg.data = "T";
+      release_payload_pub_->publish(msg);
+      RCLCPP_INFO(get_logger(), "[SEARCH] release_payload sent");
     }
 
     // Publish the resulting setpoint.
@@ -727,6 +738,7 @@ private:
   // Publishers
   rclcpp::Publisher<nav_msgs::msg::Odometry>::SharedPtr local_position_sp_pub_;
   rclcpp::Publisher<px4_msgs::msg::VehicleCommand>::SharedPtr vehicle_command_pub_;
+  rclcpp::Publisher<std_msgs::msg::String>::SharedPtr release_payload_pub_;
   rclcpp::Publisher<nav_msgs::msg::Odometry>::SharedPtr landing_site_pose_cmd_pub_;
   rclcpp::Publisher<nav_msgs::msg::Odometry>::SharedPtr plat_rob_pub_;
   rclcpp::Publisher<std_msgs::msg::Float64>::SharedPtr  pred_horizon_pub_;
