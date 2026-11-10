@@ -14,7 +14,7 @@ from launch.actions import SetEnvironmentVariable
 #     poses of every model on /mocap/<model>/pose (Gazebo must ALSO run with M2M_MODE=3:
 #     export it in the terminal that starts `make px4_sitl gazebo-classic_...`)
 #   - mocap_px4_bridge (lab package) feeds PX4 external vision, mocap_pad_bridge the
-#     pad sea-state topics, px4_global_origin PX4's global origin
+#     pad sea-state topics, time_synchro_gps_sys PX4's global origin
 #   - do NOT play the boat bag: the pad's nav_filter/IMU come from mocap_pad_bridge
 #   - PX4 must fuse vision instead of GPS: see load_nodes/px4/mocap_ekf2.params
 def generate_launch_description():
@@ -156,12 +156,16 @@ def generate_launch_description():
         ],
     )
 
-    # PX4 has no GPS fusion in this mode: give it a global origin (lab coordinates).
-    px4_global_origin_node = Node(
-        package='px4_global_origin',
-        executable='px4_global_origin_node',
-        output='screen',
-        parameters=[os.path.join(get_package_share_directory('px4_global_origin'), 'config', 'px4_global_origin.yaml')],
+    # Lab node, unchanged (same as in the lab launch): sets PX4's global origin
+    # (lab lat/lon) and the computer's clock from PX4's GPS time (needs root;
+    # as a normal user it just logs that it could not). Agent 'x500_1' gives
+    # target_system 1; the remaps point it at our un-namespaced PX4 topics.
+    gps_sync_node = Node(
+        package='time_synchro_gps_sys', executable='time_synchro_gps_sys_main', output='screen',
+        arguments=['x500_1'],
+        remappings=[('/x500_1/fmu/out/sensor_gps', '/fmu/out/sensor_gps'),
+                    ('/x500_1/fmu/out/vehicle_command_ack', '/fmu/out/vehicle_command_ack'),
+                    ('/x500_1/fmu/in/vehicle_command', '/fmu/in/vehicle_command')],
     )
 
     return LaunchDescription([
@@ -182,5 +186,5 @@ def generate_launch_description():
         heave_node,
         mocap_px4_bridge_node,
         mocap_pad_bridge_node,
-        px4_global_origin_node
+        gps_sync_node
     ])
