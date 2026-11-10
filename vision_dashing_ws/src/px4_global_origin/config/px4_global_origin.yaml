@@ -1,4 +1,4 @@
-# PX4 global origin for flying on motion capture (M2M_MODE=1 lab, M2M_MODE=3 mocap in sim).
+# PX4 global origin for mocap in sim (M2M_MODE=3). In the lab (M2M_MODE=1) the lab node time_synchro_gps_sys does this.
 # With mocap only, PX4 has a local position but no global reference; this sets one once.
 # No in-code defaults: a missing key stops the node.
 px4_global_origin:

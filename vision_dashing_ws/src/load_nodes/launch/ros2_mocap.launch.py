@@ -15,7 +15,7 @@ from ament_index_python.packages import get_package_share_directory
 #   OptiTrack/Motive --NatNet--> mocap_optitrack --> /drone/pose, /pad/pose
 #        /drone/pose --> mocap_px4_bridge --> PX4 external vision
 #        /pad/pose   --> mocap_pad_bridge --> pad nav_filter/data + IMU
-#   px4_global_origin --> PX4 global origin (no GPS indoors)
+#   time_synchro_gps_sys --> PX4 global origin (+ clock from GPS when there is a fix)
 #   Pi camera (v4l2_camera) --> apriltag2_node --> guidance
 #   MicroXRCEAgent <--serial--> PX4 (uXRCE-DDS)
 #
@@ -57,8 +57,6 @@ def generate_launch_description():
                                            'config', 'params.yaml')
     mocap_pad_bridge_params = os.path.join(get_package_share_directory('mocap_pad_bridge'),
                                            'config', 'mocap_pad_bridge.yaml')
-    px4_global_origin_params = os.path.join(get_package_share_directory('px4_global_origin'),
-                                            'config', 'px4_global_origin.yaml')
 
     # ---------- External pieces (optional) ----------
     # OptiTrack client (lab package): one PoseStamped per rigid body listed in
@@ -134,9 +132,18 @@ def generate_launch_description():
     mocap_pad_bridge_node = Node(package='mocap_pad_bridge', executable='mocap_pad_bridge_node',
                                  output='screen', parameters=[mocap_pad_bridge_params])
 
-    # Global origin for PX4 (no GPS indoors).
-    px4_global_origin_node = Node(package='px4_global_origin', executable='px4_global_origin_node',
-                                  output='screen', parameters=[px4_global_origin_params])
+    # Lab node, unchanged: sets PX4's global origin (lab lat/lon) and, once PX4's
+    # GPS reports UTC time, the computer's clock (needs root; indoors there is
+    # no fix, so that part simply never happens). It is written for the lab's
+    # namespaced drones (/x500_N/fmu/...): agent 'x500_1' gives target_system 1,
+    # and the remaps point it at our un-namespaced PX4 topics.
+    gps_sync_node = Node(
+        package='time_synchro_gps_sys', executable='time_synchro_gps_sys_main', output='screen',
+        arguments=['x500_1'],
+        remappings=[('/x500_1/fmu/out/sensor_gps', '/fmu/out/sensor_gps'),
+                    ('/x500_1/fmu/out/vehicle_command_ack', '/fmu/out/vehicle_command_ack'),
+                    ('/x500_1/fmu/in/vehicle_command', '/fmu/in/vehicle_command')],
+    )
 
     return LaunchDescription(args + [
         SetEnvironmentVariable(name='M2M_MODE', value='1'),
@@ -155,6 +162,6 @@ def generate_launch_description():
         heave_node,
         mocap_px4_bridge_node,
         mocap_pad_bridge_node,
-        px4_global_origin_node,
+        gps_sync_node,
     ])
 
