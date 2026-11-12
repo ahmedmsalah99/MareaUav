@@ -36,17 +36,19 @@ private:
 
 	int timeout;
 
+	int _gpio_handle = -1; // lgpio chip handle (hardware build only)
+
 	volatile long startTimeUsec;
 
 	volatile long endTimeUsec;
 
-	double distanceMeters;
+	double distanceMeters = 0.0;
 
 	long travelTimeUsec;
 
 	long now;
 
-	bool isValid; //timeout is expired? if yes, the data are not valid.
+	bool isValid = false; //timeout is expired? if yes, the data are not valid.
 
 	sensor_msgs::msg::Range _sensorData;
 

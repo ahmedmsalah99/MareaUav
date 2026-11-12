@@ -1,55 +1,65 @@
 #include <iostream>
+#include <chrono>
+#include <thread>
+#include <cstdlib>
 extern "C"
 {
-	#include <wiringPi.h>
+	#include <lgpio.h>
 }
 #include "UltrasonicSensor.h"
 #define SpeedOfSound 343.00
 
+// GPIO goes through lgpio (/dev/gpiochip0), which works on Ubuntu 22.04 on the Pi;
+// wiringPi did not (the echo pin never read high). Pins are BCM numbers.
+
+static long micros()
+{
+	return std::chrono::duration_cast<std::chrono::microseconds>(
+		std::chrono::steady_clock::now().time_since_epoch()).count();
+}
+
 UltrasonicSensor::UltrasonicSensor() : Node("ultrasonic_sensor", rclcpp::NodeOptions().use_intra_process_comms(true))
 {
-	// _ultrasonic_sensor_sub = this->create_subscription<sensor_msgs::msg::Range>("/ultrasonic/sonar", 1, std::bind(&UltrasonicSensor::setSensorData, this, std::placeholders::_1));
 }
 
 void UltrasonicSensor::setParameters(int trigger, int echo , int timeout)
 {
-	wiringPiSetupGpio();
-	//it allows the calling program to use broadcom GPIO pins numbers directly
-	//with no re-mapping.
-
 	this->trigger = trigger; //set TRIG pin
+	this->echo = echo;       // set ECHO pin
+	this->timeout = timeout; // set Timeout (ms)
 
-	this->echo = echo; // set ECHO pin
+	_gpio_handle = lgGpiochipOpen(0);
+	if (_gpio_handle < 0 ||
+	    lgGpioClaimOutput(_gpio_handle, 0, trigger, 0) < 0 ||
+	    lgGpioClaimInput(_gpio_handle, 0, echo) < 0)
+	{
+		RCLCPP_FATAL(get_logger(), "Cannot open/claim GPIO (trigger %d, echo %d): %s. "
+			"Run with access to /dev/gpiochip0 (sudo or the gpio group).",
+			trigger, echo, lguErrorText(_gpio_handle < 0 ? _gpio_handle : LG_GPIO_BUSY));
+		std::exit(1);
+	}
 
-	this->timeout = timeout; // set Timeout
-
-	pinMode( trigger, OUTPUT ); //set TRIG pin as output
-
-	pinMode( echo, INPUT ); //set ECHO pin as output
-
-	//ensure that, initially, the TRIG pin is set low, and give some time to
-	// settle the sensor.
-	digitalWrite( trigger, LOW );
-
-	delay(500); //delay in milliseconds.
-
+	// TRIG low initially, give the sensor some time to settle.
+	std::this_thread::sleep_for(std::chrono::milliseconds(500));
 }
 
 void UltrasonicSensor::TimeOfTravel()
 {
-
 	startTimeUsec = micros();
 
-	while ( digitalRead(echo) == HIGH );
+	// Bounded wait: a stuck-high echo must not freeze the node.
+	while (lgGpioRead(_gpio_handle, echo) == 1)
+	{
+		if ((micros() - startTimeUsec) / 1000.0 >= timeout) { isValid = false; break; }
+	}
 
 	endTimeUsec = micros();
-
 }
 
 bool UltrasonicSensor::isExpired( int timeout, long time ) {
 //it checks if the timeout is expired.
 
-isValid = ( _tm.getTimeMicroSecond() - time )/1000.0 < timeout;
+isValid = ( micros() - time )/1000.0 < timeout;
 
 return isValid;
 }
@@ -67,28 +77,26 @@ void UltrasonicSensor::setSensorData(const sensor_msgs::msg::Range::SharedPtr r)
 
 double UltrasonicSensor::getDistance()
 {
-	//firstly, transmit at least 10us high level pulse to the trigger pin.
-	//the sensor requires a short 10us pulse to trigger the module.
-	//these three functions do this for us.
-	delay(10);
+	std::this_thread::sleep_for(std::chrono::milliseconds(10));
 
-	digitalWrite( trigger, HIGH );
+	// >=10 us high pulse on TRIG starts a measurement.
+	lgGpioWrite(_gpio_handle, trigger, 1);
+	std::this_thread::sleep_for(std::chrono::microseconds(20));
+	lgGpioWrite(_gpio_handle, trigger, 0);
 
-	delayMicroseconds(20);
-
-	digitalWrite( trigger, LOW);
-
-	//taking the actual time.
 	now = micros();
 
-	//The sensor sets ECHO to high for the amount of time it takes for the pulse to go and 		come back, so it is necessary to measure the amount of time that the ECHO pin stays high.
-	while ( digitalRead(echo) == LOW && isExpired( timeout,now ) );
-	TimeOfTravel();
+	// ECHO stays high for the round-trip time of the pulse.
+	while ( lgGpioRead(_gpio_handle, echo) == 0 && isExpired( timeout,now ) );
+	if (!isValid)
+		return distanceMeters; // no echo: keep the last distance, flagged invalid
 
+	TimeOfTravel();
 
 	travelTimeUsec = endTimeUsec - startTimeUsec;
 
-	distanceMeters = ( (travelTimeUsec/1000000.0)*SpeedOfSound )/2;
+	if (isValid)
+		distanceMeters = ( (travelTimeUsec/1000000.0)*SpeedOfSound )/2;
 
 	return distanceMeters;
 }
