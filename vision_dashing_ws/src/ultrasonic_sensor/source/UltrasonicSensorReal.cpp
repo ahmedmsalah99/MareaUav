@@ -49,7 +49,7 @@ void UltrasonicSensor::TimeOfTravel()
 bool UltrasonicSensor::isExpired( int timeout, long time ) {
 //it checks if the timeout is expired.
 
-isValid = ( _tm.getTimeMicroSecond() - time )/1000.0 < timeout;
+isValid = ( micros() - time )/1000.0 < timeout; // same clock as the caller's micros() start time
 
 return isValid;
 }
