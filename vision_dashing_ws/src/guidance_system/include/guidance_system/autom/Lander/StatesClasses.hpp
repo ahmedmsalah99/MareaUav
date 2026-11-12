@@ -147,21 +147,42 @@ public:
     /** Pending disarm-on-GO request, owned by Lander and consumed via Lander::consumeDisarmRequest(). */
     bool *_disarmRequest;
 
-    /** Raised by CompState::handle() when param.disarmOnGo is enabled and the GO signal arrives. */
+    /** Raised by CompState::handle() when param.landDisarmOnGo is enabled and the GO signal arrives. */
     void requestDisarm() { *_disarmRequest = true; }
 
     /** Continuous time [s] compValid has held in HoldState::handle() — reset to 0
      * the instant compValid goes false, and on any full state-machine reset
      * (initStateMachine()). Only the accumulator; the HOLD -> COMP wait
-     * threshold (param.compWaitTime) is applied by HoldState itself. */
+     * threshold (param.holdToCompWait) is applied by HoldState itself. */
     double *_compValidTimer;
+
+    /** Time [s] spent in HOLD since the slope finished without reaching COMP
+     * (the "preparing for COMP" wait). Reset on entering COMP and in INIT.
+     * Past param.holdToCompTimeout, HOLD aborts (ABORT: climb, return to the
+     * take-off point, land there). */
+    double *_holdWaitTimer;
+
+    /** True while hold()'s INIT slope is still driving Z along the approach
+     * line (Lander::_slopeActive) -- see HoldState::handle(), which skips its
+     * own compValid/descValid/asceValid/asceUnderMargin transitions entirely
+     * while this is set, so DESC/ASCE/COMP can't steal ticks from the slope
+     * and fight it over the Z setpoint. */
+    bool *_slopeActive;
 
     /** Continuous time [s] the COMP -> LAND transition condition has held in
      * CompState::handle() — reset to 0 the instant the condition goes false,
      * and on any full state-machine reset (initStateMachine()). Only the
-     * accumulator; the COMP -> LAND wait threshold (param.compToLandWaitTime)
+     * accumulator; the COMP -> LAND wait threshold (param.goHold)
      * is applied by CompState itself. */
     double *_landValidTimer;
+
+    /** Peak recent upward heave velocity, computed each tick in
+     * Lander::updateSignals() (see Lander::_heaveUpMax's declaration) --
+     * the same value comp()'s own standoff margin uses, so the landing
+     * height gate widens/narrows in step with it. Capped separately by
+     * each caller (CompState::handle() applies its own cap for heightOk,
+     * distinct from comp()'s cap for the standoff distance itself). */
+    double *_heaveUpMax;
 
     /**
      * @brief Decides whether it is safe to begin the landing on a calm sea.
@@ -171,7 +192,7 @@ public:
      *   2. The platform roll/pitch angles (estimation) are within their
      *      (generous) calm-sea limits.
      *   3. The platform heave velocity and the roll/pitch angular rates have all
-     *      stayed within their configured limits continuously for calmDuration
+     *      stayed within their configured limits continuously for seaCalmHold
      *      seconds — after which the sea is considered calm.
      * Any frame that breaks a condition resets the calm timer. The calm timer is
      * accumulated with the control-loop dt supplied in the SeaState.
@@ -186,27 +207,27 @@ public:
         }
 
         // 2. Roll/pitch attitude (estimation) within the calm-sea limits.
-        bool attitudeCalm = (std::fabs(_seaState->roll)  < param->rollLimit)
-                         && (std::fabs(_seaState->pitch) < param->pitchLimit);
+        bool attitudeCalm = (std::fabs(_seaState->roll)  < param->seaCalmRollMax)
+                         && (std::fabs(_seaState->pitch) < param->seaCalmPitchMax);
 
         // 3. Heave velocity and roll/pitch angular rates within limits.
-        bool ratesCalm = (std::fabs(_seaState->heaveVel)  < param->heaveVelLimit)
-                      && (std::fabs(_seaState->rollRate)  < param->rollRateLimit)
-                      && (std::fabs(_seaState->pitchRate) < param->pitchRateLimit);
+        bool ratesCalm = (std::fabs(_seaState->heaveVel)  < param->seaCalmHeaveSpeedMax)
+                      && (std::fabs(_seaState->rollRate)  < param->seaCalmRollRateMax)
+                      && (std::fabs(_seaState->pitchRate) < param->seaCalmPitchRateMax);
         
         if (!attitudeCalm || !ratesCalm) {
             _calmTimer = 0.0;
-            std::cout << "roll lim " << (std::fabs(_seaState->roll)  < param->rollLimit) << " pitch lim " << (std::fabs(_seaState->pitch) < param->pitchLimit) << std::endl;
-            std::cout << "roll rate lim " << (std::fabs(_seaState->rollRate)  < param->rollRateLimit)
-            << " pitch rate lim " << (std::fabs(_seaState->pitchRate) < param->pitchRateLimit)
-            << " heave vel limit " << (std::fabs(_seaState->heaveVel)  < param->heaveVelLimit) << " heaveVel " << _seaState->heaveVel << std::endl;
+            std::cout << "roll lim " << (std::fabs(_seaState->roll)  < param->seaCalmRollMax) << " pitch lim " << (std::fabs(_seaState->pitch) < param->seaCalmPitchMax) << std::endl;
+            std::cout << "roll rate lim " << (std::fabs(_seaState->rollRate)  < param->seaCalmRollRateMax)
+            << " pitch rate lim " << (std::fabs(_seaState->pitchRate) < param->seaCalmPitchRateMax)
+            << " heave vel limit " << (std::fabs(_seaState->heaveVel)  < param->seaCalmHeaveSpeedMax) << " heaveVel " << _seaState->heaveVel << std::endl;
             return false;
         }
         // Calm conditions held this tick — accumulate and require it to be
-        // sustained for calmDuration before declaring the sea calm.
+        // sustained for seaCalmHold before declaring the sea calm.
         _calmTimer += _seaState->dt;
         // std::cout << "_calmTimer " << _calmTimer << std::endl;
-        return _calmTimer >= param->calmDuration;
+        return _calmTimer >= param->seaCalmHold;
     }
 
 private:
@@ -249,7 +270,8 @@ public:
         R2LA,
         COMP,
         LAND,
-        LANDING_DONE
+        LANDING_DONE,
+        ABORT
     };
 
     /**
@@ -545,6 +567,12 @@ public:
   	AbstractLandState* _nextHoveringState;
 
     /**
+     * The hold state is linked with the abort state (COMP not reached in time)
+     */
+
+    AbstractLandState* _nextAbortState;
+
+    /**
      * @brief Constructor of the derived class
      */
 
@@ -722,7 +750,7 @@ public:
   	AbstractLandState* _nextHoveringState;
 
     /**
-     * Terminal state to jump to directly when param.disarmOnGo is enabled —
+     * Terminal state to jump to directly when param.landDisarmOnGo is enabled —
      * skips LandState's descent/touchdown detection entirely.
      */
 
@@ -840,5 +868,33 @@ public:
 };
 
 
+/** @ingroup Automatic
+ * @brief Derived class of the AbstractLandState
+ * @details Terminal state entered from HOLD when COMP was not reached within
+ * param.holdToCompTimeout. Lander::run() flies the abort (abortReturn()):
+ * climb to ABORT_ALTITUDE_M, fly to the take-off point, land there. No
+ * transitions out; a fresh landing task reinitialises the state machine.
+ */
+
+class AbortState : public AbstractLandState {
+
+public:
+
+    AbortState(LandMachine *context) : AbstractLandState(context) {
+        setId();
+    }
+
+    void setId() override {
+
+        _id = ABORT;
+
+    }
+
+    /**
+     * @brief No-op: this state never transitions anywhere.
+     */
+
+    void handle();
+};
 
 #endif //MOCAP2MAV_STATESCLASSES_HPP

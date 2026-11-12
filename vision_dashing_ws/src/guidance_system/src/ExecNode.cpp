@@ -82,7 +82,11 @@ public:
   : rclcpp::Node("executioner")
   {
     std::string pkg_path = ament_index_cpp::get_package_share_directory("guidance_system");
-    std::string list_path = pkg_path + "/lists/list.txt";
+    // Mission list file in share/guidance_system/lists, set by the launch file
+    // (e.g. list.txt in sim, list_mocap.txt in the mocap modes). No default.
+    const std::string list_name = declare_parameter<std::string>("mission_list");
+    std::string list_path = pkg_path + "/lists/" + list_name;
+    RCLCPP_INFO(get_logger(), "mission list: %s", list_path.c_str());
 
     p_.loadFile(list_path);
     RCLCPP_INFO(get_logger(), "Parsing.....");

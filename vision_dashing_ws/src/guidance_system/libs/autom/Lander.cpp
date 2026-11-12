@@ -3,6 +3,8 @@
 //
 
 #include <iostream>
+#include "guidance_system/autom/SimpleLanding.hpp"
+#include "common/RunMode.h"
 #include <algorithm>
 #include <fstream>
 #include <chrono>
@@ -20,30 +22,22 @@
 Lander::Lander()
         : _horizontaErr((double)0)    , _tauHold((double)0), _tauLost((double)0), _NHold(0),
           _NLost(0),_NComp(0) , _initS(&_machine) , _inspeS(&_machine) , _hoveringS(&_machine) , _holdS(&_machine)  , _asceS(&_machine)  , _descS(&_machine),_compS(&_machine),
-          _rtolS(&_machine),_landS(&_machine),_landingDoneS(&_machine), _err(0,0,0), _err_int(0,0,0), _dt(0), _prevTime(0), _actualTime(0),
+          _rtolS(&_machine),_landS(&_machine),_landingDoneS(&_machine),_abortS(&_machine), _err(0,0,0), _err_int(0,0,0), _dt(0), _prevTime(0), _actualTime(0),
           _actualState(0),_prevState(0), _verticalErr(0), _holdPIDX(0,0,0),
           _holdPIDY(0,0,0)
 {
   //set the state machine
   initStateMachine();
   ////Load parameters
-  std::string pkg_path = ament_index_cpp::get_package_share_directory("guidance_system");
-  std::string params_path = pkg_path + "/params/Landing_params.txt";
-	param.loadConfigFile(params_path.c_str());
+	param.loadLanding();
 
-	// Value-based, not presence-based: (bool)getenv(...) was true even for
-	// M2M_SIM=0 (a non-null pointer to the string "0"), which meant hardware
-	// exporting M2M_SIM=0 as instructed still ran this in simulation mode.
-	{
-		const char *m2mSimEnv = std::getenv("M2M_SIM");
-		_envSim = m2mSimEnv && (atoi(m2mSimEnv) >= 1);
-	}
-	std::cout << "[OFFSETS] M2M_SIM " << _envSim
-	          << " -> camera " << (_envSim ? param.cameraOffsetSim : param.cameraOffsetHw)
-	          << " sonar "    << (_envSim ? param.sonarOffsetSim  : param.sonarOffsetHw)
+	_envSim = common::runModeIsGazebo(common::runModeFromEnv());
+	std::cout << "[OFFSETS] M2M_MODE " << common::runModeName(common::runModeFromEnv())
+	          << " -> camera " << param.cameraToDroneCenterZ
+	          << " sonar "    << param.sonarToDroneCenterZ
 	          << std::endl;
 
-	// std::cout<<"Params: "<<param.zMax<<std::endl;
+	// std::cout<<"Params: "<<param.altMaxAbovePad<<std::endl;
 
 	desc_velocity = 0;
 	_predictionHorizon = 0;
@@ -51,24 +45,24 @@ Lander::Lander()
 	_holdPIDX.reset();
 	_holdPIDY.reset();
 
-	_holdPIDX.setP(param.KpHold);
-	_holdPIDX.setI(param.KiHold);
-	_holdPIDX.setD(param.KdHold);
+	_holdPIDX.setP(param.xyPidKp);
+	_holdPIDX.setI(param.xyPidKi);
+	_holdPIDX.setD(param.xyPidKd);
 
-	_holdPIDY.setP(param.KpHold);
-	_holdPIDY.setI(param.KiHold);
-	_holdPIDY.setD(param.KdHold);
+	_holdPIDY.setP(param.xyPidKp);
+	_holdPIDY.setI(param.xyPidKi);
+	_holdPIDY.setD(param.xyPidKd);
 
 
-	_holdPIDX.setMaxIOutput(param.maxIntValue);
-  _holdPIDY.setMaxIOutput(param.maxIntValue);
+	_holdPIDX.setMaxIOutput(param.xyPidIntMax);
+  _holdPIDY.setMaxIOutput(param.xyPidIntMax);
   //put a saturation for the integral part of the PID
 
-  _holdPIDX.setOutputLimits(param.maxOutput);
+  _holdPIDX.setOutputLimits(param.xyPidOutputMax);
   //put a saturation for the whole PID
 
-	_tauHold = param.holdThreshold;
-	_tauLost = param.lostThreshold;
+	_tauHold = param.centeredConeRadiusMax;
+	_tauLost = param.offCenterConeRadiusMax;
   //this two parameters are thresholds for the horizontal error.
 
 	//stored starting hovering position
@@ -104,30 +98,28 @@ MavState Lander::getCommand() {
 
 void Lander::loadMachine() {
   std::cout << "parsing landing params " << std::endl;
-  std::string pkg_path = ament_index_cpp::get_package_share_directory("guidance_system");
-  std::string params_path = pkg_path + "/params/Landing_params.txt";
-	param.loadConfigFile(params_path.c_str());
-	std::cout << "REACTION_LAG_S " << param.reactionLag << std::endl;
+	param.loadLanding();
+	std::cout << "COMP_LEAD_TIME_S " << param.compLeadTime << std::endl;
 
 	_holdPIDX.reset();
 	_holdPIDY.reset();
 
-	_holdPIDX.setP(param.KpHold);
-	_holdPIDX.setI(param.KiHold);
-	_holdPIDX.setD(param.KdHold);
+	_holdPIDX.setP(param.xyPidKp);
+	_holdPIDX.setI(param.xyPidKi);
+	_holdPIDX.setD(param.xyPidKd);
 
-	_holdPIDY.setP(param.KpHold);
-	_holdPIDY.setI(param.KiHold);
-	_holdPIDY.setD(param.KdHold);
+	_holdPIDY.setP(param.xyPidKp);
+	_holdPIDY.setI(param.xyPidKi);
+	_holdPIDY.setD(param.xyPidKd);
 
-	_holdPIDX.setMaxIOutput(param.maxIntValue);
-  _holdPIDY.setMaxIOutput(param.maxIntValue);
+	_holdPIDX.setMaxIOutput(param.xyPidIntMax);
+  _holdPIDY.setMaxIOutput(param.xyPidIntMax);
   //put a saturation for the integral part of the PID
 
-  _holdPIDX.setOutputLimits(param.maxOutput);
+  _holdPIDX.setOutputLimits(param.xyPidOutputMax);
 
-	_tauHold = param.holdThreshold;
-	_tauLost = param.lostThreshold;
+	_tauHold = param.centeredConeRadiusMax;
+	_tauLost = param.offCenterConeRadiusMax;
 
 	//stored starting hovering position
 	starting_x = _state.getX();
@@ -166,6 +158,7 @@ void Lander::initStateMachine() {
 	_actualState = 0;
 	_prevState   = 0;
 	_spSeeded    = false;   // re-seed the XY platform-hold filter on (re)init
+	_platformMaxZSeeded = false;   // re-seed the tracked platform peak-Z for a fresh attempt
 	_compTracking = true;   // COMP starts in tracking mode
 	_landingGo    = false;  // GO/NO-GO window
 	_goLatched    = false;
@@ -184,6 +177,9 @@ void Lander::initStateMachine() {
 	_touchedDown         = false;
 	_touchdownLogged     = false;
 	_compValidTimer      = 0.0;
+	_holdWaitTimer       = 0.0;
+	_abortPhase          = 0;
+	_abortStarted        = false;
 	_landValidTimer      = 0.0;
 	_disarmRequest       = false;
 	_disarmRetryElapsed  = 0.0;
@@ -214,7 +210,10 @@ void Lander::initStateMachine() {
   _machine._touchedDown  =  &_touchedDown;
   _machine._disarmRequest = &_disarmRequest;
   _machine._compValidTimer = &_compValidTimer;
+  _machine._holdWaitTimer  = &_holdWaitTimer;
+  _machine._slopeActive    = &_slopeActive;
   _machine._landValidTimer = &_landValidTimer;
+  _machine._heaveUpMax    = &_heaveUpMax;
 	_machine.param		     =  &param;
 	//New signals
   _machine._holding      =  &_holding;
@@ -239,6 +238,7 @@ void Lander::initStateMachine() {
   _holdS._nextState        = &_rtolS;
   _holdS._nextInitState    = &_initS;
   _holdS._nextHoveringState = &_hoveringS;
+  _holdS._nextAbortState    = &_abortS;   // COMP not reached in time -> return and land at take-off
 
   _asceS._nextState    = &_holdS;
 
@@ -250,7 +250,7 @@ void Lander::initStateMachine() {
   _compS._nextState    = &_holdS;   // gap drifted back above standoff -> HOLD
   _compS._nextLanState = &_landS;
 	_compS._nextHoveringState = &_hoveringS;
-  _compS._nextDoneState = &_landingDoneS;   // disarmOnGo -> straight to terminal
+  _compS._nextDoneState = &_landingDoneS;   // landDisarmOnGo -> straight to terminal
 
   _landS._nextState    = &_compS;   // NO-GO or vision lost during landing -> back to COMP
   _landS._restartState = &_initS;
@@ -283,10 +283,10 @@ void Lander::setSeaState(const SeaState seaState) {
 double Lander::smoothAccel(double rawSample, std::deque<double> &buf) {
   // Clip before averaging: a single sensor glitch/dropout would otherwise
   // dominate the short window and read out as a wildly oversized "acceleration".
-  double clipped = common::clamp(rawSample, -kAccelEstimateClip, kAccelEstimateClip);
+  double clipped = common::clamp(rawSample, -param.touchAccelClip, param.touchAccelClip);
 
   buf.push_back(clipped);
-  if (buf.size() > kAccelEstimateWindow) buf.pop_front();
+  if (buf.size() > static_cast<size_t>(param.touchAccelAvgSamples)) buf.pop_front();
   double sum = 0.0;
   for (double v : buf) sum += v;
   return sum / static_cast<double>(buf.size());
@@ -348,17 +348,17 @@ void Lander::logTouchdownCsv() {
   double droneRoll, dronePitch, droneYaw;
   _state.getOrientationRPY(droneRoll, dronePitch, droneYaw);
 
-  // What the SPA/heave predictors said touchPredLookback seconds before this
+  // What the SPA/heave predictors said logPredLookback seconds before this
   // exact touchdown moment — compare against the raw (actual) columns above to
   // see how accurate the prediction pipeline actually was.
   // The four lookups all land at (~) the same age (they're pushed in lockstep
   // every tick) — only the roll one's age is kept, as the representative
   // "how far back did we actually manage to look".
   double rollAge = 0.0, unusedAge = 0.0;
-  double rollPredLookback     = lookupPredHistory(_predHistRoll,     param.touchPredLookback, rollAge);
-  double pitchPredLookback    = lookupPredHistory(_predHistPitch,    param.touchPredLookback, unusedAge);
-  double heavePosPredLookback = lookupPredHistory(_predHistHeavePos, param.touchPredLookback, unusedAge);
-  double heaveVelPredLookback = lookupPredHistory(_predHistHeaveVel, param.touchPredLookback, unusedAge);
+  double rollPredLookback     = lookupPredHistory(_predHistRoll,     param.logPredLookback, rollAge);
+  double pitchPredLookback    = lookupPredHistory(_predHistPitch,    param.logPredLookback, unusedAge);
+  double heavePosPredLookback = lookupPredHistory(_predHistHeavePos, param.logPredLookback, unusedAge);
+  double heaveVelPredLookback = lookupPredHistory(_predHistHeaveVel, param.logPredLookback, unusedAge);
 
   csv << "horizontal_error_x_m,horizontal_error_y_m,horizontal_error_norm_m,vertical_error_m,"
       << "drone_x_m,drone_y_m,drone_z_m,drone_vx_mps,drone_vy_mps,drone_vz_mps,"
@@ -397,16 +397,30 @@ void Lander::logTouchdownCsv() {
 
 void Lander::updateSignals() {
 
-  // Keep a rolling history of the SPA/heave PREDICTIONS (touchPredLookback
+  // Keep a rolling history of the SPA/heave PREDICTIONS (logPredLookback
   // seconds, plus margin), regardless of state, so logTouchdownCsv() can look
-  // back into "what the predictor said touchPredLookback seconds before
+  // back into "what the predictor said logPredLookback seconds before
   // touchdown" once touchdown actually happens.
   {
-    double maxAge = param.touchPredLookback + 1.0;
+    double maxAge = param.logPredLookback + 1.0;
     pushPredHistory(_predHistRoll,     _seaState.spaRollPred,   _seaState.dt, maxAge);
     pushPredHistory(_predHistPitch,    _seaState.spaPitchPred,  _seaState.dt, maxAge);
     pushPredHistory(_predHistHeavePos, _seaState.heavePosPred,  _seaState.dt, maxAge);
     pushPredHistory(_predHistHeaveVel, _seaState.heaveVelPred,  _seaState.dt, maxAge);
+  }
+
+  // Rolling PEAK of recent upward heave velocity, feeding comp()'s extra
+  // standoff margin (see param.compHeavePeakWindow / _heaveUpMax's
+  // declaration). Pushed every tick (like the history above) so the window
+  // is pruned by real elapsed time regardless of sign -- but the value
+  // pushed is heaveVel clamped to >= 0, so a downward tick can only ever
+  // contribute 0 to the max, never pull it down.
+  {
+    double v = std::max(_seaState.heaveVel, 0.0);
+    pushPredHistory(_heaveUpSamples, v, _seaState.dt, param.compHeavePeakWindow);
+    double peak = 0.0;
+    for (auto &s : _heaveUpSamples) peak = std::max(peak, s.second);
+    _heaveUpMax = peak;
   }
 
 	if( _VisionPose.VisionDataUpdated )
@@ -421,17 +435,14 @@ void Lander::updateSignals() {
 	double dz;
 
 
-	switchSensor = (fabs( _VisionPose.getZ() ) > 0.83); //with 0.1 always vision:)
+	switchSensor = (fabs( _VisionPose.getZ() ) > param.sensorSwitchHeight); 
   //above half meters use vision system for altitude value
   //otherwise, ultrasonic sensors.
 
-  // Offset per source, SELECTED by environment — the sim and hardware values
-  // are alternatives, never summed. The simulated sensors sit at different
-  // places relative to the drone reference point than the real ones, so each
-  // environment gets its own pair. Same M2M_SIM flag Automatic and Executioner
-  // already switch on.
-  const double camOffset   = _envSim ? param.cameraOffsetSim : param.cameraOffsetHw;
-  const double sonarOffset = _envSim ? param.sonarOffsetSim  : param.sonarOffsetHw;
+  // Sensor mounting comes from the per-mode file (landing_<mode>.yaml): the
+  // simulated sensors sit at different places than the real ones.
+  const double camOffset   = param.cameraToDroneCenterZ;
+  const double sonarOffset = param.sonarToDroneCenterZ;
 
   // dz is negative-down (downDist = -dz), so a positive offset is SUBTRACTED
   // here to push the reported distance up in both branches.
@@ -450,15 +461,15 @@ void Lander::updateSignals() {
     if ((sensorLogTick++ % 25) == 0) {
       const double visionDist = -_VisionPose.getZ() + camOffset;
       const double sonarDist  =  _UltraInfo.getZ()  + sonarOffset;
-      std::cout << "[SENSOR] switchSensor " << switchSensor
-                << " | visionRaw " << -_VisionPose.getZ()
-                << " +off " << camOffset << " = " << visionDist
-                << " | sonarRaw " << _UltraInfo.getZ()
-                << " +off " << sonarOffset << " = " << sonarDist
-                << " | handoverStep " << (sonarDist - visionDist)
-                << " ultraValid " << _UltraInfo.IsValid
-                << " ultraUpdated " << _UltraInfo.UltrasonicDataUpdated
-                << " downDist " << -dz << std::endl;
+      // std::cout << "[SENSOR] switchSensor " << switchSensor
+      //           << " | visionRaw " << -_VisionPose.getZ()
+      //           << " +off " << camOffset << " = " << visionDist
+      //           << " | sonarRaw " << _UltraInfo.getZ()
+      //           << " +off " << sonarOffset << " = " << sonarDist
+      //           << " | handoverStep " << (sonarDist - visionDist)
+      //           << " ultraValid " << _UltraInfo.IsValid
+      //           << " ultraUpdated " << _UltraInfo.UltrasonicDataUpdated
+      //           << " downDist " << -dz << std::endl;
     }
   }
 
@@ -478,14 +489,15 @@ void Lander::updateSignals() {
   updatePlatformVision();
 
   // Prediction horizon: time to reach platform at current descent velocity, capped.
-  double predHorizonMax = param.zMax / param.landDescVel;
-  _predictionHorizon = std::min(fabs(_verticalErr) / param.landDescVel, predHorizonMax);
+  double predHorizonMax = param.altMaxAbovePad / param.landDescendSpeed;
+  _predictionHorizon = std::min(fabs(_verticalErr) / param.landDescendSpeed, predHorizonMax);
 
-  // Cone thresholds: linearly interpolate between min (at z=0) and max (at z=cone_z_ref).
-  double cone_t = common::clamp(fabs(_verticalErr) / param.cone_z_ref, 0.0, 1.0);
-  double tau_hold_cone = param.holdThresholdMin + (param.holdThreshold - param.holdThresholdMin) * cone_t;
-  double tau_lost_cone = param.lostThresholdMin + (param.lostThreshold - param.lostThresholdMin) * cone_t;
-  double tau_comp_cone = param.compThresholdMin + (param.compThreshold - param.compThresholdMin) * cone_t;
+  // Cone thresholds: linearly interpolate between min (at z=0) and max (at z=centeredConeHeight).
+  // TODO: Change centeredConeRadiusMax to hold_threshold_max and same for lost and comp
+  double cone_th = common::clamp(fabs(_verticalErr) / param.centeredConeHeight, 0.0, 1.0);
+  double tau_hold_cone = param.centeredConeRadiusMin + (param.centeredConeRadiusMax - param.centeredConeRadiusMin) * cone_th;
+  double tau_lost_cone = param.offCenterConeRadiusMin + (param.offCenterConeRadiusMax - param.offCenterConeRadiusMin) * cone_th;
+  double tau_comp_cone = param.compCenteredConeRadiusMin + (param.compCenteredConeRadiusMax - param.compCenteredConeRadiusMin) * cone_th;
 
   //Increment N if needed
   if (_horizontaErr < tau_hold_cone && _VisionPose.VisionDataUpdated) {
@@ -498,9 +510,9 @@ void Lander::updateSignals() {
       _NLost++;
   }
 
-	_holding  = (_NHold > param.nFramesHold && _VisionPose.VisionDataUpdated );
+	_holding  = (_NHold > param.centeredFramesRequired && _VisionPose.VisionDataUpdated );
+  _lost     = (_NLost > param.offCenterFramesToLosePad || !_VisionPose.VisionDataUpdated );
 
-  _lost     = (_NLost > param.nFramesLost || !_VisionPose.VisionDataUpdated );
   if(_actualState == AbstractLandState::states::COMP)
     _centered = _horizontaErr < tau_comp_cone && _VisionPose.VisionDataUpdated;
   else
@@ -510,8 +522,6 @@ void Lander::updateSignals() {
   // }
   //R2LA state is between hold and comp state
   if(_actualState == AbstractLandState::states::R2LA || _actualState == AbstractLandState::states::COMP || _actualState == AbstractLandState::states::LAND){
-
-
       //Reset NComp
       if(_prevState == AbstractLandState::states::HOLD) _NComp = 0;
 
@@ -535,28 +545,28 @@ void Lander::updateSignals() {
   // GO when the SPA prediction and heave estimate are active, the predicted
   // roll/pitch and the roll/pitch rates are within the LANDING limits, and the
   // pad is not rushing upward at the drone. The raw (instantaneous) decision is noisy —
-  // it's smoothed by a majority vote over the last landVoteWindow seconds before
+  // it's smoothed by a majority vote over the last goVoteWindow seconds before
   // it feeds the latch, so a single bad sample can't flip the landing decision.
-  // The latch then holds each (voted) decision for at least landLatchTime before
+  // The latch then holds each (voted) decision for at least goLatch before
   // accepting the opposite.
   {
-    bool anglesOk = std::fabs(_seaState.spaRollPred)  < param.landRollLimit
-                 && std::fabs(_seaState.spaPitchPred) < param.landPitchLimit;
-    bool ratesOk  = std::fabs(_seaState.rollRate)  < param.landRollRateLimit
-                 && std::fabs(_seaState.pitchRate) < param.landPitchRateLimit;
+    bool anglesOk = std::fabs(_seaState.spaRollPred)  < param.goRollMax
+                 && std::fabs(_seaState.spaPitchPred) < param.goPitchMax;
+    bool ratesOk  = std::fabs(_seaState.rollRate)  < param.goRollRateMax
+                 && std::fabs(_seaState.pitchRate) < param.goPitchRateMax;
     // One-sided ON PURPOSE, and sign-sensitive: heaveVelPred is up-positive, so
     // the pad may descend as fast as it likes (the gap only opens), but
     // committing while it is rushing UP at the drone is what slams the pad into
     // it. Not a fabs() limit — that would also veto the safe half of the cycle.
-    bool padNotRushingUp = (_seaState.heaveVelPred < param.landHeaveUpVelLimit);
+    bool padNotRushingUp = (_seaState.heaveVelPred < param.goHeaveUpSpeedMax);
     bool rawGo = _seaState.spaValid && _seaState.heaveValid
               && anglesOk && ratesOk && padNotRushingUp;
 
-    // Majority vote over the last landVoteWindow seconds.
+    // Majority vote over the last goVoteWindow seconds.
     _goVoteHistory.emplace_back(_seaState.dt, rawGo);
     double windowSpan = 0.0;
     for (auto &s : _goVoteHistory) windowSpan += s.first;
-    while (_goVoteHistory.size() > 1 && windowSpan > param.landVoteWindow) {
+    while (_goVoteHistory.size() > 1 && windowSpan > param.goVoteWindow) {
       windowSpan -= _goVoteHistory.front().first;
       _goVoteHistory.pop_front();
     }
@@ -564,10 +574,15 @@ void Lander::updateSignals() {
     for (auto &s : _goVoteHistory) if (s.second) voteCount++;
     double voteFraction = _goVoteHistory.empty() ? 0.0
                          : static_cast<double>(voteCount) / _goVoteHistory.size();
-    bool votedGo = voteFraction >= param.landVoteThreshold || std::abs(_UltraInfo.getZ() < 0.2);
+    // Override: a fresh, valid sonar reading this close to the pad forces GO
+    // (the drone is effectively already down). Requires real sonar data --
+    // a missing/stale sonar reads Z = 0 and must NOT force GO.
+    const bool sonarSaysDown = _UltraInfo.UltrasonicDataUpdated && _UltraInfo.IsValid
+                               && std::abs(_UltraInfo.getZ()) < param.goForceIfSonarBelow;
+    bool votedGo = voteFraction >= param.goVoteFraction || sonarSaysDown;
 
     _goLatchTimer += _seaState.dt;
-    if (votedGo != _goLatched && _goLatchTimer >= param.landLatchTime) {
+    if (votedGo != _goLatched && _goLatchTimer >= param.goLatch) {
       _goLatched   = votedGo;
       _goLatchTimer = 0.0;
     }
@@ -582,10 +597,10 @@ void Lander::updateSignals() {
     _goDiag.heavePos       = _seaState.heavePos;
     _goDiag.heaveVel       = _seaState.heaveVel;
     _goDiag.heaveVelPred   = _seaState.heaveVelPred;
-    _goDiag.goRollLimit      = param.landRollLimit;
-    _goDiag.goPitchLimit     = param.landPitchLimit;
-    _goDiag.goRollRateLimit  = param.landRollRateLimit;
-    _goDiag.goPitchRateLimit = param.landPitchRateLimit;
+    _goDiag.rollLimit      = param.goRollMax;
+    _goDiag.pitchLimit     = param.goPitchMax;
+    _goDiag.rollRateLimit  = param.goRollRateMax;
+    _goDiag.pitchRateLimit = param.goPitchRateMax;
     _goDiag.anglesOk       = anglesOk;
     _goDiag.ratesOk        = ratesOk;
     _goDiag.descFromPeak   = padNotRushingUp;
@@ -598,7 +613,7 @@ void Lander::updateSignals() {
 
     if (_landingGo != _goLogPrev) {
       std::cout << "[GO] " << (_landingGo ? "GO" : "NO-GO")
-                << " vote=" << voteFraction << "/" << param.landVoteThreshold
+                << " vote=" << voteFraction << "/" << param.goVoteFraction
                 << " spaPred(r=" << _seaState.spaRollPred << ",p=" << _seaState.spaPitchPred << ")"
                 << " rates(r=" << _seaState.rollRate << ",p=" << _seaState.pitchRate << ")"
                 << " heave(pos=" << _seaState.heavePos << ",vel=" << _seaState.heaveVel << ")"
@@ -636,7 +651,7 @@ void Lander::updateSignals() {
   // Impact-deceleration spike: touching down arrests the descent, producing a
   // brief POSITIVE acceleration bump on the drone (up-positive convention) — not
   // an absolute-value test, a downward spike is just more descending, not contact.
-  bool accelSpike = droneAccelTrue > param.touchAccelSpike;
+  bool accelSpike = droneAccelTrue > param.touchImpactAccel;
   _touchTimeSinceSpike = accelSpike ? 0.0 : (_touchTimeSinceSpike + _seaState.dt);
 
   bool inLand = (_actualState == AbstractLandState::states::LAND);
@@ -648,7 +663,7 @@ void Lander::updateSignals() {
     // estimates themselves are deliberately NOT reset here — they stay warm.
     _touchContactTimer   = 0.0;
     _touchConfirmTimer   = 0.0;
-    _touchTimeSinceSpike = param.touchAccelSpikeWindow+0.1;
+    _touchTimeSinceSpike = param.touchImpactWindow+0.1;
   }
   _wasInLand = inLand;
 
@@ -659,18 +674,18 @@ void Lander::updateSignals() {
     bool sensorsOk   = _seaState.padImuValid && _seaState.droneAccelValid;
     bool accelMatches = sensorsOk
                      && std::fabs(_touchAccelZSmoothed - _padAccelZSmoothed) < param.touchAccelMatchTol;
-    bool xyStill      = std::fabs(_state.getVx()) < param.touchVelRelMax
-                      && std::fabs(_state.getVy()) < param.touchVelRelMax;
+    bool xyStill      = std::fabs(_state.getVx()) < param.touchXYSpeedMax
+                      && std::fabs(_state.getVy()) < param.touchXYSpeedMax;
     bool contactCond  =  xyStill;
 
-    // Stage 1: drone/pad accel matched + xy settled, sustained touchContactTime.
+    // Stage 1: drone/pad accel matched + xy settled, sustained touchContactHold.
     _touchContactTimer = contactCond ? (_touchContactTimer + _seaState.dt) : 0.0;
-    bool groundContact = _touchContactTimer >= param.touchContactTime;
+    bool groundContact = _touchContactTimer >= param.touchContactHold;
 
-    // Stage 2: contact + a recent positive impact spike, sustained touchConfirmTime.
-    bool spikeRecent = _touchTimeSinceSpike <= param.touchAccelSpikeWindow;
+    // Stage 2: contact + a recent positive impact spike, sustained touchConfirmHold.
+    bool spikeRecent = _touchTimeSinceSpike <= param.touchImpactWindow;
     _touchConfirmTimer = (groundContact && spikeRecent) ? (_touchConfirmTimer + _seaState.dt) : 0.0;
-    bool confirmed = _touchConfirmTimer >= param.touchConfirmTime;
+    bool confirmed = _touchConfirmTimer >= param.touchConfirmHold;
 
     if (confirmed) {
       _touchedDown = true;
@@ -708,7 +723,7 @@ void Lander::printSignals() {
   std::cout << "HERRV: " << _verticalErr<< std::endl;
 
 	std::cout<<"Vision_Z:"<<_VisionPose.getZ()<<std::endl;
-	std::cout<<"Ultrasonic_Z:"<<(_UltraInfo.getZ() + (_envSim ? param.sonarOffsetSim : param.sonarOffsetHw))<<std::endl;
+	std::cout<<"Ultrasonic_Z:"<<(_UltraInfo.getZ() + param.sonarToDroneCenterZ)<<std::endl;
 	std::cout<<"UltrasonicValid? "<<_UltraInfo.IsValid<<std::endl;
 
 	std::cout << "switchSensor: " << switchSensor << std::endl;
@@ -802,6 +817,11 @@ void Lander::run() {
   // any state that falls through without touching Vz publishes zero
   // feed-forward instead of leaking a stale value from a previous tick.
   _setPoint.setVz(0.0);
+  // XY feed-forward: NaN (= not velocity commanded) unless a state sets it
+  // this tick -- setDroneInFront() and hold()'s slope lead with the pad's
+  // velocity; everything else stays position-only on XY as before.
+  _setPoint.setVx(NAN);
+  _setPoint.setVy(NAN);
   static bool initDone = false;
   switch (_actualState){
 
@@ -830,7 +850,7 @@ void Lander::run() {
         // once the drone is ready to land, the altitude setpoint changes
         if(initDone)
         {
-           _setPoint.setZ(param.zMax);
+           _setPoint.setZ(param.altMaxAbovePad);
         }
 
       }
@@ -850,7 +870,7 @@ void Lander::run() {
         // once the drone is ready to land, the altitude setpoint changes
         if(!startFromBeginning)
         {
-           _setPoint.setZ(param.zMax);
+           _setPoint.setZ(param.altMaxAbovePad);
         }
       }
       break;
@@ -940,10 +960,10 @@ void Lander::run() {
       _setPoint.setVx(0);
       _setPoint.setVy(0);
 
-      if (param.disarmOnGo) {
+      if (param.landDisarmOnGo) {
         // Disarm mode arrives here still FLYING (just above the pad), not
         // already landed, so the push-down below must not run: it would command
-        // a landDescVel descent under offboard velocity control and land the
+        // a landDescendSpeed descent under offboard velocity control and land the
         // drone the very way disarm mode exists to skip. Hold zero vertical
         // velocity and let the disarm stop the motors.
         _setPoint.setVz(0.0);
@@ -951,10 +971,10 @@ void Lander::run() {
         // Re-send the disarm for a bounded window — the command goes out
         // best-effort, so one dropped message would leave the drone armed and
         // hovering here indefinitely.
-        if (_disarmRetryElapsed < 2.0) {
+        if (_disarmRetryElapsed < param.landDisarmResendFor) {
           _disarmRetryElapsed += _dt;
           _disarmRetrySince   += _dt;
-          if (_disarmRetrySince >= 0.1) {
+          if (_disarmRetrySince >= param.landDisarmResendInterval) {
             _disarmRetrySince = 0.0;
             _disarmRequest    = true;
           }
@@ -962,10 +982,17 @@ void Lander::run() {
       } else {
         // Normal path: touchdown is already confirmed, so keep pushing down to
         // stay planted until PX4's own land detector disarms.
-        _setPoint.setVz(-param.landDescVel);
+        _setPoint.setVz(-param.landDescendSpeed);
       }
 
       _setPoint.setType(MavState::VELOCITY);
+      break;
+
+    case (AbstractLandState::states::ABORT):
+
+      if (print > 30) std::cout<<"ABORT"<<std::endl;
+
+      abortReturn();
       break;
 
     default:
@@ -998,8 +1025,8 @@ void Lander::updateIntegrals() {
 
     double tempx,tempy;
 
-    tempx = common::clamp(_err_int[0],param.minIntValue,param.maxIntValue);
-    tempy = common::clamp(_err_int[1],param.minIntValue,param.maxIntValue);
+    tempx = common::clamp(_err_int[0],param.xyPidIntMin,param.xyPidIntMax);
+    tempy = common::clamp(_err_int[1],param.xyPidIntMin,param.xyPidIntMax);
 
     _err_int[0] =  tempx;
     _err_int[1] =  tempy;
@@ -1032,7 +1059,7 @@ void Lander::init() {
     _NLost=0;
 
     //Go to max tracking height
-    // _setPoint.setZ(param.zMax);
+    // _setPoint.setZ(param.altMaxAbovePad);
 
 }
 
@@ -1050,43 +1077,89 @@ void Lander::updatePlatformVision() {
   const double py = _state.getY() + _VisionPose.getY();
   const double pz = _state.getZ() + _verticalErr;
 
-  // Velocity. vision = platform - drone, so d(vision)/dt = plat_vel - drone_vel
-  // and plat_vel = drone_vel + d(vision)/dt. The drone's own velocity carries
-  // the bulk of the signal and the differentiated vision term is a small
-  // correction — which is what makes differentiating a noisy measurement
-  // workable here. Still low-passed, since d/dt amplifies jitter by 1/dt.
-  if (!visionOk || _dt <= 1e-6) {
-    // Nothing trustworthy to differentiate: hold the last estimate and re-seed
-    // when vision returns, so a dropout cannot inject a huge false derivative.
+  // Velocity: differentiate the pad's world position (px, py), ONLY when a new
+  // apriltag frame arrives, over the real inter-frame interval.
+  //
+  // The old estimate (drone_vel + d(vision)/d(tick)) ran every 20 ms control
+  // tick, but the vision offset only changes when a camera frame lands
+  // (VisionDataUpdated stays true between frames). So on most ticks it read
+  // the DRONE's own velocity as the pad's, and spiked on frame ticks. Used as
+  // a velocity feed-forward that is self-reinforcing: the drone moves, the
+  // "pad velocity" follows it, the feed-forward pushes it further.
+  //
+  // Low-passed with a time constant (padEstVelFilterTau, so it's frame-rate
+  // independent) and clamped to padEstVelMax: the boat moves slowly and
+  // steadily, so heavy smoothing costs little.
+  if (!visionOk) {
+    // Hold the last estimate; re-seed when vision returns so a dropout can't
+    // inject a huge false derivative.
     _platVisSeeded = false;
-  } else {
-    if (!_platVisSeeded) {
-      _prevVisX = _VisionPose.getX();
-      _prevVisY = _VisionPose.getY();
-      _platVisFiltVx = _state.getVx();
-      _platVisFiltVy = _state.getVy();
-      _platVisSeeded = true;
+  } else if (!_platVisSeeded) {
+    _prevPadX      = px;
+    _prevPadY      = py;
+    _prevVisStamp  = _VisionPose.visionFrameStampUs;
+    _platVisSeeded = true;
+  } else if (_VisionPose.visionFrameStampUs != _prevVisStamp) {
+    const double dtFrame = (_VisionPose.visionFrameStampUs - _prevVisStamp) * 1e-6;
+    if (dtFrame > 1e-3 && dtFrame < param.padEstVelSkipIfFrameGapAbove) {
+      const double rawVx = (px - _prevPadX) / dtFrame;
+      const double rawVy = (py - _prevPadY) / dtFrame;
+      // Warm-up: a plain running mean of the first samples (weight n/(n+1)
+      // on the old estimate) until that would forget faster than the
+      // time-constant filter, then the time-constant filter. Without it the
+      // estimate starts at 0 and, with a long padEstVelFilterTau, takes ~3*tau
+      // to approach the true velocity.
+      const double aTau = std::exp(-dtFrame / std::max(param.padEstVelFilterTau, 1e-3));
+      const double aMean = static_cast<double>(_platVelSamples) / (_platVelSamples + 1.0);
+      const double a = std::min(aTau, aMean);
+      ++_platVelSamples;
+      _platVisFiltVx = a * _platVisFiltVx + (1.0 - a) * rawVx;
+      _platVisFiltVy = a * _platVisFiltVy + (1.0 - a) * rawVy;
+
+      const double speed = std::hypot(_platVisFiltVx, _platVisFiltVy);
+      if (speed > param.padEstVelMax && speed > 1e-9) {
+        const double k = param.padEstVelMax / speed;
+        _platVisFiltVx *= k;
+        _platVisFiltVy *= k;
+      }
     }
-
-    const double rawVx = _state.getVx() + (_VisionPose.getX() - _prevVisX) / _dt;
-    const double rawVy = _state.getVy() + (_VisionPose.getY() - _prevVisY) / _dt;
-    _prevVisX = _VisionPose.getX();
-    _prevVisY = _VisionPose.getY();
-
-    const double a = param.platVisionVelAlpha;
-    _platVisFiltVx = a * _platVisFiltVx + (1.0 - a) * rawVx;
-    _platVisFiltVy = a * _platVisFiltVy + (1.0 - a) * rawVy;
+    // Out-of-range gap (e.g. frames resumed after a pause): re-anchor only,
+    // keep the current velocity estimate.
+    _prevPadX     = px;
+    _prevPadY     = py;
+    _prevVisStamp = _VisionPose.visionFrameStampUs;
   }
 
-  // Yaw. _VisionPose's quaternion is the platform's orientation relative to the
-  // drone body, so the platform's heading is the drone's plus that relative
-  // term. Stored via setYaw() because MavState::setOrientation() does NOT touch
-  // the _yaw scalar that getYaw() returns — which is exactly why the old
-  // _platformState.getYaw() was always 0 (mavStateFromNavOdom only ever calls
-  // setOrientation), pinning the approach slope to the Y axis.
-  double platYaw = _state.getYawFromQuat() + _VisionPose.getYawFromQuat();
+  // Yaw. /platform_center's rotation is the platform's ABSOLUTE heading, in
+  // the same frame as its translation and _state (the apriltag node rotates
+  // each tag's forward axis through the same transform as the position;
+  // forward = (sin(yaw), cos(yaw))), so no drone yaw is added here. Until
+  // that was published, rotation.x/y/z were always 0, so this read the
+  // drone's own yaw as the boat's: the drone never aligned to the boat and
+  // the INIT offset point sat along whatever heading the drone had.
+  // padEstYawOffset calibrates which tag axis is the boat's bow.
+  // Stored via setYaw() because MavState::setOrientation() does NOT touch the
+  // _yaw scalar that getYaw() returns.
+  double platYaw = _VisionPose.getYawFromQuat() + param.padEstYawOffset;
   while (platYaw >   PI) platYaw -= 2.0 * PI;
   while (platYaw <= -PI) platYaw += 2.0 * PI;
+
+  // Calibration aid (sim): estimated vs ground-truth heading, ~1 Hz. Truth is
+  // the Gazebo pose's yaw (CCW from +x); in this frame's convention that is
+  // pi/2 - truthYaw if Gazebo's world is ENU-aligned with _state.
+  if (_envSim) {
+    static int yawLogTick = 0;
+    if ((yawLogTick++ % 50) == 0) {
+      const double truthYaw = _platformState.getYawFromQuat();
+      double truthConv = PI / 2.0 - truthYaw;
+      while (truthConv >   PI) truthConv -= 2.0 * PI;
+      while (truthConv <= -PI) truthConv += 2.0 * PI;
+      std::cout << "[PLATYAW] est " << platYaw
+                << " (raw " << _VisionPose.getYawFromQuat() << " + offset " << param.padEstYawOffset << ")"
+                << " truthConv " << truthConv << " truthRaw " << truthYaw
+                << " droneYaw " << _state.getYawFromQuat() << std::endl;
+    }
+  }
 
   _platformVision.setX(px);
   _platformVision.setY(py);
@@ -1096,6 +1169,17 @@ void Lander::updatePlatformVision() {
   _platformVision.setYaw(platYaw);
   _platformVision.IsValid = visionOk;
 
+  // Track the highest platform Z observed this landing attempt -- used by
+  // setDroneInFront() for the INIT standoff altitude instead of the live pz,
+  // so that target doesn't track the pad's instantaneous heave. Reset in
+  // initStateMachine() at the start of each fresh attempt.
+  if (visionOk) {
+    if (!_platformMaxZSeeded || pz > _platformMaxZ) {
+      _platformMaxZ = pz;
+    }
+    _platformMaxZSeeded = true;
+  }
+
   // Vision estimate vs the ground-truth topic, side by side, for verification.
   // _platformState is Landing_Site/pose, which in simulation is the Gazebo
   // plugin echoing the pose it wrote onto the model. Expect a CONSTANT offset
@@ -1104,19 +1188,19 @@ void Lander::updatePlatformVision() {
   {
     static int platLogTick = 0;
     if ((platLogTick++ % 10) == 0) {
-      std::cout << "[PLAT] vision pos (" << px << "," << py << "," << pz << ")"
-                << " vel (" << _platVisFiltVx << "," << _platVisFiltVy << ")"
-                << " yaw " << platYaw
-                << " | truth pos (" << _platformState.getX() << "," << _platformState.getY()
-                << "," << _platformState.getZ() << ")"
-                << " vel (" << _platformState.getVx() << "," << _platformState.getVy() << ")"
-                << " yaw " << _platformState.getYaw()
-                << " | dPos (" << (px - _platformState.getX())
-                << "," << (py - _platformState.getY())
-                << "," << (pz - _platformState.getZ()) << ")"
-                << " dVel (" << (_platVisFiltVx - _platformState.getVx())
-                << "," << (_platVisFiltVy - _platformState.getVy()) << ")"
-                << " visionOk " << visionOk << std::endl;
+      // std::cout << "[PLAT] vision pos (" << px << "," << py << "," << pz << ")"
+      //           << " vel (" << _platVisFiltVx << "," << _platVisFiltVy << ")"
+      //           << " yaw " << platYaw
+      //           << " | truth pos (" << _platformState.getX() << "," << _platformState.getY()
+      //           << "," << _platformState.getZ() << ")"
+      //           << " vel (" << _platformState.getVx() << "," << _platformState.getVy() << ")"
+      //           << " yaw " << _platformState.getYaw()
+      //           << " | dPos (" << (px - _platformState.getX())
+      //           << "," << (py - _platformState.getY())
+      //           << "," << (pz - _platformState.getZ()) << ")"
+      //           << " dVel (" << (_platVisFiltVx - _platformState.getVx())
+      //           << "," << (_platVisFiltVy - _platformState.getVy()) << ")"
+      //           << " visionOk " << visionOk << std::endl;
     }
   }
 }
@@ -1157,7 +1241,7 @@ bool Lander::setDroneInFront()
 
   // getting also the distance from the center the drone has to keep once positioned,
   // passed from file; it also must be not less than 0.
-  double gain = fabs(param.distanceFromCenter);
+  double gain = fabs(param.initStartPointXYDist);
 
   // The platform's current absolute world position, recovered from the
   // drone's own pose plus the (relative) vision measurement — same trick
@@ -1167,10 +1251,10 @@ bool Lander::setDroneInFront()
   // leading term settles to a nonzero steady-state tracking lag against a
   // steadily drifting target and never actually closes the gap.
   // GROUND TRUTH — kept commented for reference:
-  // double plat_x = _state.getX() + _VisionPose.getX() + _platformState.getVx() * param.reactionLag;
-  // double plat_y = _state.getY() + _VisionPose.getY() + _platformState.getVy() * param.reactionLag;
-  double plat_x = _platformVision.getX() + _platformVision.getVx() * param.reactionLag;
-  double plat_y = _platformVision.getY() + _platformVision.getVy() * param.reactionLag;
+  // double plat_x = _state.getX() + _VisionPose.getX() + _platformState.getVx() * param.compLeadTime;
+  // double plat_y = _state.getY() + _VisionPose.getY() + _platformState.getVy() * param.compLeadTime;
+  double plat_x = _platformVision.getX() + _platformVision.getVx() * param.compLeadTime;
+  double plat_y = _platformVision.getY() + _platformVision.getVy() * param.compLeadTime;
 
   // then, depending on how the platform is oriented, the desired position changes.
   // yaw_plat is PX4's raw native yaw (0 = North, +ve = North->East) — see the
@@ -1181,8 +1265,29 @@ bool Lander::setDroneInFront()
   double xTarget = plat_x + gain*sinf(yaw_plat);
   double yTarget = plat_y + gain*cosf(yaw_plat);
 
+  // Z target: platform height + holdHeight (the same floor the INIT
+  // slope glides down to) + gain (the same horizontal offset used for
+  // xTarget/yTarget above). Using the SAME distance for both the horizontal
+  // leg (gain) and the vertical leg above the slope's floor makes the
+  // approach triangle -- from this standoff point down to where the slope
+  // levels out at platformZ + holdHeight -- isosceles: a 45-degree
+  // glide slope, not an arbitrary one set by a fixed, pad-unaware altitude.
+  //
+  // Uses _platformMaxZ (the highest platform Z observed so far this landing
+  // attempt, tracked in updatePlatformVision()) instead of the live
+  // _platformVision.getZ() -- the pad heaves, so a live value makes this
+  // standoff altitude bob with it. Sizing against the pad's known peak
+  // instead means the standoff point only ever gets safer (higher) as a
+  // higher peak is actually observed, never lower, and doesn't chase every
+  // heave cycle while INIT is still approaching.
+  double platformZForTarget = _platformMaxZSeeded ? _platformMaxZ : _platformVision.getZ();
+  double zTarget = platformZForTarget + param.holdHeight + gain;
+
   // setting the setpoint finally
-  _setPoint.setPosition(xTarget, yTarget, param.prelandAltitude);
+  _setPoint.setPosition(xTarget, yTarget, zTarget);
+  // No XY velocity feed-forward here (Vx/Vy stay NaN from Lander::run()):
+  // the vision-derived pad velocity is too noisy at INIT range, and feeding
+  // it straight to PX4 made the approach unstable.
   _setPoint.setType(MavState::type::POSITION);
 
   // Genuine physical proximity to the standoff point — NOT the magnitude of
@@ -1191,10 +1296,17 @@ bool Lander::setDroneInFront()
   // nonzero indefinitely and this check would never pass).
   double errX = xTarget - _state.getX();
   double errY = yTarget - _state.getY();
-  bool closeEnough = fabs(errX) < param.initApproachPosThld
-                   && fabs(errY) < param.initApproachPosThld;
+  // Also require Z to have actually reached zTarget -- not just X/Y -- before
+  // considering the standoff point reached. Without this, INIT could hand
+  // off to HOLD's slope while Z still had real distance left to close, which
+  // seeds the slope's point0 (_slopeStartRelZ, captured right after this) with
+  // more residual error than intended.
+  double errZ = zTarget - _state.getZ();
+  bool closeEnough = fabs(errX) < param.initStartPointXYTol
+                   && fabs(errY) < param.initStartPointXYTol
+                   && fabs(errZ) < param.initStartPointZTol;
 
-  // Require it to hold CONTINUOUSLY for initApproachWaitTime seconds before
+  // Require it to hold CONTINUOUSLY for initStartPointHold seconds before
   // actually releasing — same continuous-timer pattern as the HOLD -> COMP
   // and COMP -> LAND gates, so a brief flicker into "close enough" isn't
   // enough. Reset (not just pause) the instant it drops.
@@ -1203,7 +1315,7 @@ bool Lander::setDroneInFront()
   } else {
     _approachSettleTimer = 0.0;
   }
-  bool ready = closeEnough && (_approachSettleTimer >= param.initApproachWaitTime);
+  bool ready = closeEnough && (_approachSettleTimer >= param.initStartPointHold);
   std::cout << "closeEnough " << closeEnough << " _approachSettleTimer " << _approachSettleTimer << std::endl;
   std::cout << "_platformVision.getVx() " << _platformVision.getVx() << " _platformVision.getX() " << _platformVision.getX() << std::endl;
   // Diagnostic log, throttled to ~1 Hz (this runs at the full control-loop
@@ -1211,34 +1323,37 @@ bool Lander::setDroneInFront()
   // steady, or growing, and whether the threshold or the settle timer is
   // what's currently blocking release, without flooding the console. Also
   // prints the platform's own measured velocity, since a platform drifting
-  // faster than the bridge's position-setpoint slew limit (kMaxVelocity in
-  // bridge_node.cpp) can never actually be closed on regardless of what
+  // faster than the bridge's XY position-setpoint slew limit (kMaxVelocityXY
+  // in bridge_node.cpp) can never actually be closed on regardless of what
   // target this function computes — worth comparing against that limit.
   _approachLogTimer += _dt;
   if (_approachLogTimer >= 1.0) {
     _approachLogTimer = 0.0;
-    std::cout << "[setDroneInFront] target=(" << xTarget << "," << yTarget << ")"
-              << " state=(" << _state.getX() << "," << _state.getY() << ")"
-              << " err=(" << errX << "," << errY << ")"
+    std::cout << "[setDroneInFront] target=(" << xTarget << "," << yTarget << "," << zTarget << ")"
+              << " state=(" << _state.getX() << "," << _state.getY() << "," << _state.getZ() << ")"
+              << " err=(" << errX << "," << errY << "," << errZ << ")"
               << " platVel=(" << _platformVision.getVx() << "," << _platformVision.getVy() << ")"
               << " yawPlat " << yaw_plat
               << " yawDes " << _yaw_des
               << " droneYawActual " << _state.getYawFromQuat()
               << " spYaw " << _setPoint.getYaw()
               << " closeEnough " << closeEnough
-              << " settleTimer " << _approachSettleTimer << "/" << param.initApproachWaitTime
+              << " settleTimer " << _approachSettleTimer << "/" << param.initStartPointHold
               << " ready " << ready << std::endl;
   }
 
   if (ready)
   {
-    // setting the slope vector for the next step, simplifying the computations
-    // _platformState.getX() - (_platformState.getX() + gain*sinf(yaw_plat))
-    _line_direction[0] = -gain*sinf(yaw_plat);
-    _line_direction[1] = -gain*cosf(yaw_plat);
-    // GROUND TRUTH — kept commented for reference:
-    // _line_direction[2] = _state.getZ() - (_platformState.getZ() + param.zMargin);
-    _line_direction[2] = _state.getZ() - (_platformVision.getZ() + param.zMargin);
+    // Capture the time-parameterized slope's point0 (t=0) as the drone's
+    // position RELATIVE TO THE PAD right now (drone - pad), and reset its
+    // elapsed-time clock. This is the ONLY place the slope (re)starts from;
+    // see _slopeStartRelX/Y/Z's declaration for the full trajectory law.
+    _slopeStartRelX = _state.getX() - _platformVision.getX();
+    _slopeStartRelY = _state.getY() - _platformVision.getY();
+    _slopeStartRelZ = _state.getZ() - _platformVision.getZ();
+    _slopeElapsed = 0.0;
+    _slopeIntX    = 0.0;
+    _slopeIntY    = 0.0;
     _approachSettleTimer = 0.0;   // consumed — start clean for next time
     return true;
   }
@@ -1263,8 +1378,8 @@ void Lander::initInspection()
   }
 	Inspection = true;
 
-  RadiusInspection = param.inspeRadius; // radius of 1 meter
-  Period = (2*PI*RadiusInspection)/param.inspeLinVel;
+  RadiusInspection = param.inspecCircleRadius; // radius of 1 meter
+  Period = (2*PI*RadiusInspection)/param.inspecCircleSpeed;
 
 }
 
@@ -1277,13 +1392,13 @@ void Lander::inspection() {
 
   if(time > Period){
       time = 0;
-      RadiusInspection += 0.5;
-      Period = (2*PI*RadiusInspection)/param.inspeLinVel;
+      RadiusInspection += param.inspecCircleRadiusGrowth;
+      Period = (2*PI*RadiusInspection)/param.inspecCircleSpeed;
   }
 
   time+=_dt;
 
-  _setPoint.setPosition(RadiusInspection * cos((param.inspeLinVel/RadiusInspection)*time) + X0, RadiusInspection * sin((param.inspeLinVel/RadiusInspection)*time) + Y0, param.prelandAltitude);
+  _setPoint.setPosition(RadiusInspection * cos((param.inspecCircleSpeed/RadiusInspection)*time) + X0, RadiusInspection * sin((param.inspecCircleSpeed/RadiusInspection)*time) + Y0, param.inspecAltitude);
 
   // std::cout<<"Circ:  "<<_setPoint.getX()<<std::endl;
   // std::cout<<"Time: "<<time<<std::endl;
@@ -1297,7 +1412,7 @@ void Lander::hovering() {
   if(!_hovering) {
     starting_x = _state.getX();
     starting_y = _state.getY();
-		starting_z = param.prelandAltitude;
+		starting_z = param.inspecAltitude;
 		_hovering = true;
 	}
 
@@ -1331,32 +1446,72 @@ void Lander::hold() {
   // Apply slope Z adjustment only when HOLD is in a neutral state — no ascend
   // or descend transition is pending. Mirrors the condition checks in HoldState::handle().
   {
-    bool desc_v        = _centered && _holding && (_setPoint.getZ() > param.zMin + 0.1) && _machine.safeInitialLanding();
-    bool asce_v        = _lost    && (_verticalErr < param.zMax - 0.1);
-    bool asce_min      = (_setPoint.getZ() < param.zMin);
-    bool asce_margin   = _holding && _centered && (_verticalErr < param.zMargin) && (_verticalErr < param.zMax - 0.1) && !desc_v;
 
     // if (_prevState == AbstractLandState::states::INIT)
     if(_slopeActive)
     {
-      // GROUND TRUTH — kept commented for reference:
-      // double z_base = _platformState.getZ() + param.zMargin;
-      // The vision-derived Z is also in the DRONE's frame, where the setpoint is
-      // commanded; _platformState is in the simulator's world frame, so the old
-      // form mixed frames as well as using truth.
-      double z_base = _platformVision.getZ() + param.zMargin;
-      double dot    = _VisionPose.getX() * _line_direction[0] + _VisionPose.getY() * _line_direction[1];
-      double norm_sq = _line_direction[0] * _line_direction[0] + _line_direction[1] * _line_direction[1];
-      double z_adj  = z_base + _line_direction[2] * dot / norm_sq + 0.5*(z_adj-_state.getZ());
-      std::cout << "z_base "  << z_base << " z_adj " << z_adj << " state z "<< _state.getZ() << " _line_direction[2] " << _line_direction[2]
-      << " dot " << dot << " norm_sq " << norm_sq << " dot / norm_sq " << dot / norm_sq  << " _VisionPose.getX() " << (_VisionPose.getX()) <<
-      " _VisionPose.getY() " << _VisionPose.getY() << " _state.getX() " <<_state.getX() << std::endl;
-      _setPoint.setZ(z_adj);
-        // std::cout << "hold setting z pos !desc_v " << !desc_v << " !asce_v " << !asce_v
-        //           << " !asce_min " << !asce_min << " !asce_margin " << !asce_margin
-        //           << " z_adj " << z_adj << " centered " << _centered << std::endl;
+      // Time-parameterized slope in the PAD's frame: the desired position
+      // relative to the pad moves from rel0 (captured at slope start, see
+      // _slopeStartRelX/Y/Z) to relT = (0, 0, holdHeight) as elapsed
+      // time goes 0 -> slopeDuration. Each tick that pad-relative offset is
+      // transformed back to world by adding the pad's LIVE position, so the
+      // whole path rides along with the moving/heaving pad.
+      _slopeElapsed += _dt;
+      double s = common::clamp(_slopeElapsed / param.slopeDuration, 0.0, 1.0);
+
+      double relX = (1.0 - s) * _slopeStartRelX;
+      double relY = (1.0 - s) * _slopeStartRelY;
+      double relZ = (1.0 - s) * _slopeStartRelZ + s * param.holdHeight;
+
+      // Pad's live world position. No position lead here: the pad's motion is
+      // handled by the XY velocity feed-forward set below.
+      double padX = _platformVision.getX();
+      double padY = _platformVision.getY();
+      double padZ = _platformVision.getZ();
+
+      double cmdX = padX + relX;
+      double cmdY = padY + relY;
+      double cmdZ = padZ + relZ;
+
+      std::cout << "slope t " << _slopeElapsed << "/" << param.slopeDuration << " s " << s
+                << " rel0 (" << _slopeStartRelX << "," << _slopeStartRelY << "," << _slopeStartRelZ << ")"
+                << " rel (" << relX << "," << relY << "," << relZ << ")"
+                << " pad (" << padX << "," << padY << "," << padZ << ")"
+                << " cmd (" << cmdX << "," << cmdY << "," << cmdZ << ")"
+                << " int (" << _slopeIntX << "," << _slopeIntY << ")"
+                << " padVel (" << _platformVision.getVx() << "," << _platformVision.getVy() << ")"
+                << " state (" << _state.getX() << "," << _state.getY() << "," << _state.getZ() << ")"
+                << std::endl;
+
+      // Position-only command, same "not velocity commanded" NaN convention
+      // used elsewhere (see comp()'s NaN-vs-velocity note) -- a velocity
+      // field of 0 would be an active "hold zero Vz" fighting the position
+      // term instead of leaving Z purely to this position setpoint.
+      _setPoint.setVz(NAN);
+      // Slow integral on the XY tracking error against the NOMINAL slope
+      // command: removes the steady offset PX4 trails a moving command by,
+      // without differentiating vision. Clamped; reset at slope start.
+      _slopeIntX = common::clamp(_slopeIntX + param.slopeXYKi * (cmdX - _state.getX()) * _dt,
+                                 -param.slopeXYIntMax, param.slopeXYIntMax);
+      _slopeIntY = common::clamp(_slopeIntY + param.slopeXYKi * (cmdY - _state.getY()) * _dt,
+                                 -param.slopeXYIntMax, param.slopeXYIntMax);
+      cmdX += _slopeIntX;
+      cmdY += _slopeIntY;
+      _setPoint.setPosition(cmdX, cmdY, cmdZ);
+      // XY feed-forward = d(cmd)/dt = pad velocity + d(rel)/dt. rel shrinks
+      // linearly from rel0 to 0 over slopeDuration, so d(rel)/dt =
+      // -rel0/slopeDuration while s<1 (0 once complete). Without it PX4
+      // trails the moving command by ~v*tau opposite the pad's motion, which
+      // rotates the approach toward the trailing side.
+      double relRate = (s < 1.0 && param.slopeDuration > 0.0) ? 1.0 / param.slopeDuration : 0.0;
+      _setPoint.setVx(_platformVision.getVx() - _slopeStartRelX * relRate);
+      _setPoint.setVy(_platformVision.getVy() - _slopeStartRelY * relRate);
       clampZSP();
-      if(std::fabs(_VisionPose.getX()) < 0.1 && std::fabs(_VisionPose.getY()) < 0.1){
+
+      if (s >= 1.0) {
+        // Slope formally complete -- hand off to normal hold() tracking
+        // (trackXY() + live Z). If the slope is interrupted and restarts,
+        // setDroneInFront()'s `ready` block re-captures point0/elapsed fresh.
         std::cout << "disabling slope" << std::endl;
         _slopeActive = false;
       }
@@ -1364,8 +1519,12 @@ void Lander::hold() {
     _setPoint.setType(MavState::POSITION);
   }
 
-
-  trackXY();
+  // XY is driven directly by the slope's own time-parameterized command
+  // above while it's active -- trackXY() only takes over once the slope has
+  // handed off (or was never active this tick).
+  if (!_slopeActive) {
+    trackXY();
+  }
 
 }
 
@@ -1382,11 +1541,11 @@ void Lander::trackXY() {
   // and if the platform outruns what it can produce, the tracking error
   // grows without ever converging (the drone stays trailing behind,
   // "attached to the tail" of the platform, instead of centering on it).
-  // Same fix, and same lead convention (param.reactionLag), as
+  // Same fix, and same lead convention (param.compLeadTime), as
   // setDroneInFront()'s equivalent feed-forward.
   // GROUND TRUTH — kept commented for reference:
-  // double ffX = visionOk ? _platformState.getVx() * param.reactionLag : 0.0;
-  // double ffY = visionOk ? _platformState.getVy() * param.reactionLag : 0.0;
+  // double ffX = visionOk ? _platformState.getVx() * param.compLeadTime : 0.0;
+  // double ffY = visionOk ? _platformState.getVy() * param.compLeadTime : 0.0;
   double ffX = visionOk ? _platformVision.getVx()  : 0.0;
   double ffY = visionOk ? _platformVision.getVy() : 0.0;
 
@@ -1439,16 +1598,16 @@ void Lander::trackXY() {
       }
 
       // EMA low-pass — the platform's horizontal position is quasi-stationary.
-      _platFiltX = param.spFilterAlpha * _platFiltX + (1.0 - param.spFilterAlpha) * plat_x;
-      _platFiltY = param.spFilterAlpha * _platFiltY + (1.0 - param.spFilterAlpha) * plat_y;
+      _platFiltX = param.xyDirectFilterAlpha * _platFiltX + (1.0 - param.xyDirectFilterAlpha) * plat_x;
+      _platFiltY = param.xyDirectFilterAlpha * _platFiltY + (1.0 - param.xyDirectFilterAlpha) * plat_y;
 
       // Rate limit so a vision glitch can't fling the setpoint.
-      // spMaxVelXY is a SPEED [m/s], so the per-tick position step is
+      // xyDirectMaxSpeed is a SPEED [m/s], so the per-tick position step is
       // speed * dt. It was being applied as a raw per-tick step, which at the
       // 50 Hz control loop meant 3.0 m per tick (~150 m/s) — the limiter never
       // clamped anything, leaving the EMA above as the only damping, where the
       // comment on this branch assumes both are protecting the loop.
-      double maxStep = param.spMaxVelXY * _dt;
+      double maxStep = param.xyDirectMaxSpeed * _dt;
       sp_x = common::clamp(_platFiltX, _prevSpX - maxStep, _prevSpX + maxStep);
       sp_y = common::clamp(_platFiltY, _prevSpY - maxStep, _prevSpY + maxStep);
     }
@@ -1460,7 +1619,7 @@ void Lander::trackXY() {
     if(param.xyControlMode == 1)
       _setPoint.setPosition(sp_x, sp_y, _setPoint.getZ());
     else
-       _setPoint.setPosition(sp_x + 0.5*(sp_x - _state.getX()), sp_y + 0.5*(sp_y - _state.getY()), _setPoint.getZ());
+       _setPoint.setPosition(sp_x + param.xyDirectOvershootGain*(sp_x - _state.getX()), sp_y + param.xyDirectOvershootGain*(sp_y - _state.getY()), _setPoint.getZ());
   }
 
   // XY tracking diagnostic, throttled to ~5 Hz.
@@ -1481,18 +1640,18 @@ void Lander::trackXY() {
     if ((xyLogTick++ % 10) == 0) {
       const double errNorm = std::sqrt(_VisionPose.getX() * _VisionPose.getX()
                                      + _VisionPose.getY() * _VisionPose.getY());
-      std::cout << "[XY] mode " << param.xyControlMode
-                << " visionOk " << visionOk
-                << " err (" << _VisionPose.getX() << "," << _VisionPose.getY() << ") |err| " << errNorm
-                << " state (" << _state.getX() << "," << _state.getY() << ")"
-                << " platVel (" << _platformVision.getVx() << "," << _platformVision.getVy() << ")"
-                << " ff (" << ffX << "," << ffY << ")"
-                << " pidOut (" << pidOutX << "," << pidOutY << ")"
-                << " cmd (" << _setPoint.getX() << "," << _setPoint.getY() << ")"
-                << " cmdOffset (" << (_setPoint.getX() - _state.getX())
-                << "," << (_setPoint.getY() - _state.getY()) << ")"
-                << " maxOutput " << param.maxOutput
-                << std::endl;
+      // std::cout << "[XY] mode " << param.xyControlMode
+      //           << " visionOk " << visionOk
+      //           << " err (" << _VisionPose.getX() << "," << _VisionPose.getY() << ") |err| " << errNorm
+      //           << " state (" << _state.getX() << "," << _state.getY() << ")"
+      //           << " platVel (" << _platformVision.getVx() << "," << _platformVision.getVy() << ")"
+      //           << " ff (" << ffX << "," << ffY << ")"
+      //           << " pidOut (" << pidOutX << "," << pidOutY << ")"
+      //           << " cmd (" << _setPoint.getX() << "," << _setPoint.getY() << ")"
+      //           << " cmdOffset (" << (_setPoint.getX() - _state.getX())
+      //           << "," << (_setPoint.getY() - _state.getY()) << ")"
+      //           << " maxOutput " << param.xyPidOutputMax
+      //           << std::endl;
     }
   }
 
@@ -1503,7 +1662,7 @@ void Lander::asce() {
 
   _holdPIDX.reset();
   _holdPIDY.reset();
-  double new_z = std::min(_setPoint.getZ() + param.asceVelocity,_state.getZ() + param.asceVelocity);
+  double new_z = std::min(_setPoint.getZ() + param.holdAscendStep,_state.getZ() + param.holdAscendStep);
   _setPoint.setZ(new_z);
   _setPoint.setType(MavState::POSITION);
 
@@ -1511,20 +1670,20 @@ void Lander::asce() {
 
 void Lander::desc() {
   std::cout << "In desc " << std::endl;
-  double v_hor_calm = std::fabs(_state.getVx()) < 0.3 && std::fabs(_state.getVy()) < 0.3;
+  double v_hor_calm = std::fabs(_state.getVx()) < param.holdDescendAllowedMaxXYSpeed && std::fabs(_state.getVy()) < param.holdDescendAllowedMaxXYSpeed;
   if (!v_hor_calm)
     return;
-  double new_z = std::max(_setPoint.getZ() - param.descVelocity,_state.getZ() - param.descVelocity);
+  double new_z = std::max(_setPoint.getZ() - param.holdDescendStep,_state.getZ() - param.holdDescendStep);
   _setPoint.setZ(new_z);
   // Feed the intended descent rate forward on the position command's
   // velocity field (same mechanism comp() already uses for the heave
-  // feed-forward — see bridge_node.cpp's POSITION branch), instead of
-  // relying purely on the stepped-down position target. Without this the
-  // actual descent rate is bottlenecked by the bridge's own
-  // position-setpoint slew limit (kMaxVelocity) chasing a target that only
-  // moves once every other tick (DescState always bounces back to HOLD
-  // after one call), which can end up far slower than descVelocity.
-  _setPoint.setVz(-param.descVelocity);
+  // feed-forward — see bridge_node.cpp's POSITION branch). Note this
+  // feed-forward alone does NOT bypass the bridge's own Z position-setpoint
+  // slew limit (kMaxVelocityZ in bridge_node.cpp) -- the position target is
+  // what PX4 actually tracks, and the bridge never lets it move faster than
+  // that limit regardless of the velocity field. The achievable descent rate
+  // is bounded by kMaxVelocityZ, not just holdDescendStep.
+  _setPoint.setVz(-param.holdDescendStep);
   _setPoint.setType(MavState::POSITION);
 }
 
@@ -1536,12 +1695,12 @@ void Lander::comp() {
   // run()'s call order. Same-tick recompute — harmless, same inputs.
   trackXY();
 
-  // COMP standoff hold: keep the drone at compTargetDist above the pad while
+  // COMP standoff hold: keep the drone at compHeightBase above the pad while
   // centred.
   //
-  // Hysteresis safety: if the gap drops below compMinDist the pad is coming up
+  // Hysteresis safety: if the gap drops below compBackoffBelow the pad is coming up
   // too close — stop tracking and back off (ascend) until the gap climbs back
-  // above compResumeDist, then resume tracking.
+  // above compResumeAbove, then resume tracking.
   //
   // Uses the CURRENT measured gap plus the predicted pad velocity to drive the
   // relative velocity to zero. The prediction here is led by the drone's own
@@ -1553,19 +1712,42 @@ void Lander::comp() {
 
   double gap = -_verticalErr;   // measured drone->pad vertical distance
 
-  if (gap < param.compMinDist)    _compTracking = false;   // too close — back off
-  if (gap > param.compResumeDist) _compTracking = true;    // safe again — track
+  // Extra standoff margin, added directly (no gain): calm seas (no recent
+  // upward heave) hold at plain compHeightBase; a rougher sea (a nonzero
+  // _heaveUpMax) pushes the held distance back out. The CAP applies to the
+  // resulting TOTAL standoff distance (compHeightCap), not to the
+  // margin in isolation -- an unbounded standoff would back the drone
+  // arbitrarily far off in a rough enough sea, and capping the total is what
+  // actually bounds that, not capping how much gets added to whatever
+  // compHeightBase already is. Computed once, before the tracking branch, so
+  // both the standoff below and the throttled diagnostic log agree on the
+  // exact same value.
+  double effectiveHoldDist = std::min(param.compHeightBase + _heaveUpMax, param.compHeightCap);
+
+  // compBackoffBelow/compResumeAbove are configured as offsets FROM compHeightBase
+  // (how much closer than the hold distance triggers back-off / resume).
+  // When _heaveUpMax pushes the effective hold distance out, these two
+  // hysteresis bounds must follow it by the same amount so they keep the
+  // same physical offset from wherever the drone is actually holding —
+  // otherwise a large standoff margin would leave compBackoffBelow/compResumeAbove
+  // sitting at their configured-for-calm-seas values, far too close to the
+  // (now much larger) effective hold distance.
+  double effectiveMinDist    = effectiveHoldDist - (param.compHeightBase - param.compBackoffBelow);
+  double effectiveResumeDist = effectiveHoldDist - (param.compHeightBase - param.compResumeAbove);
+
+  if (gap < effectiveMinDist)    _compTracking = false;   // too close — back off
+  if (gap > effectiveResumeDist) _compTracking = true;    // safe again — track
 
   double new_z;
   if (_compTracking) {
     double vff  = _seaState.heaveValid ? _seaState.heaveVelPredComp : 0.0;
-    double lead = (param.compTargetDist - gap);
-    new_z = _state.getZ() + lead;
+    double lead = (effectiveHoldDist - gap);
+    new_z = _state.getZ() + param.compHeightPGain*lead;
 
     // Two modes, so the position and velocity halves of the setpoint stop
     // fighting each other.
     //
-    //   MATCHING  heaveVelPredComp > compVelMatchThld: the pad is climbing fast
+    //   MATCHING  heaveVelPredComp > compVelMatchAbove: the pad is climbing fast
     //             enough that matching its vertical rate is the point, so Vz is
     //             the pad rate, nothing else added. Signed, not |.|: the pad
     //             dropping away is not a case that needs matching.
@@ -1578,17 +1760,17 @@ void Lander::comp() {
     // commanded, which is exactly how velocity[0]/[1] are already sent in
     // bridge_node's POSITION branch. It propagates untouched: getVz() ->
     // twist.linear.z -> "velocity[2] = -twist.linear.z", and -NaN is NaN.
-    _compVelMatching = vff > param.compVelMatchThld;
-
-    if (_compVelMatching) {
-      _setPoint.setVz(vff);
-    } else {
-      _setPoint.setVz(NAN);
-    }
+    _compVelMatching = vff > param.compVelMatchAbove;
+    _setPoint.setVz(vff);
+    // if (_compVelMatching) {
+    //   _setPoint.setVz(vff);
+    // } else {
+    //   _setPoint.setVz(NAN);
+    // }
 
   } else {
     // Backing off: ascend (anchored, bounded) until the gap recovers.
-    new_z = std::min(_setPoint.getZ() + param.asceVelocity, _state.getZ() + param.asceVelocity);
+    new_z = std::min(_setPoint.getZ() + param.holdAscendStep, _state.getZ() + param.holdAscendStep);
     _setPoint.setVz(0.0);
   }
 
@@ -1601,17 +1783,20 @@ void Lander::comp() {
   // descent can stall:
   //   * commanded but not followed  -> cmdZ stays well below stateZ, stateVz ~0
   //   * not commanded               -> cmdZ converges onto stateZ (gap already
-  //                                    at compTargetDist, or gap not updating)
+  //                                    at compHeightBase, or gap not updating)
   //   * clamped                     -> clamped flag set, cmdZ pinned at zMin
   {
     static int compLogTick = 0;
     if ((compLogTick++ % 5) == 0) {
       const double cmdZ = _setPoint.getZ();
-      std::cout << "comp gap " << gap << "/" << param.compTargetDist
+      std::cout << "comp gap " << gap << "/" << effectiveHoldDist
+                << " (base " << param.compHeightBase << " +heaveUpMax " << _heaveUpMax
+                << " capped@" << param.compHeightCap << ")"
+                << " minDist " << effectiveMinDist << " resumeDist " << effectiveResumeDist
                 << " tracking " << _compTracking
                 << " mode " << (_compTracking ? (_compVelMatching ? "VEL" : "POS") : "BACKOFF")
                 << " vff " << (_seaState.heaveValid ? _seaState.heaveVelPredComp : 0.0)
-                << "/" << param.compVelMatchThld
+                << "/" << param.compVelMatchAbove
                 << " cmdVz " << _setPoint.getVz()
                 << " heaveVelPredComp " << _seaState.heaveVelPredComp
                 << " | stateZ " << _state.getZ()
@@ -1620,7 +1805,7 @@ void Lander::comp() {
                 << " cmdZ " << cmdZ
                 << " cmdMinusState " << (cmdZ - _state.getZ())
                 << " clamped " << (std::fabs(cmdZ - new_z) > 1e-9)
-                << " zMin " << param.zMin
+                << " zMin " << param.altMinWorld
                 << " platZ " << _platformVision.getZ()
                 << std::endl;
     }
@@ -1631,9 +1816,9 @@ void Lander::clampZSP() {
 
     double temp;
     // GROUND TRUTH — kept commented for reference:
-    // temp = common::clamp(_setPoint.getZ(), param.zMin, _platformState.getZ() + param.zMax);
-    temp = common::clamp(_setPoint.getZ(), param.zMin, _platformVision.getZ() + param.zMax);
-    // std::cout << "_platformState.getZ() " << _platformState.getZ() << " _platformState.getZ() + param.zMax " << _platformState.getZ() + param.zMax << std::endl;
+    // temp = common::clamp(_setPoint.getZ(), param.altMinWorld, _platformState.getZ() + param.altMaxAbovePad);
+    temp = common::clamp(_setPoint.getZ(), param.altMinWorld, _platformVision.getZ() + param.altMaxAbovePad);
+    // std::cout << "_platformState.getZ() " << _platformState.getZ() << " _platformState.getZ() + param.altMaxAbovePad " << _platformState.getZ() + param.altMaxAbovePad << std::endl;
     _setPoint.setZ(temp);
     _setPoint.setType(MavState::POSITION);
 }
@@ -1645,11 +1830,11 @@ void Lander::land() {
     // anchored to the drone so the setpoint can't run away. No zMin clamp — we are
     // committing to touch down.
 
-    // double new_z = std::min(_setPoint.getZ() - param.landDescVel, _state.getZ() - param.landDescVel);
+    // double new_z = std::min(_setPoint.getZ() - param.landDescendSpeed, _state.getZ() - param.landDescendSpeed);
     // _setPoint.setZ(new_z);
     // _setPoint.setType(MavState::POSITION);
 
-    _setPoint.setVz(-param.landDescVel);
+    _setPoint.setVz(-param.landDescendSpeed);
     _setPoint.setType(MavState::VELOCITY);
 
 }
@@ -1665,4 +1850,58 @@ void Lander::align() {
     _setPoint.setOrientation(q_interm);
     _setPoint.setType(MavState::POSITION);
 
+}
+
+// HOLD gave up waiting for COMP: climb to ABORT_ALTITUDE_M, fly to the
+// take-off point, then land there with the simple landing (SimpleLanding.hpp).
+void Lander::abortReturn() {
+  if (!_abortStarted) {
+    _abortStarted = true;
+    _abortPhase   = 0;
+    _abortStartX  = _state.getX();
+    _abortStartY  = _state.getY();
+    if (!_takeoffSet) {
+      // No TAKE_OFF task seen in this mission: land below where the abort started.
+      _takeoffX = _abortStartX; _takeoffY = _abortStartY; _takeoffZ = 0.0;
+      std::cout << "[ABORT] no take-off point recorded: landing below the abort point" << std::endl;
+    }
+    // The take-off point may lie outside the geofence (e.g. a drone spawned
+    // outside the mocap box): aim at the nearest point inside it instead, or
+    // the fence would hold the drone short of a target it can never reach.
+    if (param.geofenceEnable) {
+      const double x = common::clamp(_takeoffX, param.geofenceXMin, param.geofenceXMax);
+      const double y = common::clamp(_takeoffY, param.geofenceYMin, param.geofenceYMax);
+      if (x != _takeoffX || y != _takeoffY)
+        std::cout << "[ABORT] take-off point (" << _takeoffX << ", " << _takeoffY
+                  << ") is outside the geofence: landing at (" << x << ", " << y << ") instead" << std::endl;
+      _takeoffX = x;
+      _takeoffY = y;
+    }
+    std::cout << "[ABORT] climb to " << param.abortAltitude << " m, return to take-off ("
+              << _takeoffX << ", " << _takeoffY << "), land" << std::endl;
+  }
+
+  const double tol = param.abortArrivedTol;
+  _setPoint.setVx(NAN);
+  _setPoint.setVy(NAN);
+  _setPoint.setVz(NAN);
+
+  if (_abortPhase == 0) {                       // climb in place
+    _setPoint.setType(MavState::POSITION);
+    _setPoint.setPosition(_abortStartX, _abortStartY, param.abortAltitude);
+    if (std::fabs(_state.getZ() - param.abortAltitude) < tol) {
+      _abortPhase = 1;
+      std::cout << "[ABORT] at altitude -> returning to the take-off point" << std::endl;
+    }
+  } else if (_abortPhase == 1) {                // fly to the take-off point at altitude
+    _setPoint.setType(MavState::POSITION);
+    _setPoint.setPosition(_takeoffX, _takeoffY, param.abortAltitude);
+    if (std::hypot(_state.getX() - _takeoffX, _state.getY() - _takeoffY) < tol) {
+      _abortPhase = 2;
+      std::cout << "[ABORT] above the take-off point -> landing" << std::endl;
+    }
+  } else {                                      // land at the take-off point: the LAND task's simple landing
+    if (simple_landing::step(_state, _takeoffX, _takeoffY, _takeoffZ, param, _setPoint, _abortDisarm))
+      _disarmRequest = true;
+  }
 }

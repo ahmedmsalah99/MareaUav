@@ -16,23 +16,23 @@ Searcher::Searcher():_horizontaErr((double)0), _tauHold((double)0), _tauLost((do
     _holdPIDX.reset();
   	_holdPIDY.reset();
 
-  	_holdPIDX.setP(param.KpHold);
-  	_holdPIDX.setI(param.KiHold);
-  	_holdPIDX.setD(param.KdHold);
+  	_holdPIDX.setP(param.xyPidKp);
+  	_holdPIDX.setI(param.xyPidKi);
+  	_holdPIDX.setD(param.xyPidKd);
 
-  	_holdPIDY.setP(param.KpHold);
-  	_holdPIDY.setI(param.KiHold);
-  	_holdPIDY.setD(param.KdHold);
+  	_holdPIDY.setP(param.xyPidKp);
+  	_holdPIDY.setI(param.xyPidKi);
+  	_holdPIDY.setD(param.xyPidKd);
 
 
-  	_holdPIDX.setMaxIOutput(param.maxIntValue);
-    _holdPIDY.setMaxIOutput(param.maxIntValue);
+  	_holdPIDX.setMaxIOutput(param.xyPidIntMax);
+    _holdPIDY.setMaxIOutput(param.xyPidIntMax);
 
     //put a saturation for the whole PID
-    _holdPIDX.setOutputLimits(param.maxOutput);
+    _holdPIDX.setOutputLimits(param.xyPidOutputMax);
 
-  	_tauHold = param.holdThreshold;
-  	_tauLost = param.lostThreshold;
+  	_tauHold = param.centeredConeRadiusMax;
+  	_tauLost = param.offCenterConeRadiusMax;
 
     //stored starting hovering position
     starting_x = _state.getX();
@@ -124,22 +124,22 @@ void Searcher::loadMachine()
 	_holdPIDX.reset();
 	_holdPIDY.reset();
 
-	_holdPIDX.setP(param.KpHold);
-	_holdPIDX.setI(param.KiHold);
-	_holdPIDX.setD(param.KdHold);
+	_holdPIDX.setP(param.xyPidKp);
+	_holdPIDX.setI(param.xyPidKi);
+	_holdPIDX.setD(param.xyPidKd);
 
-	_holdPIDY.setP(param.KpHold);
-	_holdPIDY.setI(param.KiHold);
-	_holdPIDY.setD(param.KdHold);
+	_holdPIDY.setP(param.xyPidKp);
+	_holdPIDY.setI(param.xyPidKi);
+	_holdPIDY.setD(param.xyPidKd);
 
-	_holdPIDX.setMaxIOutput(param.maxIntValue);
-  _holdPIDY.setMaxIOutput(param.maxIntValue);
+	_holdPIDX.setMaxIOutput(param.xyPidIntMax);
+  _holdPIDY.setMaxIOutput(param.xyPidIntMax);
   //put a saturation for the integral part of the PID
 
-  _holdPIDX.setOutputLimits(param.maxOutput);
+  _holdPIDX.setOutputLimits(param.xyPidOutputMax);
 
-	_tauHold = param.holdThreshold;
-	_tauLost = param.lostThreshold;
+	_tauHold = param.centeredConeRadiusMax;
+	_tauLost = param.offCenterConeRadiusMax;
   //stored starting hovering position
   starting_x = _state.getX();
   starting_y = _state.getY();
@@ -346,9 +346,9 @@ void Searcher::updateSignals()
       _NLost++;
   }
 
-	_holding  = (_NHold > param.nFramesHold && _VisionPose.VisionDataUpdated);
+	_holding  = (_NHold > param.centeredFramesRequired && _VisionPose.VisionDataUpdated);
 
-  _lost     = (_NLost > param.nFramesLost || !_VisionPose.VisionDataUpdated);
+  _lost     = (_NLost > param.offCenterFramesToLosePad || !_VisionPose.VisionDataUpdated);
 
   _positioned = _horizontaErr < _tauHold * 0.5 && _VisionPose.VisionDataUpdated;
 
@@ -431,7 +431,7 @@ void Searcher::hold() {
   std::cout << "final xTarget " << targetVect(0) << " yTarget " << targetVect(1) << std::endl;
   std::cout << "_releasePayload " << _releasePayload << "_payloadReleased " << _payloadReleased << std::endl;
   if(_releasePayload && !_payloadReleased)
-    _setPoint.setZ(param.zMax);
+    _setPoint.setZ(param.altMaxAbovePad);
   else
     _setPoint.setZ(_Z0);
   //Fill right fields
@@ -533,8 +533,8 @@ void Searcher::updateIntegrals()
 
     double tempx,tempy;
 
-    tempx = common::clamp(_err_int[0],param.minIntValue,param.maxIntValue);
-    tempy = common::clamp(_err_int[1],param.minIntValue,param.maxIntValue);
+    tempx = common::clamp(_err_int[0],param.xyPidIntMin,param.xyPidIntMax);
+    tempy = common::clamp(_err_int[1],param.xyPidIntMin,param.xyPidIntMax);
 
     _err_int[0] =  tempx;
     _err_int[1] =  tempy;

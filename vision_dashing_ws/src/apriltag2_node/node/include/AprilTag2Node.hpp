@@ -20,7 +20,8 @@
 // #include <rclcpp/clock.hpp>
 
 #include <common/pjpeg.h>
-#include "LandingPlatform.h"
+#include <Eigen/Geometry>
+#include <vector>
 
 #include <vector>
 #include <queue>
@@ -46,7 +47,10 @@ private:
 	geometry_msgs::msg::TransformStamped _drone_pose;
 	double _drone_yaw;
 	std::map<int, std::string> tracked_tags;
-	std::map<int, float> platform_tags;
+	std::map<int, float> platform_tags;           // tag id -> edge size [m]
+	std::map<int, Eigen::Matrix4d> _tagToRef;      // tag id -> pad reference point in that tag's frame
+	Eigen::Matrix4d _robotTcam;                    // camera pose in the drone body frame
+	void loadCameraAndPadParams();
 	typedef std::queue<double> queue_t;
 	queue_t _Queue_roll;
 	queue_t _Queue_pitch;

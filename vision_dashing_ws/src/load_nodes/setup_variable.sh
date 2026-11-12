@@ -6,8 +6,8 @@ source /home/andrea/Marea/mar_frankenrotor_ros/ros2SITL/Firmware/Tools/setup_gaz
 echo "link mocap2mav lcm"
 export M2M_INCLUDE=/home/andrea/Marea/mar_frankenrotor_ros/ros2SITL/mocap2mav/include
 
-echo "exporting simulation variable: 1=sim, 0=no-sim"
-export M2M_SIM=1
+echo "exporting run mode: 0=sim, 1=mocap, 2=hw, 3=mocap in sim"
+export M2M_MODE=0
 
 echo "load gazebo plugins (landingPlat / Payload)"
 # The plugins are now ament packages that talk ROS 2 directly. After building

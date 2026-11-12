@@ -1,16 +1,12 @@
-#include <cstdlib>
 #include "guidance_system/autom/Automatic.h"
+#include "common/RunMode.h"
+#include <cmath>
 using namespace common;
 Automatic::Automatic()
 {
   _defaultYaw = 0;
-  // Value-based, not presence-based: (bool)getenv(...) was true even for
-  // M2M_SIM=0 (a non-null pointer to the string "0"), which meant hardware
-  // exporting M2M_SIM=0 as instructed still ran this in simulation mode.
-  {
-    const char *m2mSimEnv = std::getenv("M2M_SIM");
-    env_sim = m2mSimEnv && (atoi(m2mSimEnv) >= 1);
-  }
+  env_sim = runModeIsGazebo(runModeFromEnv());
+  _fenceParams.loadLanding();
 }
 
 MavState Automatic::getState()
@@ -92,13 +88,33 @@ void Automatic::handleCommands() {
             break;
 
         case actions::TAKE_OFF:
+            // Remember where we took off: a landing abort returns and lands here.
+            _takeoffX = _state.getX(); _takeoffY = _state.getY(); _takeoffZ = _state.getZ();
+            _takeoffSet = true;
+            std::cout << "Take-off point recorded: (" << _takeoffX << ", " << _takeoffY << ", " << _takeoffZ << ")" << std::endl;
+            {
+                const Parameters& f = _fenceParams;
+                if (f.geofenceEnable &&
+                    (_takeoffX < f.geofenceXMin || _takeoffX > f.geofenceXMax ||
+                     _takeoffY < f.geofenceYMin || _takeoffY > f.geofenceYMax)) {
+                    std::cout << "[GEOFENCE] WARNING: take-off point (" << _takeoffX << ", " << _takeoffY
+                              << ") is OUTSIDE the geofence x[" << f.geofenceXMin << ", " << f.geofenceXMax
+                              << "] y[" << f.geofenceYMin << ", " << f.geofenceYMax
+                              << "]: setpoints will be clamped, and an abort will land inside the fence instead."
+                              << std::endl;
+                }
+            }
             _actualCommand.reset(new TakeOff(&_state,&_comm,&_actualTask));
            // _actualCommand = std::unique_ptr<Command>(new TakeOff(&_state,&_comm,&_actualTask));
             std::cout << "Actual command: TakeOff" << std::endl;
             break;
 
         case actions::LAND:
-            _actualCommand = std::unique_ptr<Command>(new Land(&_state,&_comm,&_actualTask,&_platformState,&_visionFeedbackPose,&_UltrasonicInfo,&_seaState));
+        {
+            Land* land = new Land(&_state,&_comm,&_actualTask,&_platformState,&_visionFeedbackPose,&_UltrasonicInfo,&_seaState);
+            if (_takeoffSet) land->setTakeoffPosition(_takeoffX, _takeoffY, _takeoffZ);
+            _actualCommand = std::unique_ptr<Command>(land);
+        }
             std::cout << "Actual command: Land" << std::endl;
             break;
         case actions::ROTATE:
@@ -120,7 +136,54 @@ void Automatic::handleCommands() {
 
 }
 void Automatic::executeCommand() {
+    // The bridge forwards XY velocity as a feed-forward on POSITION setpoints,
+    // and _comm is shared by every command. Reset XY to NaN (= position-only)
+    // each tick so commands that never touch it (Move, TakeOff, ...) don't
+    // publish MavState's default 0 -- an active "hold zero XY velocity" --
+    // or a stale value left by a previous command.
+    _comm.setVx(NAN);
+    _comm.setVy(NAN);
     this->_actualCommand->execute();
+    applyGeofence();
+}
+
+void Automatic::applyGeofence() {
+    const Parameters& p = _fenceParams;
+    if (!p.geofenceEnable) return;
+
+    const double lo[3] = {p.geofenceXMin, p.geofenceYMin, -1e9};   // no floor: landing must reach the pad
+    const double hi[3] = {p.geofenceXMax, p.geofenceYMax, p.altMaxWorld};
+    const double pos[3] = {_state.getX(), _state.getY(), _state.getZ()};
+    bool changed = false;
+    int  clampedDir[3] = {0, 0, 0};   // +1: target was above hi, -1: below lo
+
+    if (_comm.getType() == MavState::POSITION) {
+        double sp[3] = {_comm.getX(), _comm.getY(), _comm.getZ()};
+        for (int i = 0; i < 3; ++i) {
+            const double c = common::clamp(sp[i], lo[i], hi[i]);
+            if (c != sp[i]) { clampedDir[i] = (sp[i] > c) ? 1 : -1; sp[i] = c; changed = true; }
+        }
+        if (changed) _comm.setPosition(sp[0], sp[1], sp[2]);
+    }
+
+    // Velocity (a VELOCITY command, or the feed-forward on a POSITION one):
+    // never push further out while at or beyond a wall.
+    double v[3] = {_comm.getVx(), _comm.getVy(), _comm.getVz()};
+    bool vChanged = false;
+    for (int i = 0; i < 3; ++i) {
+        if (std::isnan(v[i])) continue;
+        const bool pushOutHi = v[i] > 0.0 && (pos[i] >= hi[i] || clampedDir[i] == 1);
+        const bool pushOutLo = v[i] < 0.0 && (pos[i] <= lo[i] || clampedDir[i] == -1);
+        if (pushOutHi || pushOutLo) { v[i] = 0.0; vChanged = true; }
+    }
+    if (vChanged) _comm.setV(v[0], v[1], v[2]);
+
+    if (changed || vChanged) {
+        static int throttle = 0;
+        if (throttle++ % 25 == 0)
+            std::cout << "[GEOFENCE] setpoint limited to box x[" << lo[0] << ", " << hi[0] << "] y[" << lo[1] << ", " << hi[1]
+                      << "] z<=" << hi[2] << "  drone (" << pos[0] << ", " << pos[1] << ", " << pos[2] << ")" << std::endl;
+    }
 }
 
 double Automatic::getPredictionHorizon() const {
@@ -138,6 +201,12 @@ LandGoDiagnostics Automatic::getGoDiagnostics() const {
 bool Automatic::consumeDisarmRequest() const {
     if (auto* land = dynamic_cast<Land*>(_actualCommand.get()))
         return land->consumeDisarmRequest();
+    return false;
+}
+
+bool Automatic::consumePayloadRelease() const {
+    if (auto* search = dynamic_cast<Search*>(_actualCommand.get()))
+        return search->consumePayloadRelease();
     return false;
 }
 

@@ -1,4 +1,5 @@
 #include <boost/bind.hpp>
+#include <cmath>
 #include <gazebo/gazebo.hh>
 #include <gazebo/physics/physics.hh>
 #include <gazebo/common/common.hh>
@@ -14,6 +15,9 @@
 #include <px4_msgs/msg/vehicle_odometry.hpp>
 #include <sensor_msgs/msg/imu.hpp>
 #include <ulisse_msgs/msg/simulated_system.hpp>
+#include <geometry_msgs/msg/pose_stamped.hpp>
+#include <cstdlib>
+#include <map>
 
 #include "WaveGen.h"
 
@@ -188,6 +192,17 @@ namespace gazebo
 
         bool _use_sim_system = false;   // latched true on the first message heard
 
+        // ---- Mocap-in-sim mode (M2M_MODE=3) --------------------------------
+        // The plugin stops driving the pad (no bag, no waves): it stays where
+        // it is, and can be moved/tilted from the Gazebo GUI like the real pad.
+        // It plays OptiTrack instead: every model's true world pose is
+        // published as geometry_msgs/PoseStamped (ENU, Z-up) on
+        // /mocap/<model name>/pose, like mocap_optitrack does per rigid body in the lab.
+        static constexpr double kMocapRateHz = 120.0;   // typical OptiTrack frame rate
+        bool _mocap_mode = false;
+        double _mocap_last_pub = -1.0;
+        std::map<std::string, rclcpp::Publisher<geometry_msgs::msg::PoseStamped>::SharedPtr> _mocap_pubs;
+
         // Slew-rate-limited values actually used to drive the simulation —
         // updated once per OnUpdate() tick (not once per message), so a
         // discontinuity in the raw signal is spread out over many ticks
@@ -201,6 +216,38 @@ namespace gazebo
         // Dead-reckoned world-frame position, integrated from
         // _sim_lin_vel_filt (rotated into world frame) each tick.
         ignition::math::Vector3d _sim_position;
+
+        // Position where _sim_position was seeded (the model's real WorldPose()
+        // at the first /ulisse/simulated_system tick) -- the reference the
+        // drift-correction washout filter below decays displacement back
+        // toward. Captured once, alongside _sim_position, and never updated
+        // afterward.
+        ignition::math::Vector3d _sim_position_seed;
+
+        // Drift correction: pure integration of a recorded velocity signal has
+        // no absolute reference, so ANY nonzero-mean residual in that signal
+        // accumulates without bound. The dominant source of one here is the
+        // bag loop point -- a "few minutes long" recording is essentially
+        // never an exact integer number of heave/roll/pitch periods, so
+        // looping back to sample 0 is a real discontinuity in the velocity
+        // signal, not just noise. slewLimit() only smooths how fast that
+        // jump is applied; it does not cancel its net contribution to the
+        // integral, so every loop adds a small residual displacement.
+        // Scaling the recorded velocity (see scripts/scale_bag_rates.py)
+        // scales that per-loop residual by the same factor, which is what
+        // turns previously-unnoticeable drift into the platform visibly
+        // sinking through the floor after enough loops.
+        //
+        // Fix: apply a first-order high-pass ("washout") filter to the
+        // displacement since the seed, with time constant
+        // _sim_position_drift_tau. Oscillatory motion (period << tau) passes
+        // through essentially unattenuated; any net/DC drift decays back
+        // toward the seed pose with that time constant instead of growing
+        // forever. This needs no trust in the message's own absolute
+        // position field (which the rest of this block already distrusts
+        // for the same loop-discontinuity reason -- see the comment above
+        // the SimSystemData struct).
+        double _sim_position_drift_tau;   // s — time constant of the washout filter
 
         // Slew-rate limits (SDF-configurable) — the resilience knobs against
         // jumps in the recorded signal (loop point, sensor dropouts, ...).
@@ -302,6 +349,12 @@ namespace gazebo
                 _sim_max_lin_accel = _sdf->Get<double>("sim_system_max_lin_accel", 3.0).first;
                 _sim_max_ang_accel = _sdf->Get<double>("sim_system_max_ang_accel", 2.0).first;
                 _sim_max_rpy_rate  = _sdf->Get<double>("sim_system_max_rpy_rate",  1.0).first;
+                // Default 30s: comfortably longer than any recorded
+                // heave/roll/pitch period (~1-12s, see wave.init() below) so
+                // oscillatory motion isn't visibly damped, but short enough
+                // to bound accumulated drift within a couple of bag loops
+                // instead of letting it grow across an entire session.
+                _sim_position_drift_tau = _sdf->Get<double>("sim_system_position_drift_tau", 30.0).first;
 
                 auto px4_qos      = rclcpp::QoS(rclcpp::KeepLast(1)).best_effort();
                 auto reliable_qos = rclcpp::QoS(rclcpp::KeepLast(1)).reliable();
@@ -332,6 +385,17 @@ namespace gazebo
                     std::bind(&PlatformManager::simulatedSystemCallback, this, std::placeholders::_1));
 
                 wave.init(10,2.0,0.5,7.0);
+
+                // ---- Mocap-in-sim mode (M2M_MODE=3) ----
+                {
+                    const char* m = std::getenv("M2M_MODE");
+                    _mocap_mode = (m && std::string(m) == "3");
+                }
+                if (_mocap_mode) {
+                    RCLCPP_INFO(_ros_node->get_logger(),
+                        "M2M_MODE=3 (mocap in sim): pad left where it is (move it in the GUI); "
+                        "publishing every model's pose on /mocap/<model>/pose at %.0f Hz", kMocapRateHz);
+                }
 
                 _pose = _model.get()->WorldPose();
                 _prev_pose      = _pose;
@@ -364,6 +428,53 @@ namespace gazebo
                 _first_rb = true;
                 RCLCPP_INFO(_ros_node->get_logger(), "PlatformManager LOADED");
             }
+            // Plays the lab's OptiTrack chain in M2M_MODE=3: for every model it
+            // publishes exactly what mocap_optitrack publishes in the lab
+            // (geometry_msgs/PoseStamped, reliable QoS, wall-clock stamp) on
+            // /mocap/<model name>/pose. Which topic is the drone and which the
+            // pad is the launch file's job, not the plugin's.
+            //
+            // The lab chain (Motive set to Z-up -> mocap_optitrack -> mocap_px4_bridge)
+            // swaps axes; the pose is emulated as if Motive's axes were Gazebo's
+            // rotated 180 deg about Z and each rigid body's frame were the model
+            // frame rotated +90 deg about Z. Through that same chain PX4 then
+            // receives the Gazebo pose in NED/FRD, so PX4's local frame equals
+            // Gazebo's world (checked numerically against the expected NED pose).
+            void publishFakeMocap()
+            {
+                if (_mocap_last_pub >= 0.0 && _actual_sim_time - _mocap_last_pub < 1.0 / kMocapRateHz) return;
+                _mocap_last_pub = _actual_sim_time;
+
+                static const ignition::math::Quaterniond kWorldRot(0, 0, 0, 1);              // 180 deg about Z (w,x,y,z)
+                static const ignition::math::Quaterniond kBodyRot(M_SQRT1_2, 0, 0, M_SQRT1_2); // +90 deg about Z
+                rclcpp::Clock wall(RCL_SYSTEM_TIME);   // lab stamps are wall time
+
+                for (const auto& model : _model.get()->GetWorld()->Models()) {
+                    const std::string name = model->GetName();
+                    auto it = _mocap_pubs.find(name);
+                    if (it == _mocap_pubs.end()) {
+                        it = _mocap_pubs.emplace(name, _ros_node->create_publisher<geometry_msgs::msg::PoseStamped>(
+                                 "/mocap/" + name + "/pose", rclcpp::QoS(10))).first;
+                    }
+                    const ignition::math::Pose3d p = model->WorldPose();
+                    // Raw Motive (Z-up) pose of this body.
+                    const ignition::math::Vector3d    pm = kWorldRot.RotateVector(p.Pos());
+                    const ignition::math::Quaterniond qm = kWorldRot * p.Rot() * kBodyRot;
+                    // mocap_optitrack's conversion for Motive >= 2.0.
+                    geometry_msgs::msg::PoseStamped msg;
+                    msg.header.stamp    = wall.now();
+                    msg.header.frame_id = "world";
+                    msg.pose.position.x =  pm.X();
+                    msg.pose.position.y = -pm.Z();
+                    msg.pose.position.z =  pm.Y();
+                    msg.pose.orientation.w =  qm.W();
+                    msg.pose.orientation.x =  qm.X();
+                    msg.pose.orientation.y = -qm.Z();
+                    msg.pose.orientation.z =  qm.Y();
+                    it->second->publish(msg);
+                }
+            }
+
             void invertDirection(){
 
                 _dir = -_dir;
@@ -387,7 +498,12 @@ namespace gazebo
 
                 double yaw_des = 0.0;
 
-                if(_use_sim_system)
+                if(_mocap_mode)
+                {
+                  // Mocap lab: nothing drives the pad. Keep whatever pose it has
+                  // (spawn pose, or wherever it was moved/tilted in the GUI).
+                }
+                else if(_use_sim_system)
                 {
                   // Snapshot the raw sample while still locked.
                   SimSystemData raw = _sim_system_raw;
@@ -402,7 +518,8 @@ namespace gazebo
                       _sim_lin_vel_filt[i] = raw.lin_vel_body[i];
                       _sim_ang_vel_filt[i] = raw.ang_vel_body[i];
                     }
-                    _sim_position  = _pose.Pos();
+                    _sim_position      = _pose.Pos();
+                    _sim_position_seed = _sim_position;
                     _sim_filt_init = true;
                   } else if (_dt > 1e-9) {
                     for (int i = 0; i < 3; i++) {
@@ -439,6 +556,19 @@ namespace gazebo
                     ignition::math::Vector3d v_body(
                         _sim_lin_vel_filt[0], _sim_lin_vel_filt[1], _sim_lin_vel_filt[2]);
                     _sim_position += (orientation * v_body) * _dt;
+
+                    // Drift correction (see _sim_position_drift_tau's
+                    // declaration above): decay the displacement since the
+                    // seed pose back toward zero with time constant tau,
+                    // exact solution of d(disp)/dt = -disp/tau. Leaves
+                    // oscillation with period << tau essentially untouched;
+                    // bounds long-term drift instead of letting it grow
+                    // forever.
+                    if (_sim_position_drift_tau > 1e-9) {
+                      ignition::math::Vector3d disp = _sim_position - _sim_position_seed;
+                      disp *= std::exp(-_dt / _sim_position_drift_tau);
+                      _sim_position = _sim_position_seed + disp;
+                    }
                   }
 
                   _pose.Set(_sim_position, orientation);
@@ -575,6 +705,8 @@ namespace gazebo
                 }
 
                 _pose_pub->publish(plat_pose);
+
+                if (_mocap_mode) publishFakeMocap();
 
                 // ---- IMU publishing ----
                 // Derive readings from observed platform motion (three-point history):

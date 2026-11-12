@@ -129,6 +129,23 @@ public:
   MavState _comm;
 
   /**
+   * @brief Keeps every outgoing setpoint inside the configured box
+   * (GEOFENCE_* and ALT_MAX_WORLD_M in landing_<mode>.yaml). Position targets
+   * are clamped into the box; velocity components that would push the drone
+   * further out while it is at/over a wall are zeroed. No-op when
+   * GEOFENCE_ENABLE is 0.
+   */
+  void applyGeofence();
+
+  /// Take-off point (where the last TAKE_OFF task started), handed to the
+  /// Lander so a landing abort can return and land there.
+  bool   _takeoffSet = false;
+  double _takeoffX = 0.0, _takeoffY = 0.0, _takeoffZ = 0.0;
+
+  /// Landing parameters (only the geofence keys are used here).
+  Parameters _fenceParams;
+
+  /**
    * @brief Actual task
    */
 
@@ -166,7 +183,7 @@ public:
 
   /**
    * @brief Consumes (returns and clears) the active Land command's pending
-   * disarm-on-GO request, set when param.disarmOnGo is enabled and the GO
+   * disarm-on-GO request, set when param.landDisarmOnGo is enabled and the GO
    * signal arrives in COMP. False when no Land command is active or none
    * is pending.
    */
@@ -174,7 +191,13 @@ public:
   bool consumeDisarmRequest() const;
 
   /**
-   * @brief M2M_SIM Environment variable value
+   * @brief Returns and clears the active Search command's pending
+   * payload-release request (AutomaticNode publishes it on "release_payload").
+   */
+  bool consumePayloadRelease() const;
+
+  /**
+   * @brief True when Gazebo is running (M2M_MODE 0 = sim or 3 = mocap in sim)
    */
 
   bool env_sim;

@@ -224,8 +224,10 @@ private:
           prev_pos_sp_[i]      = target[i];
         }
       } else {
-        const double max_step = kMaxVelocity * dt;
+        const double max_step_xy = kMaxVelocityXY * dt;
+        const double max_step_z  = kMaxVelocityZ  * dt;
         for (int i = 0; i < 3; ++i) {
+          const double max_step = (i == 2) ? max_step_z : max_step_xy;
           double error = target[i] - prev_pos_sp_[i];
           if      (error >  max_step) error =  max_step;
           else if (error < -max_step) error = -max_step;
@@ -240,10 +242,13 @@ private:
         msg->pose.pose.orientation.y,
         msg->pose.pose.orientation.z);
       setpoint.yaw = -yawFromQuaternion(q);
-      // XY feed-forward stays NaN (position-only tracking there); Z carries
-      // the heave feed-forward velocity (0 outside COMP — see Lander::run()).
-      setpoint.velocity[0] = NAN;
-      setpoint.velocity[1] = NAN;
+      // Velocity feed-forward alongside the position target, ENU -> NED.
+      // Lander::run() resets XY to NaN every tick, so XY is only
+      // velocity-commanded where a state sets it explicitly (INIT approach,
+      // HOLD's slope); NaN passes through as NaN (position-only on that axis).
+      // Z carries the heave feed-forward (0 outside COMP — see Lander::run()).
+      setpoint.velocity[0] =  msg->twist.twist.linear.y;
+      setpoint.velocity[1] =  msg->twist.twist.linear.x;
       setpoint.velocity[2] = -msg->twist.twist.linear.z;  // ENU -> NED
 
       position_enabled_ = true;
@@ -327,8 +332,14 @@ private:
   double nav_home_lat_    {0.0};
   double nav_home_lon_    {0.0};
 
-  // Slew-rate state for the position command translator.
-  static constexpr double kMaxVelocity = 0.3;  // m/s
+  // Slew-rate state for the position command translator. Z gets its own,
+  // higher limit than X/Y: it's what bounds the achievable descent/ascent
+  // rate for every POSITION-type command (HOLD's INIT slope, desc()/asce(),
+  // COMP), independent of whatever velocity feed-forward rides alongside it
+  // in setpoint.velocity[2] -- the position target itself is what PX4 tracks,
+  // so a feed-forward can't ask for more than this lets the target move.
+  static constexpr double kMaxVelocityXY = 0.3;  // m/s
+  static constexpr double kMaxVelocityZ  = 0.5;  // m/s
   bool         first_pos_sp_ {true};
   rclcpp::Time pos_sp_last_time_;
   double       prev_pos_sp_[3] {0.0, 0.0, 0.0};

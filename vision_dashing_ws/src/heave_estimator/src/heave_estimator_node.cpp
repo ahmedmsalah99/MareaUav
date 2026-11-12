@@ -228,6 +228,20 @@ private:
             }
         }
 
+        if (!ekf_->isInitialized()) {
+            // The window is full but no wave mode was found: nothing periodic to
+            // model or predict. Publish the measurement itself (a still platform,
+            // e.g. the mocap pad, reads as heave 0 / velocity ~0).
+            if (identifier_->isReady()) {
+                publishMeasured(heave_vel);
+                if ((now - last_calm_log_time_) >= 5.0) {
+                    last_calm_log_time_ = now;
+                    RCLCPP_INFO(get_logger(), "No heave mode: publishing the measured velocity %.4f m/s (position 0) as estimate and prediction.", heave_vel);
+                }
+            }
+            return;
+        }
+
         if (!ekf_->update(heave_vel)) return;
 
         // Divergence self-heal: if the EKF output is implausible, do NOT publish
@@ -269,6 +283,18 @@ private:
         pred_vel_comp_pub_->publish(pred_vel_comp_msg);
     }
 
+    // No wave mode: heave position 0, velocity = measured, and the predictions
+    // equal the current values (nothing periodic to extrapolate).
+    void publishMeasured(double heave_vel)
+    {
+        std_msgs::msg::Float64 pos, vel;
+        pos.data = 0.0;
+        vel.data = heave_vel;
+        pos_pub_->publish(pos);           vel_pub_->publish(vel);
+        pred_pos_pub_->publish(pos);      pred_vel_pub_->publish(vel);
+        pred_pos_comp_pub_->publish(pos); pred_vel_comp_pub_->publish(vel);
+    }
+
     rclcpp::Subscription<ulisse_msgs::msg::NavFilterData>::SharedPtr nav_filter_sub_;
     rclcpp::Subscription<std_msgs::msg::Float64>::SharedPtr   horizon_sub_;
     rclcpp::Publisher<std_msgs::msg::Float64>::SharedPtr    pos_pub_;
@@ -294,6 +320,7 @@ private:
     double min_omega_           = 0.5;
     double heave_sign_          = 1.0;
     double last_diag_log_time_  = 0.0;
+    double last_calm_log_time_  = 0.0;
 };
 
 int main(int argc, char** argv)

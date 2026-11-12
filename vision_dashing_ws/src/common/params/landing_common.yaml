@@ -1,0 +1,80 @@
+# Landing parameters shared by every M2M_MODE.
+# Per-mode values live in landing_sim.yaml / landing_mocap.yaml / landing_hw.yaml.
+# Units are in the name: _M metres, _S seconds, _MPS m/s, _MPS2 m/s^2, _RAD radians, _RADPS rad/s.
+# The Lander refuses to start if a key is missing, unknown, duplicated, or in the wrong file.
+# Format: section -> KEY: value  # meaning. Section names only group keys; KEY names must be unique.
+
+altitude:                                          # ALTITUDE SAFETY LIMITS
+  ALT_MIN_ABOVE_PAD_M:                   1.0       # When not deliberately descending, the drone climbs back if it gets closer to the pad than this [m].
+  ALT_MAX_ABOVE_PAD_MARGIN_M:            0.1       # HOLD's climbs (pad lost, or too close to the pad) stop this far below ALT_MAX_ABOVE_PAD_M [m].
+
+centered:                                          # CENTERED OVER THE PAD (checked on every new vision frame)
+  # Frame counters. The centred/off-centre cone radii they count against are per-mode (landing_<mode>.yaml).
+  CENTERED_FRAMES_REQUIRED:              70        # Consecutive centred frames needed before HOLD may descend or move on to COMP.
+  COMP_CENTERED_FRAMES_REQUIRED:         20        # Consecutive centred frames needed in COMP/LAND.
+  OFF_CENTER_FRAMES_TO_LOSE_PAD:         70        # Consecutive off-centre frames after which the pad counts as LOST (no new vision frame at all = lost immediately).
+
+xy:                                                # HORIZONTAL (XY) CONTROLLER -- used in HOLD (after the slope) and in COMP only
+  XY_CONTROL_MODE:                       1         # 0 = DIRECT: follow the filtered pad position. 1 = PID on the vision error.
+  XY_PID_INT_MAX:                        1         # Upper limit of the PID integral term (mode 1).
+  XY_PID_INT_MIN:                        -1        # Lower limit of the PID integral term (mode 1).
+  XY_PID_OUTPUT_MAX_M:                   1.5       # Largest position correction the PID may command [m] (mode 1).
+  XY_DIRECT_FILTER_ALPHA:                0.5       # Smoothing of the pad position target, 0..1, higher = smoother/slower (mode 0).
+  XY_DIRECT_MAX_SPEED_MPS:               3.0       # Speed limit on that target [m/s] (mode 0).
+  XY_DIRECT_OVERSHOOT_GAIN:              0.5       # Mode 0 only: command = target + gain * (target - drone), i.e. aim past the target by this fraction of the current XY error so PX4 closes the gap faster (an extra P term). 0 = command the target itself.
+
+pad_estimate:                                      # PAD ESTIMATE FROM VISION
+  PAD_EST_VEL_SKIP_IF_FRAME_GAP_ABOVE_S: 0.5       # Two consecutive vision frames further apart than this are not used to compute the pad velocity (the estimate restarts from the new frame) [s].
+
+init:                                              # INIT: fly to the START POINT
+  # The start point is behind the pad and above it; the SLOPE then glides from it to HOLD_HEIGHT_M above the pad.
+  INIT_START_POINT_HOLD_S:               2.0       # Drone must stay at the start point this long before the slope begins [s].
+  INIT_WAIT_TICKS:                       20        # Control ticks INIT waits before choosing between the approach and INSPE/HOVERING.
+
+slope:                                             # SLOPE: timed glide from the start point down to HOLD_HEIGHT_M above the pad
+  SLOPE_DURATION_S:                      8.0       # How long the glide takes [s].
+  SLOPE_XY_INT_MAX_M:                    1.0       # Limit on the SLOPE_XY_KI integral correction [m].
+
+hold:                                              # HOLD: hover above the pad (all heights are drone-to-pad)
+  HOLD_DESCEND_STEP_M:                   0.5       # Setpoint step per control tick when descending [m].
+  HOLD_ASCEND_STEP_M:                    0.5       # Setpoint step per control tick when climbing [m].
+  HOLD_DESCEND_ALLOWED_MAX_XY_SPEED_MPS: 0.3       # HOLD only steps down while the drone's horizontal speed (X and Y each) is under this [m/s].
+  HOLD_TO_COMP_WAIT_S:                   3.0       # COMP conditions must hold without a break this long before COMP starts [s].
+
+comp:                                              # COMP: follow the heaving pad at close range
+  # Heave margin: the peak UPWARD pad speed over the last COMP_HEAVE_PEAK_WINDOW_S seconds, added (as metres) to the COMP height
+  # and to the GO height gate, so both grow in rough seas. Each sum is then capped.
+  COMP_HEIGHT_BASE_M:                    0.2       # Drone-to-pad height kept in COMP in a calm sea [m].
+  COMP_HEAVE_PEAK_WINDOW_S:              7.5       # Window for the heave margin's peak upward speed [s].
+  COMP_HEIGHT_CAP_M:                     0.7       # COMP height = min(base + heave margin, this) [m]. Above it nothing else happens: the drone just holds at the cap.
+  COMP_BACKOFF_BELOW_M:                  0.1       # Closer to the pad than this: stop following and back off upwards [m].
+  COMP_RESUME_ABOVE_M:                   0.15      # Resume following once farther than this [m].
+  COMP_VEL_MATCH_ABOVE_MPS:              0.1       # When the pad rises faster than this, also match its vertical speed [m/s].
+
+abort:                                             # ABORT: give up if COMP is not reached, return to the take-off point and land there
+  ABORT_ARRIVED_TOL_M:                   0.3       # Abort: counts as at the abort altitude / above the take-off point within this distance [m].
+
+go:                                                # GO DECISION: commit to landing (COMP -> LAND)
+  GO_XY_ERR_MAX_M:                       0.1       # X and Y errors to the pad centre must each be under this [m].
+  GO_HEIGHT_BASE_M:                      0.3       # Drone-to-pad height must be under this in a calm sea [m].
+  GO_HEIGHT_CAP_M:                       0.5       # Height gate = min(base + heave margin, this) [m]. Keep consistent with COMP_HEIGHT_CAP_M, or GO is never given.
+  GO_HOLD_S:                             5.0       # All of the above must hold without a break this long [s].
+  GO_VOTE_WINDOW_S:                      1.5       # Majority vote over the raw GO decision in this window [s].
+  GO_VOTE_FRACTION:                      0.6       # Fraction (0..1] of the window that must be GO.
+  GO_LATCH_S:                            0.25      # A GO or NO-GO decision is kept at least this long [s].
+  GO_FORCE_IF_SONAR_BELOW_M:             0.2       # A fresh, valid sonar reading under this makes the sea-state GO true whatever the roll/pitch/heave limits say [m] (the drone is effectively down). The position and height checks of COMP -> LAND still apply.
+
+land:                                              # LAND: committed descent after GO
+  LAND_DESCEND_SPEED_MPS:                1.0       # Descent speed [m/s].
+  LAND_DISARM_ON_GO:                     1         # 1 = disarm immediately at GO and skip the descent and touchdown detection.
+
+logging:                                           # LOGGING ONLY
+  LOG_PRED_LOOKBACK_S:                   0.5       # How far back [s] to take the prediction compared with the real values at touchdown in the CSV log.
+
+simple_land:                                       # SIMPLE LAND: the LAND task's basic mode (task parameter 0 = no platform)
+  # Lands straight down on the spot where the task started, without the pad or vision. Heights are world Z.
+  SIMPLE_LAND_XY_TOL_M:                  0.25      # Descends only while within this horizontal distance of the spot (X and Y each) [m].
+  SIMPLE_LAND_DESC_SPEED_MAX_MPS:        0.3       # Descent speed while higher than SIMPLE_LAND_DESC_SPEED_MAX_ABOVE_M [m/s].
+  SIMPLE_LAND_DESC_SPEED_MIN_MPS:        0.1       # Descent speed while lower than SIMPLE_LAND_DESC_SPEED_MIN_BELOW_M; linear in between [m/s].
+  SIMPLE_LAND_DESC_SPEED_MIN_BELOW_M:    0.7       # Below this height (world Z) the min descent speed is used [m].
+  SIMPLE_LAND_FINAL_HEIGHT_M:            0.25      # Within this height above the landing point: stop and disarm (the drone drops the rest); re-sent per LAND_DISARM_RESEND_* [m].

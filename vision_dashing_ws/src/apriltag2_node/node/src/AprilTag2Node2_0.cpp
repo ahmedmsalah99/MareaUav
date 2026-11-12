@@ -1,7 +1,8 @@
 #include <AprilTag2Node.hpp>
 #include <class_loader/register_macro.hpp>
-#include "LandingPlatform.h"
 #include <sstream>
+#include <stdexcept>
+#include <string>
 #include <iostream>
 #include <fstream>
 // default tag families
@@ -9,9 +10,9 @@
 #include <tag25h9.h>
 #include <tag36h11.h>
 #include <math.h>
+#include <cmath>
 #include <Eigen/Dense>
 #include <cstdlib>
-static Platform_tag TAGS;
 
 std::ofstream detectionLog;
 
@@ -31,24 +32,6 @@ AprilTag2Node::AprilTag2Node() : Node("apriltag2", "apriltag", rclcpp::NodeOptio
 	pub_platformCenter = this->create_publisher<geometry_msgs::msg::TransformStamped>("/platform_center",1);
 	pub_platformCenter_gt = this->create_publisher<geometry_msgs::msg::TransformStamped>("/platform_center_gt",1);
 
-	// calibration values for 640x480
-	const double cx = 323.83127;
-	const double cy = 248.651286;
-	const double fx = 381.36246688113556;
-	const double fy = 381.36246688113556;
-
-	K << fx, 0, cx, 0, fy, cy, 0, 0, 1;
-	intrinsics = {fx, fy, cx,cy};
-	//std::cout<<"K: "<<K<<std::endl;
-	// getting the value of the environment variable, to check whenever we are running in SITL or in a RPi.
-	// Value-based (not just "is it set"), and null-safe: atoi(nullptr) is UB,
-	// which is exactly what getenv() returns when M2M_SIM is unset -- e.g. on
-	// the current ros2_real.launch.py, which never sets it.
-	char *env_val = std::getenv("M2M_SIM");
-	bool env_bool = env_val && (atoi(env_val) >= 1);
-
-	std::cout << "M2M_SIM IS " << env_bool << std::endl;
-
 	declare_parameter<std::string>("family", "36h11");
 	declare_parameter<double>("size", 2.0);
 	declare_parameter<int>("max_hamming", 0);
@@ -59,19 +42,9 @@ AprilTag2Node::AprilTag2Node() : Node("apriltag2", "apriltag", rclcpp::NodeOptio
 	get_parameter("z_up", z_up);
 
 
-	static const std::string tag_prefix = "tag_";
-	declare_parameter<int>("n_tags", 0);
-	get_parameter("n_tags", n_tags);
-
-	for(int i=0; i<n_tags; i++)
-	{
-		std::string tag_name = tag_prefix+std::to_string(i);
-		declare_parameter<double>(tag_name, 2.0);
-		get_parameter(tag_name, platform_tags[i]);
-		// tracked_tags[i+1]=i+1;
-	}
-
-	SetMatrix(&TAGS, env_bool); //load transformation matrices respect to the platform center
+	// Per-mode parameters (cfg/apriltag_<sim|mocap|hw>.yaml). No in-code
+	// defaults: a missing value stops the node at startup.
+	loadCameraAndPadParams();
 
 
 	if(!tag_create.count(tag_family)) {
@@ -190,6 +163,9 @@ void AprilTag2Node::onImage(const sensor_msgs::msg::CompressedImage::SharedPtr m
 
 		//This function computes the relative translation and rotation of each tag in the scene w.r.t the camera.
 		//Then, it projects this information in the centre of the platform (related to the tag in the centre).
+		// ignore tags that are not part of the configured pad layout
+		if (!_tagToRef.count(det->id)) { continue; }
+
 		try{
 			tagTransform.transform = pnp(det, intrinsics, platform_tags[det->id], det->id);
 		}catch (const cv::Exception& e) {
@@ -295,6 +271,15 @@ void AprilTag2Node::publish_data_center(const apriltag_msgs::msg::AprilTagDetect
 		int num_of_valid_ids = 0;
 		std::vector<double> xs, ys, zs;
 
+		// Platform heading: weighted circular mean (sum of sin/cos) of each
+		// tag's forward axis, using the same weights as the position. Each
+		// tag's rotation (from pnp(): TAG5 frame in the drone body frame, via
+		// robot_T_cam) gives the TAG5 x-axis as a body-frame vector; pushing it
+		// through correctToPlatformFrame() -- the same linear rotation/remap the
+		// position goes through -- puts it in exactly the frame the published
+		// position (and the guidance node's drone state) lives in.
+		double yawSinSum = 0.0, yawCosSum = 0.0;
+
 		for( int i = 0; i< tagAreaWeights.rows(); i++ ) {
 			vision_pose.transform.translation.x += transforms.transforms.at( tagAreaWeights(i, 0) ).transform.translation.x * tagAreaWeights(i, 1);
 			vision_pose.transform.translation.y += transforms.transforms.at( tagAreaWeights(i, 0) ).transform.translation.y * tagAreaWeights(i, 1);
@@ -321,6 +306,18 @@ void AprilTag2Node::publish_data_center(const apriltag_msgs::msg::AprilTagDetect
 			zs.push_back(transforms.transforms.at( tagAreaWeights(i, 0) ).transform.translation.z);
 
 			totalWeight += tagAreaWeights(i, 1);
+
+			{
+				const auto& r = transforms.transforms.at( tagAreaWeights(i, 0) ).transform.rotation;
+				const Eigen::Matrix3d R = Eigen::Quaterniond(r.w, r.x, r.y, r.z).normalized().toRotationMatrix();
+				double fx_w, fy_w;
+				correctToPlatformFrame(R(0, 0), R(1, 0), fx_w, fy_w);
+				// Same convention the guidance node uses for headings in this
+				// frame: forward unit vector = (sin(yaw), cos(yaw)).
+				const double tagYaw = std::atan2(fx_w, fy_w);
+				yawSinSum += std::sin(tagYaw) * tagAreaWeights(i, 1);
+				yawCosSum += std::cos(tagYaw) * tagAreaWeights(i, 1);
+			}
 
 			double xx = transforms.transforms.at( tagAreaWeights(i, 0) ).transform.translation.x;
 			double yy = transforms.transforms.at( tagAreaWeights(i, 0) ).transform.translation.y;
@@ -421,8 +418,8 @@ void AprilTag2Node::publish_data_center(const apriltag_msgs::msg::AprilTagDetect
 		const double fz = std::isnan(vision_pose.transform.translation.z) ? -1.0 : vision_pose.transform.translation.z;
 
 		// ── Validity detection: max velocity + shaking ──────────────────────────
-		// We always publish the position; validity is signalled in rotation.w
-		// (1.0 = valid, 0.0 = invalid) and consumed downstream as MavState.IsValid.
+		// Computed and logged (RCLCPP_WARN) but not currently published -- see
+		// the TODO where /platform_center is filled.
 		bool valid = true;
 		const rclcpp::Time now = this->now();
 
@@ -480,7 +477,28 @@ void AprilTag2Node::publish_data_center(const apriltag_msgs::msg::AprilTagDetect
 		msg_tf.transform.translation.x = fx;
 		msg_tf.transform.translation.y = fy;
 		msg_tf.transform.translation.z = fz;
-		msg_tf.transform.rotation.w    = valid ? 1.0 : 0.0;  // IsValid carrier
+		// Frame: origin at the drone, axes world-aligned (correctToPlatformFrame()
+		// removes the drone's heading). The translation is the drone->platform
+		// offset; the rotation is the platform's absolute heading in those axes.
+		// Stamp = the camera frame's capture time, so consumers can detect new
+		// frames and time-difference them.
+		msg_tf.header.stamp    = detections.header.stamp;
+		msg_tf.header.frame_id = "drone_world_aligned";
+		msg_tf.child_frame_id  = "platform_center";
+		// Rotation = platform heading as a pure yaw quaternion, in the same
+		// frame as the translation (forward = (sin(yaw), cos(yaw))). The
+		// validity flag that used to be carried in rotation.w (leaving x/y/z at
+		// 0, so the guidance node always read a relative yaw of 0) is no longer
+		// published; AutomaticNode ignored it anyway (IsValid = true).
+		// TODO(improvement stage): give validity a proper channel.
+		(void)valid;
+		{
+			const double platYaw = std::atan2(yawSinSum, yawCosSum);
+			msg_tf.transform.rotation.w = std::cos(platYaw / 2.0);
+			msg_tf.transform.rotation.x = 0.0;
+			msg_tf.transform.rotation.y = 0.0;
+			msg_tf.transform.rotation.z = std::sin(platYaw / 2.0);
+		}
 		pub_platformCenter->publish(msg_tf);
 
 		geometry_msgs::msg::TransformStamped gt_msg_tf;
@@ -526,39 +544,9 @@ void AprilTag2Node::getPose(const matd_t& H, geometry_msgs::msg::Transform& t, c
 	// RCLCPP_INFO(get_logger(), "TAG RECOGNIZED, ID: %li ", ID);
 
 
-	if (ID == 0) {
-		pose = pose * TAGS.TAG0_T_TAG5;
-	} else if (ID == 1) {
-		pose = pose * TAGS.TAG1_T_TAG5;
-	} else if (ID == 2) {
-		pose = pose * TAGS.TAG2_T_TAG5;
-	} else if (ID == 3) {
-		pose = pose * TAGS.TAG3_T_TAG5;
-	} else if (ID == 4) {
-		pose = pose * TAGS.TAG4_T_TAG5;
-	} else if (ID == 5) {
-		pose = pose * TAGS.TAG5_T_TAG5;
-	} else if (ID == 6) {
-		pose = pose * TAGS.TAG6_T_TAG5;
-	} else if (ID == 7) {
-		pose = pose * TAGS.TAG7_T_TAG5;
-	} else if (ID == 8) {
-		pose = pose * TAGS.TAG8_T_TAG5;
-	} else if (ID == 9) {
-		pose = pose * TAGS.TAG9_T_TAG5;
-		detectionLog << "BABBALA9" << "\n";
-	} else if (ID == 10) {
-		pose = pose * TAGS.TAG10_T_TAG5;
-		detectionLog << "BABBALA10" << "\n";
-	} else if (ID == 11) {
-		pose = pose * TAGS.TAG11_T_TAG5;
-		detectionLog << "BABBALA11" << "\n";
-	} else if (ID == 12) {
-		pose = pose * TAGS.TAG12_T_TAG5;
-		detectionLog << "BABBALA12" << "\n";
-	}
+	pose = pose * _tagToRef.at(ID);
 
-	pose = TAGS.robot_T_cam * pose;
+	pose = _robotTcam * pose;
 
 	const Eigen::Quaterniond q(R);
 
@@ -701,39 +689,9 @@ AprilTag2Node::pnp(apriltag_detection_t* const detection, const std::array<doubl
 		pose(i, 3) = tvec.at<double>(i);
 	}
 
-	if (detection->id == 0) {
-		pose = pose * TAGS.TAG0_T_TAG5;
-	} else if (detection->id == 1) {
-		pose = pose * TAGS.TAG1_T_TAG5;
-	} else if (detection->id == 2) {
-		pose = pose * TAGS.TAG2_T_TAG5;
-	} else if (detection->id == 3) {
-		pose = pose * TAGS.TAG3_T_TAG5;
-	} else if (detection->id == 4) {
-		pose = pose * TAGS.TAG4_T_TAG5;
-	} else if (detection->id == 5) {
-		pose = pose * TAGS.TAG5_T_TAG5;
-	} else if (detection->id == 6) {
-		pose = pose * TAGS.TAG6_T_TAG5;
-	} else if (detection->id == 7) {
-		pose = pose * TAGS.TAG7_T_TAG5;
-	} else if (detection->id == 8) {
-		pose = pose * TAGS.TAG8_T_TAG5;
-	} else if (detection->id == 9) {
-		pose = pose * TAGS.TAG9_T_TAG5;
-		detectionLog << "BABBALA9" << "\n";
-	} else if (detection->id == 10) {
-		pose = pose * TAGS.TAG10_T_TAG5;
-		detectionLog << "BABBALA10" << "\n";
-	} else if (detection->id == 11) {
-		pose = pose * TAGS.TAG11_T_TAG5;
-		detectionLog << "BABBALA11" << "\n";
-	} else if (detection->id == 12) {
-		pose = pose * TAGS.TAG12_T_TAG5;
-		detectionLog << "BABBALA12" << "\n";
-	}
+	pose = pose * _tagToRef.at(detection->id);
 
-	pose = TAGS.robot_T_cam * pose;
+	pose = _robotTcam * pose;
 	Eigen::Matrix3d final_rotation = pose.block<3, 3>(0, 0);
 	Eigen::Quaterniond q(final_rotation);
 	geometry_msgs::msg::Transform t;
@@ -792,3 +750,51 @@ std::map<std::string, void (*)(apriltag_family_t*)> AprilTag2Node::tag_destroy =
 };
 
 CLASS_LOADER_REGISTER_CLASS(AprilTag2Node, rclcpp::Node)
+
+void AprilTag2Node::loadCameraAndPadParams()
+{
+	// Camera intrinsics [pixels].
+	const double fx = declare_parameter<double>("camera.fx");
+	const double fy = declare_parameter<double>("camera.fy");
+	const double cx = declare_parameter<double>("camera.cx");
+	const double cy = declare_parameter<double>("camera.cy");
+	K << fx, 0, cx, 0, fy, cy, 0, 0, 1;
+	intrinsics = {fx, fy, cx, cy};
+
+	// Camera pose in the drone body frame: R = Rz(yaw) * Ry(pitch) * Rx(roll).
+	const double mx    = declare_parameter<double>("camera_mount.x");
+	const double my    = declare_parameter<double>("camera_mount.y");
+	const double mz    = declare_parameter<double>("camera_mount.z");
+	const double roll  = declare_parameter<double>("camera_mount.roll");
+	const double pitch = declare_parameter<double>("camera_mount.pitch");
+	const double yaw   = declare_parameter<double>("camera_mount.yaw");
+	const Eigen::Matrix3d R = (Eigen::AngleAxisd(yaw,   Eigen::Vector3d::UnitZ()) *
+	                           Eigen::AngleAxisd(pitch, Eigen::Vector3d::UnitY()) *
+	                           Eigen::AngleAxisd(roll,  Eigen::Vector3d::UnitX())).toRotationMatrix();
+	_robotTcam = Eigen::Matrix4d::Identity();
+	_robotTcam.block<3, 3>(0, 0) = R;
+	_robotTcam(0, 3) = mx;
+	_robotTcam(1, 3) = my;
+	_robotTcam(2, 3) = mz;
+
+	// Pad layout: per tag, its edge size and where the pad reference point is
+	// in that tag's own frame.
+	const auto ids   = declare_parameter<std::vector<int64_t>>("tags.ids");
+	const auto sizes = declare_parameter<std::vector<double>>("tags.size");
+	const auto refX  = declare_parameter<std::vector<double>>("tags.ref_x");
+	const auto refY  = declare_parameter<std::vector<double>>("tags.ref_y");
+	if (ids.empty() || sizes.size() != ids.size() || refX.size() != ids.size() || refY.size() != ids.size())
+		throw std::runtime_error("tags.ids, tags.size, tags.ref_x and tags.ref_y must be non-empty and the same length");
+	for (size_t i = 0; i < ids.size(); ++i) {
+		const int id = static_cast<int>(ids[i]);
+		if (_tagToRef.count(id))
+			throw std::runtime_error("tags.ids lists tag " + std::to_string(id) + " twice");
+		Eigen::Matrix4d T = Eigen::Matrix4d::Identity();
+		T(0, 3) = refX[i];
+		T(1, 3) = refY[i];
+		_tagToRef[id]     = T;
+		platform_tags[id] = sizes[i];
+	}
+	RCLCPP_INFO(get_logger(), "camera fx=%.2f fy=%.2f cx=%.2f cy=%.2f, mount (%.3f, %.3f, %.3f) rpy (%.3f, %.3f, %.3f), %zu pad tags",
+	            fx, fy, cx, cy, mx, my, mz, roll, pitch, yaw, ids.size());
+}

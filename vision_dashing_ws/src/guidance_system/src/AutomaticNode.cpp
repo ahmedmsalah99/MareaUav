@@ -96,6 +96,12 @@ public:
   AutomaticNode()
   : rclcpp::Node("automatic")
   {
+    // Angle [rad] added to the drone->target heading in the rescue (SEARCH)
+    // pose so the CAMERA, not the nose, faces the target. The camera is
+    // mounted turned 90 deg from the body x-axis (see camera_mount.yaw in the
+    // apriltag cfg). No in-code default: set it from the launch file.
+    rescue_camera_heading_offset_ = declare_parameter<double>("rescue_camera_heading_offset_rad");
+
     auto px4_qos      = rclcpp::QoS(rclcpp::KeepLast(1)).best_effort();
     auto reliable_qos = rclcpp::QoS(rclcpp::KeepLast(1)).reliable();
 
@@ -104,6 +110,9 @@ public:
       create_publisher<nav_msgs::msg::Odometry>("local_position_sp",       reliable_qos);
     vehicle_command_pub_       =
       create_publisher<px4_msgs::msg::VehicleCommand>("/fmu/in/vehicle_command", px4_qos);
+    // Payload release command for payload_releaser (was an LCM publish in Search).
+    release_payload_pub_       =
+      create_publisher<std_msgs::msg::String>("release_payload", reliable_qos);
     landing_site_pose_cmd_pub_ =
       create_publisher<nav_msgs::msg::Odometry>("Landing_Site/pose_cmd",   reliable_qos);
     plat_rob_pub_              =
@@ -290,7 +299,7 @@ private:
     // Tick the active command's state machine.
     autom_.executeCommand();
 
-    // disarmOnGo: send a forced component-disarm to PX4 whenever the guidance
+    // landDisarmOnGo: send a forced component-disarm to PX4 whenever the guidance
     // asks. The Lander re-raises the request a few times over a bounded window
     // after entering LANDING_DONE, since this topic is published best-effort
     // and a single dropped command would leave the drone armed and hovering.
@@ -313,7 +322,15 @@ private:
       cmd.source_component = 1;
       cmd.from_external = true;
       vehicle_command_pub_->publish(cmd);
-      RCLCPP_WARN(get_logger(), "[disarmOnGo] sending FORCED disarm command");
+      RCLCPP_WARN(get_logger(), "[landDisarmOnGo] sending FORCED disarm command");
+    }
+
+    // Search asked to drop the payload.
+    if (autom_.consumePayloadRelease()) {
+      std_msgs::msg::String msg;
+      msg.data = "T";
+      release_payload_pub_->publish(msg);
+      RCLCPP_INFO(get_logger(), "[SEARCH] release_payload sent");
     }
 
     // Publish the resulting setpoint.
@@ -364,10 +381,10 @@ private:
         kv("heave_pos",         d.heavePos),
         kv("heave_vel",         d.heaveVel),
         kv("heave_vel_pred",    d.heaveVelPred),
-        kv("roll_limit",        d.goRollLimit),
-        kv("pitch_limit",       d.goPitchLimit),
-        kv("roll_rate_limit",   d.goRollRateLimit),
-        kv("pitch_rate_limit",  d.goPitchRateLimit),
+        kv("roll_limit",        d.rollLimit),
+        kv("pitch_limit",       d.pitchLimit),
+        kv("roll_rate_limit",   d.rollRateLimit),
+        kv("pitch_rate_limit",  d.pitchRateLimit),
         kv("angles_ok",         d.anglesOk),
         kv("rates_ok",          d.ratesOk),
         kv("desc_from_peak",    d.descFromPeak),
@@ -433,6 +450,15 @@ private:
     vision_system_.setX(msg->transform.translation.x);
     vision_system_.setY(msg->transform.translation.y);
     vision_system_.setZ(msg->transform.translation.z);
+    // Per-frame timestamp [us]: lets Lander::updatePlatformVision() tell a
+    // genuinely new apriltag frame from the 50 Hz control loop re-reading the
+    // same one, and differentiate over the real inter-frame interval. Falls
+    // back to receive time if the publisher leaves header.stamp unset.
+    {
+      rclcpp::Time stamp(msg->header.stamp, get_clock()->get_clock_type());
+      if (stamp.nanoseconds() == 0) stamp = this->now();
+      vision_system_.visionFrameStampUs = stamp.nanoseconds() / 1000;
+    }
     vision_system_.setVx(0.0);
     vision_system_.setVy(0.0);
     vision_system_.setVz(0.0);
@@ -645,7 +671,7 @@ private:
 
       double platform_pos[3] = {
         platform_state_.getX(), platform_state_.getY(), platform_state_.getZ()};
-      double yaw_temp = computeDesiredYaw(autom_.getState(), platform_pos) + 1.57; // +π/2: 90° offset to align camera forward direction with target
+      double yaw_temp = computeDesiredYaw(autom_.getState(), platform_pos) + rescue_camera_heading_offset_;
 
       Eigen::Quaterniond orient = getQuatFromYaw(yaw_temp);
       rescue.pose.pose.orientation.w = orient.w();
@@ -690,6 +716,7 @@ private:
   int         current_action_ {actions::IDLE};
   std::string current_target_ {""};
 
+  double      rescue_camera_heading_offset_ {0.0};
   double      gps_lon_ {0.0};
   double      gps_lat_ {0.0};
   double      gps_alt_ {0.0};
@@ -711,6 +738,7 @@ private:
   // Publishers
   rclcpp::Publisher<nav_msgs::msg::Odometry>::SharedPtr local_position_sp_pub_;
   rclcpp::Publisher<px4_msgs::msg::VehicleCommand>::SharedPtr vehicle_command_pub_;
+  rclcpp::Publisher<std_msgs::msg::String>::SharedPtr release_payload_pub_;
   rclcpp::Publisher<nav_msgs::msg::Odometry>::SharedPtr landing_site_pose_cmd_pub_;
   rclcpp::Publisher<nav_msgs::msg::Odometry>::SharedPtr plat_rob_pub_;
   rclcpp::Publisher<std_msgs::msg::Float64>::SharedPtr  pred_horizon_pub_;

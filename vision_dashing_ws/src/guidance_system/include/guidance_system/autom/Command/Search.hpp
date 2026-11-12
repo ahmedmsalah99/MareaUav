@@ -4,7 +4,6 @@
 
 #include "Command.hpp"
 #include "guidance_system/autom/Searcher/Searcher.h"
-#include "lcm/lcm-cpp.hpp"
 #include "lcm_messages/exec/release_payload.hpp"
 
 
@@ -26,13 +25,10 @@ private:
 
     Searcher _searcher;
 
-    // lcm handler, to send payload message
-
-    lcm::LCM _handler;
-
-    // release payload message to fill
-
-    exec::release_payload _releasePayload;
+    // Set when the searcher asks to release the payload; consumed by
+    // Automatic::consumePayloadRelease(), and AutomaticNode publishes it on
+    // the ROS topic "release_payload" (read by payload_releaser).
+    bool _payloadReleaseRequest = false;
 
     // feedback from the release payload module
 
@@ -71,10 +67,7 @@ private:
         // and the feedback to know if release the payload or not
         if(_searcher.getPayloadCommand())
         {
-          // filling the message
-          _releasePayload.data = "T";
-          // and then sending it
-          _handler.publish("release_payload", &_releasePayload);
+          _payloadReleaseRequest = true;
         }
     }
 
@@ -90,6 +83,13 @@ public:
 
     void execute() override {
         search();
+    }
+
+    /** Returns and clears the pending payload-release request. */
+    bool consumePayloadRelease() {
+        const bool r = _payloadReleaseRequest;
+        _payloadReleaseRequest = false;
+        return r;
     }
 
 };

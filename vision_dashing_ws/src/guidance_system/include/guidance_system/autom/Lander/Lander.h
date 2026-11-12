@@ -14,23 +14,11 @@
 #include "common/common.h"
 #include "miniPID/MiniPID.h"
 #include "Parameters.h"
+#include "guidance_system/autom/SimpleLanding.hpp"
 
 #define DEBUG
 #define PI              3.141592653589
-#define Kland           1
-#define THRE            0.25
-#define DRATE_MIN       0.1
-#define DRATE_MAX       0.3
-#define TMAX            1.6
-#define TMIN            0.7
-#define PLATFORM_OFFSET 0.0
 
-// Touchdown-detector accel-estimate smoothing (smoothAccel()): clip each raw IMU
-// sample to this magnitude [m/s^2] before it enters the moving average — no real
-// drone/pad acceleration should exceed this, so a clipped value only ever means
-// "a sensor glitch/dropout", not a real event.
-#define kAccelEstimateClip   20.0
-#define kAccelEstimateWindow 5
 
 // Standard gravity [m/s^2], used to remove each accel source's own known
 // constant gravity-reaction offset before comparing drone vs pad acceleration
@@ -55,15 +43,11 @@ struct LandGoDiagnostics {
     double heaveVelPred   = 0.0;
 
     // Limits applied to the inputs above (LAND_* params, logged so plots are
-    // self-contained — no need to cross-reference the param file). Named
-    // go*Limit (not just *Limit) because Parameters has its own, DIFFERENT
-    // rollLimit/pitchLimit/rollRateLimit/pitchRateLimit (the calm-sea gate,
-    // param.rollLimit etc.) — reusing the same names here previously made
-    // the two easy to confuse despite being unrelated values.
-    double goRollLimit      = 0.0;
-    double goPitchLimit     = 0.0;
-    double goRollRateLimit  = 0.0;
-    double goPitchRateLimit = 0.0;
+    // self-contained — no need to cross-reference the param file).
+    double rollLimit      = 0.0;
+    double pitchLimit     = 0.0;
+    double rollRateLimit  = 0.0;
+    double pitchRateLimit = 0.0;
 
     // Per-condition verdicts
     bool anglesOk      = false;
@@ -74,7 +58,7 @@ struct LandGoDiagnostics {
     bool   rawGo         = false;   // this tick's instantaneous decision
     double voteFraction  = 0.0;     // fraction of the vote window that was GO
     int    voteWindowSize = 0;      // number of samples in the vote window
-    bool   votedGo        = false;  // majority vote over landVoteWindow
+    bool   votedGo        = false;  // majority vote over goVoteWindow
     double latchTimer     = 0.0;    // time since the latch last flipped
     bool   landingGo      = false;  // final latched GO/NO-GO (== getLandingGoSignal())
 
@@ -88,9 +72,9 @@ struct LandGoDiagnostics {
     bool   touchConfirmed     = false;  // stage 2: contact + a recent positive impact spike
     bool   touchedDown        = false;  // latched final verdict (== getTouchedDown())
     // Timers driving the two stages above (seconds) — how close each is to tripping.
-    double touchContactTimer   = 0.0;  // time accel-matched + xy-settled has held (-> touchContactTime)
-    double touchConfirmTimer   = 0.0;  // time contact+recent-spike has held (-> touchConfirmTime)
-    double touchTimeSinceSpike = 0.0;  // time since the last positive impact spike (vs touchAccelSpikeWindow)
+    double touchContactTimer   = 0.0;  // time accel-matched + xy-settled has held (-> touchContactHold)
+    double touchConfirmTimer   = 0.0;  // time contact+recent-spike has held (-> touchConfirmHold)
+    double touchTimeSinceSpike = 0.0;  // time since the last positive impact spike (vs touchImpactWindow)
 };
 
 
@@ -241,10 +225,20 @@ public:
 
     /**
      * @brief Consumes (returns and clears) the pending disarm-on-GO request,
-     * set by CompState::handle() when param.disarmOnGo is enabled and the GO
+     * set by CompState::handle() when param.landDisarmOnGo is enabled and the GO
      * signal arrives. Edge-triggered so the caller (AutomaticNode) sends the
      * disarm command exactly once.
      */
+
+    const Parameters& getParams() const { return param; }
+
+    /** Where the drone took off: the abort returns and lands here. */
+    void setTakeoffPosition(double x, double y, double z) {
+        _takeoffX = x; _takeoffY = y; _takeoffZ = z; _takeoffSet = true;
+    }
+
+    /** Raise a disarm request (consumed by Automatic, sent by AutomaticNode). */
+    void requestDisarm() { _disarmRequest = true; }
 
     bool consumeDisarmRequest() {
         bool req = _disarmRequest;
@@ -314,7 +308,7 @@ public:
 
   	double desc_velocity;
 
-    // T = min(|verticalErr| / descVelocity, predHorizonMax) — updated every tick
+    // T = min(|verticalErr| / holdDescendStep, predHorizonMax) — updated every tick
     double _predictionHorizon;
 
     bool startFromBeginning;
@@ -397,8 +391,8 @@ private:
     // the drone was actually in is visible per tick.
     bool   _compVelMatching = false;
 
-    // COMP standoff hysteresis: true = track compTargetDist, false = backing off
-    // (ascending) because the gap dropped below compMinDist.
+    // COMP standoff hysteresis: true = track compHeightBase, false = backing off
+    // (ascending) because the gap dropped below compBackoffBelow.
     bool   _compTracking = true;
 
     // Landing GO/NO-GO window (computed each tick in updateSignals()).
@@ -407,10 +401,10 @@ private:
     double _goLatchTimer = 0.0;    // time [s] since the last GO<->NO-GO switch
     bool   _goLogPrev   = false;   // for edge-triggered logging
 
-    // Set by CompState::handle() when param.disarmOnGo is enabled and the GO
+    // Set by CompState::handle() when param.landDisarmOnGo is enabled and the GO
     // signal arrives — consumed (and cleared) via consumeDisarmRequest().
-    // M2M_SIM environment flag, cached at construction — selects the simulated
-    // vs hardware altitude sensor offsets. Same flag Automatic/Executioner use.
+    // True when M2M_MODE is 0 (sim), cached at construction — selects the
+    // simulated vs hardware altitude sensor offsets. Same flag Automatic/Executioner use.
     // ── Platform state derived from VISION (not the ground-truth topic) ───────
     // _platformState comes from Landing_Site/pose, which in simulation is the
     // Gazebo plugin publishing the pose it just wrote onto the model — i.e.
@@ -423,20 +417,30 @@ private:
     //               correctToPlatformFrame(), so this is a plain sum)
     //   z         = drone state + _verticalErr    (the offset-corrected,
     //               sensor-selected vertical, so it matches downDist exactly)
-    //   velocity  = drone velocity + d(vision)/dt, low-pass filtered
-    //   yaw       = drone yaw + vision relative yaw
-    //
-    // Velocity is built that way on purpose: vision offset = platform - drone,
-    // so d(offset)/dt = platform_vel - drone_vel. The drone's own velocity
-    // carries the signal and the differentiated (noisy) vision term is only a
-    // small correction, which is what makes differentiating vision viable here.
+    //   velocity  = d(x, y)/dt, updated only on new apriltag frames over the
+    //               real inter-frame interval, low-passed (padEstVelFilterTau)
+    //               and clamped (padEstVelMax)
+    //   yaw       = absolute heading published by the apriltag node
+    //               (+ padEstYawOffset)
     MavState _platformVision;
 
-    double _platVisFiltVx = 0.0;   // low-passed platform Vx estimate [m/s]
-    double _platVisFiltVy = 0.0;
-    double _prevVisX      = 0.0;   // previous vision offset, for the derivative
-    double _prevVisY      = 0.0;
-    bool   _platVisSeeded = false;
+    double   _platVisFiltVx = 0.0;   // low-passed platform Vx estimate [m/s]
+    double   _platVisFiltVy = 0.0;
+    double   _prevPadX      = 0.0;   // pad world XY at the previous frame
+    double   _prevPadY      = 0.0;
+    long int _prevVisStamp  = 0;     // timestamp [us] of the previous frame
+    bool     _platVisSeeded = false;
+    long int _platVelSamples = 0;    // frames folded into the velocity estimate (warm-up)
+
+    // Highest platform Z seen so far this landing attempt (world/drone frame,
+    // same convention as _platformVision.getZ()), updated every tick in
+    // updatePlatformVision() and reset in initStateMachine(). Used instead of
+    // the live/current platform Z for setDroneInFront()'s INIT standoff
+    // target, so the initial approach altitude doesn't track the pad's
+    // instantaneous heave and only ever gets safer (higher) as a better peak
+    // is observed, never lower.
+    double _platformMaxZ = 0.0;
+    bool   _platformMaxZSeeded = false;
 
     /**
      * @brief Rebuilds _platformVision from the drone state + vision offset.
@@ -459,7 +463,7 @@ private:
     // Rolling window of the raw (instantaneous) GO decision, used to majority-vote
     // a smoothed decision before it feeds the latch — a single noisy sample must
     // not be able to flip the landing decision. Each entry is (dt, rawGo) for that
-    // tick; the window covers the last landVoteWindow seconds.
+    // tick; the window covers the last goVoteWindow seconds.
     std::deque<std::pair<double,bool>> _goVoteHistory;
 
     // Snapshot of the GO decision variables, published for plotting/debugging.
@@ -488,6 +492,17 @@ private:
     // HOLD -> COMP wait gate. Reset to 0 the instant compValid goes false, and
     // on any full state-machine reset (initStateMachine()).
     double _compValidTimer = 0.0;
+    double _holdWaitTimer  = 0.0;   // see LandMachine::_holdWaitTimer
+
+    // ── Abort (HOLD -> ABORT when COMP is not reached in time) ───────────────
+    // Take-off point, given by Automatic (where the TAKE_OFF task started).
+    bool   _takeoffSet = false;
+    double _takeoffX = 0.0, _takeoffY = 0.0, _takeoffZ = 0.0;
+    int    _abortPhase = 0;         // 0 climb, 1 fly to the take-off point, 2 descend
+    double _abortStartX = 0.0, _abortStartY = 0.0;
+    bool   _abortStarted = false;
+    void   abortReturn();
+    simple_landing::DisarmResender _abortDisarm;
 
     // Continuous time [s] the COMP -> LAND transition condition has held
     // (CompState::handle()) — the COMP -> LAND wait gate. Reset to 0 the
@@ -501,6 +516,24 @@ private:
     // state-machine reset (initStateMachine()).
     double _approachSettleTimer = 0.0;
 
+    // Rolling window of recent heave velocity, (dt-since-previous-sample, value)
+    // pairs pushed every tick in updateSignals() (same pushPredHistory helper
+    // and real-elapsed-time pruning as the SPA/heave prediction history
+    // above) -- but the value stored is _seaState.heaveVel clamped to >= 0,
+    // since downward heave velocity is our friend (the pad moving away from
+    // the drone needs no extra standoff margin) and must not affect the peak
+    // computed from this window at all.
+    std::deque<std::pair<double, double>> _heaveUpSamples;
+
+    // Peak (max) of _heaveUpSamples' values over the window (0.0 when the
+    // pad hasn't moved up at all recently, e.g. a genuinely calm or
+    // currently-descending sea) -- feeds comp()'s extra standoff margin:
+    // calm seas let the drone hold closer; a recent upward excursion pushes
+    // the standoff back out by that excursion's peak speed, and the margin
+    // relaxes again once that peak ages out of the window. Recomputed
+    // alongside _heaveUpSamples in updateSignals().
+    double _heaveUpMax = 0.0;
+
     // Throttles setDroneInFront()'s diagnostic log to ~1 Hz instead of the
     // full control-loop rate.
     double _approachLogTimer = 0.0;
@@ -509,7 +542,7 @@ private:
      bool _slopeActive = true;
     // Rolling history of the SPA/heave PREDICTIONS (not the raw estimates),
     // tracked unconditionally every tick regardless of state, so
-    // logTouchdownCsv() can look up "what the predictor said touchPredLookback
+    // logTouchdownCsv() can look up "what the predictor said logPredLookback
     // seconds before touchdown" for comparison against the raw value it logs at
     // touchdown itself. Each entry is (dt, value) for that tick.
     std::deque<std::pair<double,double>> _predHistRoll;
@@ -571,6 +604,7 @@ private:
      */
 
     LandingDoneState _landingDoneS;
+    AbortState _abortS;
 
     InspectionState _inspeS;    //its constructor set its ID to INSPE
   	/**
@@ -694,11 +728,34 @@ private:
 
     Eigen::Vector3d _err_prev;
 
-    /**
-     * direction of the line the drone has to follow to descend
-     */
-
-    Eigen::Vector3d _line_direction;
+    // ── Time-parameterized INIT->HOLD slope (hold(), _slopeActive) ───────────
+    // Replaces the old horizontal-convergence-fraction ("dot/norm_sq") slope:
+    // that law made the Z command a direct function of instantaneous
+    // horizontal vision error, so any stall/wobble in XY convergence stalled
+    // or reversed Z too (see the session history this superseded).
+    //
+    // This one is driven by elapsed TIME and defined in the PAD's frame:
+    // captured once, at slope start (setDroneInFront()'s `ready` block) --
+    //   rel0 = drone position - pad position at that instant (t=0)
+    // -- and every tick thereafter, with s = clamp(elapsed/slopeDuration, 0, 1):
+    //   rel(t) = (1-s)*rel0 + s*(0, 0, holdHeight)
+    //   cmd(t) = padLive(t) + rel(t)
+    // i.e. at every moment the drone is commanded to a specific position
+    // RELATIVE to the pad, transformed to world using the pad's live
+    // position -- so the whole path rides along with a moving/heaving pad.
+    // At s=1 the slope hands off to normal hold() tracking (trackXY() + live
+    // Z) by clearing _slopeActive.
+    //
+    // If the slope is interrupted (state machine resets back through INIT),
+    // setDroneInFront()'s `ready` block re-captures rel0/elapsed fresh --
+    // no partial resume, the slope restarts from t=0.
+    double _slopeStartRelX = 0.0;
+    double _slopeStartRelY = 0.0;
+    double _slopeStartRelZ = 0.0;
+    double _slopeElapsed = 0.0;
+    // Integral of the slope's XY tracking error (slopeXYKi), reset at slope start.
+    double _slopeIntX = 0.0;
+    double _slopeIntY = 0.0;
 
     /**
      * @brief Logic and signals helpers
@@ -835,7 +892,7 @@ private:
 
     /**
      * @brief Pushes (dt, value) onto a rolling history buffer, trimming entries
-     * older than maxAge seconds — used to keep touchPredLookback seconds (plus
+     * older than maxAge seconds — used to keep logPredLookback seconds (plus
      * margin) of the SPA/heave prediction signals available for
      * logTouchdownCsv() to look back into.
      */

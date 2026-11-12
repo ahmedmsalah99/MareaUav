@@ -17,7 +17,7 @@ def generate_launch_description():
 
     parameters_file_path = os.path.join(
         apriltag_pkg,
-         'cfg', 'platform.yaml'
+         'cfg', 'apriltag_sim.yaml'   # per-mode: camera, mounting, pad layout
     )
 
     parameters_file_path2 = os.path.join(
@@ -65,13 +65,16 @@ def generate_launch_description():
     exec_node = Node(
         package='guidance_system',
         executable='executioner_node',
-        output='screen'
+        output='screen',
+        parameters=[{'mission_list': 'list.txt'}],
     )
 
     autom_node = Node(
         package='guidance_system',
         executable='autom_node',
-        output='screen'
+        output='screen',
+        # +90 deg: the camera is turned 90 deg from the nose (rescue/SEARCH heading only).
+        parameters=[{'rescue_camera_heading_offset_rad': 1.57}],
     )
 
     apriltag_node = Node(
@@ -124,8 +127,8 @@ def generate_launch_description():
 
     return LaunchDescription([
         SetEnvironmentVariable(
-			name='M2M_SIM',
-			value='1'
+			name='M2M_MODE',
+			value='0'
 		),
         bridge_launch,
         px4_bridge_node,
