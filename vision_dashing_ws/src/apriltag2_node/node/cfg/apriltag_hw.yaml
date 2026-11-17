@@ -24,11 +24,9 @@ apriltag:
             iter_err_thld: 30.0
 
             # ---- Camera intrinsics [pixels] (640x480) ----
-            # NOTE: the same numbers are used in every mode for now. fx/fy match the sim camera
-            # (640 px, 80 deg FOV); cx/cy look like a real calibration. Re-check against the real
-            # camera's calibration during hardware adaptation.
-            camera.fx: 381.36246688113556
-            camera.fy: 381.36246688113556
+            # Pi camera v2, calibrated at 640x480 (values from the old fsm_raspicam camera node).
+            camera.fx: 508.624627
+            camera.fy: 508.77675
             camera.cx: 323.83127
             camera.cy: 248.651286
 
