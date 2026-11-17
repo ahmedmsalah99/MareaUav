@@ -40,16 +40,14 @@ AprilTag2RescueNode::AprilTag2RescueNode() : Node("apriltag2rescue", "apriltagre
 	// rescue tag topic
 	pub_rescuePosition = this->create_publisher<geometry_msgs::msg::TransformStamped>("/rescue",1);
 
-	// set camera info message, these values are obtained after calibration and they are good for 640x480.
-	// const double fx = 508.624627;
-	// const double cx = 323.83127;
-	// const double fy = 508.77675;
-	// const double cy = 248.651286;
-
-	const double fx = 381.36246688113556;
-	const double cx = 320;
-	const double fy = 381.36246688113556;
-	const double cy = 240.5;
+	// Camera intrinsics at 640x480. Real Pi camera (mocap, hw): calibrated values.
+	// Gazebo (sim, mocap in sim): the simulated camera (80 deg FOV).
+	const char *mode_env = std::getenv("M2M_MODE");
+	const bool gazebo_cam = mode_env && (std::string(mode_env) == "0" || std::string(mode_env) == "3");
+	const double fx = gazebo_cam ? 381.36246688113556 : 508.624627;
+	const double cx = gazebo_cam ? 320.0              : 323.83127;
+	const double fy = gazebo_cam ? 381.36246688113556 : 508.77675;
+	const double cy = gazebo_cam ? 240.5              : 248.651286;
 
 	K << fx, 0, cx, 0, fy, cy, 0, 0, 1;
 	intrinsics = {fx, fy, cx,cy};
