@@ -24,13 +24,14 @@ apriltag:
             iter_err_thld: 30.0
 
             # ---- Camera intrinsics [pixels] (640x480) ----
-            # NOTE: the same numbers are used in every mode for now. fx/fy match the sim camera
-            # (640 px, 80 deg FOV); cx/cy look like a real calibration. Re-check against the real
-            # camera's calibration during hardware adaptation.
-            camera.fx: 381.36246688113556
-            camera.fy: 381.36246688113556
-            camera.cx: 323.83127
-            camera.cy: 248.651286
+            # Pi camera v2 (IMX219) NOMINAL values, not a calibration: f = 3.04 mm, pixel 1.12 um
+            # -> fx = fy = 2714 px at 3280 px wide, scaled to 640 px = 530 (assumes 640x480 uses the
+            # full field of view); principal point = image center. Replace with a checkerboard
+            # calibration (camera_calibration) before real landings.
+            camera.fx: 530.0
+            camera.fy: 530.0
+            camera.cx: 320.0
+            camera.cy: 240.0
 
             # ---- Camera mounting: camera pose in the drone body frame [m, rad] ----
             # Rotation = Rz(yaw) * Ry(pitch) * Rx(roll): today the camera is flipped about x (looking down)
