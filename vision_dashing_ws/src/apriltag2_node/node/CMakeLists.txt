@@ -26,6 +26,15 @@ pkg_search_module(apriltag REQUIRED apriltag)
 set(M2M_MODE "$ENV{M2M_MODE}")
 
 include_directories(${apriltag_INCLUDE_DIRS})
+# The code includes the library's headers flat (<apriltag.h>, <tag36h11.h>,
+# <common/pjpeg.h>). The AprilRobotics install puts them under
+# <prefix>/include/apriltag/, while its pkg-config only lists <prefix>/include,
+# so add that subfolder too.
+foreach(_dir ${apriltag_INCLUDE_DIRS} ${apriltag_INCLUDEDIR})
+  if(EXISTS "${_dir}/apriltag/apriltag.h")
+    include_directories("${_dir}/apriltag")
+  endif()
+endforeach()
 link_directories(${apriltag_LIBDIR})
 
 include_directories(include)
