@@ -1,4 +1,5 @@
 #include "mocap_boundaries_check_handler.hpp"
+#include <stdexcept>
 
 MoCapBoundariesHandler::MoCapBoundariesHandler(std::string agent_name) : Node("mocap_boundaries_check_handler")
 {
@@ -51,19 +52,19 @@ MoCapBoundariesHandler::MoCapBoundariesHandler(std::string agent_name) : Node("m
 
 
 
-  _setpoint_uav_pub = this->create_publisher<ros2_muavp_interface::msg::InputSetpoint>("/" + _agent_name + "/input_setpoint", 1);
+  _setpoint_uav_pub = this->create_publisher<mocap_boundaries_check::msg::InputSetpoint>("/" + _agent_name + "/input_setpoint", 1);
 
   // subbing to the other UAVs topics so to get their 'MoCap out of boudaries' flag
-  _setpoint_prev_uav_sub = this->create_subscription<ros2_muavp_interface::msg::InputSetpoint>("/" + _prev_agent_name + "/input_setpoint",
+  _setpoint_prev_uav_sub = this->create_subscription<mocap_boundaries_check::msg::InputSetpoint>("/" + _prev_agent_name + "/input_setpoint",
           rclcpp::QoS(rclcpp::QoSInitialization(rmw_qos_profile_sensor_data.history, rmw_qos_profile_sensor_data.depth), rmw_qos_profile_sensor_data),
-          [this](const ros2_muavp_interface::msg::InputSetpoint::SharedPtr msg_sp)
+          [this](const mocap_boundaries_check::msg::InputSetpoint::SharedPtr msg_sp)
           {
             _setpoint_prev_uav_msg = *msg_sp;
           });
 
-  _setpoint_next_uav_sub = this->create_subscription<ros2_muavp_interface::msg::InputSetpoint>("/" + _next_agent_name + "/input_setpoint",
+  _setpoint_next_uav_sub = this->create_subscription<mocap_boundaries_check::msg::InputSetpoint>("/" + _next_agent_name + "/input_setpoint",
           rclcpp::QoS(rclcpp::QoSInitialization(rmw_qos_profile_sensor_data.history, rmw_qos_profile_sensor_data.depth), rmw_qos_profile_sensor_data),
-          [this](const ros2_muavp_interface::msg::InputSetpoint::SharedPtr msg_sp)
+          [this](const mocap_boundaries_check::msg::InputSetpoint::SharedPtr msg_sp)
           {
             _setpoint_next_uav_msg = *msg_sp;
           });
@@ -72,17 +73,14 @@ MoCapBoundariesHandler::MoCapBoundariesHandler(std::string agent_name) : Node("m
 
 
 
-  // SIMULATION ONLY
-  _states_info_sub = this->create_subscription<ros2_muavp_interface::msg::StatesInfo>("/" + agent_name + "/states_info",
-          rclcpp::QoS(rclcpp::QoSInitialization(rmw_qos_profile_sensor_data.history, rmw_qos_profile_sensor_data.depth), rmw_qos_profile_sensor_data),
-          [this](const ros2_muavp_interface::msg::StatesInfo::SharedPtr msg_si)
-          {
-            // getting the data from the topic and saving it
-            _states_info_data = *msg_si;
-          });
-
-  // init
-  _states_info_data.curr_state = 0;
+  // Boundaries from config/mocap_boundaries.yaml (no defaults: the file must provide them).
+  const auto flat = this->declare_parameter<std::vector<double>>("vertices_xy");
+  _z_max = this->declare_parameter<double>("z_max_m");
+  _edge_proximity_threshold = this->declare_parameter<double>("edge_proximity_threshold_m");
+  if (flat.size() < 6 || flat.size() % 2 != 0)
+    throw std::runtime_error("vertices_xy must hold at least 3 (x, y) pairs");
+  for (size_t i = 0; i < flat.size(); i += 2)
+    _octagonVertices.emplace_back(flat[i], flat[i + 1]);
 
 
   // Cache the fixed inset polygon once; runtime checks use the same geometry.
@@ -253,7 +251,7 @@ double MoCapBoundariesHandler::computeDistanceToEdge(const Point2D& point, const
 
 void MoCapBoundariesHandler::sendChangeModeUAVs(const Point3D& closest_point_uav)
 {
-  ros2_muavp_interface::msg::InputSetpoint uav_sp;
+  mocap_boundaries_check::msg::InputSetpoint uav_sp;
 
   // transforming back to NED
   uav_sp.setpoint[0] = closest_point_uav(1);
@@ -270,7 +268,7 @@ void MoCapBoundariesHandler::sendChangeModeUAVs(const Point3D& closest_point_uav
 
 void MoCapBoundariesHandler::sendSafetyKillUAVs()
 {
-  ros2_muavp_interface::msg::InputSetpoint uav_sp;
+  mocap_boundaries_check::msg::InputSetpoint uav_sp;
 
   uav_sp.safety_kill = true;
   uav_sp.timestamp = this->get_clock()->now().nanoseconds() / 1000;

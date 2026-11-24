@@ -168,6 +168,19 @@ def generate_launch_description():
                     ('/x500_1/fmu/in/vehicle_command', '/fmu/in/vehicle_command')],
     )
 
+    # Lab boundary check (mocap_boundaries_check, lab code): flags the drone when it is
+    # outside, or within the edge margin of, the mocap area. Boundaries in
+    # mocap_boundaries_check/config/mocap_boundaries.yaml (also read by our geofence).
+    # Like the GPS sync, it is written for namespaced PX4 topics (x500_1); remap to ours.
+    boundaries_node = Node(
+        package='mocap_boundaries_check', executable='mocap_boundaries_check_main', output='screen',
+        arguments=['x500_1'],
+        parameters=[os.path.join(get_package_share_directory('mocap_boundaries_check'),
+                                 'config', 'mocap_boundaries.yaml')],
+        remappings=[('/x500_1/fmu/out/vehicle_odometry', '/fmu/out/vehicle_odometry'),
+                    ('/x500_1/input_setpoint', '/mocap_boundaries/input_setpoint')],
+    )
+
     return LaunchDescription([
         SetEnvironmentVariable(
 			name='M2M_MODE',
@@ -186,5 +199,6 @@ def generate_launch_description():
         heave_node,
         mocap_px4_bridge_node,
         mocap_pad_bridge_node,
-        gps_sync_node
+        gps_sync_node,
+        boundaries_node,
     ])

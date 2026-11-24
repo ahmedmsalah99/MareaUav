@@ -20,8 +20,13 @@ find_package(rclcpp REQUIRED)
 find_package(ament_cmake REQUIRED)
 find_package(px4_msgs REQUIRED)
 find_package(rclcpp_components REQUIRED)
-find_package(ros2_muavp_interface REQUIRED)
+find_package(rosidl_default_generators REQUIRED)
 find_package(Eigen3 REQUIRED)
+
+# Local copy of the one message this node uses (InputSetpoint), replacing the
+# external interface package that isn't in this repo.
+rosidl_generate_interfaces(${PROJECT_NAME} "msg/InputSetpoint.msg")
+rosidl_get_typesupport_target(cpp_typesupport_target ${PROJECT_NAME} rosidl_typesupport_cpp)
 
 # uncomment the following section in order to fill in
 # further dependencies manually.
@@ -33,7 +38,8 @@ INCLUDE_DIRECTORIES(${EIGEN3_INCLUDE_DIR})
 add_library(MoCapBoundariesCheck SHARED src/mocap_boundaries_check_handler.cpp)
 target_link_libraries(MoCapBoundariesCheck ${rclcpp_LIBRARIES})
 
-ament_target_dependencies(MoCapBoundariesCheck rclcpp rclcpp_components px4_msgs ros2_muavp_interface)
+ament_target_dependencies(MoCapBoundariesCheck rclcpp rclcpp_components px4_msgs)
+target_link_libraries(MoCapBoundariesCheck "${cpp_typesupport_target}")
 
 rclcpp_components_register_nodes(MoCapBoundariesCheck "MoCapBoundariesCheck")
 
@@ -52,10 +58,13 @@ install(TARGETS MoCapBoundariesCheck
   LIBRARY DESTINATION lib
   RUNTIME DESTINATION bin)
 
-ament_export_dependencies(rclcpp)
+ament_export_dependencies(rclcpp rosidl_default_runtime)
 
 install(TARGETS mocap_boundaries_check_main
   DESTINATION lib/${PROJECT_NAME})
+
+# Boundaries config, also read by guidance_system's geofence.
+install(DIRECTORY config DESTINATION share/${PROJECT_NAME})
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
