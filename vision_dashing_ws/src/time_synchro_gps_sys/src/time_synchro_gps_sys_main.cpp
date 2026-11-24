@@ -81,11 +81,14 @@ void set_global_position_origin(uint64_t timestamp, rclcpp::Publisher<px4_msgs::
 	vehicle_command_pub->publish(msg);
 }
 
+// The loop below runs at 10 Hz; print its warnings at most every 5 s.
+constexpr int kLogThrottleMs = 5000;
+
 void checkLastCommandAck(rclcpp::Node::SharedPtr node)
 {
   if (!vehicle_cmd_ack_received)
   {
-    RCLCPP_WARN(node->get_logger(), "No VehicleCommandAck received yet");
+    RCLCPP_WARN_THROTTLE(node->get_logger(), *node->get_clock(), kLogThrottleMs, "No VehicleCommandAck received yet");
     return;
   }
 
@@ -100,23 +103,23 @@ void checkLastCommandAck(rclcpp::Node::SharedPtr node)
         break;
 
       case px4_msgs::msg::VehicleCommandAck::VEHICLE_CMD_RESULT_TEMPORARILY_REJECTED:
-        RCLCPP_WARN(node->get_logger(), "SET_GPS_GLOBAL_ORIGIN temporarily rejected");
+        RCLCPP_WARN_THROTTLE(node->get_logger(), *node->get_clock(), kLogThrottleMs, "SET_GPS_GLOBAL_ORIGIN temporarily rejected");
         break;
 
       case px4_msgs::msg::VehicleCommandAck::VEHICLE_CMD_RESULT_DENIED:
-        RCLCPP_ERROR(node->get_logger(), "SET_GPS_GLOBAL_ORIGIN denied");
+        RCLCPP_ERROR_THROTTLE(node->get_logger(), *node->get_clock(), kLogThrottleMs, "SET_GPS_GLOBAL_ORIGIN denied");
         break;
 
       case px4_msgs::msg::VehicleCommandAck::VEHICLE_CMD_RESULT_UNSUPPORTED:
-        RCLCPP_ERROR(node->get_logger(), "SET_GPS_GLOBAL_ORIGIN unsupported");
+        RCLCPP_ERROR_THROTTLE(node->get_logger(), *node->get_clock(), kLogThrottleMs, "SET_GPS_GLOBAL_ORIGIN unsupported");
         break;
 
       case px4_msgs::msg::VehicleCommandAck::VEHICLE_CMD_RESULT_FAILED:
-        RCLCPP_ERROR(node->get_logger(), "SET_GPS_GLOBAL_ORIGIN failed");
+        RCLCPP_ERROR_THROTTLE(node->get_logger(), *node->get_clock(), kLogThrottleMs, "SET_GPS_GLOBAL_ORIGIN failed");
         break;
 
       default:
-        RCLCPP_WARN(node->get_logger(), "SET_GPS_GLOBAL_ORIGIN unknown result=%u",
+        RCLCPP_WARN_THROTTLE(node->get_logger(), *node->get_clock(), kLogThrottleMs, "SET_GPS_GLOBAL_ORIGIN unknown result=%u",
                     last_vehicle_cmd_ack.result);
         break;
     }
