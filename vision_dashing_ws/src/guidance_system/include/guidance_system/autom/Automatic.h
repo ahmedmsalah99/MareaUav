@@ -129,11 +129,12 @@ public:
   MavState _comm;
 
   /**
-   * @brief Keeps every outgoing setpoint inside the configured box
-   * (GEOFENCE_* and ALT_MAX_WORLD_M in landing_<mode>.yaml). Position targets
-   * are clamped into the box; velocity components that would push the drone
-   * further out while it is at/over a wall are zeroed. No-op when
-   * GEOFENCE_ENABLE is 0.
+   * @brief Keeps every outgoing setpoint inside the mocap lab boundary
+   * (mocap_boundaries_check/config/mocap_boundaries.yaml), shrunk by
+   * GEOFENCE_MARGIN_M, and under its ceiling minus the same margin. Position
+   * targets are moved to the nearest point inside; velocity components that
+   * would push the drone further out while it is at/over a wall are removed.
+   * No-op when GEOFENCE_ENABLE is 0.
    */
   void applyGeofence();
 
