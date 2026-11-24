@@ -85,6 +85,19 @@ def generate_launch_description():
         condition=IfCondition(LaunchConfiguration('start_camera')),
     )
 
+    # Compress the camera image for apriltag2_node, which subscribes to
+    # /apriltag/image/compressed/compressed. v4l2_camera's own compressed output
+    # doesn't show up on the Pi, so republish it explicitly.
+    camera_compress = Node(
+        package='image_transport',
+        executable='republish',
+        arguments=['raw', 'compressed'],
+        output='screen',
+        remappings=[('in', '/apriltag/image/compressed'),
+                    ('out/compressed', '/apriltag/image/compressed/compressed')],
+        condition=IfCondition(LaunchConfiguration('start_camera')),
+    )
+
     # PX4 <-> ROS 2 link (uXRCE-DDS client on the Pixracer, agent here).
     agent = ExecuteProcess(
         cmd=['MicroXRCEAgent', 'serial', '--dev', LaunchConfiguration('agent_device'),
@@ -150,6 +163,7 @@ def generate_launch_description():
         agent,
         optitrack,
         camera,
+        camera_compress,
         px4_bridge_node,
         ultrasonic_node,
         payload_node,
