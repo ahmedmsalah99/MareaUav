@@ -42,7 +42,7 @@ def generate_launch_description():
                               description='Start MicroXRCEAgent (PX4 <-> ROS 2 link)'),
         DeclareLaunchArgument('agent_device', default_value='/dev/ttyAMA0',
                               description='Serial port wired to the flight controller'),
-        DeclareLaunchArgument('agent_baud', default_value='921600',
+        DeclareLaunchArgument('agent_baud', default_value='3000000',
                               description='Must match the PX4 serial port baud (e.g. SER_TEL2_BAUD)'),
     ]
 
