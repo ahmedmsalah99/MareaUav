@@ -1,0 +1,25 @@
+# Mocap lab boundaries (the area the cameras cover), used by guidance_system's
+# geofence when GEOFENCE_ENABLE is 1 (landing_mocap.yaml, landing_sim_mocap.yaml).
+#
+# Same layout as the lab's mocap_boundaries_check package config, so it can be
+# handed back to that node unchanged if we use it again; that node ignores
+# setpoint_margin_m.
+#
+# Frame: PX4 local frame as ENU (x = east, y = north, z = up) [m].
+mocap_boundaries_check_handler:
+  ros__parameters:
+    # Polygon vertices in order, flattened as [x0, y0, x1, y1, ...]. Must be convex.
+    vertices_xy: [-0.7911, -2.031,
+                  -1.378,  -0.838,
+                  -1.532,   0.574,
+                  -1.284,   1.881,
+                  -0.184,   2.429,
+                   1.021,   2.035,
+                   1.470,   0.834,
+                   1.379,  -0.805,
+                   0.952,  -2.026]
+    z_max_m: 2.9                       # ceiling [m]
+    # Breach: the drone closer than this to a wall or the ceiling -> PX4 LAND [m].
+    edge_proximity_threshold_m: 0.05
+    # Our setpoints are kept this far inside the walls and below the ceiling [m].
+    setpoint_margin_m: 0.20

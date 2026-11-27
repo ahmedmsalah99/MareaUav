@@ -12,14 +12,10 @@ inspec:                                            # INSPEC: what INIT does if t
   INSPEC_CIRCLE_RADIUS_GROWTH_M:         0.5       # The INSPE circle radius grows by this after each full lap [m].
   INSPEC_ALTITUDE_M:                     6.0       # Absolute world altitude flown in INSPE and HOVERING [m].
 
-geofence:                                          # GEOFENCE: box every setpoint is kept inside (off in sim)
-  # Position setpoints are clamped into the box; velocity pushing further out at a wall is zeroed. No floor (the drone must reach the pad).
-  GEOFENCE_ENABLE:                       0         # 1 = enforce the box below, 0 = off.
-  GEOFENCE_X_MIN_M:                      -1000     # World X lower wall [m].
-  GEOFENCE_X_MAX_M:                      1000      # World X upper wall [m].
-  GEOFENCE_Y_MIN_M:                      -1000     # World Y lower wall [m].
-  GEOFENCE_Y_MAX_M:                      1000      # World Y upper wall [m].
-  ALT_MAX_WORLD_M:                       1000      # Ceiling: highest world Z any setpoint may reach [m].
+geofence:                                          # GEOFENCE: keeps every setpoint inside the mocap lab boundary (off in sim)
+  # Boundary (polygon, ceiling, margins) in params/mocap_boundaries.yaml. A drone within its edge margin of a wall/ceiling -> PX4 LAND.
+  # Position setpoints are moved to the nearest point inside; velocity pushing further out at a wall is removed. No floor.
+  GEOFENCE_ENABLE:                       0         # 1 = enforce the lab boundary, 0 = off.
 
 altitude:                                          # ALTITUDE SAFETY LIMITS
   ALT_MAX_ABOVE_PAD_M:                   3.0       # The altitude setpoint never goes higher than pad height + this [m].

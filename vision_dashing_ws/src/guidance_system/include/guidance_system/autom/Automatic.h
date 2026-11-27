@@ -129,13 +129,18 @@ public:
   MavState _comm;
 
   /**
-   * @brief Keeps every outgoing setpoint inside the configured box
-   * (GEOFENCE_* and ALT_MAX_WORLD_M in landing_<mode>.yaml). Position targets
-   * are clamped into the box; velocity components that would push the drone
-   * further out while it is at/over a wall are zeroed. No-op when
-   * GEOFENCE_ENABLE is 0.
+   * @brief Keeps every outgoing setpoint inside the mocap lab boundary
+   * (mocap_boundaries_check/config/mocap_boundaries.yaml), shrunk by
+   * GEOFENCE_MARGIN_M, and under its ceiling minus the same margin. Position
+   * targets are moved to the nearest point inside; velocity components that
+   * would push the drone further out while it is at/over a wall are removed.
+   * No-op when GEOFENCE_ENABLE is 0.
    */
   void applyGeofence();
+
+  /// Updates _boundaryBreached from the drone position (see boundaryBreached()).
+  void checkBoundaryBreach();
+  bool _boundaryBreached = false;
 
   /// Take-off point (where the last TAKE_OFF task started), handed to the
   /// Lander so a landing abort can return and land there.
@@ -195,6 +200,14 @@ public:
    * payload-release request (AutomaticNode publishes it on "release_payload").
    */
   bool consumePayloadRelease() const;
+
+  /**
+   * @brief True while the drone is within the breach margin of a lab wall or
+   * the ceiling (edge_proximity_threshold_m in params/mocap_boundaries.yaml),
+   * or outside the lab polygon. AutomaticNode then sends PX4 a LAND command.
+   * Always false when GEOFENCE_ENABLE is 0.
+   */
+  bool boundaryBreached() const { return _boundaryBreached; }
 
   /**
    * @brief True when Gazebo is running (M2M_MODE 0 = sim or 3 = mocap in sim)

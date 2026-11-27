@@ -16,6 +16,7 @@
 #include <algorithm>
 #include <set>
 #include <vector>
+#include "guidance_system/autom/PolygonFence.h"
 
 
 class Parameters {
@@ -32,6 +33,8 @@ public:
     // every problem, if a key is missing, unknown, duplicated or in the wrong file.
     void loadLanding();
     void loadLanding(const std::string& dir, const std::string& mode);
+    /// Read the lab polygon, ceiling and margins from <dir>/mocap_boundaries.yaml (when GEOFENCE_ENABLE).
+    void loadGeofenceBoundaries(const std::string& dir);
 
     // Sets the field for KEY; returns false for an unknown key.
     bool setKey(const std::string& key, double value);
@@ -407,11 +410,13 @@ public:
     double abortAltitude;
     double abortArrivedTol;
     bool   geofenceEnable;
-    double geofenceXMin;
-    double geofenceXMax;
-    double geofenceYMin;
-    double geofenceYMax;
-    double altMaxWorld;
+    // Filled from params/mocap_boundaries.yaml when geofenceEnable:
+    double geofenceMargin;      // setpoint_margin_m: setpoints stay this far inside the lab boundary
+    PolygonFence geofence;      // lab polygon shrunk by geofenceMargin (setpoint limit)
+    double geofenceCeiling;     // z_max - geofenceMargin [m]
+    double breachMargin;        // edge_proximity_threshold_m: closer than this to a wall/ceiling -> LAND
+    PolygonFence breachFence;   // lab polygon shrunk by breachMargin
+    double breachCeiling;       // z_max - breachMargin [m]
     double inspecCircleRadiusGrowth;
     double altMaxAbovePadMargin;
     double xyDirectOvershootGain;

@@ -94,13 +94,10 @@ void Automatic::handleCommands() {
             std::cout << "Take-off point recorded: (" << _takeoffX << ", " << _takeoffY << ", " << _takeoffZ << ")" << std::endl;
             {
                 const Parameters& f = _fenceParams;
-                if (f.geofenceEnable &&
-                    (_takeoffX < f.geofenceXMin || _takeoffX > f.geofenceXMax ||
-                     _takeoffY < f.geofenceYMin || _takeoffY > f.geofenceYMax)) {
+                if (f.geofenceEnable && !f.geofence.contains(_takeoffX, _takeoffY)) {
                     std::cout << "[GEOFENCE] WARNING: take-off point (" << _takeoffX << ", " << _takeoffY
-                              << ") is OUTSIDE the geofence x[" << f.geofenceXMin << ", " << f.geofenceXMax
-                              << "] y[" << f.geofenceYMin << ", " << f.geofenceYMax
-                              << "]: setpoints will be clamped, and an abort will land inside the fence instead."
+                              << ") is OUTSIDE the geofence (lab boundary - " << f.geofenceMargin
+                              << " m): setpoints will be clamped, and an abort will land inside the fence instead."
                               << std::endl;
                 }
             }
@@ -145,45 +142,59 @@ void Automatic::executeCommand() {
     _comm.setVy(NAN);
     this->_actualCommand->execute();
     applyGeofence();
+    checkBoundaryBreach();
 }
 
 void Automatic::applyGeofence() {
     const Parameters& p = _fenceParams;
     if (!p.geofenceEnable) return;
 
-    const double lo[3] = {p.geofenceXMin, p.geofenceYMin, -1e9};   // no floor: landing must reach the pad
-    const double hi[3] = {p.geofenceXMax, p.geofenceYMax, p.altMaxWorld};
-    const double pos[3] = {_state.getX(), _state.getY(), _state.getZ()};
-    bool changed = false;
-    int  clampedDir[3] = {0, 0, 0};   // +1: target was above hi, -1: below lo
+    // XY: lab polygon shrunk by GEOFENCE_MARGIN_M. Z: ceiling only, no floor
+    // (landing must reach the pad).
+    const double px = _state.getX(), py = _state.getY(), pz = _state.getZ();
+    bool changed = false, xyClamped = false, zClamped = false;
 
     if (_comm.getType() == MavState::POSITION) {
-        double sp[3] = {_comm.getX(), _comm.getY(), _comm.getZ()};
-        for (int i = 0; i < 3; ++i) {
-            const double c = common::clamp(sp[i], lo[i], hi[i]);
-            if (c != sp[i]) { clampedDir[i] = (sp[i] > c) ? 1 : -1; sp[i] = c; changed = true; }
-        }
-        if (changed) _comm.setPosition(sp[0], sp[1], sp[2]);
+        double x = _comm.getX(), y = _comm.getY(), z = _comm.getZ();
+        xyClamped = p.geofence.clamp(x, y);
+        if (z > p.geofenceCeiling) { z = p.geofenceCeiling; zClamped = true; }
+        if (xyClamped || zClamped) { _comm.setPosition(x, y, z); changed = true; }
     }
 
     // Velocity (a VELOCITY command, or the feed-forward on a POSITION one):
     // never push further out while at or beyond a wall.
     double v[3] = {_comm.getVx(), _comm.getVy(), _comm.getVz()};
     bool vChanged = false;
-    for (int i = 0; i < 3; ++i) {
-        if (std::isnan(v[i])) continue;
-        const bool pushOutHi = v[i] > 0.0 && (pos[i] >= hi[i] || clampedDir[i] == 1);
-        const bool pushOutLo = v[i] < 0.0 && (pos[i] <= lo[i] || clampedDir[i] == -1);
-        if (pushOutHi || pushOutLo) { v[i] = 0.0; vChanged = true; }
+    if (!std::isnan(v[0]) && !std::isnan(v[1]) && (xyClamped || !p.geofence.contains(px, py))) {
+        double nx, ny;
+        p.geofence.outwardNormal(px, py, nx, ny);
+        const double out = v[0] * nx + v[1] * ny;
+        if (out > 0.0) { v[0] -= out * nx; v[1] -= out * ny; vChanged = true; }
     }
+    if (!std::isnan(v[2]) && v[2] > 0.0 && (zClamped || pz >= p.geofenceCeiling)) { v[2] = 0.0; vChanged = true; }
     if (vChanged) _comm.setV(v[0], v[1], v[2]);
 
     if (changed || vChanged) {
         static int throttle = 0;
         if (throttle++ % 25 == 0)
-            std::cout << "[GEOFENCE] setpoint limited to box x[" << lo[0] << ", " << hi[0] << "] y[" << lo[1] << ", " << hi[1]
-                      << "] z<=" << hi[2] << "  drone (" << pos[0] << ", " << pos[1] << ", " << pos[2] << ")" << std::endl;
+            std::cout << "[GEOFENCE] setpoint limited to the lab boundary (margin " << p.geofenceMargin
+                      << " m, ceiling " << p.geofenceCeiling << " m)  drone (" << px << ", " << py << ", " << pz << ")"
+                      << std::endl;
     }
+}
+
+void Automatic::checkBoundaryBreach() {
+    const Parameters& p = _fenceParams;
+    if (!p.geofenceEnable) { _boundaryBreached = false; return; }
+
+    const double x = _state.getX(), y = _state.getY(), z = _state.getZ();
+    const bool breached = !p.breachFence.contains(x, y) || z > p.breachCeiling;
+    if (breached && !_boundaryBreached)
+        std::cout << "[GEOFENCE] BREACH: drone (" << x << ", " << y << ", " << z << ") within " << p.breachMargin
+                  << " m of the lab boundary (or outside it): requesting PX4 LAND" << std::endl;
+    else if (!breached && _boundaryBreached)
+        std::cout << "[GEOFENCE] drone back inside the lab boundary" << std::endl;
+    _boundaryBreached = breached;
 }
 
 double Automatic::getPredictionHorizon() const {
