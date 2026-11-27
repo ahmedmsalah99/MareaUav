@@ -80,6 +80,8 @@ Parameters::Parameters() {
     geofenceEnable = false;
     geofenceMargin = 0.0;
     geofenceCeiling = 1e9;
+    breachMargin = 0.0;
+    breachCeiling = 1e9;
     inspecCircleRadiusGrowth = 0.5;
     altMaxAbovePadMargin = 0.1;
     xyDirectOvershootGain = 0.5;
@@ -326,8 +328,6 @@ bool Parameters::setKey(const std::string& param, double value) {
             else if( !param.compare("GEOFENCE_ENABLE") )
                 geofenceEnable = value;
 
-            else if( !param.compare("GEOFENCE_MARGIN_M") )
-                geofenceMargin = value;
 
             else if( !param.compare("HOLD_TO_COMP_TIMEOUT_S") )
                 holdToCompTimeout = value;
@@ -497,7 +497,6 @@ const std::set<std::string>& Parameters::perModeKeys() {
         "HOLD_TO_COMP_TIMEOUT_S",
         "ABORT_ALTITUDE_M",
         "GEOFENCE_ENABLE",
-        "GEOFENCE_MARGIN_M",
         "INSPEC_ENABLE",
         "INSPEC_CIRCLE_RADIUS_M",
         "INSPEC_CIRCLE_SPEED_MPS",
@@ -605,14 +604,12 @@ void Parameters::loadLanding(const std::string& dir, const std::string& mode) {
     }
     for (const auto& kv : values) setKey(kv.first, kv.second);
 
-    if (geofenceEnable) loadGeofenceBoundaries();
+    if (geofenceEnable) loadGeofenceBoundaries(dir);
 }
 
-void Parameters::loadGeofenceBoundaries() {
-    // The lab boundary has one home: mocap_boundaries_check's config, which that
-    // node (the hard layer) reads too. We keep setpoints geofenceMargin inside it.
-    const std::string path = ament_index_cpp::get_package_share_directory("mocap_boundaries_check") +
-                             "/config/mocap_boundaries.yaml";
+void Parameters::loadGeofenceBoundaries(const std::string& dir) {
+    // Lab boundary (same layout as the lab's mocap_boundaries_check config).
+    const std::string path = dir + "/mocap_boundaries.yaml";
     std::cout << "geofence boundaries " << path << std::endl;
     try {
         const YAML::Node p = YAML::LoadFile(path)["mocap_boundaries_check_handler"]["ros__parameters"];
@@ -621,8 +618,13 @@ void Parameters::loadGeofenceBoundaries() {
             throw std::runtime_error("vertices_xy must hold at least 3 (x, y) pairs");
         std::vector<PolygonFence::Point> vertices;
         for (size_t i = 0; i < flat.size(); i += 2) vertices.push_back({flat[i], flat[i + 1]});
+        const double zMax = p["z_max_m"].as<double>();
+        geofenceMargin = p["setpoint_margin_m"].as<double>();
+        breachMargin   = p["edge_proximity_threshold_m"].as<double>();
         geofence.set(vertices, geofenceMargin);
-        geofenceCeiling = p["z_max_m"].as<double>() - geofenceMargin;
+        breachFence.set(vertices, breachMargin);
+        geofenceCeiling = zMax - geofenceMargin;
+        breachCeiling   = zMax - breachMargin;
     } catch (const std::exception& e) {
         throw std::runtime_error("geofence boundaries (" + path + "): " + e.what());
     }
@@ -693,7 +695,6 @@ const std::vector<std::string>& Parameters::allKeys() {
         "GO_ROLL_RATE_MAX_RADPS",
         "GO_PITCH_RATE_MAX_RADPS",
         "GEOFENCE_ENABLE",
-        "GEOFENCE_MARGIN_M",
         "HOLD_TO_COMP_TIMEOUT_S",
         "ABORT_ALTITUDE_M",
         "ABORT_ARRIVED_TOL_M",

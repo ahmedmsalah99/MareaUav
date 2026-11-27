@@ -325,6 +325,32 @@ private:
       RCLCPP_WARN(get_logger(), "[landDisarmOnGo] sending FORCED disarm command");
     }
 
+    // Mocap lab boundary breach (drone within the edge margin of a wall or the
+    // ceiling): ask PX4 to LAND where it is. Re-sent every 0.5 s while the
+    // breach lasts, since this topic is best-effort.
+    if (autom_.boundaryBreached()) {
+      const rclcpp::Time now = this->now();
+      if (last_breach_land_time_.nanoseconds() == 0 || (now - last_breach_land_time_).seconds() >= 0.5) {
+        last_breach_land_time_ = now;
+        px4_msgs::msg::VehicleCommand cmd{};
+        cmd.timestamp = this->get_clock()->now().nanoseconds() / 1000;
+        cmd.command = px4_msgs::msg::VehicleCommand::VEHICLE_CMD_NAV_LAND;
+        cmd.param4 = NAN;  // keep the current yaw
+        cmd.param5 = NAN;  // land at the current position
+        cmd.param6 = NAN;
+        cmd.param7 = NAN;
+        cmd.target_system = 1;
+        cmd.target_component = 1;
+        cmd.source_system = 1;
+        cmd.source_component = 1;
+        cmd.from_external = true;
+        vehicle_command_pub_->publish(cmd);
+        RCLCPP_WARN_THROTTLE(get_logger(), *get_clock(), 2000, "[GEOFENCE] lab boundary breach: sending LAND command");
+      }
+    } else {
+      last_breach_land_time_ = rclcpp::Time(0, 0, this->get_clock()->get_clock_type());
+    }
+
     // Search asked to drop the payload.
     if (autom_.consumePayloadRelease()) {
       std_msgs::msg::String msg;
@@ -709,6 +735,7 @@ private:
   double           prev_spa_pitch_ {0.0};
   rclcpp::Time     last_spa_est_stamp_;
   rclcpp::Time     last_loop_time_;
+  rclcpp::Time     last_breach_land_time_{0, 0, RCL_ROS_TIME};
   std::deque<double> roll_rate_buf_;
   std::deque<double> pitch_rate_buf_;
 

@@ -13,10 +13,9 @@ inspec:                                            # INSPEC: what INIT does if t
   INSPEC_ALTITUDE_M:                     6.0       # Absolute world altitude flown in INSPE and HOVERING [m].
 
 geofence:                                          # GEOFENCE: keeps every setpoint inside the mocap lab boundary (off at sea)
-  # Boundary (polygon + ceiling) comes from mocap_boundaries_check/config/mocap_boundaries.yaml, shared with that node.
+  # Boundary (polygon, ceiling, margins) in params/mocap_boundaries.yaml. A drone within its edge margin of a wall/ceiling -> PX4 LAND.
   # Position setpoints are moved to the nearest point inside; velocity pushing further out at a wall is removed. No floor.
   GEOFENCE_ENABLE:                       0         # 1 = enforce the lab boundary, 0 = off.
-  GEOFENCE_MARGIN_M:                     0.3       # Setpoints stay this far inside the lab polygon and below its ceiling [m].
 
 altitude:                                          # ALTITUDE SAFETY LIMITS
   ALT_MAX_ABOVE_PAD_M:                   3.0       # The altitude setpoint never goes higher than pad height + this [m].

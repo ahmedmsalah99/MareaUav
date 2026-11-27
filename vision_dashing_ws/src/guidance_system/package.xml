@@ -19,7 +19,6 @@
   <depend>eigen</depend>
   <depend>ultrasonic_sensor</depend>
   <depend>yaml_cpp_vendor</depend>
-  <exec_depend>mocap_boundaries_check</exec_depend>  <!-- geofence reads its config/mocap_boundaries.yaml -->
 
   <test_depend>ament_lint_auto</test_depend>
   <test_depend>ament_lint_common</test_depend>

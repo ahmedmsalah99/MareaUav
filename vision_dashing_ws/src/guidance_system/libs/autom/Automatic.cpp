@@ -142,6 +142,7 @@ void Automatic::executeCommand() {
     _comm.setVy(NAN);
     this->_actualCommand->execute();
     applyGeofence();
+    checkBoundaryBreach();
 }
 
 void Automatic::applyGeofence() {
@@ -180,6 +181,20 @@ void Automatic::applyGeofence() {
                       << " m, ceiling " << p.geofenceCeiling << " m)  drone (" << px << ", " << py << ", " << pz << ")"
                       << std::endl;
     }
+}
+
+void Automatic::checkBoundaryBreach() {
+    const Parameters& p = _fenceParams;
+    if (!p.geofenceEnable) { _boundaryBreached = false; return; }
+
+    const double x = _state.getX(), y = _state.getY(), z = _state.getZ();
+    const bool breached = !p.breachFence.contains(x, y) || z > p.breachCeiling;
+    if (breached && !_boundaryBreached)
+        std::cout << "[GEOFENCE] BREACH: drone (" << x << ", " << y << ", " << z << ") within " << p.breachMargin
+                  << " m of the lab boundary (or outside it): requesting PX4 LAND" << std::endl;
+    else if (!breached && _boundaryBreached)
+        std::cout << "[GEOFENCE] drone back inside the lab boundary" << std::endl;
+    _boundaryBreached = breached;
 }
 
 double Automatic::getPredictionHorizon() const {
